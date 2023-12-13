@@ -1,0 +1,20 @@
+[
+    {
+        "level": 0,
+        "name": "Baby's first instance",
+        "prompt": "Easy. Connect to the server and get the flag",
+        "tags": ["ssh", "cat", "ls", "cd", "whoami", "man"]
+    },
+    {
+        "level": 1,
+        "name": "Open me",
+        "prompt": "The flag is there. Read it!!",
+        "tags": ["ssh", "cat", "ls", "cd", "whoami", "man"]
+    },
+    {
+        "level": 2,
+        "name": "There are spaces",
+        "prompt": "Can you escape?",
+        "tags": ["ssh", "cat", "ls", "cd", "file"]
+    }
+]

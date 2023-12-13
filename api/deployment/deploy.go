@@ -1,0 +1,219 @@
+package deployment
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"path/filepath"
+
+	"github.com/TitanCrew/isolet/config"
+	"github.com/TitanCrew/isolet/database"
+	"github.com/TitanCrew/isolet/utils"
+
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
+	// "k8s.io/apimachinery/pkg/api/resource"
+
+	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+func GetKubeClient() (*kubernetes.Clientset, error) {
+	var configRest *rest.Config
+	configRest, err := rest.InClusterConfig()
+
+	if err == nil {
+		clientset, err := kubernetes.NewForConfig(configRest)
+		if err != nil {
+			return nil, err
+		}
+		return clientset, nil
+	}
+
+	var kubeconfig *string
+	if home := homedir.HomeDir(); home != "" {
+		kubeconfig = utils.StringAddr(filepath.Join(home, ".kube", "config"))
+	} else {
+		kubeconfig = utils.StringAddr(config.KUBECONFIG_FILE_PATH)
+	}
+
+	configRest, err = clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	if err != nil {
+		return nil, err
+	}
+
+	clientset, err := kubernetes.NewForConfig(configRest)
+	if err != nil {
+		return nil, err
+	}
+
+	return clientset, nil
+}
+
+func DeployInstance(userid int, level int) (error, string, int32) {
+	instance_name := utils.GetInstanceName(userid, level)
+	password := database.GenerateRandom()[0: 32]
+	flag := config.WARGAME_NAME + "{" + database.GenerateRandom()[0: 32] + "}"
+
+	kubeclient, err := GetKubeClient()
+	if err != nil {
+		log.Println(err)
+		return err, "", -1
+	}
+
+	pod := getPodObject(instance_name, level, userid, password, flag)
+	pod, err = kubeclient.CoreV1().Pods(pod.Namespace).Create(context.TODO(), pod, metav1.CreateOptions{})
+	if err != nil {
+		log.Println(err)
+		return err, "", -1
+	}
+
+	for {
+		createdPod, err := kubeclient.CoreV1().Pods(pod.Namespace).Get(context.TODO(), pod.Name, metav1.GetOptions{})
+		if err != nil {
+			log.Println(err)
+			return err, "", -1
+		}
+
+		if len(createdPod.Status.ContainerStatuses) > 0 {
+			if (createdPod.Status.ContainerStatuses[0].State.Waiting != nil && createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CrashLoopBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ErrImagePull" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ImagePullBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerConfigError" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "InvalidImageName" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerError") {
+				kubeclient.CoreV1().Pods(pod.Namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{})
+				log.Printf("Error in launch: level%d reason: %s", level, createdPod.Status.ContainerStatuses[0].State.Waiting.Reason)
+				return fmt.Errorf("runtime error in image - level%d not found in registry", level), "", -1
+			}
+		}
+
+		if createdPod.Status.Phase == "Running" {
+			break
+		}
+	}
+
+	svcConfig := getServiceObject(instance_name, level, userid)
+	_, err = kubeclient.CoreV1().Services(svcConfig.Namespace).Create(context.TODO(), svcConfig, metav1.CreateOptions{})
+	if err != nil {
+		log.Println(err)
+		return err, "", -1
+	}
+
+	createdService, err := kubeclient.CoreV1().Services(svcConfig.Namespace).Get(context.TODO(), svcConfig.Name, metav1.GetOptions{})
+	if err != nil {
+		log.Println(err)
+		return err, "", -1
+	}
+	port := createdService.Spec.Ports[0].NodePort
+
+	if err := database.NewFlag(userid, level, password, flag, port); err != nil {
+		log.Println(err)
+		return err, "", -1
+	}
+
+	return nil, password, port
+}
+
+func DeleteInstance(userid int, level int) error {
+	instance_name := utils.GetInstanceName(userid, level)
+	kubeclient, err := GetKubeClient()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	err = kubeclient.CoreV1().Pods(config.KUBERNETES_NAMESPACE).Delete(context.TODO(), instance_name, metav1.DeleteOptions{})
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	err = kubeclient.CoreV1().Services(config.KUBERNETES_NAMESPACE).Delete(context.TODO(), fmt.Sprintf("svc-%s", instance_name), metav1.DeleteOptions{})
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	if err := database.DeleteFlag(userid, level); err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func getPodObject(instance_name string, level int, userid int, password string, flag string) *core.Pod {
+	return &core.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      instance_name,
+			Namespace: config.KUBERNETES_NAMESPACE,
+			Labels: map[string]string{
+				"level": fmt.Sprintf("%d", level),
+				"userid": fmt.Sprintf("%d", userid),
+			},
+		},
+		Spec: core.PodSpec{
+			AutomountServiceAccountToken: utils.BoolAddr(false),
+			EnableServiceLinks: utils.BoolAddr(false),
+			Containers: []core.Container{
+				{
+					Name:  instance_name,
+					Image: fmt.Sprintf("%s/level%d", config.IMAGE_REGISTRY_PREFIX, level),
+					Ports: []core.ContainerPort{
+						{
+							ContainerPort: 22,
+						},
+					},
+					// Resources: core.ResourceRequirements{
+					// 	Limits: core.ResourceList{
+					// 		"cpu": resource.MustParse(config.CPU_LIMIT),
+					// 		"memory": resource.MustParse(config.MEMEORY_LIMIT),
+					// 	},
+					// 	Requests: core.ResourceList{
+					// 		"cpu": resource.MustParse(config.CPU_REQUEST),
+					// 		"memory": resource.MustParse(config.MEMORY_REQUEST),
+					// 	},
+					// },
+					ImagePullPolicy: core.PullIfNotPresent,
+					Env: []core.EnvVar{
+						{
+							Name: "WARGAME",
+							Value: config.WARGAME_NAME,
+						},
+						{
+							Name: "USER_PASSWORD",
+							Value: password,
+						},
+						{
+							Name: "FLAG",
+							Value: flag,
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func getServiceObject(instance_name string, level int, userid int) *core.Service {
+	return &core.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:		fmt.Sprintf("svc-%s", instance_name),
+			Namespace:	config.KUBERNETES_NAMESPACE,
+			Labels: map[string]string{
+				"level": fmt.Sprintf("%d", level),
+				"userid": fmt.Sprintf("%d", userid),
+			},
+		},
+		Spec: core.ServiceSpec{
+			Type: 	"NodePort",
+			Ports:	[]core.ServicePort{
+				{
+					Port: 22,
+				},
+			},
+			Selector: map[string]string{
+				"level": fmt.Sprintf("%d", level),
+				"userid": fmt.Sprintf("%d", userid),
+			},
+		},
+	}
+}
