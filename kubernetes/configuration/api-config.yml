@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+data:
+  kubernetes_namespace: "default"
+  image_registry_prefix: "docker.io/thealpha16"
+  concurrent_instances: "1"
+  discord_frontend: "false"
+  wargame_name: "unixit"
+  app_port: "80"
+  kubeconfig_file_path: "/root/.kube/config"
+  cpu_limit: "200m"
+  cpu_request: "72m"
+  memory_limit: "128Mi"
+  memory_request: "32Mi"
