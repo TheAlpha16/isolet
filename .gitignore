@@ -1,3 +1,6 @@
 api/.env
+api/logs/access.log
+api/logs/error.log
+
 notes.txt
 .DS_Store
