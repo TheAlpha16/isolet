@@ -1,0 +1,135 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goapi-deployment
+  labels:
+    app: goapi
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: goapi
+  template:
+    metadata:
+      name: goapi-deployment
+      labels:
+        app: goapi
+    spec:
+      containers:
+      - name: goapi
+        image: docker.io/thealpha16/isolet-goapi
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-creds
+              key: db_password
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-creds
+              key: db_user
+        - name: POSTGRES_HOST
+          valueFrom:
+            secretKeyRef:
+              name: db-creds
+              key: db_host
+        - name: POSTGRES_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: db-creds
+              key: db_name
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: kubernetes_namespace
+        - name: IMAGE_REGISTRY_PREFIX
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: image_registry_prefix
+        - name: CONCURRENT_INSTANCES
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: concurrent_instances
+        - name: DISCORD_FRONTEND
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: discord_frontend
+        - name: WARGAME_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: wargame_name
+        - name: APP_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: app_port
+        - name: KUBECONFIG_FILE_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: kubeconfig_file_path
+        - name: CPU_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: cpu_limit
+        - name: CPU_REQUEST
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: cpu_request
+        - name: MEMORY_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: memory_limit
+        - name: MEMORY_REQUEST
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: memory_request
+        - name: EMAIL_ID
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: email_id
+        - name: EMAIL_AUTH
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: email_auth
+        - name: INSTANCE_NAME_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: instance_name_secret
+        - name: SESSION_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: session_secret
+        - name: TOKEN_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: token_secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: goapi-svc
+spec:
+  ports:
+  - port: 80
+  selector:
+    app: goapi
