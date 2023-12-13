@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <h3>
+            Verify your account
+        </h3>
+        <p>
+            Hi {{ .Username }}!
+            <br>
+            Welcome to {{ .Wargame }}.
+        </p>
+        <br>
+        <p>Click on the link below to activate your account</p>
+        <a href="{{ .Link }}">
+          {{ .Link }}  
+        </a>
+    </body>
+</html>
