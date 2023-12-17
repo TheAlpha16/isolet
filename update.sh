@@ -71,12 +71,12 @@ case $confirm in
 esac
 
 cd ./${resource}
-docker build -t thealpha16/isolet-${resource}:${version} .
+docker buildx build --tag thealpha16/isolet-${resource}:${version} --platform linux/arm64/v8,linux/amd64 --builder bob --push .
 
 case $tag in
     "yes")
         docker rmi -f thealpha16/isolet-$resource:latest
-        docker build -t thealpha16/isolet-${resource}:latest .
+        docker buildx build --tag thealpha16/isolet-${resource}:latest --platform linux/arm64/v8,linux/amd64 --builder bob --push .
     ;;
     "no")
         echo "[*] Not removing latest tag"
@@ -88,6 +88,3 @@ case $tag in
         exit
     ;;
 esac
-
-docker push thealpha16/isolet-${resource}:${version}
-docker push thealpha16/isolet-${resource}:latest
