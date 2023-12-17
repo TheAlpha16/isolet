@@ -1,0 +1,18 @@
+server {
+    listen       80;
+    listen  [::]:80;
+    server_name  ${PROXY_SERVER_NAME};
+
+    location / {
+        proxy_pass http://${UI_URL};
+    }
+
+    location /api {
+        proxy_pass http://${API_URL}/api;
+    }
+
+    location /auth {
+        proxy_pass http://${API_URL}/auth;
+    }
+}
+
