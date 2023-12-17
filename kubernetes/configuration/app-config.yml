@@ -14,7 +14,7 @@ data:
   cpu_request: "72m"
   memory_limit: "128Mi"
   memory_request: "32Mi"
-  termination_period: "100"
+  termination_period: "10"
   public_url: "localhost"
   ui_url: "ui-svc"
   api_url: "goapi-svc"
