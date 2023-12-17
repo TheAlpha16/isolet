@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: api-config
+  name: app-config
 data:
-  kubernetes_namespace: "default"
+  instance_namespace: "default"
   image_registry_prefix: "docker.io/thealpha16"
   concurrent_instances: "1"
   discord_frontend: "false"
@@ -14,3 +14,8 @@ data:
   cpu_request: "72m"
   memory_limit: "128Mi"
   memory_request: "32Mi"
+  termination_period: "100"
+  public_url: "localhost"
+  ui_url: "ui-svc"
+  api_url: "goapi-svc"
+  proxy_server_name: "localhost"
