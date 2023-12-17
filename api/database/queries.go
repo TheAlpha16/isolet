@@ -82,7 +82,7 @@ func AddToUsersDiscord(userid int) (string, error) {
 }
 
 func AddToChallenges(chall models.Challenge) error {
-	if _, err := DB.Query(`INSERT INTO challenges (level, chall_name, prompt, tags) VALUES ($1, $2, $3, $4)`, chall.Level, chall.Name, chall.Prompt, pq.Array(chall.Tags)); err != nil {
+	if _, err := DB.Query(`INSERT INTO challenges (level, chall_name, prompt, tags) VALUES ($1, $2, $3, $4) ON CONFLICT (level) DO UPDATE SET chall_name = $2, prompt = $3, tags = $4`, chall.Level, chall.Name, chall.Prompt, pq.Array(chall.Tags)); err != nil {
 		return err
 	}
 	return nil
@@ -90,7 +90,7 @@ func AddToChallenges(chall models.Challenge) error {
 
 func ReadChallenges() ([]models.Challenge, error) {
 	challenges := make([]models.Challenge, 0)
-	rows, err := DB.Query(`SELECT chall_id, level, chall_name, prompt, tags from challenges`)
+	rows, err := DB.Query(`SELECT chall_id, level, chall_name, prompt, solves, tags from challenges ORDER BY level ASC`)
 	if err != nil {
 		return challenges, err
 	}
@@ -98,7 +98,7 @@ func ReadChallenges() ([]models.Challenge, error) {
 
 	for rows.Next() {
 		challenge := new(models.Challenge)
-		if err := rows.Scan(&challenge.ChallID, &challenge.Level, &challenge.Name, &challenge.Prompt, pq.Array(&challenge.Tags)); err != nil {
+		if err := rows.Scan(&challenge.ChallID, &challenge.Level, &challenge.Name, &challenge.Prompt, &challenge.Solves, pq.Array(&challenge.Tags)); err != nil {
 			return challenges, err
 		}
 		challenges = append(challenges, *challenge)
@@ -169,6 +169,7 @@ func VerifyFlag(level int, userid int, flag string) (bool, string) {
 	var acutalflag string
 	var otheruser int
 	var currentlevel int
+	var currentSolves int
 
 	if err := DB.QueryRow(`SELECT verified FROM flags WHERE level = $1 AND userid = $2`, level, userid).Scan(&isVerified); err != nil {
 		log.Println(err)
@@ -193,6 +194,13 @@ func VerifyFlag(level int, userid int, flag string) (bool, string) {
 			return false, fmt.Sprintf("Correct flag! no points added. Current level: %d Submitted level: %d", currentlevel, level)
 		}
 		DB.Query(`UPDATE users SET score = $1 WHERE userid = $2`, level + 1, userid)
+
+		if err := DB.QueryRow(`SELECT solves FROM challenges WHERE level = $1`, level).Scan(&currentSolves); err != nil {
+			log.Println(err)
+			return false, "error in verification, please contact admin"
+		}
+		DB.Query(`UPDATE challenges SET solves = $1 WHERE level = $2`, currentSolves + 1, level)
+
 		return true, "correct flag"
 	}
 
@@ -222,4 +230,25 @@ func GetInstances(userid int) ([]models.Instance, error) {
 		return instances, err
 	}
 	return instances, nil
+}
+
+func ReadScores() ([]models.Score, error) {
+	scores := make([]models.Score, 0)
+	rows, err := DB.Query(`SELECT username, score from users ORDER BY score DESC`)
+	if err != nil {
+		return scores, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		score := new(models.Score)
+		if err := rows.Scan(&score.Username, &score.Score); err != nil {
+			return scores, err
+		}
+		scores = append(scores, *score)
+	}
+	if err := rows.Err(); err != nil {
+		return scores, err
+	}
+	return scores, nil
 }

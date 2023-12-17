@@ -6,6 +6,7 @@ import (
 	"net/mail"
 	"os"
 	"regexp"
+	"strconv"
 
 	"github.com/TitanCrew/isolet/config"
 	"github.com/TitanCrew/isolet/database"
@@ -58,7 +59,7 @@ func ValidateRegisterInput(regInput *models.User) (bool, string) {
 	}
 
 	if regInput.Password != regInput.Confirm {
-		return false, "Passwords doesn't match"
+		return false, "Passwords don't match"
 	}
 
 	if len(regInput.Email) > config.EMAIL_LEN {
@@ -104,4 +105,9 @@ func BoolAddr(b bool) *bool {
 func StringAddr(s string) *string {
 	tempString := s
 	return &tempString
+}
+
+func Int64Addr(i string) *int64 {
+	tempInt, _ := strconv.ParseInt(i, 10, 64)
+	return &tempInt
 }

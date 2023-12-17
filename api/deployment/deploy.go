@@ -14,6 +14,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
+
 	// "k8s.io/apimachinery/pkg/api/resource"
 
 	core "k8s.io/api/core/v1"
@@ -52,36 +53,36 @@ func GetKubeClient() (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
-func DeployInstance(userid int, level int) (error, string, int32) {
+func DeployInstance(userid int, level int) (string, int32, error) {
 	instance_name := utils.GetInstanceName(userid, level)
-	password := database.GenerateRandom()[0: 32]
-	flag := config.WARGAME_NAME + "{" + database.GenerateRandom()[0: 32] + "}"
+	password := database.GenerateRandom()[0:32]
+	flag := config.WARGAME_NAME + "{" + database.GenerateRandom()[0:32] + "}"
 
 	kubeclient, err := GetKubeClient()
 	if err != nil {
 		log.Println(err)
-		return err, "", -1
+		return "", -1, err
 	}
 
 	pod := getPodObject(instance_name, level, userid, password, flag)
 	pod, err = kubeclient.CoreV1().Pods(pod.Namespace).Create(context.TODO(), pod, metav1.CreateOptions{})
 	if err != nil {
 		log.Println(err)
-		return err, "", -1
+		return "", -1, err
 	}
 
 	for {
 		createdPod, err := kubeclient.CoreV1().Pods(pod.Namespace).Get(context.TODO(), pod.Name, metav1.GetOptions{})
 		if err != nil {
 			log.Println(err)
-			return err, "", -1
+			return "", -1, err
 		}
 
 		if len(createdPod.Status.ContainerStatuses) > 0 {
-			if (createdPod.Status.ContainerStatuses[0].State.Waiting != nil && createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CrashLoopBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ErrImagePull" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ImagePullBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerConfigError" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "InvalidImageName" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerError") {
+			if (createdPod.Status.ContainerStatuses[0].State.Waiting != nil && (createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CrashLoopBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ErrImagePull" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ImagePullBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerConfigError" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "InvalidImageName" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerError")) {
 				kubeclient.CoreV1().Pods(pod.Namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{})
 				log.Printf("Error in launch: level%d reason: %s", level, createdPod.Status.ContainerStatuses[0].State.Waiting.Reason)
-				return fmt.Errorf("runtime error in image - level%d not found in registry", level), "", -1
+				return "", -1, fmt.Errorf("runtime error in image - level%d not found in registry", level)
 			}
 		}
 
@@ -94,22 +95,22 @@ func DeployInstance(userid int, level int) (error, string, int32) {
 	_, err = kubeclient.CoreV1().Services(svcConfig.Namespace).Create(context.TODO(), svcConfig, metav1.CreateOptions{})
 	if err != nil {
 		log.Println(err)
-		return err, "", -1
+		return "", -1, err
 	}
 
 	createdService, err := kubeclient.CoreV1().Services(svcConfig.Namespace).Get(context.TODO(), svcConfig.Name, metav1.GetOptions{})
 	if err != nil {
 		log.Println(err)
-		return err, "", -1
+		return "", -1, err
 	}
 	port := createdService.Spec.Ports[0].NodePort
 
 	if err := database.NewFlag(userid, level, password, flag, port); err != nil {
 		log.Println(err)
-		return err, "", -1
+		return "", -1, err
 	}
 
-	return nil, password, port
+	return password, port, nil
 }
 
 func DeleteInstance(userid int, level int) error {
@@ -120,13 +121,20 @@ func DeleteInstance(userid int, level int) error {
 		return err
 	}
 
-	err = kubeclient.CoreV1().Pods(config.KUBERNETES_NAMESPACE).Delete(context.TODO(), instance_name, metav1.DeleteOptions{})
+	err = kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Delete(context.TODO(), instance_name, metav1.DeleteOptions{})
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	err = kubeclient.CoreV1().Services(config.KUBERNETES_NAMESPACE).Delete(context.TODO(), fmt.Sprintf("svc-%s", instance_name), metav1.DeleteOptions{})
+	for {
+		_, err := kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Get(context.TODO(), instance_name, metav1.GetOptions{})
+		if err != nil {
+			break
+		}
+	}
+
+	err = kubeclient.CoreV1().Services(config.INSTANCE_NAMESPACE).Delete(context.TODO(), fmt.Sprintf("svc-%s", instance_name), metav1.DeleteOptions{})
 	if err != nil {
 		log.Println(err)
 		return err
@@ -144,15 +152,16 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 	return &core.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      instance_name,
-			Namespace: config.KUBERNETES_NAMESPACE,
+			Namespace: config.INSTANCE_NAMESPACE,
 			Labels: map[string]string{
-				"level": fmt.Sprintf("%d", level),
+				"level":  fmt.Sprintf("%d", level),
 				"userid": fmt.Sprintf("%d", userid),
 			},
 		},
 		Spec: core.PodSpec{
 			AutomountServiceAccountToken: utils.BoolAddr(false),
-			EnableServiceLinks: utils.BoolAddr(false),
+			EnableServiceLinks:           utils.BoolAddr(false),
+			TerminationGracePeriodSeconds: utils.Int64Addr(config.TERMINATION_PERIOD),
 			Containers: []core.Container{
 				{
 					Name:  instance_name,
@@ -175,15 +184,15 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 					ImagePullPolicy: core.PullIfNotPresent,
 					Env: []core.EnvVar{
 						{
-							Name: "WARGAME",
+							Name:  "WARGAME",
 							Value: config.WARGAME_NAME,
 						},
 						{
-							Name: "USER_PASSWORD",
+							Name:  "USER_PASSWORD",
 							Value: password,
 						},
 						{
-							Name: "FLAG",
+							Name:  "FLAG",
 							Value: flag,
 						},
 					},
@@ -196,22 +205,22 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 func getServiceObject(instance_name string, level int, userid int) *core.Service {
 	return &core.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:		fmt.Sprintf("svc-%s", instance_name),
-			Namespace:	config.KUBERNETES_NAMESPACE,
+			Name:      fmt.Sprintf("svc-%s", instance_name),
+			Namespace: config.INSTANCE_NAMESPACE,
 			Labels: map[string]string{
-				"level": fmt.Sprintf("%d", level),
+				"level":  fmt.Sprintf("%d", level),
 				"userid": fmt.Sprintf("%d", userid),
 			},
 		},
 		Spec: core.ServiceSpec{
-			Type: 	"NodePort",
-			Ports:	[]core.ServicePort{
+			Type: "NodePort",
+			Ports: []core.ServicePort{
 				{
 					Port: 22,
 				},
 			},
 			Selector: map[string]string{
-				"level": fmt.Sprintf("%d", level),
+				"level":  fmt.Sprintf("%d", level),
 				"userid": fmt.Sprintf("%d", userid),
 			},
 		},

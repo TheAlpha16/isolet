@@ -11,6 +11,7 @@ var TOKEN_SECRET = os.Getenv("TOKEN_SECRET")
 var EMAIL_ID = os.Getenv("EMAIL_ID")
 var EMAIL_AUTH = os.Getenv("EMAIL_AUTH")
 var TOKEN_EXP = 30
-var AUTH_URL = fmt.Sprintf("http://localhost%s/auth/verify?token=", APP_PORT)
+var PUBLIC_URL = os.Getenv("PUBLIC_URL")
+var AUTH_URL = fmt.Sprintf("http://%s/auth/verify?token=", PUBLIC_URL)
 var SMTP_HOST = "smtp.gmail.com"
 var SMTP_PORT = "587"

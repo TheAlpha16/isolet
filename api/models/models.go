@@ -28,6 +28,7 @@ type Challenge struct {
 	Level 	 int 	  `json:"level"`
 	Name 	 string   `json:"name"`
 	Prompt 	 string   `json:"prompt"`
+	Solves	 int	  `json:"solves"`
 	Tags 	 []string `json:"tags"`
 }
 
@@ -37,4 +38,14 @@ type Instance struct {
 	Password 	string	`json:"password"`
 	Port 		string	`json:"port"`
 	Verified 	bool 	`json:"verified"`
+}
+
+type Score struct {
+	Username	string	`json:"username"`
+	Score		string	`json:"score"`
+}
+
+type AccessDetails struct {
+	Password	string	`json:"password"`
+	Port		int32	`json:"port"`
 }

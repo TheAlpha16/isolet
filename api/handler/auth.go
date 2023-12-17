@@ -33,7 +33,7 @@ func Login(c *fiber.Ctx) error {
 	creds.Password = utils.Hash(creds.Password)
 
 	if err := database.ValidateCreds(creds, user); err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "invalid Credentials"})
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "invalid credentials"})
 	}
 
 	token, err := middleware.GenerateToken(user)
@@ -45,12 +45,12 @@ func Login(c *fiber.Ctx) error {
 	cookie.Name = "token"
 	cookie.Value = token
 	cookie.SameSite = fiber.CookieSameSiteStrictMode
-	cookie.HTTPOnly = true
+	// cookie.HTTPOnly = true
 	cookie.Expires = time.Now().Add(72 * time.Hour)
 	// cookie.Secure = true change this
 	c.Cookie(cookie)
 
-	return c.Status(fiber.StatusOK).Redirect("/")
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "login successful"})
 }
 
 func Register(c *fiber.Ctx) error {
@@ -69,7 +69,7 @@ func Register(c *fiber.Ctx) error {
 	}
 
 	if err := utils.SendVerificationMail(regForm); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "rrror in sending verification mail"})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in sending verification mail"})
 	}
 
 	regForm.Password = utils.Hash(regForm.Password)

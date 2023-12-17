@@ -45,11 +45,12 @@ func CreateTables() error {
 	}
 
 	_, err = DB.Query(`
-	DROP TABLE IF EXISTS challenges CASCADE; CREATE TABLE IF NOT EXISTS challenges(
+	CREATE TABLE IF NOT EXISTS challenges(
 		chall_id serial PRIMARY KEY,
 		level integer NOT NULL UNIQUE,
 		chall_name text NOT NULL,
 		prompt text,
+		solves integer DEFAULT 0,
 		tags text[]
 	)`)
 	if err != nil {
