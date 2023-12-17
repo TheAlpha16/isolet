@@ -1,6 +1,8 @@
-api/.env
-api/logs/access.log
-api/logs/error.log
+goapi/.env
+goapi/logs/access.log
+goapi/logs/error.log
+
+kubernetes/configuration/app-secrets.yml
 
 notes.txt
 .DS_Store
