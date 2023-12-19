@@ -15,7 +15,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 
-	// "k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -171,16 +171,16 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 							ContainerPort: 22,
 						},
 					},
-					// Resources: core.ResourceRequirements{
-					// 	Limits: core.ResourceList{
-					// 		"cpu": resource.MustParse(config.CPU_LIMIT),
-					// 		"memory": resource.MustParse(config.MEMEORY_LIMIT),
-					// 	},
-					// 	Requests: core.ResourceList{
-					// 		"cpu": resource.MustParse(config.CPU_REQUEST),
-					// 		"memory": resource.MustParse(config.MEMORY_REQUEST),
-					// 	},
-					// },
+					Resources: core.ResourceRequirements{
+						Limits: core.ResourceList{
+							core.ResourceName(core.ResourceCPU): resource.MustParse(config.CPU_LIMIT),
+							core.ResourceName(core.ResourceMemory): resource.MustParse(config.MEMEORY_LIMIT),
+						},
+						// Requests: core.ResourceList{
+						// 	core.ResourceName(core.ResourceCPU): resource.MustParse(config.CPU_REQUEST),
+						// 	core.ResourceName(core.ResourceMemory): resource.MustParse(config.MEMORY_REQUEST),
+						// },
+					},
 					ImagePullPolicy: core.PullIfNotPresent,
 					Env: []core.EnvVar{
 						{
