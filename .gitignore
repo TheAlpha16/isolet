@@ -2,7 +2,7 @@ goapi/.env
 goapi/logs/access.log
 goapi/logs/error.log
 
-kubernetes/configuration/app-secrets.yml
+kubernetes/configuration/app-secrets.yml.local
 
 notes.txt
 .DS_Store
