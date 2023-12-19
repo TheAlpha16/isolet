@@ -6,7 +6,7 @@ metadata:
   labels:
     app: proxy
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: proxy
@@ -20,6 +20,10 @@ spec:
         - name: proxy
           image: docker.io/thealpha16/isolet-proxy
           imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
           ports:
             - containerPort: 80
           env:

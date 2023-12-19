@@ -13,17 +13,21 @@ Isolet is a framework to deploy linux wargames like [Bandit](https://overthewire
 | /api/launch | POST | chall_id, userid, level | status | {"status": "success", "message": "3b369c0b1fd5419b2f81da89cf5480d2 32747"} |
 | /api/stop | POST | userid, level | status | {"status": "failure", "message": "User does not exist"} |
 | /api/submit | POST | userid, level, flag | status | {"status": "failure", "message": "Flag copy detected. Incident reported!"} |
+| /api/status | GET | NONE | instances | {"status": "success", "message": "[{"userid":123614343, "level":1, "password":"8f1ee93113affe32078c", "port":"32134"}]"}
 
 ## TO-DO
 - Isolate the namespaces of deployments and instances
-- remove * in roles
 - configure resource limits for instances
 - handler/auth.go:50
 - make token httpOnly and use secondary token for logout
-- change challenge component style
 - use env variables in the frontend
-- remove usage of unique instance name
-- add 6h buffer 
-- remove complete deletion
+- add 6h buffer
 - make pod ripper
 - keep in mind the proxy timeout while configuring timeoutgraceperiod
+- make ui reactive
+
+## IMPORTANT
+- send mail in GKE is not working
+- log errors in goapi properly
+- specify resources for each pod
+- change domain name in the frontend
