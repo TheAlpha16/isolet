@@ -35,6 +35,7 @@ func GetStatus(c *fiber.Ctx) error {
 
 	instances, err := database.GetInstances(userid)
 	if err != nil {
+		log.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "contact admin"})
 	}
 	return c.Status(fiber.StatusOK).JSON(instances)
