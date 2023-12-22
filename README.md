@@ -16,8 +16,6 @@ Isolet is a framework to deploy linux wargames like [Bandit](https://overthewire
 | /api/status | GET | NONE | instances | {"status": "success", "message": "[{"userid":123614343, "level":1, "password":"8f1ee93113affe32078c", "port":"32134"}]"}
 
 ## TO-DO
-- Isolate the namespaces of deployments and instances
-- configure resource limits for instances
 - handler/auth.go:50
 - make token httpOnly and use secondary token for logout
 - use env variables in the frontend
@@ -28,6 +26,4 @@ Isolet is a framework to deploy linux wargames like [Bandit](https://overthewire
 
 ## IMPORTANT
 - send mail in GKE is not working
-- log errors in goapi properly
-- specify resources for each pod
-- change domain name in the frontend
+- handle errors in the frontend
