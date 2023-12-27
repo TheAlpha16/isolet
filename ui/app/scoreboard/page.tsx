@@ -36,7 +36,7 @@ function Scoreboard() {
 
     return (
         <div className="flex flex-col w-full items-center p-2 pt-5">
-            <div className="flex p-3 border-b w-1/2 bg-palette-600 text-2xl justify-between font-medium">
+            <div className="flex p-3 border-b w-11/12 sm:w-1/2 bg-palette-600 text-2xl justify-between font-medium">
                 <div>
                     Rank
                 </div>
@@ -49,7 +49,7 @@ function Scoreboard() {
             </div>
             {   
                 scores.map((item, index) =>
-                    <div key={ index } className="flex p-3 border-b w-1/2 bg-palette-600 text-xl justify-between font-Roboto">
+                    <div key={ index } className="flex p-3 border-b w-11/12 sm:w-1/2 bg-palette-600 text-xl justify-between font-Roboto">
                         <div>
                             #{ index + 1 }
                         </div>
