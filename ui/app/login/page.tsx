@@ -84,7 +84,7 @@ function Login() {
 						<input type="checkbox" onClick={ handleShowHide } className="cursor-pointor"></input>
 						<div>Show Password</div>
 					</div>
-					<button className="px-5 py-2 relative duration-300 ease-in bg-palette-500 text-palette-100 rounded-md" onClick={ handleSubmit }>Enter</button>
+					<button className="px-5 py-2 relative duration-300 ease-in bg-palette-500 text-black rounded-md" onClick={ handleSubmit }>Login</button>
 				</div>
 				<Link href={ "/register" }>
 					<div className="text-blue-400 text-sm text-center underline">
