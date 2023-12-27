@@ -187,7 +187,7 @@ function Challenge(props: Props) {
 
     return (
         <>
-            <div className={`w-9/12 flex flex-col p-3 border border-palette-600 self-center transition duration-300 ease-in-out relative rounded-md`} onClick={ props.onClick } data-level={ props.challObject.level } id={`level-${props.challObject.level}`}>
+            <div className={`w-11/12 sm:w-9/12 flex flex-col p-3 border border-palette-600 self-center transition duration-300 ease-in-out relative rounded-md`} onClick={ props.onClick } data-level={ props.challObject.level } id={`level-${props.challObject.level}`}>
                 <div id={`ping-${props.challObject.level}`} className="absolute -top-1 -right-1" data-level={ props.challObject.level }>
                     <span className={`${isActive ? "": "hidden"} relative flex h-3 w-3`} data-level={ props.challObject.level }>
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-palette-500 opacity-75" data-level={ props.challObject.level }></span>
@@ -207,7 +207,7 @@ function Challenge(props: Props) {
                         { props.challObject.prompt }
                     </div>
                     <div data-level={ props.challObject.level } className="flex justify-between flex-wrap">
-                        <div data-level={ props.challObject.level } className="flex gap-2 w-full justify-start">
+                        <div data-level={ props.challObject.level } className="flex gap-2 w-full justify-start flex-wrap">
                             <button id={`launch-${props.challObject.level}`} className={`p-2 w-32 rounded-md text-palette-100 ${ isActive ? "bg-rose-500": "bg-palette-500" }`} data-level={ props.challObject.level }>{ isActive ? "Stop": "Start" }</button>
                             <div data-level={ props.challObject.level } className={`flex rounded-md items-center h-10 justify-center gap-2 ${isActive ? "": "hidden"}`}>
                                 <div className="bg-slate-950 p-2 rounded-md" data-level={ props.challObject.level }> {`${password.current.substring(0, 7)}************${password.current.substring(27)}`} </div>
