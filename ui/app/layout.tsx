@@ -37,7 +37,12 @@ export default function RootLayout({
 	return (
 		<>
 			<html lang="en">
-				<body className="flex flex-col bg-palette-200 text-palette-100">
+				<head>
+					<title>
+						ISOLET
+					</title>
+				</head>
+				<body className="flex flex-col bg-palette-200 text-palette-100 h-screen">
 					<NavBar loggedin={loggedin} />
 					<ToastContainer></ToastContainer>
 					<Context.Provider value={{ loggedin, setLoggedin, respHook }}>
