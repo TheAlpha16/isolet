@@ -79,7 +79,7 @@ func DeployInstance(userid int, level int) (string, int32, error) {
 		}
 
 		if len(createdPod.Status.ContainerStatuses) > 0 {
-			if (createdPod.Status.ContainerStatuses[0].State.Waiting != nil && (createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CrashLoopBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ErrImagePull" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ImagePullBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerConfigError" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "InvalidImageName" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerError")) {
+			if createdPod.Status.ContainerStatuses[0].State.Waiting != nil && (createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CrashLoopBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ErrImagePull" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ImagePullBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerConfigError" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "InvalidImageName" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerError") {
 				kubeclient.CoreV1().Pods(pod.Namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{})
 				log.Printf("Error in launch: level%d reason: %s", level, createdPod.Status.ContainerStatuses[0].State.Waiting.Reason)
 				return "", -1, fmt.Errorf("runtime error in image - level%d not found in registry", level)
@@ -159,8 +159,8 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 			},
 		},
 		Spec: core.PodSpec{
-			AutomountServiceAccountToken: utils.BoolAddr(false),
-			EnableServiceLinks:           utils.BoolAddr(false),
+			AutomountServiceAccountToken:  utils.BoolAddr(false),
+			EnableServiceLinks:            utils.BoolAddr(false),
 			TerminationGracePeriodSeconds: utils.Int64Addr(config.TERMINATION_PERIOD),
 			Containers: []core.Container{
 				{
@@ -173,7 +173,7 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 					},
 					Resources: core.ResourceRequirements{
 						Limits: core.ResourceList{
-							core.ResourceName(core.ResourceCPU): resource.MustParse(config.CPU_LIMIT),
+							core.ResourceName(core.ResourceCPU):    resource.MustParse(config.CPU_LIMIT),
 							core.ResourceName(core.ResourceMemory): resource.MustParse(config.MEMEORY_LIMIT),
 						},
 						// Requests: core.ResourceList{
