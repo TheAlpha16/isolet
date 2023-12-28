@@ -124,6 +124,10 @@ func DeleteInstance(userid int, level int) error {
 	err = kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Delete(context.TODO(), instance_name, metav1.DeleteOptions{})
 	if err != nil {
 		log.Println(err)
+		if err := database.DeleteFlag(userid, level); err != nil {
+			log.Println(err)
+			return err
+		}
 		return err
 	}
 
