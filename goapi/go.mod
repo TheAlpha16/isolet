@@ -1,8 +1,6 @@
 module github.com/TitanCrew/isolet
 
-go 1.21
-
-toolchain go1.21.5
+go 1.21.5
 
 require (
 	github.com/docker/docker v24.0.7+incompatible
