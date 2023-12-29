@@ -22,17 +22,20 @@ interface Props {
     onClick: any
     password: string
     port: string
+    hostname: string
 }
 
 function Challenge(props: Props) {
     const [isActive, setActive] = useState(props.isActive)
     const port = useRef(props.port)
     const password = useRef(props.password)
+    const hostname = useRef(props.hostname)
 
     useEffect(() => {
         setActive(props.isActive)
         port.current = props.port
         password.current = props.password
+        hostname.current = props.hostname
     }, [props])
 
     const show = (status: string, message: string) => {
@@ -171,6 +174,7 @@ function Challenge(props: Props) {
                     let returnedData = JSON.parse(atob(reqLaunchJSON.message))
                     port.current = returnedData.port
                     password.current = returnedData.password
+                    hostname.current = returnedData.hostname
                     changeBtn(launchButton, "running")
                     setActive(true)
                 }
@@ -236,9 +240,9 @@ function Challenge(props: Props) {
                     </div>
                     <div className={`${isActive ? "": "hidden"} flex gap-2 items-center`} data-level={ props.challObject.level }>
                         <div className="bg-slate-950 p-1 px-3 rounded-md text-palette-500" data-level={ props.challObject.level }>
-                            { `$ ssh level${props.challObject.level}@unixit.fun -p ${port.current}` }
+                            { `$ ssh level${props.challObject.level}@${hostname.current} -p ${port.current}` }
                         </div>
-                        <div className="hover:cursor-pointer hover:bg-slate-950 p-2 rounded-md" data-level={ props.challObject.level } onClick={ () => navigator.clipboard.writeText(`ssh level${props.challObject.level}@unixit.fun -p ${port.current}`) }>
+                        <div className="hover:cursor-pointer hover:bg-slate-950 p-2 rounded-md" data-level={ props.challObject.level } onClick={ () => navigator.clipboard.writeText(`ssh level${props.challObject.level}@${hostname.current} -p ${port.current}`) }>
                             <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" fill="#E4EEE7" data-level={ props.challObject.level }>
                                 <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z" data-level={ props.challObject.level }></path><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z" data-level={ props.challObject.level }></path>
                             </svg>

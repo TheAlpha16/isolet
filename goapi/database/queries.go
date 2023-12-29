@@ -134,8 +134,8 @@ func CanStartInstance(userid int, level int) bool {
 	return true
 }
 
-func NewFlag(userid int, level int, password string, flag string, port int32) error {
-	if _, err := DB.Query(`INSERT INTO flags (userid, level, flag, password, port) VALUES ($1, $2, $3, $4, $5)`, userid, level, flag, password, port); err != nil {
+func NewFlag(userid int, level int, password string, flag string, port int32, hostname string) error {
+	if _, err := DB.Query(`INSERT INTO flags (userid, level, flag, password, port, hostname) VALUES ($1, $2, $3, $4, $5, $6)`, userid, level, flag, password, port, hostname); err != nil {
 		return err
 	}
 	return nil
@@ -213,7 +213,7 @@ func VerifyFlag(level int, userid int, flag string) (bool, string) {
 
 func GetInstances(userid int) ([]models.Instance, error) {
 	instances := make([]models.Instance, 0)
-	rows, err := DB.Query(`SELECT userid, level, password, port, verified from flags WHERE userid = $1`, userid)
+	rows, err := DB.Query(`SELECT userid, level, password, port, verified, hostname from flags WHERE userid = $1`, userid)
 	if err != nil {
 		return instances, err
 	}
@@ -221,7 +221,7 @@ func GetInstances(userid int) ([]models.Instance, error) {
 
 	for rows.Next() {
 		instance := new(models.Instance)
-		if err := rows.Scan(&instance.UserID, &instance.Level, &instance.Password, &instance.Port, &instance.Verified); err != nil {
+		if err := rows.Scan(&instance.UserID, &instance.Level, &instance.Password, &instance.Port, &instance.Verified, &instance.Hostname); err != nil {
 			return instances, err
 		}
 		instances = append(instances, *instance)

@@ -13,11 +13,12 @@ interface accessCredsItem {
     password: string
     port: string
     verified: boolean
+    hostname: string
 }
 
 interface challList extends Array<challItem>{}
 interface activatedItem {
-    [level: number]: {password: string; port: string; verified: boolean};
+    [level: number]: {password: string; port: string; verified: boolean; hostname: string};
 }
 
 function Challenges(){
@@ -27,7 +28,8 @@ function Challenges(){
     const [ activated, setActivated ] = useState<activatedItem>({ 100000: {
             "password": "fakepasswd",
             "port": "0",
-            "verified": false
+            "verified": false,
+            "hostname": ""
         }})
     const router = useRouter()
 
@@ -61,7 +63,7 @@ function Challenges(){
         let emptyDict = {} as activatedItem
 
         instancesJSON.map((item: accessCredsItem, index: number) => 
-            emptyDict[item["level"]] = {"password": item["password"], "port": item["port"], "verified": item["verified"]}
+            emptyDict[item["level"]] = {"password": item["password"], "port": item["port"], "verified": item["verified"], "hostname": item["hostname"]}
         )
         setActivated(emptyDict)
     }
@@ -103,7 +105,7 @@ function Challenges(){
             <div className={ `flex flex-col py-2 gap-2` }>
                 {   
                     challenges.map((item: challItem, index) =>
-                        <Challenge key={ item.level } challObject={ item } isActive={ activated[item.level] != undefined } isVisible={ false } onClick={ handleVisibility } password={ activated[item.level] != undefined ? activated[item.level]["password"]: "" } port={activated[item.level] != undefined ? activated[item.level]["port"]: ""}/>
+                        <Challenge key={ item.level } challObject={ item } isActive={ activated[item.level] != undefined } isVisible={ false } onClick={ handleVisibility } password={ activated[item.level] != undefined ? activated[item.level]["password"]: "" } port={activated[item.level] != undefined ? activated[item.level]["port"]: ""} hostname={ activated[item.level] != undefined ? activated[item.level]["hostname"]: "" }/>
                     )
                 }
             </div>

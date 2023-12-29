@@ -19,3 +19,4 @@ data:
   ui_url: "ui-svc"
   api_url: "goapi-svc"
   proxy_server_name: "unixit.fun isolet.unixit.fun"
+  instance_hostname: "isolet.unixit.fun"

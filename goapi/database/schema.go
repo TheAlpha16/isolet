@@ -26,7 +26,8 @@ func CreateTables() error {
 		password text,
 		flag text NOT NULL,
 		port integer NOT NULL,
-		verified bool DEFAULT false
+		verified bool DEFAULT false,
+		hostname text
 	)`)
 	if err != nil {
 		return err

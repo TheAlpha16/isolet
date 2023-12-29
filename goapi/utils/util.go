@@ -97,6 +97,10 @@ func GetInstanceName(userid int, level int) string {
 	return Hash(fmt.Sprintf("%d@%d:%s", userid, level, config.INSTANCE_NAME_SECRET))[0: 16]
 }
 
+func GetHostName(userid int, level int) string {
+	return GetInstanceName(userid, level)
+}
+
 func BoolAddr(b bool) *bool {
     boolVar := b
     return &boolVar
