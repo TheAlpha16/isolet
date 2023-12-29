@@ -96,7 +96,7 @@ function Challenge(props: Props) {
         switch(status) {
             case "stopped":
                 btn.classList.remove("bg-rose-500", "bg-amber-300", "text-black", "text-palette-100")
-                btn.classList.add("bg-palette-500", "text-palette-100")
+                btn.classList.add("bg-palette-500", "text-black")
                 btn.innerText = "Start"
                 break
             case "running":
@@ -212,7 +212,7 @@ function Challenge(props: Props) {
                     </div>
                     <div data-level={ props.challObject.level } className="flex justify-between flex-wrap">
                         <div data-level={ props.challObject.level } className="flex gap-2 w-full justify-start flex-wrap">
-                            <button id={`launch-${props.challObject.level}`} className={`p-2 w-32 rounded-md text-palette-100 ${ isActive ? "bg-rose-500": "bg-palette-500" }`} data-level={ props.challObject.level }>{ isActive ? "Stop": "Start" }</button>
+                            <button id={`launch-${props.challObject.level}`} className={`p-2 w-32 rounded-md ${ isActive ? "text-palette-100": "text-black" } ${ isActive ? "bg-rose-500": "bg-palette-500" }`} data-level={ props.challObject.level }>{ isActive ? "Stop": "Start" }</button>
                             <div data-level={ props.challObject.level } className={`flex rounded-md items-center h-10 justify-center gap-2 ${isActive ? "": "hidden"}`}>
                                 <div className="bg-slate-950 p-2 rounded-md" data-level={ props.challObject.level }> {`${password.current.substring(0, 7)}************${password.current.substring(27)}`} </div>
                                 <div className="hover:cursor-pointer hover:bg-slate-950 p-3 rounded-md" data-level={ props.challObject.level } onClick={ () => navigator.clipboard.writeText(`${password.current}`) }>
@@ -225,7 +225,7 @@ function Challenge(props: Props) {
                     </div>
                     <div className="flex gap-2 py-2 flex-wrap" data-level={ props.challObject.level }>
                         <input id={`flag-${props.challObject.level}`} placeholder="flag" name="flag" type="text" className="border p-2 grow outline-palette-500 rounded-md text-black" data-level={ props.challObject.level } required></input>
-                        <button onClick={ handleSubmit } className="p-2 w-24 text-palette-100 bg-palette-500 rounded-md hover:bg-palette-400" data-level={ props.challObject.level }>Submit</button>
+                        <button onClick={ handleSubmit } className="p-2 w-24 text-black bg-palette-500 rounded-md hover:bg-palette-400" data-level={ props.challObject.level }>Submit</button>
                     </div>
                     <div className="flex gap-2 py-2 flex-wrap" data-level={ props.challObject.level }>
                         {
