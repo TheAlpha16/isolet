@@ -158,7 +158,7 @@ function Register() {
 						<input type="checkbox" onClick={ handleShowHide } className="cursor-pointor"></input>
 						<div>Show Password</div>
 					</div>
-					<button id="reg-btn" className="px-5 py-2 relative duration-300 ease-in bg-palette-500 text-palette-100 rounded-md hover:bg-palette-400">Register</button>
+					<button id="reg-btn" className="px-5 py-2 relative duration-300 ease-in bg-palette-500 text-black rounded-md hover:bg-palette-400">Register</button>
 				</div>
 			</div>
         </>
