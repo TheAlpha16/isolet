@@ -225,7 +225,7 @@ function Challenge(props: Props) {
                     </div>
                     <div className="flex gap-2 py-2 flex-wrap" data-level={ props.challObject.level }>
                         <input id={`flag-${props.challObject.level}`} placeholder="flag" name="flag" type="text" className="border p-2 grow outline-palette-500 rounded-md text-black" data-level={ props.challObject.level } required></input>
-                        <button onClick={ handleSubmit } className="p-2 w-24 text-palette-100 bg-palette-500 rounded-md" data-level={ props.challObject.level }>Submit</button>
+                        <button onClick={ handleSubmit } className="p-2 w-24 text-palette-100 bg-palette-500 rounded-md hover:bg-palette-400" data-level={ props.challObject.level }>Submit</button>
                     </div>
                     <div className="flex gap-2 py-2 flex-wrap" data-level={ props.challObject.level }>
                         {
