@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"strings"
 
 	"github.com/TitanCrew/isolet/config"
 	"github.com/TitanCrew/isolet/database"
@@ -53,36 +54,39 @@ func GetKubeClient() (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
-func DeployInstance(userid int, level int) (string, int32, error) {
+func DeployInstance(userid int, level int) (string, int32, string, error) {
 	instance_name := utils.GetInstanceName(userid, level)
 	password := database.GenerateRandom()[0:32]
 	flag := config.WARGAME_NAME + "{" + database.GenerateRandom()[0:32] + "}"
+	hostname := utils.GetHostName(userid, level)
 
 	kubeclient, err := GetKubeClient()
 	if err != nil {
 		log.Println(err)
-		return "", -1, err
+		return "", -1, "", err
 	}
 
 	pod := getPodObject(instance_name, level, userid, password, flag)
 	pod, err = kubeclient.CoreV1().Pods(pod.Namespace).Create(context.TODO(), pod, metav1.CreateOptions{})
 	if err != nil {
-		log.Println(err)
-		return "", -1, err
+		if !strings.Contains(err.Error(), "already exists") {
+			log.Println(err)
+			return "", -1, "", err
+		}
 	}
 
 	for {
-		createdPod, err := kubeclient.CoreV1().Pods(pod.Namespace).Get(context.TODO(), pod.Name, metav1.GetOptions{})
+		createdPod, err := kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Get(context.TODO(), instance_name, metav1.GetOptions{})
 		if err != nil {
 			log.Println(err)
-			return "", -1, err
+			return "", -1, "", err
 		}
 
 		if len(createdPod.Status.ContainerStatuses) > 0 {
 			if createdPod.Status.ContainerStatuses[0].State.Waiting != nil && (createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CrashLoopBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ErrImagePull" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ImagePullBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerConfigError" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "InvalidImageName" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerError") {
 				kubeclient.CoreV1().Pods(pod.Namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{})
 				log.Printf("Error in launch: level%d reason: %s", level, createdPod.Status.ContainerStatuses[0].State.Waiting.Reason)
-				return "", -1, fmt.Errorf("runtime error in image - level%d not found in registry", level)
+				return "", -1, "", fmt.Errorf("runtime error in image - level%d not found in registry", level)
 			}
 		}
 
@@ -95,22 +99,24 @@ func DeployInstance(userid int, level int) (string, int32, error) {
 	_, err = kubeclient.CoreV1().Services(svcConfig.Namespace).Create(context.TODO(), svcConfig, metav1.CreateOptions{})
 	if err != nil {
 		log.Println(err)
-		return "", -1, err
+		if !strings.Contains(err.Error(), "already exists") {
+			return "", -1, "", err
+		}
 	}
 
 	createdService, err := kubeclient.CoreV1().Services(svcConfig.Namespace).Get(context.TODO(), svcConfig.Name, metav1.GetOptions{})
 	if err != nil {
 		log.Println(err)
-		return "", -1, err
+		return "", -1, "", err
 	}
 	port := createdService.Spec.Ports[0].NodePort
 
-	if err := database.NewFlag(userid, level, password, flag, port); err != nil {
+	if err := database.NewFlag(userid, level, password, flag, port, hostname); err != nil {
 		log.Println(err)
-		return "", -1, err
+		return "", -1, "", err
 	}
 
-	return password, port, nil
+	return password, port, hostname, nil
 }
 
 func DeleteInstance(userid int, level int) error {
@@ -123,12 +129,26 @@ func DeleteInstance(userid int, level int) error {
 
 	err = kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Delete(context.TODO(), instance_name, metav1.DeleteOptions{})
 	if err != nil {
-		log.Println(err)
+
+		if !strings.Contains(err.Error(), "not found") {
+			log.Println(err)
+			return err
+		}
+
+		err = kubeclient.CoreV1().Services(config.INSTANCE_NAMESPACE).Delete(context.TODO(), fmt.Sprintf("svc-%s", instance_name), metav1.DeleteOptions{})
+		if err != nil {
+			if !strings.Contains(err.Error(), "not found") {
+				log.Println(err)
+				return err
+			}
+		}
+
 		if err := database.DeleteFlag(userid, level); err != nil {
 			log.Println(err)
 			return err
 		}
-		return err
+
+		return nil
 	}
 
 	for {
@@ -140,8 +160,10 @@ func DeleteInstance(userid int, level int) error {
 
 	err = kubeclient.CoreV1().Services(config.INSTANCE_NAMESPACE).Delete(context.TODO(), fmt.Sprintf("svc-%s", instance_name), metav1.DeleteOptions{})
 	if err != nil {
-		log.Println(err)
-		return err
+		if !strings.Contains(err.Error(), "not found") {
+			log.Println(err)
+			return err
+		}
 	}
 
 	if err := database.DeleteFlag(userid, level); err != nil {

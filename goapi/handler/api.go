@@ -100,12 +100,12 @@ func StartInstance(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"status": "failure", "message": "concurrent instances limit reached"})
 	}
 
-	password, port, err := deployment.DeployInstance(userid, level)
+	password, port, hostname, err := deployment.DeployInstance(userid, level)
 	if err != nil {
 		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": "error in initiating instance, contact admin"})
 	}
 
-	packed, err := json.Marshal(models.AccessDetails{Password: password, Port: port})
+	packed, err := json.Marshal(models.AccessDetails{Password: password, Port: port, Hostname: hostname})
 	if err != nil {
 		log.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in initiating instance, contact admin"})
