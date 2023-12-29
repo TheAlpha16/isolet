@@ -24,6 +24,9 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "300m"
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
           ports:
             - containerPort: 80
           env:
@@ -101,7 +104,7 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   name: app-config
-                  key: memory_limit
+                  key:
             - name: MEMORY_REQUEST
               valueFrom:
                 configMapKeyRef:
