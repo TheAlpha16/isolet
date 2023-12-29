@@ -1,13 +1,14 @@
 "use client";
 
 import NavBar from "@/components/Navigation";
-import "../public/static/css/globals.css";
 import { useState, useEffect } from "react"
 import Cookies from "js-cookie"
 import { ToastContainer } from "react-toastify"
 import React from "react"
 import { Context } from "@/components/User"
 
+import "../public/static/css/globals.css";
+import 'react-toastify/ReactToastify.css'
 
 export default function RootLayout({
   	children,
