@@ -18,7 +18,3 @@ Isolet is a framework to deploy linux wargames like [Bandit](https://overthewire
 ## TO-DO
 - make token httpOnly and use secondary token for logout
 - make pod ripper
-
-## IMPORTANT
-- send mail in GKE is not working
-- handle errors in the frontend
