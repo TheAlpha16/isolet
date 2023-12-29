@@ -82,14 +82,35 @@ function Register() {
         formData.append("password", password)
         formData.append("confirm", confirm)
 
-        const resp = await fetch("/auth/register", {
-            method: "POST",
-            body: formData,
-        })
+        const fetchTimeout = (url: string, ms: number, signal: AbortSignal, options = {}) => {
+            const controller = new AbortController();
+            const promise = fetch(url, { signal: controller.signal, ...options });
+            if (signal) signal.addEventListener("abort", () => controller.abort());
+            const timeout = setTimeout(() => controller.abort(), ms);
+            return promise.finally(() => clearTimeout(timeout));
+        }
 
-        const jsonResp = await resp.json()
-        show(jsonResp.status, jsonResp.message)
-        changeBtn(launchButton, "done")
+        const controller = new AbortController()
+		const { signal } = controller
+
+        try {			
+			const resp = await fetchTimeout("/auth/register", 5000, signal, { 
+					method: "POST",
+					body: formData,
+			})
+            const jsonResp = await resp.json()
+            show(jsonResp.status, jsonResp.message)
+            changeBtn(launchButton, "done")
+		} catch (error: any) {
+			if (error.name === "AbortError") {
+				show("failure", "Request timed out! please reload")
+                changeBtn(launchButton, "done")
+
+			} else {
+				show("failure", "Server not responding, contact admin")
+                changeBtn(launchButton, "done")
+			}
+		}
     }
 
     useEffect(() => {
