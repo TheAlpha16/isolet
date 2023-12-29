@@ -30,9 +30,19 @@ function Login() {
         }
     }
 
+	const fetchTimeout = (url: string, ms: number, signal: AbortSignal, options = {}) => {
+		const controller = new AbortController();
+		const promise = fetch(url, { signal: controller.signal, ...options });
+		if (signal) signal.addEventListener("abort", () => controller.abort());
+		const timeout = setTimeout(() => controller.abort(), ms);
+		return promise.finally(() => clearTimeout(timeout));
+	}
+
     const handleSubmit = async () => {
-		const email = (document.getElementById("email") as HTMLInputElement).value;
-		const password = (document.getElementById("password") as HTMLInputElement).value;
+		const email = (document.getElementById("email") as HTMLInputElement).value
+		const password = (document.getElementById("password") as HTMLInputElement).value
+		const controller = new AbortController()
+		const { signal } = controller
 
 		if (email === "" || password === ""){
 			show("failure", "All fields are required!")
@@ -43,17 +53,25 @@ function Login() {
         formData.append("email", email)
         formData.append("password", password)
 
-		const resp = await fetch("/auth/login", {
-				method: "POST",
-				body: formData,
-		})
-        const jsonResp = await resp.json();
-        if (jsonResp.status == "failure") {
-            show(jsonResp.status, jsonResp.message)
-        } else {
-            user.setLoggedin(true);
-            router.push("/");
-        }
+		try {			
+			const resp = await fetchTimeout("/auth/login", 5000, signal, { 
+					method: "POST",
+					body: formData,
+			})
+			const jsonResp = await resp.json();
+			if (jsonResp.status == "failure") {
+				show(jsonResp.status, jsonResp.message)
+			} else {
+				user.setLoggedin(true);
+				router.push("/");
+			}
+		} catch (error: any) {
+			if (error.name === "AbortError") {
+				show("failure", "Request timed out! please reload")
+			} else {
+				show("failure", "Server not responding, contact admin")
+			}
+		}
     }
 
     const handleShowHide = () => {
@@ -84,7 +102,7 @@ function Login() {
 						<input type="checkbox" onClick={ handleShowHide } className="cursor-pointor"></input>
 						<div>Show Password</div>
 					</div>
-					<button className="px-5 py-2 relative duration-300 ease-in bg-palette-500 text-black rounded-md" onClick={ handleSubmit }>Login</button>
+					<button className="px-5 py-2 relative duration-300 ease-in bg-palette-500 text-black rounded-md hover:bg-palette-400" onClick={ handleSubmit }>Login</button>
 				</div>
 				<Link href={ "/register" }>
 					<div className="text-blue-400 text-sm text-center underline">
