@@ -38,6 +38,14 @@ function Challenge(props: Props) {
         hostname.current = props.hostname
     }, [props])
 
+    const fetchTimeout = (url: string, ms: number, signal: AbortSignal, options = {}) => {
+        const controller = new AbortController();
+        const promise = fetch(url, { signal: controller.signal, ...options });
+        if (signal) signal.addEventListener("abort", () => controller.abort());
+        const timeout = setTimeout(() => controller.abort(), ms);
+        return promise.finally(() => clearTimeout(timeout));
+    }
+
     const show = (status: string, message: string) => {
         switch (status) {
             case "success":
@@ -70,14 +78,6 @@ function Challenge(props: Props) {
 
         data.append("flag", flag.value)
         data.append("level", `${props.challObject.level}`)
-
-        const fetchTimeout = (url: string, ms: number, signal: AbortSignal, options = {}) => {
-            const controller = new AbortController();
-            const promise = fetch(url, { signal: controller.signal, ...options });
-            if (signal) signal.addEventListener("abort", () => controller.abort());
-            const timeout = setTimeout(() => controller.abort(), ms);
-            return promise.finally(() => clearTimeout(timeout));
-        }
 
         const controller = new AbortController()
 		const { signal } = controller
@@ -140,6 +140,8 @@ function Challenge(props: Props) {
     const eventListen = async (e: any) => {
         const launchButton = e.target as HTMLButtonElement
         const buttonStatus = launchButton.innerText == "Stop"
+        const controller = new AbortController()
+        const { signal } = controller
 
         const data = new FormData()
         data.append("chall_id", `${props.challObject.chall_id}`)
@@ -148,53 +150,76 @@ function Challenge(props: Props) {
         switch(buttonStatus) {
             case true:
                 changeBtn(launchButton, "stopping")
-                const request = await fetch(`/api/stop`, {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${Cookies.get('token')}`
-                    },
-                    body: data
-                })
-                const status = await request.status
-                if (status == 401) {
-                    router.push("/logout")
-                }
-
-                const reqJSON = await request.json()
-                show(reqJSON.status, reqJSON.message)
-                if (reqJSON.status == "failure") {
-                    changeBtn(launchButton, "running")
-                } else {
-                    changeBtn(launchButton, "stopped")
-                    setActive(false)
+                try {			
+                    const request = await fetchTimeout("/api/stop", 100000, signal, { 
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${Cookies.get('token')}`
+                        },
+                        body: data
+                    })
+                    const status = await request.status
+                    if (status == 401) {
+                        router.push("/logout")
+                    }
+    
+                    const reqJSON = await request.json()
+                    show(reqJSON.status, reqJSON.message)
+                    if (reqJSON.status == "failure") {
+                        changeBtn(launchButton, "running")
+                    } else {
+                        changeBtn(launchButton, "stopped")
+                        setActive(false)
+                    }
+                } catch (error: any) {
+                    if (error.name === "AbortError") {
+                        changeBtn(launchButton, "running")
+                        show("failure", "Request timed out! please reload")
+                    } else {
+                        changeBtn(launchButton, "running")
+                        show("failure", "Server not responding, contact admin")
+                    }
                 }
                 break
                 
             case false:
                 changeBtn(launchButton, "starting")
-                const requestLanuch = await fetch(`/api/launch`, {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${Cookies.get('token')}`
-                    },
-                    body: data
-                })
-                const statusLaunch = await requestLanuch.status
-                if (statusLaunch == 401) {
-                    router.push("/logout")
-                }
-                const reqLaunchJSON = await requestLanuch.json()
-                if (reqLaunchJSON.status == "failure") {
-                    show(reqLaunchJSON.status, reqLaunchJSON.message)
-                    changeBtn(launchButton, "stopped")
-                } else {
-                    show(reqLaunchJSON.status, "Instance launched successfully")
-                    let returnedData = JSON.parse(atob(reqLaunchJSON.message))
-                    port.current = returnedData.port
-                    password.current = returnedData.password
-                    hostname.current = returnedData.hostname
-                    changeBtn(launchButton, "running")
-                    setActive(true)
+
+                try {			
+                    const requestLanuch = await fetchTimeout("/api/launch", 100000, signal, { 
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${Cookies.get('token')}`
+                        },
+                        body: data
+                    })
+
+                    const statusLaunch = await requestLanuch.status
+                    if (statusLaunch == 401) {
+                        router.push("/logout")
+                    }
+                    const reqLaunchJSON = await requestLanuch.json()
+                    if (reqLaunchJSON.status == "failure") {
+                        show(reqLaunchJSON.status, reqLaunchJSON.message)
+                        changeBtn(launchButton, "stopped")
+                    } else {
+                        show(reqLaunchJSON.status, "Instance launched successfully")
+                        let returnedData = JSON.parse(atob(reqLaunchJSON.message))
+                        port.current = returnedData.port
+                        password.current = returnedData.password
+                        hostname.current = returnedData.hostname
+                        changeBtn(launchButton, "running")
+                        setActive(true)
+                    }
+
+                } catch (error: any) {
+                    if (error.name === "AbortError") {
+                        changeBtn(launchButton, "stopped")
+                        show("failure", "Request timed out! please reload")
+                    } else {
+                        changeBtn(launchButton, "stopped")
+                        show("failure", "Server not responding, contact admin")
+                    }
                 }
                 break
         }
