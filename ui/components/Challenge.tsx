@@ -71,25 +71,43 @@ function Challenge(props: Props) {
         data.append("flag", flag.value)
         data.append("level", `${props.challObject.level}`)
 
-        const request = await fetch("/api/submit", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${Cookies.get('token')}`
-            },
-            body: data
-        })
+        const fetchTimeout = (url: string, ms: number, signal: AbortSignal, options = {}) => {
+            const controller = new AbortController();
+            const promise = fetch(url, { signal: controller.signal, ...options });
+            if (signal) signal.addEventListener("abort", () => controller.abort());
+            const timeout = setTimeout(() => controller.abort(), ms);
+            return promise.finally(() => clearTimeout(timeout));
+        }
 
-        const status = await request.status
-        if (status == 401) {
-            show("failure", "not logged in :/")
-            router.push("/logout")
-            return
-        }
-        const submitJSON = await request.json()
-        show(submitJSON.status, submitJSON.message)
-        if (submitJSON.status == "success") {
-            flag.value = ""
-        }
+        const controller = new AbortController()
+		const { signal } = controller
+
+        try {			
+			const request = await fetchTimeout("/api/submit", 5000, signal, { 
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${Cookies.get('token')}`
+                },
+                body: data
+			})
+            const status = await request.status
+            if (status == 401) {
+                show("failure", "not logged in :/")
+                router.push("/logout")
+                return
+            }
+            const submitJSON = await request.json()
+            show(submitJSON.status, submitJSON.message)
+            if (submitJSON.status == "success") {
+                flag.value = ""
+            }
+		} catch (error: any) {
+			if (error.name === "AbortError") {
+				show("failure", "Request timed out! please reload")
+			} else {
+				show("failure", "Server not responding, contact admin")
+			}
+		}
     }
 
     const changeBtn = (btn: HTMLButtonElement, status: string) => {
