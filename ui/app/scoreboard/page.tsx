@@ -4,26 +4,65 @@ import { useEffect, useState } from "react"
 import Cookies from "js-cookie"
 import { useRouter } from "next/navigation"
 import User from "@/components/User"
+import { toast } from "react-toastify"
 
 function Scoreboard() {
     const { loggedin, respHook } = User()
     const router = useRouter()
     const [ scores, setScores ] = useState([{"username": "", "score": 0}])
 
-    const getScores = async () => {
-        const request = await fetch("/api/scoreboard", {
-            headers: {
-                "Authorization": `Bearer ${Cookies.get("token")}`
-            }
-        })
+    const show = (status: string, message: string) => {
+        switch (status) {
+            case "success":
+                toast.success(message, {
+                    position: toast.POSITION.TOP_RIGHT,
+                })
+                break
+            case "failure":
+                toast.error(message, {
+                    position: toast.POSITION.TOP_RIGHT,
+                })
+                break
+            default:
+                toast.warn(message, {
+                    position: toast.POSITION.TOP_RIGHT,
+                })
+        }
+    }
 
-        const status = await request.status
-        if (status != 200) {
-            router.push("/logout")
+    const getScores = async () => {
+        const fetchTimeout = (url: string, ms: number, signal: AbortSignal, options = {}) => {
+            const controller = new AbortController();
+            const promise = fetch(url, { signal: controller.signal, ...options });
+            if (signal) signal.addEventListener("abort", () => controller.abort());
+            const timeout = setTimeout(() => controller.abort(), ms);
+            return promise.finally(() => clearTimeout(timeout));
         }
 
-        const scoreJSON = await request.json()
-        setScores(scoreJSON)
+        const controller = new AbortController()
+		const { signal } = controller
+
+        try {			
+			const request = await fetchTimeout("/api/scoreboard", 7000, signal, { 
+                headers: {
+                    "Authorization": `Bearer ${Cookies.get("token")}`
+                }
+			})
+            const status = await request.status
+            if (status != 200) {
+                router.push("/logout")
+            }
+    
+            const scoreJSON = await request.json()
+            setScores(scoreJSON)
+		} catch (error: any) {
+			if (error.name === "AbortError") {
+				show("failure", "Request timed out! please reload")
+
+			} else {
+				show("failure", "Scoreboard not available at the moment")
+			}
+		}
     }
 
     useEffect(() => {
