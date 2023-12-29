@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { challItem } from "@/components/Challenge"
 import Challenge from "@/components/Challenge"
 import User from "@/components/User"
+import { toast } from "react-toastify"
 
 interface accessCredsItem {
     userid: number
@@ -33,39 +34,87 @@ function Challenges(){
         }})
     const router = useRouter()
 
+    const show = (status: string, message: string) => {
+        switch (status) {
+            case "success":
+                toast.success(message, {
+                    position: toast.POSITION.TOP_RIGHT,
+                })
+                break
+            case "failure":
+                toast.error(message, {
+                    position: toast.POSITION.TOP_RIGHT,
+                })
+                break
+            default:
+                toast.warn(message, {
+                    position: toast.POSITION.TOP_RIGHT,
+                })
+        }
+    }
+
     const getChalls = async () => {
-        const request = await fetch("/api/challs", {
-            headers: {
-                "Authorization": `Bearer ${Cookies.get('token')}`
-            }
-        })
 
-        const statusCode = await request.status;
-        if (statusCode != 200) {
-            router.push("/logout");
+        const fetchTimeout = (url: string, ms: number, signal: AbortSignal, options = {}) => {
+            const controller = new AbortController();
+            const promise = fetch(url, { signal: controller.signal, ...options });
+            if (signal) signal.addEventListener("abort", () => controller.abort());
+            const timeout = setTimeout(() => controller.abort(), ms);
+            return promise.finally(() => clearTimeout(timeout));
         }
 
-        const challJson = await request.json();
-        setChallenges(challJson);
-        const instancesRequest = await fetch("/api/status", {
-            headers: {
-                "Authorization": `Bearer ${Cookies.get('token')}`
+        const controller = new AbortController()
+		const { signal } = controller
+
+        try {			
+			const request = await fetchTimeout("/api/challs", 7000, signal, { 
+                headers: {
+                    "Authorization": `Bearer ${Cookies.get('token')}`
+                }
+			})
+            const statusCode = await request.status;
+            if (statusCode != 200) {
+                router.push("/logout");
             }
-        });
+    
+            const challJson = await request.json();
+            setChallenges(challJson);
+		} catch (error: any) {
+			if (error.name === "AbortError") {
+				show("failure", "Request timed out! please reload")
 
-        const instancesStatus = await instancesRequest.status;
-        if (instancesStatus != 200) {
-            // toast.send()
-            router.push("/logout");
-        }
+			} else {
+				show("failure", "Server not responding, contact admin")
+			}
+		}
 
-        const instancesJSON = await instancesRequest.json();
-        let emptyDict = {} as activatedItem
+        try {			
+			const instancesRequest = await fetchTimeout("/api/status", 7000, signal, { 
+                headers: {
+                    "Authorization": `Bearer ${Cookies.get('token')}`
+                }
+			})
+            const instancesStatus = await instancesRequest.status;
+            if (instancesStatus != 200) {
+                show("info", "User not logged in!")
+                router.push("/logout");
+            }
+    
+            const instancesJSON = await instancesRequest.json();
+            let emptyDict = {} as activatedItem
+    
+            instancesJSON.map((item: accessCredsItem, index: number) => 
+                emptyDict[item["level"]] = {"password": item["password"], "port": item["port"], "verified": item["verified"], "hostname": item["hostname"]}
+            )
+            setActivated(emptyDict)
+		} catch (error: any) {
+			if (error.name === "AbortError") {
+				show("failure", "Request timed out! please reload")
 
-        instancesJSON.map((item: accessCredsItem, index: number) => 
-            emptyDict[item["level"]] = {"password": item["password"], "port": item["port"], "verified": item["verified"], "hostname": item["hostname"]}
-        )
-        setActivated(emptyDict)
+			} else {
+				show("failure", "Server not responding, contact admin")
+			}
+		}
     }
 
     useEffect(() => {
