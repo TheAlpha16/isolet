@@ -98,7 +98,7 @@ func GetInstanceName(userid int, level int) string {
 }
 
 func GetHostName(userid int, level int) string {
-	return GetInstanceName(userid, level)
+	return config.INSTANCE_HOSTNAME
 }
 
 func BoolAddr(b bool) *bool {
