@@ -76,8 +76,6 @@ function Challenges(){
         }
     }, [respHook])
 
-    // const nullFunction = () => {}
-
     const handleVisibility = (event: any) => {
 
         let level = event.target.dataset.level
