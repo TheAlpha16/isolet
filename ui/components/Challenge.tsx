@@ -188,7 +188,7 @@ function Challenge(props: Props) {
                     show(reqLaunchJSON.status, reqLaunchJSON.message)
                     changeBtn(launchButton, "stopped")
                 } else {
-                    show(reqLaunchJSON.status, "Instance Launched successfully")
+                    show(reqLaunchJSON.status, "Instance launched successfully")
                     let returnedData = JSON.parse(atob(reqLaunchJSON.message))
                     port.current = returnedData.port
                     password.current = returnedData.password
