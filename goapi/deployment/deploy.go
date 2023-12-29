@@ -200,7 +200,7 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 					Resources: core.ResourceRequirements{
 						Limits: core.ResourceList{
 							core.ResourceName(core.ResourceCPU):    resource.MustParse(config.CPU_LIMIT),
-							core.ResourceName(core.ResourceMemory): resource.MustParse(config.MEMEORY_LIMIT),
+							core.ResourceName(core.ResourceMemory): resource.MustParse(config.MEMORY_LIMIT),
 						},
 						// Requests: core.ResourceList{
 						// 	core.ResourceName(core.ResourceCPU): resource.MustParse(config.CPU_REQUEST),
