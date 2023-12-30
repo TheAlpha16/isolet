@@ -104,7 +104,7 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   name: app-config
-                  key:
+                  key: memory_limit
             - name: MEMORY_REQUEST
               valueFrom:
                 configMapKeyRef:
