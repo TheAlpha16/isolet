@@ -21,7 +21,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: db-pv-claim
 spec:
-  # storageClassName: standard-rwo
+  storageClassName: manual
   accessModes:
     - ReadWriteOnce
   resources:
