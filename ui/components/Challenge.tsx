@@ -225,11 +225,29 @@ function Challenge(props: Props) {
         }
     }
 
+    const copyAccessString = () => {
+        navigator.clipboard.writeText(`ssh level${props.challObject.level}@${hostname.current} -p ${port.current}`)
+        show("success", "copied!")
+    }
+
+    const copyPasswdString = () => {
+        navigator.clipboard.writeText(`${password.current}`)
+        show("success", "copied!")
+    }
+
     useEffect(() => {
         let launchButton = document.getElementById(`launch-${props.challObject.level}`) as HTMLButtonElement
+        let copyAccessDiv = document.getElementById(`access-${props.challObject.level}`) as HTMLDivElement
+        let passwdDiv = document.getElementById(`passwd-${props.challObject.level}`) as HTMLDivElement
 
         launchButton.addEventListener("click", eventListen)
-        return () => launchButton.removeEventListener("click", eventListen);
+        copyAccessDiv.addEventListener("click", copyAccessString)
+        passwdDiv.addEventListener("click", copyPasswdString)
+
+        return () => {
+            launchButton.removeEventListener("click", eventListen)
+            copyAccessDiv.removeEventListener("click", copyAccessString)
+        }
     }, [])
 
     return (
@@ -258,7 +276,7 @@ function Challenge(props: Props) {
                             <button id={`launch-${props.challObject.level}`} className={`p-2 w-32 rounded-md ${ isActive ? "text-palette-100": "text-black" } ${ isActive ? "bg-rose-500": "bg-palette-500" }`} data-level={ props.challObject.level }>{ isActive ? "Stop": "Start" }</button>
                             <div data-level={ props.challObject.level } className={`flex rounded-md items-center h-10 justify-center gap-2 ${isActive ? "": "hidden"}`}>
                                 <div className="bg-slate-950 p-2 rounded-md" data-level={ props.challObject.level }> {`${password.current.substring(0, 7)}************${password.current.substring(27)}`} </div>
-                                <div className="hover:cursor-pointer hover:bg-slate-950 p-3 rounded-md" data-level={ props.challObject.level } onClick={ () => navigator.clipboard.writeText(`${password.current}`) }>
+                                <div id={`passwd-${props.challObject.level}`} className="hover:cursor-pointer hover:bg-slate-950 p-3 rounded-md" data-level={ props.challObject.level }>
                                     <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" fill="#E4EEE7" data-level={ props.challObject.level } >
                                         <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z" data-level={ props.challObject.level }></path><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z" data-level={ props.challObject.level }></path>
                                     </svg>
@@ -285,7 +303,7 @@ function Challenge(props: Props) {
                         <div className="bg-slate-950 p-1 px-3 rounded-md text-palette-500" data-level={ props.challObject.level }>
                             { `$ ssh level${props.challObject.level}@${hostname.current} -p ${port.current}` }
                         </div>
-                        <div className="hover:cursor-pointer hover:bg-slate-950 p-2 rounded-md" data-level={ props.challObject.level } onClick={ () => navigator.clipboard.writeText(`ssh level${props.challObject.level}@${hostname.current} -p ${port.current}`) }>
+                        <div id={ `access-${props.challObject.level}` } className="hover:cursor-pointer hover:bg-slate-950 p-2 rounded-md" data-level={ props.challObject.level }>
                             <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" fill="#E4EEE7" data-level={ props.challObject.level }>
                                 <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z" data-level={ props.challObject.level }></path><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z" data-level={ props.challObject.level }></path>
                             </svg>

@@ -66,7 +66,9 @@ function Scoreboard() {
     }
 
     useEffect(() => {
-        if (respHook && !loggedin) {
+        if (!respHook) {
+            router.push("/")
+        } else if (respHook && !loggedin) {
             router.push("/login")
         } else {
             getScores()
