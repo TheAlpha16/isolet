@@ -57,4 +57,4 @@ spec:
     - port: 80
   selector:
     app: proxy
-  type: LoadBalancer
+  type: NodePort
