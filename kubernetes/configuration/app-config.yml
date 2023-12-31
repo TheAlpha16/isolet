@@ -4,7 +4,7 @@ metadata:
   name: app-config
 data:
   instance_namespace: "isolet"
-  image_registry_prefix: "docker.io/thealpha16"
+  image_registry_prefix: "docker.io/thealpha16/unixit-"
   concurrent_instances: "1"
   discord_frontend: "false"
   wargame_name: "unixit"
