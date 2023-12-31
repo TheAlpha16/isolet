@@ -4,5 +4,7 @@ goapi/logs/error.log
 
 kubernetes/configuration/app-secrets.yml.local
 
+levels/
+
 notes.txt
 .DS_Store
