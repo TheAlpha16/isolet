@@ -1,20 +1,32 @@
 [
     {
         "level": 0,
-        "name": "Baby's first instance",
-        "prompt": "Easy. Connect to the server and get the flag",
-        "tags": ["ssh", "cat", "ls", "cd", "whoami", "man"]
+        "name": "Trading",
+        "prompt": "Nothing is brought in, only thrown out",
+        "tags": ["alias", "export", "cowsay"]
     },
     {
         "level": 1,
-        "name": "Open me",
-        "prompt": "The flag is there. Read it!!",
-        "tags": ["ssh", "cat", "ls", "cd", "whoami", "man"]
+        "name": "Jail 1",
+        "prompt": "vim jail! Escape",
+        "tags": ["vim", "export", "env", "pwd"]
     },
     {
-        "level": 2,
-        "name": "There are spaces",
-        "prompt": "Can you escape?",
-        "tags": ["ssh", "cat", "ls", "cd", "file"]
+        "level":2,
+        "name": "Ready to read?",
+        "prompt": "Read the flag for me (only if you can)",
+        "tags": ["printf", "fold", "fmt", "echo", "read"]
+    },
+    {
+        "level": 3,
+        "name": "Hash",
+        "prompt": "Only admin can read the flag",
+        "tags": ["hashcat", "netcat"]
+    },
+    {
+        "level": 4,
+        "name": "Exit",
+        "prompt": "Evil profile",
+        "tags": ["ssh", "cat", ".bashrc", ".profile"]
     }
 ]
