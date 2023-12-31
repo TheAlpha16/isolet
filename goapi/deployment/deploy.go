@@ -211,7 +211,7 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 			Containers: []core.Container{
 				{
 					Name:  instance_name,
-					Image: fmt.Sprintf("%s/level%d", config.IMAGE_REGISTRY_PREFIX, level),
+					Image: fmt.Sprintf("%slevel%d", config.IMAGE_REGISTRY_PREFIX, level),
 					Ports: []core.ContainerPort{
 						{
 							ContainerPort: 22,
