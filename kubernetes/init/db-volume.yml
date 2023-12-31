@@ -21,7 +21,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: db-pv-claim
 spec:
-  storageClassName: fast
+  storageClassName: default
   accessModes:
     - ReadWriteOnce
   resources:
