@@ -58,6 +58,8 @@ func DeployInstance(userid int, level int) (string, int32, string, error) {
 	instance_name := utils.GetInstanceName(userid, level)
 	password := database.GenerateRandom()[0:32]
 	flag := config.WARGAME_NAME + "{" + database.GenerateRandom()[0:32] + "}"
+
+	// Hostname to be known when using subdomains for connections
 	hostname := utils.GetHostName(userid, level)
 
 	kubeclient, err := GetKubeClient()
@@ -110,6 +112,24 @@ func DeployInstance(userid int, level int) (string, int32, string, error) {
 		return "", -1, "", err
 	}
 	port := createdService.Spec.Ports[0].NodePort
+	ExternalIPs := createdService.Spec.ExternalIPs
+	if len(ExternalIPs) > 0 {
+		hostname = ExternalIPs[0]
+	}
+
+	// nodes, err := kubeclient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return "", -1, "", err
+	// }
+	// nodeip := nodes.Items[0].Status.Addresses
+	// for i := 0; i < len(nodeip); i++ {
+	// 	if nodeip[i].Type == "InternalIP" {
+	// 		hostname = nodeip[i].Address
+	// 	} else {
+	// 		fmt.Printf("%s: %s", nodeip[i].Type, nodeip[i].Address)
+	// 	}
+	// }
 
 	if err := database.NewFlag(userid, level, password, flag, port, hostname); err != nil {
 		log.Println(err)
