@@ -227,7 +227,7 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 						// 	core.ResourceName(core.ResourceMemory): resource.MustParse(config.MEMORY_REQUEST),
 						// },
 					},
-					ImagePullPolicy: core.PullIfNotPresent,
+					ImagePullPolicy: core.PullAlways,
 					Env: []core.EnvVar{
 						{
 							Name:  "WARGAME",
