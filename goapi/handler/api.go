@@ -69,20 +69,14 @@ func StartInstance(c *fiber.Ctx) error {
 	}
 
 	level_string := c.FormValue("level")
-	chall_id_string := c.FormValue("chall_id")
 
-	if level_string == "" || chall_id_string == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing parameters in request"})
+	if level_string == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing level in request"})
 	}
 
 	level, err := strconv.Atoi(level_string)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid level"})
-	}
-
-	chall_id, err := strconv.Atoi(chall_id_string)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid chall_id"})
 	}
 
 	if !database.UserExists(userid) {
@@ -92,8 +86,8 @@ func StartInstance(c *fiber.Ctx) error {
 		database.AddToUsersDiscord(userid)
 	}
 
-	if !database.ValidChallenge(chall_id, level) {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid level"})
+	if !database.ValidChallenge(level) {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "level does not exist"})
 	}
 
 	if !database.CanStartInstance(userid, level) {

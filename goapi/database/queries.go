@@ -90,7 +90,7 @@ func AddToChallenges(chall models.Challenge) error {
 
 func ReadChallenges() ([]models.Challenge, error) {
 	challenges := make([]models.Challenge, 0)
-	rows, err := DB.Query(`SELECT chall_id, level, chall_name, prompt, solves, tags from challenges ORDER BY level ASC`)
+	rows, err := DB.Query(`SELECT level, chall_name, prompt, solves, tags from challenges ORDER BY level ASC`)
 	if err != nil {
 		return challenges, err
 	}
@@ -98,7 +98,7 @@ func ReadChallenges() ([]models.Challenge, error) {
 
 	for rows.Next() {
 		challenge := new(models.Challenge)
-		if err := rows.Scan(&challenge.ChallID, &challenge.Level, &challenge.Name, &challenge.Prompt, &challenge.Solves, pq.Array(&challenge.Tags)); err != nil {
+		if err := rows.Scan(&challenge.Level, &challenge.Name, &challenge.Prompt, &challenge.Solves, pq.Array(&challenge.Tags)); err != nil {
 			return challenges, err
 		}
 		challenges = append(challenges, *challenge)
@@ -148,9 +148,9 @@ func DeleteFlag(userid int, level int) error {
 	return nil
 }
 
-func ValidChallenge(chall_id int, level int) bool {
+func ValidChallenge(level int) bool {
 	var chall_name string
-	if err := DB.QueryRow(`SELECT chall_name FROM challenges WHERE chall_id = $1 AND level = $2`, chall_id, level).Scan(&chall_name); err != nil {
+	if err := DB.QueryRow(`SELECT chall_name FROM challenges WHERE level = $1`, level).Scan(&chall_name); err != nil {
 		return false
 	} 
 	return true

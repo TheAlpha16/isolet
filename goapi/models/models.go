@@ -24,7 +24,6 @@ type VerifyClaims struct {
 }
 
 type Challenge struct {
-	ChallID  int 	  `json:"chall_id"`
 	Level 	 int 	  `json:"level"`
 	Name 	 string   `json:"name"`
 	Prompt 	 string   `json:"prompt"`
