@@ -110,26 +110,32 @@ function Challenge(props: Props) {
     }
 
     const changeBtn = (btn: HTMLButtonElement, status: string) => {
+        const launchButton = document.getElementById(`launch-${props.challObject.level}`) as HTMLButtonElement
+        
         switch(status) {
             case "stopped":
                 btn.classList.remove("bg-rose-500", "bg-amber-300", "text-black", "text-palette-100")
                 btn.classList.add("bg-palette-500", "text-black")
                 btn.innerText = "Start"
+                launchButton.addEventListener("click", eventListen)
                 break
             case "running":
                 btn.classList.add("bg-rose-500", "text-palette-100")
                 btn.classList.remove("bg-palette-500", "bg-amber-300", "text-black", "text-palette-100")
                 btn.innerText = "Stop"
+                launchButton.addEventListener("click", eventListen)
                 break
             case "starting":
                 btn.classList.remove("bg-rose-500", "bg-palette-500", "text-black", "text-palette-100")
                 btn.classList.add("bg-amber-300", "text-black")
                 btn.innerText = "Starting.."
+                launchButton.removeEventListener("click", eventListen)
                 break
             case "stopping":
                 btn.classList.remove("bg-rose-500", "bg-palette-500", "text-black", "text-palette-100")
                 btn.classList.add("bg-amber-300", "text-black")
                 btn.innerText = "Stopping.."
+                launchButton.removeEventListener("click", eventListen)
                 break
             default:
                 return
