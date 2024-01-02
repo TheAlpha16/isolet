@@ -58,3 +58,4 @@ spec:
   selector:
     app: proxy
   type: LoadBalancer
+  loadBalancerIP: 35.23.13.211
