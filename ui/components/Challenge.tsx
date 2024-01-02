@@ -7,7 +7,6 @@ import { toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 
 export interface challItem {
-    chall_id: number
     level: number
     name: string
     prompt: string
@@ -144,7 +143,6 @@ function Challenge(props: Props) {
         const { signal } = controller
 
         const data = new FormData()
-        data.append("chall_id", `${props.challObject.chall_id}`)
         data.append("level", `${props.challObject.level}`)
         
         switch(buttonStatus) {
