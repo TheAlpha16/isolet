@@ -28,5 +28,11 @@
         "name": "Exit",
         "prompt": "Evil profile",
         "tags": ["ssh", "cat", ".bashrc", ".profile"]
+    },
+    {
+        "level": 5,
+        "name": "interpret",
+        "prompt": "Ageratina altissima",
+        "tags": ["python", "suid", "subprocess", "whoami"]
     }
 ]
