@@ -45,6 +45,10 @@ export default function RootLayout({
 						name="description"
 						content="framework to deploy linux wargames"
 					/>
+					<link rel="icon" href="/static/assets/favicon.svg"/>
+					<link rel="mask-icon" href="/static/assets/mask-icon.svg" color="#060b07"/>
+					<link rel="apple-touch-icon" href="/static/assets/apple-touch-icon.png"/>
+					<link rel="manifest" href="/manifest.json"/>
 					<title>
 						isolet
 					</title>
