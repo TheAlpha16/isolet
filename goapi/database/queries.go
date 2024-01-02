@@ -8,7 +8,7 @@ import (
 	"log"
 	"fmt"
 
-	"github.com/TitanCrew/isolet/config"
+	// "github.com/TitanCrew/isolet/config"
 	"github.com/TitanCrew/isolet/models"
 	"github.com/lib/pq"
 )
@@ -21,6 +21,7 @@ func GenerateRandom() string {
 
 func ValidateCreds(creds *models.Creds, user *models.User) error {
 	if err := DB.QueryRow(`SELECT userid, email, rank FROM users WHERE email = $1 AND password = $2`, creds.Email, creds.Password).Scan(&user.UserID, &user.Email, &user.Rank); err != nil {
+		log.Println(err)
 		return err
 	}
 	return nil
@@ -118,20 +119,33 @@ func UserExists(userid int) bool {
 }
 
 func CanStartInstance(userid int, level int) bool {
-	var count int
-	var flag string
+	// var count int
+	var runid int
 
-	if err := DB.QueryRow(`SELECT flag FROM flags WHERE userid = $1 AND level = $2`, userid, level).Scan(&flag); err == nil {
+	if err := DB.QueryRow(`SELECT runid FROM running WHERE userid = $1 AND level = $2`, userid, level).Scan(&runid); err == nil {
 		return false
 	}
 
-	if err := DB.QueryRow(`SELECT COUNT(flagid) FROM flags WHERE userid = $1`, userid).Scan(&count); err != nil {
+	// if err := DB.QueryRow(`SELECT COUNT(runid) FROM running WHERE userid = $1`, userid).Scan(&count); err != nil {
+	// 	log.Println(err)
+	// 	return false
+	// }
+	// if count + 1 > config.CONCURRENT_INSTANCES {
+	// 	return false
+	// }
+
+	if _, err := DB.Query(`INSERT INTO running (userid, level) VALUES ($1, $2)`, userid, level); err != nil {
+		log.Println(err)
 		return false
 	}
-	if count + 1 > config.CONCURRENT_INSTANCES {
-		return false
-	} 
 	return true
+}
+
+func DeleteRunning(userid int, level int) error {
+	if _, err := DB.Query(`DELETE FROM running WHERE userid = $1 AND level = $2`, userid, level); err != nil {
+		return err
+	}
+	return nil
 }
 
 func NewFlag(userid int, level int, password string, flag string, port int32, hostname string) error {
