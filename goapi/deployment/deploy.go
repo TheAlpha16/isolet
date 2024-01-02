@@ -190,6 +190,11 @@ func DeleteInstance(userid int, level int) error {
 		return err
 	}
 
+	if err := database.DeleteRunning(userid, level); err != nil {
+		log.Println(err)
+		return err
+	}
+
 	return nil
 }
 
