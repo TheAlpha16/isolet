@@ -39,8 +39,14 @@ export default function RootLayout({
 		<>
 			<html lang="en">
 				<head>
+					<meta charSet="utf-8"/>
+					<meta name="viewport" content="width=device-width, initial-scale=1"/>
+					<meta
+						name="description"
+						content="framework to deploy linux wargames"
+					/>
 					<title>
-						ISOLET
+						isolet
 					</title>
 				</head>
 				<body className="flex flex-col bg-palette-200 text-palette-100 h-screen">
