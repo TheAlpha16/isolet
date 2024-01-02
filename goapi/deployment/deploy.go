@@ -206,6 +206,7 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 			Labels: map[string]string{
 				"level":  fmt.Sprintf("%d", level),
 				"userid": fmt.Sprintf("%d", userid),
+				"app": "instance",
 			},
 		},
 		Spec: core.PodSpec{
@@ -272,6 +273,7 @@ func getServiceObject(instance_name string, level int, userid int) *core.Service
 			Selector: map[string]string{
 				"level":  fmt.Sprintf("%d", level),
 				"userid": fmt.Sprintf("%d", userid),
+				"app": "instance",
 			},
 		},
 	}
