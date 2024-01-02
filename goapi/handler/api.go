@@ -96,14 +96,15 @@ func StartInstance(c *fiber.Ctx) error {
 
 	password, port, hostname, err := deployment.DeployInstance(userid, level)
 	if err != nil {
+		database.DeleteRunning(userid, level)
 		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": "error in initiating instance, contact admin"})
 	}
 
 	packed, err := json.Marshal(models.AccessDetails{Password: password, Port: port, Hostname: hostname})
 	if err != nil {
 		log.Println(err)
+		deployment.DeleteInstance(userid, level)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in initiating instance, contact admin"})
-		
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success", "message": packed})
