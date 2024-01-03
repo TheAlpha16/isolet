@@ -1,5 +1,5 @@
 {
-    "name": "Isolet: framework to deploy linux wargames",
+    "name": "isolet",
     "short_name": "isolet",
     "description": "framework for deploying linux wargames with isoleted instances to users",
     "start_url": "/",
