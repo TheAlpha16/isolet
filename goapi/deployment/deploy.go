@@ -226,11 +226,12 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 						Limits: core.ResourceList{
 							core.ResourceName(core.ResourceCPU):    resource.MustParse(config.CPU_LIMIT),
 							core.ResourceName(core.ResourceMemory): resource.MustParse(config.MEMORY_LIMIT),
+							core.ResourceName(core.ResourceEphemeralStorage): resource.MustParse(config.DISK_LIMIT),
 						},
-						// Requests: core.ResourceList{
-						// 	core.ResourceName(core.ResourceCPU): resource.MustParse(config.CPU_REQUEST),
-						// 	core.ResourceName(core.ResourceMemory): resource.MustParse(config.MEMORY_REQUEST),
-						// },
+						Requests: core.ResourceList{
+							core.ResourceName(core.ResourceCPU): resource.MustParse(config.CPU_REQUEST),
+							core.ResourceName(core.ResourceMemory): resource.MustParse(config.MEMORY_REQUEST),
+						},
 					},
 					ImagePullPolicy: core.PullAlways,
 					Env: []core.EnvVar{
