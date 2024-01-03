@@ -110,6 +110,16 @@ spec:
                 configMapKeyRef:
                   name: app-config
                   key: memory_request
+            - name: DISK_LIMIT
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: disk_limit
+            - name: DISK_REQUEST
+              valueFrom:  
+                configMapKeyRef:
+                  name: app-config
+                  key: disk_request
             - name: TERMINATION_PERIOD
               valueFrom:
                 configMapKeyRef:
