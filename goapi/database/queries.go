@@ -119,20 +119,11 @@ func UserExists(userid int) bool {
 }
 
 func CanStartInstance(userid int, level int) bool {
-	// var count int
 	var runid int
 
 	if err := DB.QueryRow(`SELECT runid FROM running WHERE userid = $1 AND level = $2`, userid, level).Scan(&runid); err == nil {
 		return false
 	}
-
-	// if err := DB.QueryRow(`SELECT COUNT(runid) FROM running WHERE userid = $1`, userid).Scan(&count); err != nil {
-	// 	log.Println(err)
-	// 	return false
-	// }
-	// if count + 1 > config.CONCURRENT_INSTANCES {
-	// 	return false
-	// }
 
 	if _, err := DB.Query(`INSERT INTO running (userid, level) VALUES ($1, $2)`, userid, level); err != nil {
 		log.Println(err)
