@@ -8,9 +8,9 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/TitanCrew/isolet/config"
-	"github.com/TitanCrew/isolet/database"
-	"github.com/TitanCrew/isolet/models"
+	"github.com/CyberLabs-Infosec/isolet/goapi/config"
+	"github.com/CyberLabs-Infosec/isolet/goapi/database"
+	"github.com/CyberLabs-Infosec/isolet/goapi/models"
 )
 
 func UpdateKey(key string) error {
@@ -49,7 +49,7 @@ func ValidateLoginInput(creds *models.Creds) (bool, string) {
 	if len(creds.Password) > config.PASS_LEN {
 		return false, "Password length exceeded 32 characters"
 	}
-	
+
 	return true, ""
 }
 
@@ -94,7 +94,7 @@ func ValidateRegisterInput(regInput *models.User) (bool, string) {
 }
 
 func GetInstanceName(userid int, level int) string {
-	return Hash(fmt.Sprintf("%d@%d:%s", userid, level, config.INSTANCE_NAME_SECRET))[0: 16]
+	return Hash(fmt.Sprintf("%d@%d:%s", userid, level, config.INSTANCE_NAME_SECRET))[0:16]
 }
 
 func GetHostName(userid int, level int) string {
@@ -102,8 +102,8 @@ func GetHostName(userid int, level int) string {
 }
 
 func BoolAddr(b bool) *bool {
-    boolVar := b
-    return &boolVar
+	boolVar := b
+	return &boolVar
 }
 
 func StringAddr(s string) *string {

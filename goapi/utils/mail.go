@@ -1,14 +1,14 @@
 package utils
 
 import (
-	"fmt"
-	"time"
 	"bytes"
+	"fmt"
 	"net/smtp"
 	"text/template"
+	"time"
 
-	"github.com/TitanCrew/isolet/config"
-	"github.com/TitanCrew/isolet/models"
+	"github.com/CyberLabs-Infosec/isolet/goapi/config"
+	"github.com/CyberLabs-Infosec/isolet/goapi/models"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -16,7 +16,7 @@ import (
 func getToken(user *models.User) (string, error) {
 	claims := jwt.MapClaims{
 		"email": user.Email,
-		"exp": time.Now().Add(time.Minute * time.Duration(config.TOKEN_EXP)).Unix(),
+		"exp":   time.Now().Add(time.Minute * time.Duration(config.TOKEN_EXP)).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -36,7 +36,7 @@ func SendVerificationMail(user *models.User) error {
 	from := config.EMAIL_ID
 	secret := config.EMAIL_AUTH
 
-	to := []string {
+	to := []string{
 		user.Email,
 	}
 
@@ -51,15 +51,15 @@ func SendVerificationMail(user *models.User) error {
 
 	t.Execute(&body, struct {
 		Username string
-		Link string
-		Wargame string
+		Link     string
+		Wargame  string
 	}{
 		Username: user.Username,
-		Link: config.AUTH_URL + token,
-		Wargame: config.WARGAME_NAME,
+		Link:     config.AUTH_URL + token,
+		Wargame:  config.WARGAME_NAME,
 	})
 
-	err = smtp.SendMail(config.SMTP_HOST + ":" + config.SMTP_PORT, auth, from, to, body.Bytes())
+	err = smtp.SendMail(config.SMTP_HOST+":"+config.SMTP_PORT, auth, from, to, body.Bytes())
 	if err != nil {
 		return err
 	}

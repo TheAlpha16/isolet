@@ -1,10 +1,10 @@
 package database
 
 import (
-	"log"
 	"fmt"
+	"log"
 
-	"github.com/TitanCrew/isolet/config"
+	"github.com/CyberLabs-Infosec/isolet/goapi/config"
 )
 
 func CreateTables() error {

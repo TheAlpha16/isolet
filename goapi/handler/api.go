@@ -6,10 +6,10 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/TitanCrew/isolet/config"
-	"github.com/TitanCrew/isolet/database"
-	"github.com/TitanCrew/isolet/deployment"
-	"github.com/TitanCrew/isolet/models"
+	"github.com/CyberLabs-Infosec/isolet/goapi/config"
+	"github.com/CyberLabs-Infosec/isolet/goapi/database"
+	"github.com/CyberLabs-Infosec/isolet/goapi/deployment"
+	"github.com/CyberLabs-Infosec/isolet/goapi/models"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"

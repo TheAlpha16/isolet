@@ -5,11 +5,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/TitanCrew/isolet/config"
-	"github.com/TitanCrew/isolet/database"
-	"github.com/TitanCrew/isolet/logs"
-	"github.com/TitanCrew/isolet/router"
-	"github.com/TitanCrew/isolet/utils"
+	"github.com/CyberLabs-Infosec/isolet/goapi/config"
+	"github.com/CyberLabs-Infosec/isolet/goapi/database"
+	"github.com/CyberLabs-Infosec/isolet/goapi/logs"
+	"github.com/CyberLabs-Infosec/isolet/goapi/router"
+	"github.com/CyberLabs-Infosec/isolet/goapi/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -48,28 +48,29 @@ func main() {
 
 	// Setup access logs
 	accessLogFile, err := os.OpenFile("./logs/access.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {log.Fatal(err)}
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer accessLogFile.Close()
 	aw := io.MultiWriter(os.Stdout, accessLogFile)
-	loggerConfig := logger.Config{Output: aw,}
+	loggerConfig := logger.Config{Output: aw}
 
 	// Initialize *fiber.App
 	app := fiber.New()
-	app.Use(logger.New(loggerConfig),) // Add Logger middleware with config
-	app.Use(recover.New()) // Prevent process exit due to Fatal()
-	router.SetupRoutes(app) // Setup routing
+	app.Use(logger.New(loggerConfig)) // Add Logger middleware with config
+	app.Use(recover.New())            // Prevent process exit due to Fatal()
+	router.SetupRoutes(app)           // Setup routing
 
 	log.Fatal(app.Listen(config.APP_PORT))
 }
 
-// TO-DO: 
+// TO-DO:
 // 1. Use helm
-// 2. 
+// 2.
 // 3. add resource contraints to pods
-// 4.  
-// 5. 
-// 6. 
+// 4.
+// 5.
+// 6.
 
 // 99. Remove client access from inside cluster for pods
 // 100. change app.Listen to app.ListenTLS
-

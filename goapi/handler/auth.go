@@ -5,11 +5,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/TitanCrew/isolet/config"
-	"github.com/TitanCrew/isolet/database"
-	"github.com/TitanCrew/isolet/middleware"
-	"github.com/TitanCrew/isolet/models"
-	"github.com/TitanCrew/isolet/utils"
+	"github.com/CyberLabs-Infosec/isolet/goapi/config"
+	"github.com/CyberLabs-Infosec/isolet/goapi/database"
+	"github.com/CyberLabs-Infosec/isolet/goapi/middleware"
+	"github.com/CyberLabs-Infosec/isolet/goapi/models"
+	"github.com/CyberLabs-Infosec/isolet/goapi/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -75,7 +75,7 @@ func Register(c *fiber.Ctx) error {
 	}
 
 	regForm.Password = utils.Hash(regForm.Password)
-	
+
 	if err := database.AddToVerify(regForm); err != nil {
 		log.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "please contact admin"})

@@ -1,9 +1,9 @@
 package router
 
 import (
-	"github.com/TitanCrew/isolet/config"
-	"github.com/TitanCrew/isolet/handler"
-	"github.com/TitanCrew/isolet/middleware"
+	"github.com/CyberLabs-Infosec/isolet/goapi/config"
+	"github.com/CyberLabs-Infosec/isolet/goapi/handler"
+	"github.com/CyberLabs-Infosec/isolet/goapi/middleware"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -16,7 +16,7 @@ func SetupRoutes(app *fiber.App) {
 		auth.Post("/login", handler.Login)
 		auth.Post("/register", handler.Register)
 		auth.Get("/verify", handler.Verify)
-		
+
 		api := app.Group("/api", middleware.CheckToken())
 		api.Get("/challs", handler.GetChalls)
 		api.Post("/launch", handler.StartInstance)

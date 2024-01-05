@@ -2,22 +2,22 @@ package deployment
 
 import (
 	"archive/tar"
+	"bufio"
 	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"text/template"
 	"time"
-	"bufio"
-	"encoding/json"
-	"errors"
 
-	"github.com/TitanCrew/isolet/config"
+	"github.com/CyberLabs-Infosec/isolet/goapi/config"
 
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/client"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/client"
 )
 
 type ErrorLine struct {
@@ -66,7 +66,7 @@ func BuildImage(instance_name string, flag string, level int, password string) e
 
 	opts := types.ImageBuildOptions{
 		Context:    DockerFile,
-		Tags: 		[]string{instance_name},
+		Tags:       []string{instance_name},
 		Dockerfile: "Dockerfile",
 		Remove:     true,
 	}
@@ -97,39 +97,39 @@ func GetParsedDockerfile(level int, flag string, password string, username strin
 	err = temp.Execute(&content, struct {
 		Username string
 		Password string
-		Flag string
-		Wargame string
+		Flag     string
+		Wargame  string
 	}{
 		Username: username,
 		Password: password,
-		Flag: flag,
-		Wargame: config.WARGAME_NAME,
+		Flag:     flag,
+		Wargame:  config.WARGAME_NAME,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-    filename := "Dockerfile"
+	filename := "Dockerfile"
 	buf := new(bytes.Buffer)
 	tarWriter := tar.NewWriter(buf)
 	defer tarWriter.Close()
 
-    tarHeader := &tar.Header{
-        Name: filename,
-        Size: int64(len(content.Bytes())),
-    }
+	tarHeader := &tar.Header{
+		Name: filename,
+		Size: int64(len(content.Bytes())),
+	}
 
-    err = tarWriter.WriteHeader(tarHeader)
-    if err != nil {
-        return nil, err
-    }
+	err = tarWriter.WriteHeader(tarHeader)
+	if err != nil {
+		return nil, err
+	}
 
-    _, err = tarWriter.Write(content.Bytes())
-    if err != nil {
-        return nil, err
-    }
+	_, err = tarWriter.Write(content.Bytes())
+	if err != nil {
+		return nil, err
+	}
 
-    dockerFileTarReader := bytes.NewReader(buf.Bytes())
+	dockerFileTarReader := bytes.NewReader(buf.Bytes())
 	return dockerFileTarReader, nil
 }
 
@@ -141,7 +141,7 @@ func DeleteImage(imageIDs []string) error {
 
 	for _, id := range imageIDs {
 		_, err := cli.ImageRemove(context.Background(), id, types.ImageRemoveOptions{
-			Force: true,
+			Force:         true,
 			PruneChildren: true,
 		})
 		if err != nil {
@@ -181,9 +181,9 @@ func ImageExists(image string) ([]string, bool, error) {
 	}
 
 	filters := filters.NewArgs()
-	filters.Add("reference", image + ":latest")
+	filters.Add("reference", image+":latest")
 
-	opts := types.ImageListOptions {
+	opts := types.ImageListOptions{
 		Filters: filters,
 	}
 
