@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/TitanCrew/isolet/config"
-	"github.com/TitanCrew/isolet/database"
-	"github.com/TitanCrew/isolet/utils"
+	"github.com/CyberLabs-Infosec/isolet/goapi/config"
+	"github.com/CyberLabs-Infosec/isolet/goapi/database"
+	"github.com/CyberLabs-Infosec/isolet/goapi/utils"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -112,10 +112,6 @@ func DeployInstance(userid int, level int) (string, int32, string, error) {
 		return "", -1, "", err
 	}
 	port := createdService.Spec.Ports[0].NodePort
-	// ExternalIPs := createdService.Spec.ExternalIPs
-	// if len(ExternalIPs) > 0 {
-	// 	hostname = ExternalIPs[0]
-	// }
 
 	nodes, err := kubeclient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
@@ -167,6 +163,11 @@ func DeleteInstance(userid int, level int) error {
 			return err
 		}
 
+		if err := database.DeleteRunning(userid, level); err != nil {
+			log.Println(err)
+			return err
+		}
+
 		return nil
 	}
 
@@ -206,7 +207,7 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 			Labels: map[string]string{
 				"level":  fmt.Sprintf("%d", level),
 				"userid": fmt.Sprintf("%d", userid),
-				"app": "instance",
+				"app":    "instance",
 			},
 		},
 		Spec: core.PodSpec{
@@ -224,12 +225,12 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 					},
 					Resources: core.ResourceRequirements{
 						Limits: core.ResourceList{
-							core.ResourceName(core.ResourceCPU):    resource.MustParse(config.CPU_LIMIT),
-							core.ResourceName(core.ResourceMemory): resource.MustParse(config.MEMORY_LIMIT),
+							core.ResourceName(core.ResourceCPU):              resource.MustParse(config.CPU_LIMIT),
+							core.ResourceName(core.ResourceMemory):           resource.MustParse(config.MEMORY_LIMIT),
 							core.ResourceName(core.ResourceEphemeralStorage): resource.MustParse(config.DISK_LIMIT),
 						},
 						Requests: core.ResourceList{
-							core.ResourceName(core.ResourceCPU): resource.MustParse(config.CPU_REQUEST),
+							core.ResourceName(core.ResourceCPU):    resource.MustParse(config.CPU_REQUEST),
 							core.ResourceName(core.ResourceMemory): resource.MustParse(config.MEMORY_REQUEST),
 						},
 					},
@@ -274,7 +275,7 @@ func getServiceObject(instance_name string, level int, userid int) *core.Service
 			Selector: map[string]string{
 				"level":  fmt.Sprintf("%d", level),
 				"userid": fmt.Sprintf("%d", userid),
-				"app": "instance",
+				"app":    "instance",
 			},
 		},
 	}
