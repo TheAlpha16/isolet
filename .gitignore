@@ -6,5 +6,7 @@ kubernetes/configuration/app-secrets.yml.local
 
 levels/
 
+ripper/.env
+
 notes.txt
 .DS_Store
