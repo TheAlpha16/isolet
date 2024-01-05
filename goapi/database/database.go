@@ -7,8 +7,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/TitanCrew/isolet/config"
-	"github.com/TitanCrew/isolet/models"
+	"github.com/CyberLabs-Infosec/isolet/goapi/config"
+	"github.com/CyberLabs-Infosec/isolet/goapi/models"
 
 	_ "github.com/lib/pq"
 )
@@ -24,7 +24,7 @@ func Connect() error {
 	if err != nil {
 		return err
 	}
-	
+
 	return DB.Ping()
 }
 

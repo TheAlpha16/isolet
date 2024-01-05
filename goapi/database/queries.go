@@ -3,13 +3,13 @@ package database
 import (
 	"crypto/rand"
 	"crypto/sha256"
-	"strconv"
 	"errors"
-	"log"
 	"fmt"
+	"log"
+	"strconv"
 
-	// "github.com/TitanCrew/isolet/config"
-	"github.com/TitanCrew/isolet/models"
+	// "github.com/CyberLabs-Infosec/isolet/goapi/config"
+	"github.com/CyberLabs-Infosec/isolet/goapi/models"
 	"github.com/lib/pq"
 )
 
@@ -114,7 +114,7 @@ func UserExists(userid int) bool {
 	var username string
 	if err := DB.QueryRow(`SELECT username FROM users WHERE userid = $1`, userid).Scan(&username); err != nil {
 		return false
-	} 
+	}
 	return true
 }
 
@@ -157,7 +157,7 @@ func ValidChallenge(level int) bool {
 	var chall_name string
 	if err := DB.QueryRow(`SELECT chall_name FROM challenges WHERE level = $1`, level).Scan(&chall_name); err != nil {
 		return false
-	} 
+	}
 	return true
 }
 
@@ -198,13 +198,13 @@ func VerifyFlag(level int, userid int, flag string) (bool, string) {
 		if currentlevel != level {
 			return false, fmt.Sprintf("Correct flag! no points added. Current level: %d Submitted level: %d", currentlevel, level)
 		}
-		DB.Query(`UPDATE users SET score = $1 WHERE userid = $2`, level + 1, userid)
+		DB.Query(`UPDATE users SET score = $1 WHERE userid = $2`, level+1, userid)
 
 		if err := DB.QueryRow(`SELECT solves FROM challenges WHERE level = $1`, level).Scan(&currentSolves); err != nil {
 			log.Println(err)
 			return false, "error in verification, please contact admin"
 		}
-		DB.Query(`UPDATE challenges SET solves = $1 WHERE level = $2`, currentSolves + 1, level)
+		DB.Query(`UPDATE challenges SET solves = $1 WHERE level = $2`, currentSolves+1, level)
 
 		return true, "correct flag"
 	}
@@ -212,7 +212,7 @@ func VerifyFlag(level int, userid int, flag string) (bool, string) {
 	if err := DB.QueryRow(`SELECT userid FROM flags WHERE level = $1 AND flag = $2`, level, flag).Scan(&otheruser); err != nil {
 		return false, "incorrect flag"
 	}
-	log.Printf("PLAG: %d submitted %d flag for level %d\n", userid, otheruser, level) 
+	log.Printf("PLAG: %d submitted %d flag for level %d\n", userid, otheruser, level)
 	return false, "flag copy detected, incident reported!"
 }
 
