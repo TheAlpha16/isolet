@@ -1,4 +1,4 @@
-module github.com/TitanCrew/isolet
+module github.com/CyberLabs-Infosec/isolet/goapi
 
 go 1.21.5
 
