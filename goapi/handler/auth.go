@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/CyberLabs-Infosec/isolet/goapi/config"
@@ -24,6 +25,11 @@ func Login(c *fiber.Ctx) error {
 	if creds.Email == "" || creds.Password == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "username and password required"})
 	}
+
+	creds.Email = strings.TrimSpace(creds.Email)
+	creds.Password = strings.TrimSpace(creds.Password)
+
+	creds.Email = strings.ToLower(creds.Email)
 
 	isValid, message := utils.ValidateLoginInput(creds)
 	if !isValid {
@@ -64,6 +70,14 @@ func Register(c *fiber.Ctx) error {
 	if regForm.Email == "" || regForm.Username == "" || regForm.Password == "" || regForm.Confirm == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "all fields are required"})
 	}
+
+	regForm.Email = strings.TrimSpace(regForm.Email)
+	regForm.Username = strings.TrimSpace(regForm.Username)
+	regForm.Password = strings.TrimSpace(regForm.Password)
+	regForm.Confirm = strings.TrimSpace(regForm.Confirm)
+
+	regForm.Email = strings.ToLower(regForm.Email)
+	regForm.Username = strings.ToLower(regForm.Username)
 
 	if isOK, status := utils.ValidateRegisterInput(regForm); !isOK {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": status})
