@@ -75,7 +75,7 @@ spec:
             - name: INSTANCE_TIME
               valueFrom:
                 secretKeyRef:
-                  name: app-secrets
+                  name: app-config
                   key: instance_time
 
             - name: INSTANCE_NAME_SECRET
