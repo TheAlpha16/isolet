@@ -58,7 +58,7 @@ func DeleteInstance(userid int, level int) error {
 	instance_name := utils.GetInstanceName(userid, level)
 	kubeclient, err := GetKubeClient()
 	if err != nil {
-		log.Printf("%s - ERROR: userid=%d, level=%d %s\n", time.Now().Format(time.UnixDate), userid, level, err.Error())
+		log.Printf("ERROR: userid=%d, level=%d %s\n", userid, level, err.Error())
 		return err
 	}
 
@@ -66,25 +66,25 @@ func DeleteInstance(userid int, level int) error {
 	if err != nil {
 
 		if !strings.Contains(err.Error(), "not found") {
-			log.Printf("%s - ERROR: userid=%d, level=%d %s\n", time.Now().Format(time.UnixDate), userid, level, err.Error())
+			log.Printf("ERROR: userid=%d, level=%d %s\n", userid, level, err.Error())
 			return err
 		}
 
 		err = kubeclient.CoreV1().Services(config.INSTANCE_NAMESPACE).Delete(context.TODO(), fmt.Sprintf("svc-%s", instance_name), metav1.DeleteOptions{})
 		if err != nil {
 			if !strings.Contains(err.Error(), "not found") {
-				log.Printf("%s - ERROR: userid=%d, level=%d %s\n", time.Now().Format(time.UnixDate), userid, level, err.Error())
+				log.Printf("ERROR: userid=%d, level=%d %s\n", userid, level, err.Error())
 				return err
 			}
 		}
 
 		if err := database.DeleteFlag(userid, level); err != nil {
-			log.Printf("%s - ERROR: userid=%d, level=%d %s\n", time.Now().Format(time.UnixDate), userid, level, err.Error())
+			log.Printf("ERROR: userid=%d, level=%d %s\n", userid, level, err.Error())
 			return err
 		}
 
 		if err := database.DeleteRunning(userid, level); err != nil {
-			log.Printf("%s - ERROR: userid=%d, level=%d %s\n", time.Now().Format(time.UnixDate), userid, level, err.Error())
+			log.Printf("ERROR: userid=%d, level=%d %s\n", userid, level, err.Error())
 			return err
 		}
 
@@ -101,18 +101,18 @@ func DeleteInstance(userid int, level int) error {
 	err = kubeclient.CoreV1().Services(config.INSTANCE_NAMESPACE).Delete(context.TODO(), fmt.Sprintf("svc-%s", instance_name), metav1.DeleteOptions{})
 	if err != nil {
 		if !strings.Contains(err.Error(), "not found") {
-			log.Printf("%s - ERROR: userid=%d, level=%d %s\n", time.Now().Format(time.UnixDate), userid, level, err.Error())
+			log.Printf("ERROR: userid=%d, level=%d %s\n", userid, level, err.Error())
 			return err
 		}
 	}
 
 	if err := database.DeleteFlag(userid, level); err != nil {
-		log.Printf("%s - ERROR: userid=%d, level=%d %s\n", time.Now().Format(time.UnixDate), userid, level, err.Error())
+		log.Printf("ERROR: userid=%d, level=%d %s\n", userid, level, err.Error())
 		return err
 	}
 
 	if err := database.DeleteRunning(userid, level); err != nil {
-		log.Printf("%s - ERROR: userid=%d, level=%d %s\n", time.Now().Format(time.UnixDate), userid, level, err.Error())
+		log.Printf("ERROR: userid=%d, level=%d %s\n", userid, level, err.Error())
 		return err
 	}
 
@@ -122,48 +122,34 @@ func DeleteInstance(userid int, level int) error {
 func EvictPods() error {
 	kubeclient, err := GetKubeClient()
 	if err != nil {
-		log.Printf("%s - ERROR: %s\n", time.Now().Format(time.UnixDate), err.Error())
+		log.Printf("ERROR: %s\n", err.Error())
 		return err
 	}
 
 	pods, err := kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		log.Printf("%s - ERROR: %s\n", time.Now().Format(time.UnixDate), err.Error())
+		log.Printf("ERROR: %s\n", err.Error())
 		return err
 	}
 
-	for i := 0; i < len(pods.Items); i++ {
-		pod := pods.Items[i]
+	for _, pod := range pods.Items {
 		userid, _ := strconv.Atoi(pod.Labels["userid"])
 		level, _ := strconv.Atoi(pod.Labels["level"])
 
-		// remove failed and unknown pods
-		// if pod.Status.Phase == core.PodFailed {
-		// 	log.Printf("%s - DELETE: userid=%d, level=%d started=%s\n", time.Now().Format(time.UnixDate), userid, level, startTime.Format(time.UnixDate))
-		// 	_ = DeleteInstance(userid, level)
-		// 	continue
-		// }
-
-		// if pod.Status.Phase == core.PodUnknown {
-		// 	log.Printf("%s - DELETE: userid=%d, level=%d started=%s\n", time.Now().Format(time.UnixDate), userid, level, startTime.Format(time.UnixDate))
-		// 	_ = DeleteInstance(userid, level)
-		// 	continue
-		// }
-
-		// if pod.Status.Phase == core.PodSucceeded {
-		// 	log.Printf("%s - DELETE: userid=%d, level=%d started=%s\n", time.Now().Format(time.UnixDate), userid, level, startTime.Format(time.UnixDate))
-		// 	_ = DeleteInstance(userid, level)
-		// 	continue
-		// }
-
 		if pod.Status.Phase != core.PodRunning {
-			log.Println("continuing..")
 			continue
 		}
 
-		startTime := pod.Status.StartTime.Time
-		if startTime.Add(time.Minute * time.Duration(config.INSTANCE_TIME)).After(metav1.Now().Time) {
-			log.Printf("%s - DELETE: userid=%d, level=%d started=%s\n", time.Now().Format(time.UnixDate), userid, level, startTime.Format(time.UnixDate))
+		podStartTime := pod.Status.StartTime
+		if podStartTime == nil {
+			continue
+		}
+
+		startTime := time.Unix(podStartTime.Unix(), 0)
+		endTime := startTime.Add(time.Minute * time.Duration(config.INSTANCE_TIME))
+
+		if !time.Now().Before(endTime) {
+			log.Printf("DELETE: userid=%d, level=%d", userid, level)
 			_ = DeleteInstance(userid, level)
 		}
 	}
@@ -172,19 +158,18 @@ func EvictPods() error {
 }
 
 func main() {
-	log.Printf("%s - LOG: Starting ripper...\n", time.Now().Format(time.UnixDate))
-	log.Printf("%s - LOG: Connecting to DB...\n", time.Now().Format(time.UnixDate))
+	log.Printf("LOG: Starting ripper...\n")
+	log.Printf("LOG: Connecting to DB...\n")
 
 	if err := database.Connect(); err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("%s - LOG: DB connection established\n", time.Now().Format(time.UnixDate))
+	log.Printf("LOG: DB connection established\n")
 
 	for {
 		err := EvictPods()
 		if err != nil {
-			log.Printf("%s - ERROR: %s\n", time.Now().Format(time.UnixDate), err.Error())
+			log.Printf("ERROR: %s\n", err.Error())
 		}
-		// time.Sleep(time.Minute * time.Duration(1))
 	}
 }
