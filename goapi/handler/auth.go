@@ -26,6 +26,11 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "username and password required"})
 	}
 
+	creds.Email = strings.TrimSpace(creds.Email)
+	creds.Password = strings.TrimSpace(creds.Password)
+
+	creds.Email = strings.ToLower(creds.Email)
+
 	isValid, message := utils.ValidateLoginInput(creds)
 	if !isValid {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": message})
