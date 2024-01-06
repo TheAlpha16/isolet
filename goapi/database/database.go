@@ -3,6 +3,8 @@ package database
 import (
 	"database/sql"
 	"encoding/json"
+	"context"
+	"time"
 	"fmt"
 	"io"
 	"os"
@@ -25,7 +27,13 @@ func Connect() error {
 		return err
 	}
 
-	return DB.Ping()
+	DB.SetMaxOpenConns(25)
+	DB.SetMaxIdleConns(25)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return DB.PingContext(ctx)
 }
 
 func PopulateChalls() error {

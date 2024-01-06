@@ -32,7 +32,7 @@ func Login(c *fiber.Ctx) error {
 
 	creds.Password = utils.Hash(creds.Password)
 
-	if err := database.ValidateCreds(creds, user); err != nil {
+	if err := database.ValidateCreds(c, creds, user); err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "invalid credentials"})
 	}
 
@@ -76,7 +76,7 @@ func Register(c *fiber.Ctx) error {
 
 	regForm.Password = utils.Hash(regForm.Password)
 
-	if err := database.AddToVerify(regForm); err != nil {
+	if err := database.AddToVerify(c, regForm); err != nil {
 		log.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "please contact admin"})
 	}
@@ -106,7 +106,7 @@ func Verify(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString("error in token, register again!")
 	}
 
-	if message, err := database.AddToUsers(claims.Email); err != nil {
+	if message, err := database.AddToUsers(c, claims.Email); err != nil {
 		log.Println(err)
 		return c.Status(fiber.StatusInternalServerError).SendString(message)
 	}

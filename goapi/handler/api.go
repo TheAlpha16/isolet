@@ -33,7 +33,7 @@ func GetStatus(c *fiber.Ctx) error {
 		}
 	}
 
-	instances, err := database.GetInstances(userid)
+	instances, err := database.GetInstances(c, userid)
 	if err != nil {
 		log.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "contact admin"})
@@ -42,7 +42,7 @@ func GetStatus(c *fiber.Ctx) error {
 }
 
 func GetChalls(c *fiber.Ctx) error {
-	challenges, err := database.ReadChallenges()
+	challenges, err := database.ReadChallenges(c)
 	if err != nil {
 		log.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in reading challenges"})
@@ -79,31 +79,31 @@ func StartInstance(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid level"})
 	}
 
-	if !database.UserExists(userid) {
+	if !database.UserExists(c, userid) {
 		if !config.DISCORD_FRONTEND {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "user does not exist"})
 		}
-		database.AddToUsersDiscord(userid)
+		database.AddToUsersDiscord(c, userid)
 	}
 
-	if !database.ValidChallenge(level) {
+	if !database.ValidChallenge(c, level) {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "level does not exist"})
 	}
 
-	if !database.CanStartInstance(userid, level) {
+	if !database.CanStartInstance(c, userid, level) {
 		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"status": "failure", "message": "concurrent instances limit reached"})
 	}
 
-	password, port, hostname, err := deployment.DeployInstance(userid, level)
+	password, port, hostname, err := deployment.DeployInstance(c, userid, level)
 	if err != nil {
-		database.DeleteRunning(userid, level)
+		database.DeleteRunning(c, userid, level)
 		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": "error in initiating instance, contact admin"})
 	}
 
 	packed, err := json.Marshal(models.AccessDetails{Password: password, Port: port, Hostname: hostname})
 	if err != nil {
 		log.Println(err)
-		deployment.DeleteInstance(userid, level)
+		deployment.DeleteInstance(c, userid, level)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in initiating instance, contact admin"})
 	}
 
@@ -139,15 +139,15 @@ func StopInstance(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid level"})
 	}
 
-	if !database.UserExists(userid) {
+	if !database.UserExists(c, userid) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "user does not exist"})
 	}
 
-	if !database.ValidFlagEntry(level, userid) {
+	if !database.ValidFlagEntry(c, level, userid) {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "instance stopped, reload page"})
 	}
 
-	if err := deployment.DeleteInstance(userid, level); err != nil {
+	if err := deployment.DeleteInstance(c, userid, level); err != nil {
 		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": "error in stopping instance, contact admin"})
 	}
 
@@ -188,15 +188,15 @@ func SubmitFlag(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid level"})
 	}
 
-	if !database.UserExists(userid) {
+	if !database.UserExists(c, userid) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "user does not exist"})
 	}
 
-	if !database.ValidFlagEntry(level, userid) {
+	if !database.ValidFlagEntry(c, level, userid) {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "instance not running"})
 	}
 
-	if isOK, message := database.VerifyFlag(level, userid, flag); !isOK {
+	if isOK, message := database.VerifyFlag(c, level, userid, flag); !isOK {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "failure", "message": message})
 	}
 
@@ -204,7 +204,7 @@ func SubmitFlag(c *fiber.Ctx) error {
 }
 
 func ShowScoreBoard(c *fiber.Ctx) error {
-	board, err := database.ReadScores()
+	board, err := database.ReadScores(c)
 	if err != nil {
 		log.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in reading scores"})
