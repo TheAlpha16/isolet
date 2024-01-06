@@ -10,6 +10,7 @@ import (
 	"github.com/CyberLabs-Infosec/isolet/goapi/config"
 	"github.com/CyberLabs-Infosec/isolet/goapi/database"
 	"github.com/CyberLabs-Infosec/isolet/goapi/utils"
+	"github.com/gofiber/fiber/v2"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -54,7 +55,7 @@ func GetKubeClient() (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
-func DeployInstance(userid int, level int) (string, int32, string, error) {
+func DeployInstance(c *fiber.Ctx, userid int, level int) (string, int32, string, error) {
 	instance_name := utils.GetInstanceName(userid, level)
 	password := database.GenerateRandom()[0:32]
 	flag := config.WARGAME_NAME + "{" + database.GenerateRandom()[0:32] + "}"
@@ -126,7 +127,7 @@ func DeployInstance(userid int, level int) (string, int32, string, error) {
 		}
 	}
 
-	if err := database.NewFlag(userid, level, password, flag, port, hostname); err != nil {
+	if err := database.NewFlag(c, userid, level, password, flag, port, hostname); err != nil {
 		log.Println(err)
 		return "", -1, "", err
 	}
@@ -134,7 +135,7 @@ func DeployInstance(userid int, level int) (string, int32, string, error) {
 	return password, port, hostname, nil
 }
 
-func DeleteInstance(userid int, level int) error {
+func DeleteInstance(c *fiber.Ctx, userid int, level int) error {
 	instance_name := utils.GetInstanceName(userid, level)
 	kubeclient, err := GetKubeClient()
 	if err != nil {
@@ -158,12 +159,12 @@ func DeleteInstance(userid int, level int) error {
 			}
 		}
 
-		if err := database.DeleteFlag(userid, level); err != nil {
+		if err := database.DeleteFlag(c, userid, level); err != nil {
 			log.Println(err)
 			return err
 		}
 
-		if err := database.DeleteRunning(userid, level); err != nil {
+		if err := database.DeleteRunning(c, userid, level); err != nil {
 			log.Println(err)
 			return err
 		}
@@ -186,12 +187,12 @@ func DeleteInstance(userid int, level int) error {
 		}
 	}
 
-	if err := database.DeleteFlag(userid, level); err != nil {
+	if err := database.DeleteFlag(c, userid, level); err != nil {
 		log.Println(err)
 		return err
 	}
 
-	if err := database.DeleteRunning(userid, level); err != nil {
+	if err := database.DeleteRunning(c, userid, level); err != nil {
 		log.Println(err)
 		return err
 	}

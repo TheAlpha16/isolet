@@ -1,15 +1,18 @@
 package database
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/sha256"
 	"errors"
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
-	// "github.com/CyberLabs-Infosec/isolet/goapi/config"
 	"github.com/CyberLabs-Infosec/isolet/goapi/models"
+
+	"github.com/gofiber/fiber/v2"
 	"github.com/lib/pq"
 )
 
@@ -19,8 +22,11 @@ func GenerateRandom() string {
 	return fmt.Sprintf("%x", sha256.Sum256(buffer))
 }
 
-func ValidateCreds(creds *models.Creds, user *models.User) error {
-	if err := DB.QueryRow(`SELECT userid, email, rank FROM users WHERE email = $1 AND password = $2`, creds.Email, creds.Password).Scan(&user.UserID, &user.Email, &user.Rank); err != nil {
+func ValidateCreds(c *fiber.Ctx, creds *models.Creds, user *models.User) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	if err := DB.QueryRowContext(ctx, `SELECT userid, email, rank FROM users WHERE email = $1 AND password = $2`, creds.Email, creds.Password).Scan(&user.UserID, &user.Email, &user.Rank); err != nil {
 		log.Println(err)
 		return err
 	}
@@ -46,36 +52,45 @@ func EmailExists(email string) bool {
 	return false
 }
 
-func AddToVerify(user *models.User) error {
-	if _, err := DB.Query(`DELETE FROM toverify WHERE email = $1`, user.Email); err != nil {
+func AddToVerify(c *fiber.Ctx, user *models.User) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	if _, err := DB.QueryContext(ctx, `DELETE FROM toverify WHERE email = $1`, user.Email); err != nil {
 		return err
 	}
-	if _, err := DB.Query(`INSERT INTO toverify (email, username, password) VALUES ($1, $2, $3)`, user.Email, user.Username, user.Password); err != nil {
+	if _, err := DB.QueryContext(ctx, `INSERT INTO toverify (email, username, password) VALUES ($1, $2, $3)`, user.Email, user.Username, user.Password); err != nil {
 		return err
 	}
 	return nil
 }
 
-func AddToUsers(email string) (string, error) {
+func AddToUsers(c *fiber.Ctx, email string) (string, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
 	userData := new(models.User)
 
 	if EmailExists(email) {
 		return "user already exists", errors.New("token already verified")
 	}
 
-	if err := DB.QueryRow(`SELECT email, username, password FROM toverify WHERE email = $1`, email).Scan(&userData.Email, &userData.Username, &userData.Password); err != nil {
+	if err := DB.QueryRowContext(ctx, `SELECT email, username, password FROM toverify WHERE email = $1`, email).Scan(&userData.Email, &userData.Username, &userData.Password); err != nil {
 		return "token expired, please register again", err
 	}
-	if _, err := DB.Query(`INSERT INTO users (email, username, password) VALUES ($1, $2, $3)`, userData.Email, userData.Username, userData.Password); err != nil {
+	if _, err := DB.QueryContext(ctx, `INSERT INTO users (email, username, password) VALUES ($1, $2, $3)`, userData.Email, userData.Username, userData.Password); err != nil {
 		log.Println(err.Error())
 		return "error in creating user, please contact admin", err
 	}
-	_, _ = DB.Query(`DELETE FROM toverify WHERE email = $1`, userData.Email)
+	_, _ = DB.QueryContext(ctx, `DELETE FROM toverify WHERE email = $1`, userData.Email)
 	return "", nil
 }
 
-func AddToUsersDiscord(userid int) (string, error) {
-	if _, err := DB.Query(`INSERT INTO users (userid, email, username, password) VALUES ($1, $2, $3, $4)`, userid, strconv.Itoa(userid), strconv.Itoa(userid), GenerateRandom()); err != nil {
+func AddToUsersDiscord(c *fiber.Ctx, userid int) (string, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	if _, err := DB.QueryContext(ctx, `INSERT INTO users (userid, email, username, password) VALUES ($1, $2, $3, $4)`, userid, strconv.Itoa(userid), strconv.Itoa(userid), GenerateRandom()); err != nil {
 		log.Println(err.Error())
 		return "error in creating user, please contact admin", err
 	}
@@ -83,15 +98,24 @@ func AddToUsersDiscord(userid int) (string, error) {
 }
 
 func AddToChallenges(chall models.Challenge) error {
-	if _, err := DB.Query(`INSERT INTO challenges (level, chall_name, prompt, tags) VALUES ($1, $2, $3, $4) ON CONFLICT (level) DO UPDATE SET chall_name = $2, prompt = $3, tags = $4`, chall.Level, chall.Name, chall.Prompt, pq.Array(chall.Tags)); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	rows, err := DB.QueryContext(ctx, `INSERT INTO challenges (level, chall_name, prompt, tags) VALUES ($1, $2, $3, $4) ON CONFLICT (level) DO UPDATE SET chall_name = $2, prompt = $3, tags = $4`, chall.Level, chall.Name, chall.Prompt, pq.Array(chall.Tags))
+	if err != nil {
 		return err
 	}
+	defer rows.Close()
+
 	return nil
 }
 
-func ReadChallenges() ([]models.Challenge, error) {
+func ReadChallenges(c *fiber.Ctx) ([]models.Challenge, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
 	challenges := make([]models.Challenge, 0)
-	rows, err := DB.Query(`SELECT level, chall_name, prompt, solves, tags from challenges ORDER BY level ASC`)
+	rows, err := DB.QueryContext(ctx, `SELECT level, chall_name, prompt, solves, tags from challenges ORDER BY level ASC`)
 	if err != nil {
 		return challenges, err
 	}
@@ -110,73 +134,95 @@ func ReadChallenges() ([]models.Challenge, error) {
 	return challenges, nil
 }
 
-func UserExists(userid int) bool {
+func UserExists(c *fiber.Ctx, userid int) bool {
 	var username string
-	if err := DB.QueryRow(`SELECT username FROM users WHERE userid = $1`, userid).Scan(&username); err != nil {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	if err := DB.QueryRowContext(ctx, `SELECT username FROM users WHERE userid = $1`, userid).Scan(&username); err != nil {
 		return false
 	}
 	return true
 }
 
-func CanStartInstance(userid int, level int) bool {
+func CanStartInstance(c *fiber.Ctx, userid int, level int) bool {
 	var runid int
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
 
-	if err := DB.QueryRow(`SELECT runid FROM running WHERE userid = $1 AND level = $2`, userid, level).Scan(&runid); err == nil {
+	if err := DB.QueryRowContext(ctx, `SELECT runid FROM running WHERE userid = $1 AND level = $2`, userid, level).Scan(&runid); err == nil {
 		return false
 	}
 
-	if _, err := DB.Query(`INSERT INTO running (userid, level) VALUES ($1, $2)`, userid, level); err != nil {
+	if _, err := DB.QueryContext(ctx, `INSERT INTO running (userid, level) VALUES ($1, $2)`, userid, level); err != nil {
 		log.Println(err)
 		return false
 	}
 	return true
 }
 
-func DeleteRunning(userid int, level int) error {
-	if _, err := DB.Query(`DELETE FROM running WHERE userid = $1 AND level = $2`, userid, level); err != nil {
+func DeleteRunning(c *fiber.Ctx, userid int, level int) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+	
+	if _, err := DB.QueryContext(ctx, `DELETE FROM running WHERE userid = $1 AND level = $2`, userid, level); err != nil {
 		return err
 	}
 	return nil
 }
 
-func NewFlag(userid int, level int, password string, flag string, port int32, hostname string) error {
-	if _, err := DB.Query(`INSERT INTO flags (userid, level, flag, password, port, hostname) VALUES ($1, $2, $3, $4, $5, $6)`, userid, level, flag, password, port, hostname); err != nil {
+func NewFlag(c *fiber.Ctx, userid int, level int, password string, flag string, port int32, hostname string) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+	
+	if _, err := DB.QueryContext(ctx, `INSERT INTO flags (userid, level, flag, password, port, hostname) VALUES ($1, $2, $3, $4, $5, $6)`, userid, level, flag, password, port, hostname); err != nil {
 		return err
 	}
 	return nil
 }
 
-func DeleteFlag(userid int, level int) error {
-	if _, err := DB.Query(`DELETE FROM flags WHERE userid = $1 AND level = $2`, userid, level); err != nil {
+func DeleteFlag(c *fiber.Ctx, userid int, level int) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+	
+	if _, err := DB.QueryContext(ctx, `DELETE FROM flags WHERE userid = $1 AND level = $2`, userid, level); err != nil {
 		return err
 	}
 	return nil
 }
 
-func ValidChallenge(level int) bool {
+func ValidChallenge(c *fiber.Ctx, level int) bool {
 	var chall_name string
-	if err := DB.QueryRow(`SELECT chall_name FROM challenges WHERE level = $1`, level).Scan(&chall_name); err != nil {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	if err := DB.QueryRowContext(ctx, `SELECT chall_name FROM challenges WHERE level = $1`, level).Scan(&chall_name); err != nil {
 		return false
 	}
 	return true
 }
 
-func ValidFlagEntry(level int, userid int) bool {
+func ValidFlagEntry(c *fiber.Ctx, level int, userid int) bool {
 	var flag string
-	if err := DB.QueryRow(`SELECT flag FROM flags WHERE level = $1 AND userid = $2`, level, userid).Scan(&flag); err != nil {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+	
+	if err := DB.QueryRowContext(ctx, `SELECT flag FROM flags WHERE level = $1 AND userid = $2`, level, userid).Scan(&flag); err != nil {
 		return false
 	}
 	return true
 }
 
-func VerifyFlag(level int, userid int, flag string) (bool, string) {
+func VerifyFlag(c *fiber.Ctx, level int, userid int, flag string) (bool, string) {
 	var isVerified bool
 	var acutalflag string
 	var otheruser int
 	var currentlevel int
 	var currentSolves int
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
 
-	if err := DB.QueryRow(`SELECT verified FROM flags WHERE level = $1 AND userid = $2`, level, userid).Scan(&isVerified); err != nil {
+	if err := DB.QueryRowContext(ctx, `SELECT verified FROM flags WHERE level = $1 AND userid = $2`, level, userid).Scan(&isVerified); err != nil {
 		log.Println(err)
 		return false, "error in verification, please contact admin"
 	}
@@ -184,41 +230,44 @@ func VerifyFlag(level int, userid int, flag string) (bool, string) {
 		return false, "flag already verified"
 	}
 
-	if err := DB.QueryRow(`SELECT flag FROM flags WHERE level = $1 AND userid = $2`, level, userid).Scan(&acutalflag); err != nil {
+	if err := DB.QueryRowContext(ctx, `SELECT flag FROM flags WHERE level = $1 AND userid = $2`, level, userid).Scan(&acutalflag); err != nil {
 		log.Println(err)
 		return false, "error in verification, please contact admin"
 	}
 
 	if flag == acutalflag {
-		DB.Query(`UPDATE flags SET verified = $1 WHERE userid = $2 AND level = $3`, true, userid, level)
-		if err := DB.QueryRow(`SELECT score FROM users WHERE userid = $1`, userid).Scan(&currentlevel); err != nil {
+		DB.QueryContext(ctx, `UPDATE flags SET verified = $1 WHERE userid = $2 AND level = $3`, true, userid, level)
+		if err := DB.QueryRowContext(ctx, `SELECT score FROM users WHERE userid = $1`, userid).Scan(&currentlevel); err != nil {
 			log.Println(err)
 			return false, "error in verification, please contact admin"
 		}
 		if currentlevel != level {
 			return false, fmt.Sprintf("Correct flag! no points added. Current level: %d Submitted level: %d", currentlevel, level)
 		}
-		DB.Query(`UPDATE users SET score = $1 WHERE userid = $2`, level+1, userid)
+		DB.QueryContext(ctx, `UPDATE users SET score = $1 WHERE userid = $2`, level+1, userid)
 
-		if err := DB.QueryRow(`SELECT solves FROM challenges WHERE level = $1`, level).Scan(&currentSolves); err != nil {
+		if err := DB.QueryRowContext(ctx, `SELECT solves FROM challenges WHERE level = $1`, level).Scan(&currentSolves); err != nil {
 			log.Println(err)
 			return false, "error in verification, please contact admin"
 		}
-		DB.Query(`UPDATE challenges SET solves = $1 WHERE level = $2`, currentSolves+1, level)
+		DB.QueryContext(ctx, `UPDATE challenges SET solves = $1 WHERE level = $2`, currentSolves+1, level)
 
 		return true, "correct flag"
 	}
 
-	if err := DB.QueryRow(`SELECT userid FROM flags WHERE level = $1 AND flag = $2`, level, flag).Scan(&otheruser); err != nil {
+	if err := DB.QueryRowContext(ctx, `SELECT userid FROM flags WHERE level = $1 AND flag = $2`, level, flag).Scan(&otheruser); err != nil {
 		return false, "incorrect flag"
 	}
 	log.Printf("PLAG: %d submitted %d flag for level %d\n", userid, otheruser, level)
 	return false, "flag copy detected, incident reported!"
 }
 
-func GetInstances(userid int) ([]models.Instance, error) {
+func GetInstances(c *fiber.Ctx, userid int) ([]models.Instance, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
 	instances := make([]models.Instance, 0)
-	rows, err := DB.Query(`SELECT userid, level, password, port, verified, hostname from flags WHERE userid = $1`, userid)
+	rows, err := DB.QueryContext(ctx, `SELECT userid, level, password, port, verified, hostname from flags WHERE userid = $1`, userid)
 	if err != nil {
 		return instances, err
 	}
@@ -237,9 +286,12 @@ func GetInstances(userid int) ([]models.Instance, error) {
 	return instances, nil
 }
 
-func ReadScores() ([]models.Score, error) {
+func ReadScores(c *fiber.Ctx) ([]models.Score, error) {
 	scores := make([]models.Score, 0)
-	rows, err := DB.Query(`SELECT username, score from users ORDER BY score DESC`)
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+	
+	rows, err := DB.QueryContext(ctx, `SELECT username, score from users ORDER BY score DESC`)
 	if err != nil {
 		return scores, err
 	}

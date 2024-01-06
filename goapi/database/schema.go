@@ -3,6 +3,8 @@ package database
 import (
 	"fmt"
 	"log"
+	"time"
+	"context"
 
 	"github.com/CyberLabs-Infosec/isolet/goapi/config"
 )
@@ -10,7 +12,10 @@ import (
 func CreateTables() error {
 	var err error
 
-	_, err = DB.Query(`
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	_, err = DB.QueryContext(ctx, `
 	CREATE TABLE IF NOT EXISTS users(
 		userid bigserial PRIMARY KEY,
 		email text NOT NULL UNIQUE,
@@ -24,7 +29,7 @@ func CreateTables() error {
 		return err
 	}
 
-	_, err = DB.Query(`
+	_, err = DB.QueryContext(ctx, `
 	CREATE TABLE IF NOT EXISTS flags(
 		flagid bigserial,
 		userid bigint NOT NULL REFERENCES users(userid),
@@ -40,7 +45,7 @@ func CreateTables() error {
 		return err
 	}
 
-	_, err = DB.Query(`
+	_, err = DB.QueryContext(ctx, `
 	CREATE TABLE IF NOT EXISTS running(
 		runid bigserial,
 		userid bigint NOT NULL REFERENCES users(userid),
@@ -51,7 +56,7 @@ func CreateTables() error {
 		return err
 	}
 
-	_, err = DB.Query(`
+	_, err = DB.QueryContext(ctx, `
 	CREATE TABLE IF NOT EXISTS toverify(
 		vid bigserial PRIMARY KEY,
 		email text NOT NULL UNIQUE,
@@ -64,7 +69,7 @@ func CreateTables() error {
 		return err
 	}
 
-	_, err = DB.Query(`
+	_, err = DB.QueryContext(ctx, `
 	CREATE TABLE IF NOT EXISTS challenges(
 		chall_id serial PRIMARY KEY,
 		level integer NOT NULL UNIQUE,
@@ -78,7 +83,7 @@ func CreateTables() error {
 		return err
 	}
 
-	_, err = DB.Query(fmt.Sprintf(`
+	_, err = DB.QueryContext(ctx, fmt.Sprintf(`
 	CREATE OR REPLACE FUNCTION toverify_delete_old_rows() RETURNS trigger
 	LANGUAGE plpgsql
 	AS $$
@@ -93,7 +98,7 @@ func CreateTables() error {
 		return err
 	}
 
-	_, err = DB.Query(`
+	_, err = DB.QueryContext(ctx, `
 	CREATE OR REPLACE TRIGGER toverify_delete_old_rows_trigger
     	BEFORE INSERT ON toverify
     	EXECUTE PROCEDURE toverify_delete_old_rows();
@@ -103,7 +108,7 @@ func CreateTables() error {
 		return err
 	}
 
-	_, err = DB.Query(fmt.Sprintf(`
+	_, err = DB.QueryContext(ctx, fmt.Sprintf(`
 	CREATE OR REPLACE FUNCTION enforce_instance_count() RETURNS trigger
 	LANGUAGE plpgsql
 	AS $$
@@ -138,7 +143,7 @@ func CreateTables() error {
 		return err
 	}
 
-	_, err = DB.Query(`
+	_, err = DB.QueryContext(ctx, `
 	CREATE OR REPLACE TRIGGER enforce_instance_count_trigger
     	BEFORE INSERT ON running
     	FOR EACH ROW EXECUTE PROCEDURE enforce_instance_count();
