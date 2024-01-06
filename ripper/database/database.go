@@ -2,6 +2,8 @@ package database
 
 import (
 	"database/sql"
+	"context"
+	"time"
 	"fmt"
 
 	"github.com/CyberLabs-Infosec/isolet/ripper/config"
@@ -21,5 +23,12 @@ func Connect() error {
 		return err
 	}
 
-	return DB.Ping()
+	DB.SetMaxOpenConns(5)
+	DB.SetMaxIdleConns(5)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return DB.PingContext(ctx)
 }
+

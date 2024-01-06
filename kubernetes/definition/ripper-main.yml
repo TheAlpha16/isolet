@@ -1,0 +1,86 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ripper-deployment
+  labels:
+    app: ripper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ripper
+  template:
+    metadata:
+      name: ripper-deployment
+      labels:
+        app: ripper
+    spec:
+      containers:
+        - name: ripper
+          image: docker.io/thealpha16/isolet-ripper
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "300m"
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+          ports:
+            - containerPort: 80
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: db_password
+
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: db_user
+
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: db_host
+
+            - name: POSTGRES_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: db_name
+
+            - name: INSTANCE_NAMESPACE
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: instance_namespace
+
+            - name: CONCURRENT_INSTANCES
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: concurrent_instances
+
+            - name: TERMINATION_PERIOD
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: termination_period
+
+            - name: INSTANCE_TIME
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: instance_time
+
+            - name: INSTANCE_NAME_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: instance_name_secret
+
