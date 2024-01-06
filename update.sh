@@ -6,6 +6,7 @@ echo "Select the resource to update: "
 echo "1. API"
 echo "2. UI"
 echo "3. proxy"
+echo "4. ripper"
 echo ""
 echo -n "> "
 read choice
@@ -22,6 +23,9 @@ case $choice in
     "3")
         resource="proxy"
     ;;
+    "4")
+        resource="ripper"
+    ;;
     *)
         echo ""
         echo "Invalid choice"
@@ -29,6 +33,7 @@ case $choice in
         echo "1. API   - rebuild isolet-goapi image"
         echo "2. UI    - rebuild isolet-ui image"
         echo "3. proxy - rebuild isolet-proxy image"
+        echo "4. ripper - rebuild isolet-ripper image"
         echo ""
         echo "[-] exiting"
         exit
