@@ -22,3 +22,4 @@ data:
   api_url: "goapi-svc"
   proxy_server_name: "unixit.fun isolet.unixit.fun"
   instance_hostname: "isolet.unixit.fun"
+  instance_time: "30"
