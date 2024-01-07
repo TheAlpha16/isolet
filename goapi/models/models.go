@@ -52,3 +52,7 @@ type AccessDetails struct {
 	Hostname	string	`json:"hostname"`
 	Deadline	int64	`json:"deadline"`
 }
+
+type ExtendDeadline struct {
+	Deadline	int64	`json:"deadline"`
+}
