@@ -24,6 +24,7 @@ func SetupRoutes(app *fiber.App) {
 		api.Post("/submit", handler.SubmitFlag)
 		api.Get("/status", handler.GetStatus)
 		api.Get("/scoreboard", handler.ShowScoreBoard)
+		api.Post("/extend", handler.ExtendTime)
 	} else {
 		api := app.Group("/api")
 		api.Get("/challs", handler.GetChalls)
@@ -32,5 +33,6 @@ func SetupRoutes(app *fiber.App) {
 		api.Post("/submit", handler.SubmitFlag)
 		api.Get("/status", handler.GetStatus)
 		api.Get("/scoreboard", handler.ShowScoreBoard)
+		api.Post("/extend", handler.ExtendTime)
 	}
 }
