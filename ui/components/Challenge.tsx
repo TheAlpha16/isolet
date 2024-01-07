@@ -4,6 +4,7 @@ import Cookies from "js-cookie"
 import { useRouter } from "next/navigation"
 import { useEffect, useState, useRef } from "react"
 import { toast } from "react-toastify"
+import Timer from "./Timer"
 import "react-toastify/dist/ReactToastify.css"
 
 export interface challItem {
@@ -22,6 +23,7 @@ interface Props {
     password: string
     port: string
     hostname: string
+    deadline: number
 }
 
 function Challenge(props: Props) {
@@ -29,12 +31,14 @@ function Challenge(props: Props) {
     const port = useRef(props.port)
     const password = useRef(props.password)
     const hostname = useRef(props.hostname)
+    const deadline = useRef(props.deadline)
 
     useEffect(() => {
         setActive(props.isActive)
         port.current = props.port
         password.current = props.password
         hostname.current = props.hostname
+        deadline.current = props.deadline
     }, [props])
 
     const fetchTimeout = (url: string, ms: number, signal: AbortSignal, options = {}) => {
@@ -110,32 +114,44 @@ function Challenge(props: Props) {
     }
 
     const changeBtn = (btn: HTMLButtonElement, status: string) => {
-        const launchButton = document.getElementById(`launch-${props.challObject.level}`) as HTMLButtonElement
+        // const launchButton = document.getElementById(`launch-${props.challObject.level}`) as HTMLButtonElement
         
         switch(status) {
             case "stopped":
                 btn.classList.remove("bg-rose-500", "bg-amber-300", "text-black", "text-palette-100")
                 btn.classList.add("bg-palette-500", "text-black")
                 btn.innerText = "Start"
-                launchButton.addEventListener("click", eventListen)
+                btn.addEventListener("click", eventListen)
                 break
             case "running":
                 btn.classList.add("bg-rose-500", "text-palette-100")
                 btn.classList.remove("bg-palette-500", "bg-amber-300", "text-black", "text-palette-100")
                 btn.innerText = "Stop"
-                launchButton.addEventListener("click", eventListen)
+                btn.addEventListener("click", eventListen)
                 break
             case "starting":
                 btn.classList.remove("bg-rose-500", "bg-palette-500", "text-black", "text-palette-100")
                 btn.classList.add("bg-amber-300", "text-black")
                 btn.innerText = "Starting.."
-                launchButton.removeEventListener("click", eventListen)
+                btn.removeEventListener("click", eventListen)
                 break
             case "stopping":
                 btn.classList.remove("bg-rose-500", "bg-palette-500", "text-black", "text-palette-100")
                 btn.classList.add("bg-amber-300", "text-black")
                 btn.innerText = "Stopping.."
-                launchButton.removeEventListener("click", eventListen)
+                btn.removeEventListener("click", eventListen)
+                break
+            case "wait":
+                btn.classList.remove("bg-palette-500", "bg-amber-300")
+                btn.classList.add("bg-amber-300")
+                btn.innerText = "Wait.."
+                btn.removeEventListener("click", eventExtend)
+                break
+            case "extend":
+                btn.classList.remove("bg-palette-500", "bg-amber-300")
+                btn.classList.add("bg-palette-500")
+                btn.innerText = "Extend"
+                btn.addEventListener("click", eventExtend)
                 break
             default:
                 return
@@ -212,6 +228,7 @@ function Challenge(props: Props) {
                         port.current = returnedData.port
                         password.current = returnedData.password
                         hostname.current = returnedData.hostname
+                        deadline.current = returnedData.deadline
                         changeBtn(launchButton, "running")
                         setActive(true)
                     }
@@ -229,6 +246,51 @@ function Challenge(props: Props) {
         }
     }
 
+    const eventExtend = async (e: any) => {
+        const extendButton = e.target as HTMLButtonElement
+        const controller = new AbortController()
+        const { signal } = controller
+
+        const data = new FormData()
+        data.append("level", `${props.challObject.level}`)
+        
+        changeBtn(extendButton, "wait")
+
+        try {			
+            const requestExtend = await fetchTimeout("/api/extend", 100000, signal, { 
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${Cookies.get('token')}`
+                },
+                body: data
+            })
+
+            const statusLaunch = await requestExtend.status
+            if (statusLaunch == 401) {
+                router.push("/logout")
+            }
+            const reqLaunchJSON = await requestExtend.json()
+            if (reqLaunchJSON.status == "failure") {
+                show(reqLaunchJSON.status, reqLaunchJSON.message)
+                changeBtn(extendButton, "extend")
+            } else {
+                show(reqLaunchJSON.status, "Instance extention successful")
+                let returnedData = JSON.parse(atob(reqLaunchJSON.message))
+                deadline.current = returnedData.deadline
+                changeBtn(extendButton, "extend")
+            }
+
+        } catch (error: any) {
+            if (error.name === "AbortError") {
+                changeBtn(extendButton, "extend")
+                show("failure", "Request timed out! please reload")
+            } else {
+                changeBtn(extendButton, "extend")
+                show("failure", "Server not responding, contact admin")
+            }
+        }
+    }
+
     const copyAccessString = () => {
         navigator.clipboard.writeText(`ssh level${props.challObject.level}@${hostname.current} -p ${port.current}`)
         show("success", "copied!")
@@ -243,14 +305,19 @@ function Challenge(props: Props) {
         let launchButton = document.getElementById(`launch-${props.challObject.level}`) as HTMLButtonElement
         let copyAccessDiv = document.getElementById(`access-${props.challObject.level}`) as HTMLDivElement
         let passwdDiv = document.getElementById(`passwd-${props.challObject.level}`) as HTMLDivElement
+        let extendButton = document.getElementById(`extend-${props.challObject.level}`) as HTMLButtonElement
+
 
         launchButton.addEventListener("click", eventListen)
         copyAccessDiv.addEventListener("click", copyAccessString)
         passwdDiv.addEventListener("click", copyPasswdString)
+        extendButton.addEventListener("click", eventExtend)
 
         return () => {
             launchButton.removeEventListener("click", eventListen)
             copyAccessDiv.removeEventListener("click", copyAccessString)
+            passwdDiv.addEventListener("click", copyPasswdString)
+            extendButton.removeEventListener("click", eventExtend)
         }
     }, [])
 
@@ -278,21 +345,15 @@ function Challenge(props: Props) {
                     <div data-level={ props.challObject.level } className="flex justify-between flex-wrap">
                         <div data-level={ props.challObject.level } className="flex gap-2 w-full justify-start flex-wrap">
                             <button id={`launch-${props.challObject.level}`} className={`p-2 w-32 rounded-md ${ isActive ? "text-palette-100": "text-black" } ${ isActive ? "bg-rose-500": "bg-palette-500" }`} data-level={ props.challObject.level }>{ isActive ? "Stop": "Start" }</button>
-                            <div data-level={ props.challObject.level } className={`flex rounded-md items-center h-10 justify-center gap-2 ${isActive ? "": "hidden"}`}>
-                                <div className="bg-slate-950 p-2 rounded-md" data-level={ props.challObject.level }> {`${password.current.substring(0, 7)}************${password.current.substring(27)}`} </div>
-                                <div id={`passwd-${props.challObject.level}`} className="hover:cursor-pointer hover:bg-slate-950 p-3 rounded-md" data-level={ props.challObject.level }>
-                                    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" fill="#E4EEE7" data-level={ props.challObject.level } >
-                                        <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z" data-level={ props.challObject.level }></path><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z" data-level={ props.challObject.level }></path>
-                                    </svg>
-                                </div>
-                            </div>
+                            <button id={`extend-${props.challObject.level}`} className={`p-2 w-32 rounded-md bg-palette-500 text-black ${ isActive ? "": "hidden" }`} data-level={ props.challObject.level }>{ "Extend" }</button>
+                            { isActive ? <Timer deadline={ deadline.current } level={ props.challObject.level } classes="flex items-center"/>: <div className="hidden"></div>}
                         </div>
                     </div>
                     <div className="flex gap-2 py-2 flex-wrap" data-level={ props.challObject.level }>
                         <input id={`flag-${props.challObject.level}`} placeholder="flag" name="flag" type="text" className="border p-2 grow outline-palette-500 rounded-md text-black" data-level={ props.challObject.level } required></input>
                         <button onClick={ handleSubmit } className="p-2 w-24 text-black bg-palette-500 rounded-md hover:bg-palette-400" data-level={ props.challObject.level }>Submit</button>
                     </div>
-                    <div className="flex gap-2 py-2 flex-wrap" data-level={ props.challObject.level }>
+                    <div className="flex gap-2 pb-2 flex-wrap" data-level={ props.challObject.level }>
                         {
                             props.challObject.tags.map((tag, index) => {
                                 return (
@@ -303,12 +364,22 @@ function Challenge(props: Props) {
                             })
                         }
                     </div>
-                    <div className={`${isActive ? "": "hidden"} flex gap-2 items-center`} data-level={ props.challObject.level }>
+                    <div className={`${isActive ? "": "hidden"} flex gap-2 pb-2 items-center`} data-level={ props.challObject.level }>
                         <div className="bg-slate-950 p-1 px-3 rounded-md text-palette-500" data-level={ props.challObject.level }>
                             { `$ ssh level${props.challObject.level}@${hostname.current} -p ${port.current}` }
                         </div>
                         <div id={ `access-${props.challObject.level}` } className="hover:cursor-pointer hover:bg-slate-950 p-2 rounded-md" data-level={ props.challObject.level }>
                             <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" fill="#E4EEE7" data-level={ props.challObject.level }>
+                                <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z" data-level={ props.challObject.level }></path><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z" data-level={ props.challObject.level }></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div data-level={ props.challObject.level } className={`flex gap-2 items-center ${isActive ? "": "hidden"}`}>
+                        <div className="bg-slate-950 p-1 px-3 rounded-md" data-level={ props.challObject.level }>
+                            {`${password.current.substring(0, 7)}************${password.current.substring(27)}`}
+                        </div>
+                        <div id={`passwd-${props.challObject.level}`} className="hover:cursor-pointer hover:bg-slate-950 p-2 rounded-md" data-level={ props.challObject.level }>
+                            <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" fill="#E4EEE7" data-level={ props.challObject.level } >
                                 <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z" data-level={ props.challObject.level }></path><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z" data-level={ props.challObject.level }></path>
                             </svg>
                         </div>

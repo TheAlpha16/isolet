@@ -15,11 +15,12 @@ interface accessCredsItem {
     port: string
     verified: boolean
     hostname: string
+    deadline: number
 }
 
 interface challList extends Array<challItem>{}
 interface activatedItem {
-    [level: number]: {password: string; port: string; verified: boolean; hostname: string};
+    [level: number]: {password: string; port: string; verified: boolean; hostname: string; deadline: number};
 }
 
 function Challenges(){
@@ -30,7 +31,8 @@ function Challenges(){
             "password": "fakepasswd",
             "port": "0",
             "verified": false,
-            "hostname": ""
+            "hostname": "",
+            "deadline": 1893456000000
         }})
     const router = useRouter()
 
@@ -104,7 +106,7 @@ function Challenges(){
             let emptyDict = {} as activatedItem
     
             instancesJSON.map((item: accessCredsItem, index: number) => 
-                emptyDict[item["level"]] = {"password": item["password"], "port": item["port"], "verified": item["verified"], "hostname": item["hostname"]}
+                emptyDict[item["level"]] = {"password": item["password"], "port": item["port"], "verified": item["verified"], "hostname": item["hostname"], "deadline": item["deadline"]}
             )
             setActivated(emptyDict)
 		} catch (error: any) {
@@ -154,7 +156,7 @@ function Challenges(){
             <div className={ `flex flex-col py-2 gap-2` }>
                 {   
                     challenges.map((item: challItem, index) =>
-                        <Challenge key={ item.level } challObject={ item } isActive={ activated[item.level] != undefined } isVisible={ false } onClick={ handleVisibility } password={ activated[item.level] != undefined ? activated[item.level]["password"]: "" } port={activated[item.level] != undefined ? activated[item.level]["port"]: ""} hostname={ activated[item.level] != undefined ? activated[item.level]["hostname"]: "" }/>
+                        <Challenge key={ item.level } challObject={ item } isActive={ activated[item.level] != undefined } isVisible={ false } onClick={ handleVisibility } password={ activated[item.level] != undefined ? activated[item.level]["password"]: "" } port={activated[item.level] != undefined ? activated[item.level]["port"]: ""} hostname={ activated[item.level] != undefined ? activated[item.level]["hostname"]: "" } deadline={ activated[item.level] != undefined ? activated[item.level]["deadline"]: 1893456000000}/>
                     )
                 }
             </div>
