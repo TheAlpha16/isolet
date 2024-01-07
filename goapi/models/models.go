@@ -38,6 +38,7 @@ type Instance struct {
 	Port 		string	`json:"port"`
 	Verified 	bool 	`json:"verified"`
 	Hostname	string	`json:"hostname"`
+	Deadline	int64	`json:"deadline"`
 }
 
 type Score struct {
@@ -49,4 +50,5 @@ type AccessDetails struct {
 	Password	string	`json:"password"`
 	Port		int32	`json:"port"`
 	Hostname	string	`json:"hostname"`
+	Deadline	int64	`json:"deadline"`
 }
