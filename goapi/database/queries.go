@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	// "github.com/CyberLabs-Infosec/isolet/goapi/config"
+	"github.com/CyberLabs-Infosec/isolet/goapi/config"
 	"github.com/CyberLabs-Infosec/isolet/goapi/models"
 
 	"github.com/gofiber/fiber/v2"
@@ -311,33 +311,33 @@ func ReadScores(c *fiber.Ctx) ([]models.Score, error) {
 	return scores, nil
 }
 
-// func AddTime(c *fiber.Ctx, userid int, level int) (bool, string, int64) {
-// 	var current int
-// 	var deadline int64
-// 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
-// 	defer cancel()
+func AddTime(c *fiber.Ctx, userid int, level int) (bool, string, int64) {
+	var current int
+	var deadline int64
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
 
-// 	if err := DB.QueryRowContext(ctx, `SELECT extended, deadline FROM flags WHERE level = $1 AND userid = $2`, level, userid).Scan(&current, &deadline); err != nil {
-// 		log.Println(err)
-// 		return false, "error in extension, please contact admin", 1
-// 	}
+	if err := DB.QueryRowContext(ctx, `SELECT extended, deadline FROM flags WHERE level = $1 AND userid = $2`, level, userid).Scan(&current, &deadline); err != nil {
+		log.Println(err)
+		return false, "error in extension, please contact admin", 1
+	}
 
-// 	if current + 1 > config.MAX_INSTANCE_TIME + config.INSTANCE_TIME {
-// 		return false, "limit reached", 1
-// 	}
+	if (current + 1) > (config.MAX_INSTANCE_TIME / config.INSTANCE_TIME) {
+		return false, "limit reached", 1
+	}
 
-// 	_, err := DB.QueryContext(ctx, `UPDATE flags SET extended = $1 WHERE userid = $2 AND level = $3`, current + 1, userid, level)
-// 	if err != nil {
-// 		log.Println(err)
-// 		return false, "error in extension, please contact admin", 1
-// 	}
+	_, err := DB.QueryContext(ctx, `UPDATE flags SET extended = $1 WHERE userid = $2 AND level = $3`, current + 1, userid, level)
+	if err != nil {
+		log.Println(err)
+		return false, "error in extension, please contact admin", 1
+	}
 
-// 	newdeadline := time.UnixMilli(deadline).Add(time.Minute * time.Duration(config.INSTANCE_TIME)).UnixMilli()
+	newdeadline := time.UnixMilli(deadline).Add(time.Minute * time.Duration(config.INSTANCE_TIME)).UnixMilli()
 
-// 	_, err = DB.QueryContext(ctx, `UPDATE flags SET deadline = $1 WHERE userid = $2 AND level = $3`, newdeadline, userid, level)
-// 	if err != nil {
-// 		log.Println(err)
-// 		return false, "error in extension, please contact admin", 1
-// 	}
-// 	return true, "", newdeadline
-// }
+	_, err = DB.QueryContext(ctx, `UPDATE flags SET deadline = $1 WHERE userid = $2 AND level = $3`, newdeadline, userid, level)
+	if err != nil {
+		log.Println(err)
+		return false, "error in extension, please contact admin", 1
+	}
+	return true, "", newdeadline
+}
