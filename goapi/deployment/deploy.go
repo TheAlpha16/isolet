@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -99,6 +100,13 @@ func DeployInstance(c *fiber.Ctx, userid int, level int) (int64, string, int32, 
 			deadline = createdPod.Status.StartTime.Add(time.Minute * time.Duration(config.INSTANCE_TIME)).UnixMilli()
 			break
 		}
+	}
+
+	err = UpdateDeadline(kubeclient, instance_name, deadline)
+	if err != nil {
+		_ = DeleteInstance(c, userid, level)
+		log.Println(err)
+		return deadline, "", -1, "", err
 	}
 
 	svcConfig := getServiceObject(instance_name, level, userid)
@@ -203,39 +211,47 @@ func DeleteInstance(c *fiber.Ctx, userid int, level int) error {
 	return nil
 }
 
-// func AddTime(c *fiber.Ctx, userid int, level int) (bool, string) {
-// 	instance_name := utils.GetInstanceName(userid, level)
-// 	kubeclient, err := GetKubeClient()
-// 	if err != nil {
-// 		log.Println(err)
-// 		return false, "error in extension, please contact admin"
-// 	}
+func AddTime(c *fiber.Ctx, userid int, level int) (bool, string, int64) {
+	instance_name := utils.GetInstanceName(userid, level)
+	kubeclient, err := GetKubeClient()
+	if err != nil {
+		log.Println(err)
+		return false, "error in extension, please contact admin", 1
+	}
 
-// 	pod, err := kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Get(c.Context(), instance_name, metav1.GetOptions{})
-// 	if err != nil {
-// 		if !strings.Contains(err.Error(), "not found") {
-// 			log.Println(err)
-// 			return false, "error in extension, please contact admin"
-// 		}
+	_, err = kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Get(c.Context(), instance_name, metav1.GetOptions{})
+	if err != nil {
+		if !strings.Contains(err.Error(), "not found") {
+			log.Println(err)
+			return false, "error in extension, please contact admin", 1
+		}
 
-// 		if err := database.DeleteFlag(c, userid, level); err != nil {
-// 			log.Println(err)
-// 			return false, "instance not running"
-// 		}
+		if err := database.DeleteFlag(c, userid, level); err != nil {
+			log.Println(err)
+			return false, "instance not running", 1
+		}
 
-// 		if err := database.DeleteRunning(c, userid, level); err != nil {
-// 			log.Println(err)
-// 			return false, "instance not running"
-// 		}
+		if err := database.DeleteRunning(c, userid, level); err != nil {
+			log.Println(err)
+			return false, "instance not running", 1
+		}
 		
-// 		return false, "instance not running"
-// 	}
+		return false, "instance not running", 1
+	}
 
-// 	isOK, message, newdeadline := database.AddTime(c, userid, level)
-// 	if !isOK {
-// 		return isOK, message
-// 	}
-// }
+	isOK, message, newdeadline := database.AddTime(c, userid, level)
+	if !isOK {
+		return isOK, message, 1
+	}
+
+	err = UpdateDeadline(kubeclient, instance_name, newdeadline)
+	if err != nil {
+		log.Println(err)
+		return false, "error in extension, please contact admin", 1
+	}
+
+	return true, "updated deadline successfully", newdeadline
+}
 
 func getPodObject(instance_name string, level int, userid int, password string, flag string) *core.Pod {
 	return &core.Pod{
@@ -317,4 +333,26 @@ func getServiceObject(instance_name string, level int, userid int) *core.Service
 			},
 		},
 	}
+}
+
+func UpdateDeadline(kubeclient *kubernetes.Clientset, instance_name string, deadline int64) error {
+	pod, err := kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Get(context.TODO(), instance_name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	newPod := pod.DeepCopy()
+	ann := newPod.ObjectMeta.Annotations
+	if ann == nil {
+		ann = make(map[string]string)
+	}
+	ann["deadline"] = strconv.Itoa(int(deadline))
+	newPod.ObjectMeta.Annotations = ann
+
+	_, err = kubeclient.CoreV1().Pods(newPod.ObjectMeta.Namespace).Update(context.TODO(), newPod, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
