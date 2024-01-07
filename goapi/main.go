@@ -20,7 +20,7 @@ func main() {
 	// Initialize error logging
 	logs.InitLogger()
 
-	log.Println("API version: 0.9.5")
+	log.Println("API version: 0.9.6")
 	// Connect to database
 	if err := database.Connect(); err != nil {
 		log.Fatal(err)
