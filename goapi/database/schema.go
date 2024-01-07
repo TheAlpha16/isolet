@@ -38,7 +38,9 @@ func CreateTables() error {
 		flag text NOT NULL,
 		port integer NOT NULL,
 		verified bool DEFAULT false,
-		hostname text
+		hostname text,
+		deadline bigint DEFAULT 2526249600,
+		extended integer DEFAULT 1
 	)`)
 	if err != nil {
 		log.Println(err)
