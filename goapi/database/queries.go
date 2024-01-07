@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	// "github.com/CyberLabs-Infosec/isolet/goapi/config"
 	"github.com/CyberLabs-Infosec/isolet/goapi/models"
 
 	"github.com/gofiber/fiber/v2"
@@ -171,11 +172,11 @@ func DeleteRunning(c *fiber.Ctx, userid int, level int) error {
 	return nil
 }
 
-func NewFlag(c *fiber.Ctx, userid int, level int, password string, flag string, port int32, hostname string) error {
+func NewFlag(c *fiber.Ctx, userid int, level int, password string, flag string, port int32, hostname string, deadline int64) error {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 	
-	if _, err := DB.QueryContext(ctx, `INSERT INTO flags (userid, level, flag, password, port, hostname) VALUES ($1, $2, $3, $4, $5, $6)`, userid, level, flag, password, port, hostname); err != nil {
+	if _, err := DB.QueryContext(ctx, `INSERT INTO flags (userid, level, flag, password, port, hostname, deadline) VALUES ($1, $2, $3, $4, $5, $6, $7)`, userid, level, flag, password, port, hostname, deadline); err != nil {
 		return err
 	}
 	return nil
@@ -267,7 +268,7 @@ func GetInstances(c *fiber.Ctx, userid int) ([]models.Instance, error) {
 	defer cancel()
 
 	instances := make([]models.Instance, 0)
-	rows, err := DB.QueryContext(ctx, `SELECT userid, level, password, port, verified, hostname from flags WHERE userid = $1`, userid)
+	rows, err := DB.QueryContext(ctx, `SELECT userid, level, password, port, verified, hostname, deadline from flags WHERE userid = $1`, userid)
 	if err != nil {
 		return instances, err
 	}
@@ -275,7 +276,7 @@ func GetInstances(c *fiber.Ctx, userid int) ([]models.Instance, error) {
 
 	for rows.Next() {
 		instance := new(models.Instance)
-		if err := rows.Scan(&instance.UserID, &instance.Level, &instance.Password, &instance.Port, &instance.Verified, &instance.Hostname); err != nil {
+		if err := rows.Scan(&instance.UserID, &instance.Level, &instance.Password, &instance.Port, &instance.Verified, &instance.Hostname, &instance.Deadline); err != nil {
 			return instances, err
 		}
 		instances = append(instances, *instance)
@@ -309,3 +310,34 @@ func ReadScores(c *fiber.Ctx) ([]models.Score, error) {
 	}
 	return scores, nil
 }
+
+// func AddTime(c *fiber.Ctx, userid int, level int) (bool, string, int64) {
+// 	var current int
+// 	var deadline int64
+// 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+// 	defer cancel()
+
+// 	if err := DB.QueryRowContext(ctx, `SELECT extended, deadline FROM flags WHERE level = $1 AND userid = $2`, level, userid).Scan(&current, &deadline); err != nil {
+// 		log.Println(err)
+// 		return false, "error in extension, please contact admin", 1
+// 	}
+
+// 	if current + 1 > config.MAX_INSTANCE_TIME + config.INSTANCE_TIME {
+// 		return false, "limit reached", 1
+// 	}
+
+// 	_, err := DB.QueryContext(ctx, `UPDATE flags SET extended = $1 WHERE userid = $2 AND level = $3`, current + 1, userid, level)
+// 	if err != nil {
+// 		log.Println(err)
+// 		return false, "error in extension, please contact admin", 1
+// 	}
+
+// 	newdeadline := time.UnixMilli(deadline).Add(time.Minute * time.Duration(config.INSTANCE_TIME)).UnixMilli()
+
+// 	_, err = DB.QueryContext(ctx, `UPDATE flags SET deadline = $1 WHERE userid = $2 AND level = $3`, newdeadline, userid, level)
+// 	if err != nil {
+// 		log.Println(err)
+// 		return false, "error in extension, please contact admin", 1
+// 	}
+// 	return true, "", newdeadline
+// }
