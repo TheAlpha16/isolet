@@ -130,6 +130,16 @@ spec:
                 configMapKeyRef:
                   name: app-config
                   key: public_url
+            - name: INSTANCE_TIME
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: instance_time
+            - name: MAX_INSTANCE_TIME
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: max_instance_time
             - name: EMAIL_ID
               valueFrom:
                 secretKeyRef:
