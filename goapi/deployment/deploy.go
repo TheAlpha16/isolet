@@ -6,6 +6,7 @@ import (
 	"log"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/CyberLabs-Infosec/isolet/goapi/config"
 	"github.com/CyberLabs-Infosec/isolet/goapi/database"
@@ -55,10 +56,11 @@ func GetKubeClient() (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
-func DeployInstance(c *fiber.Ctx, userid int, level int) (string, int32, string, error) {
+func DeployInstance(c *fiber.Ctx, userid int, level int) (int64, string, int32, string, error) {
 	instance_name := utils.GetInstanceName(userid, level)
 	password := database.GenerateRandom()[0:32]
 	flag := config.WARGAME_NAME + "{" + database.GenerateRandom()[0:32] + "}"
+	var deadline int64 = 1893456000000
 
 	// Hostname to be known when using subdomains for connections
 	hostname := utils.GetHostName(userid, level)
@@ -66,7 +68,7 @@ func DeployInstance(c *fiber.Ctx, userid int, level int) (string, int32, string,
 	kubeclient, err := GetKubeClient()
 	if err != nil {
 		log.Println(err)
-		return "", -1, "", err
+		return deadline, "", -1, "", err
 	}
 
 	pod := getPodObject(instance_name, level, userid, password, flag)
@@ -74,7 +76,7 @@ func DeployInstance(c *fiber.Ctx, userid int, level int) (string, int32, string,
 	if err != nil {
 		if !strings.Contains(err.Error(), "already exists") {
 			log.Println(err)
-			return "", -1, "", err
+			return deadline, "", -1, "", err
 		}
 	}
 
@@ -82,18 +84,19 @@ func DeployInstance(c *fiber.Ctx, userid int, level int) (string, int32, string,
 		createdPod, err := kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Get(context.TODO(), instance_name, metav1.GetOptions{})
 		if err != nil {
 			log.Println(err)
-			return "", -1, "", err
+			return deadline, "", -1, "", err
 		}
 
 		if len(createdPod.Status.ContainerStatuses) > 0 {
 			if createdPod.Status.ContainerStatuses[0].State.Waiting != nil && (createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CrashLoopBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ErrImagePull" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ImagePullBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerConfigError" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "InvalidImageName" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerError") {
 				kubeclient.CoreV1().Pods(pod.Namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{})
 				log.Printf("Error in launch: level%d reason: %s", level, createdPod.Status.ContainerStatuses[0].State.Waiting.Reason)
-				return "", -1, "", fmt.Errorf("runtime error in image - level%d not found in registry", level)
+				return deadline, "", -1, "", fmt.Errorf("runtime error in image - level%d not found in registry", level)
 			}
 		}
 
-		if createdPod.Status.Phase == "Running" {
+		if createdPod.Status.Phase == "Running" && createdPod.Status.StartTime != nil {
+			deadline = createdPod.Status.StartTime.Add(time.Minute * time.Duration(config.INSTANCE_TIME)).UnixMilli()
 			break
 		}
 	}
@@ -103,21 +106,21 @@ func DeployInstance(c *fiber.Ctx, userid int, level int) (string, int32, string,
 	if err != nil {
 		log.Println(err)
 		if !strings.Contains(err.Error(), "already exists") {
-			return "", -1, "", err
+			return deadline, "", -1, "", err
 		}
 	}
 
 	createdService, err := kubeclient.CoreV1().Services(svcConfig.Namespace).Get(context.TODO(), svcConfig.Name, metav1.GetOptions{})
 	if err != nil {
 		log.Println(err)
-		return "", -1, "", err
+		return deadline, "", -1, "", err
 	}
 	port := createdService.Spec.Ports[0].NodePort
 
 	nodes, err := kubeclient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		log.Println(err)
-		return "", -1, "", err
+		return deadline, "", -1, "", err
 	}
 	nodeip := nodes.Items[0].Status.Addresses
 	for i := 0; i < len(nodeip); i++ {
@@ -127,12 +130,12 @@ func DeployInstance(c *fiber.Ctx, userid int, level int) (string, int32, string,
 		}
 	}
 
-	if err := database.NewFlag(c, userid, level, password, flag, port, hostname); err != nil {
+	if err := database.NewFlag(c, userid, level, password, flag, port, hostname, deadline); err != nil {
 		log.Println(err)
-		return "", -1, "", err
+		return deadline, "", -1, "", err
 	}
 
-	return password, port, hostname, nil
+	return deadline, password, port, hostname, nil
 }
 
 func DeleteInstance(c *fiber.Ctx, userid int, level int) error {
@@ -199,6 +202,40 @@ func DeleteInstance(c *fiber.Ctx, userid int, level int) error {
 
 	return nil
 }
+
+// func AddTime(c *fiber.Ctx, userid int, level int) (bool, string) {
+// 	instance_name := utils.GetInstanceName(userid, level)
+// 	kubeclient, err := GetKubeClient()
+// 	if err != nil {
+// 		log.Println(err)
+// 		return false, "error in extension, please contact admin"
+// 	}
+
+// 	pod, err := kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Get(c.Context(), instance_name, metav1.GetOptions{})
+// 	if err != nil {
+// 		if !strings.Contains(err.Error(), "not found") {
+// 			log.Println(err)
+// 			return false, "error in extension, please contact admin"
+// 		}
+
+// 		if err := database.DeleteFlag(c, userid, level); err != nil {
+// 			log.Println(err)
+// 			return false, "instance not running"
+// 		}
+
+// 		if err := database.DeleteRunning(c, userid, level); err != nil {
+// 			log.Println(err)
+// 			return false, "instance not running"
+// 		}
+		
+// 		return false, "instance not running"
+// 	}
+
+// 	isOK, message, newdeadline := database.AddTime(c, userid, level)
+// 	if !isOK {
+// 		return isOK, message
+// 	}
+// }
 
 func getPodObject(instance_name string, level int, userid int, password string, flag string) *core.Pod {
 	return &core.Pod{
