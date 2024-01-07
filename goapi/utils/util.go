@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/mail"
 	"os"
-	"regexp"
 	"strconv"
 
 	"github.com/CyberLabs-Infosec/isolet/goapi/config"
@@ -26,16 +25,16 @@ func Hash(secret string) string {
 	return fmt.Sprintf("%x", sha256.Sum256([]byte(secret)))
 }
 
-func PassValid(password string) bool {
-	tests := []string{".{7,}", "[a-z]", "[A-Z]", "[0-9]", "[$#@%&*.!]"}
-	for _, test := range tests {
-		t, _ := regexp.MatchString(test, password)
-		if !t {
-			return false
-		}
-	}
-	return true
-}
+// func PassValid(password string) bool {
+// 	tests := []string{".{9,}", "[a-z]", "[A-Z]", "[0-9]", "[$#@%&*.!]"}
+// 	for _, test := range tests {
+// 		t, _ := regexp.MatchString(test, password)
+// 		if !t {
+// 			return false
+// 		}
+// 	}
+// 	return true
+// }
 
 func ValidateLoginInput(creds *models.Creds) (bool, string) {
 	if len(creds.Email) > config.EMAIL_LEN {
@@ -54,8 +53,8 @@ func ValidateLoginInput(creds *models.Creds) (bool, string) {
 }
 
 func ValidateRegisterInput(regInput *models.User) (bool, string) {
-	if len(regInput.Password) > config.PASS_LEN || len(regInput.Password) < 6 {
-		return false, fmt.Sprintf("Password should be of 6-%d characters", config.PASS_LEN)
+	if len(regInput.Password) > config.PASS_LEN || len(regInput.Password) < 8 {
+		return false, fmt.Sprintf("Password should be of 8-%d characters", config.PASS_LEN)
 	}
 
 	if regInput.Password != regInput.Confirm {
@@ -78,17 +77,17 @@ func ValidateRegisterInput(regInput *models.User) (bool, string) {
 		return false, fmt.Sprintf("Username exceeded %d characters", config.USERNAME_LEN)
 	}
 
-	if len(regInput.Username) < 5 {
-		return false, "Username should be of atleast 5 characters"
+	if len(regInput.Username) < 4 {
+		return false, "Username should be of atleast 4 characters"
 	}
 
 	if database.UsernameRegistered(regInput.Username, regInput.Email) {
 		return false, "Username already exists"
 	}
 
-	if !PassValid(regInput.Password) {
-		return false, "Not a strong password"
-	}
+	// if !PassValid(regInput.Password) {
+	// 	return false, "Not a strong password"
+	// }
 
 	return true, ""
 }
