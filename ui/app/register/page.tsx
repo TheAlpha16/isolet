@@ -48,32 +48,40 @@ function Register() {
 
     const eventListen = async (e: any) => {
         const launchButton = e.target as HTMLButtonElement
-        const email = (document.getElementById("email") as HTMLInputElement).value
-		const username = (document.getElementById("username") as HTMLInputElement).value
-		const password = (document.getElementById("password") as HTMLInputElement).value
-		const confirm = (document.getElementById("confirm") as HTMLInputElement).value
+        const prevemail = (document.getElementById("email") as HTMLInputElement).value
+		const prevusername = (document.getElementById("username") as HTMLInputElement).value
+		const prevpassword = (document.getElementById("password") as HTMLInputElement).value
+		const prevconfirm = (document.getElementById("confirm") as HTMLInputElement).value
 
 
-		if (email === "" || password === "" || confirm === "" || username === ""){
+		if (prevemail === "" || prevpassword === "" || prevconfirm === "" || prevusername === ""){
 			show("failure", "All fields are required!")
 			return
 		}
+
+        const email = prevemail.trim()
+        const username = prevusername.trim()
+        const password = prevpassword.trim()
+        const confirm = prevconfirm.trim()
 
         if (password !== confirm) {
             show("failure", "Passwords don't match")
             return
         }
 
-        const checkPassword = (str: string) => {
-            var re = /^(?=.*\d)(?=.*[$#@%&*.!])(?=.*[a-z])(?=.*[A-Z]).{6,}$/
-            return re.test(str)
+        if (!(password.length >= 8)) {
+            show("failure", "password length should be 8 or more")
         }
+        // const checkPassword = (str: string) => {
+        //     var re = /^(?=.*\d)(?=.*[$#@%&*.!])(?=.*[a-z])(?=.*[A-Z]).{6,}$/
+        //     return re.test(str)
+        // }
 
-        if (!checkPassword(password)) {
-            show("failure", "Not a strong password")
-            show("", "match ^[a-zA-Z0-9$#@%&*.!]{6, 32}$")
-            return
-        }
+        // if (!checkPassword(password)) {
+        //     show("failure", "Not a strong password")
+        //     show("", "match ^[a-zA-Z0-9$#@%&*.!]{6, 32}$")
+        //     return
+        // }
 
         changeBtn(launchButton, "waiting")
         let formData = new FormData()
