@@ -60,24 +60,6 @@ spec:
                   name: app-config
                   key: instance_namespace
 
-            - name: CONCURRENT_INSTANCES
-              valueFrom:
-                configMapKeyRef:
-                  name: app-config
-                  key: concurrent_instances
-
-            - name: TERMINATION_PERIOD
-              valueFrom:
-                configMapKeyRef:
-                  name: app-config
-                  key: termination_period
-
-            - name: INSTANCE_TIME
-              valueFrom:
-                configMapKeyRef:
-                  name: app-config
-                  key: instance_time
-
             - name: INSTANCE_NAME_SECRET
               valueFrom:
                 secretKeyRef:
