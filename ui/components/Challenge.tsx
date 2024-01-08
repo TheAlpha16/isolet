@@ -286,8 +286,8 @@ function Challenge(props: Props) {
 		console.log("i am run")
 		const controller = new AbortController()
 		const { signal } = controller
-		const launchButton = document.getElementById(`launch-${props.challObject.level}`) as HTMLButtonElement
-		changeBtn(launchButton, "stopping")
+		// const launchButton = document.getElementById(`launch-${props.challObject.level}`) as HTMLButtonElement
+		// changeBtn(launchButton, "stopping")
 
 		for (let count = 0; count < 10; count++) {
 			try {			
