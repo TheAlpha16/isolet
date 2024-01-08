@@ -314,7 +314,6 @@ function Challenge(props: Props) {
 					}
 				}
 
-				console.log(`foundLevel: ${foundLevel}`)
 				if (foundLevel) {
 					await sleep(10000)
 				} else {
