@@ -7,38 +7,38 @@ import { toast } from "react-toastify"
 import Link from "next/link"
 
 function Login() {
-    const [view, setView] = useState(false)
-    const user = User()
-    const router = useRouter()
+	const [view, setView] = useState(false)
+	const user = User()
+	const router = useRouter()
 
 	const show = (status: string, message: string) => {
-        switch (status) {
-            case "success":
-                toast.success(message, {
-                    position: toast.POSITION.TOP_RIGHT,
-                })
-                break
-            case "failure":
-                toast.error(message, {
-                    position: toast.POSITION.TOP_RIGHT,
-                })
-                break
-            default:
-                toast.warn(message, {
-                    position: toast.POSITION.TOP_RIGHT,
-                })
-        }
-    }
-
-	const fetchTimeout = (url: string, ms: number, signal: AbortSignal, options = {}) => {
-		const controller = new AbortController();
-		const promise = fetch(url, { signal: controller.signal, ...options });
-		if (signal) signal.addEventListener("abort", () => controller.abort());
-		const timeout = setTimeout(() => controller.abort(), ms);
-		return promise.finally(() => clearTimeout(timeout));
+		switch (status) {
+			case "success":
+				toast.success(message, {
+					position: toast.POSITION.TOP_RIGHT,
+				})
+				break
+			case "failure":
+				toast.error(message, {
+					position: toast.POSITION.TOP_RIGHT,
+				})
+				break
+			default:
+				toast.warn(message, {
+					position: toast.POSITION.TOP_RIGHT,
+				})
+		}
 	}
 
-    const handleSubmit = async () => {
+	const fetchTimeout = (url: string, ms: number, signal: AbortSignal, options = {}) => {
+		const controller = new AbortController()
+		const promise = fetch(url, { signal: controller.signal, ...options })
+		if (signal) signal.addEventListener("abort", () => controller.abort())
+		const timeout = setTimeout(() => controller.abort(), ms)
+		return promise.finally(() => clearTimeout(timeout))
+	}
+
+	const handleSubmit = async () => {
 		const email = (document.getElementById("email") as HTMLInputElement).value
 		const password = (document.getElementById("password") as HTMLInputElement).value
 		const controller = new AbortController()
@@ -46,24 +46,24 @@ function Login() {
 
 		if (email === "" || password === ""){
 			show("failure", "All fields are required!")
-			return;
+			return
 		}
 
-        let formData = new FormData()
-        formData.append("email", email)
-        formData.append("password", password)
+		let formData = new FormData()
+		formData.append("email", email)
+		formData.append("password", password)
 
 		try {			
 			const resp = await fetchTimeout("/auth/login", 5000, signal, { 
 					method: "POST",
 					body: formData,
 			})
-			const jsonResp = await resp.json();
+			const jsonResp = await resp.json()
 			if (jsonResp.status == "failure") {
 				show(jsonResp.status, jsonResp.message)
 			} else {
-				user.setLoggedin(true);
-				router.push("/");
+				user.setLoggedin(true)
+				router.push("/")
 			}
 		} catch (error: any) {
 			if (error.name === "AbortError") {
@@ -72,11 +72,11 @@ function Login() {
 				show("failure", "Server not responding, contact admin")
 			}
 		}
-    }
+	}
 
-    const handleShowHide = () => {
-        setView(!view);
-    }
+	const handleShowHide = () => {
+		setView(!view)
+	}
 
 	const inputClass = "px-4 py-2 w-72 bg-transparent border border-gray-400 rounded-md outline-palette-500 text-black bg-white"
 	return (
@@ -114,4 +114,4 @@ function Login() {
 	)
 }
 
-export default Login;
+export default Login
