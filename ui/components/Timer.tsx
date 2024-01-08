@@ -9,7 +9,7 @@ interface Props {
 }
 
 function Timer(props: Props) {
-    const { deadline } = useContext(challContext)
+	const { deadline } = useContext(challContext)
 
 	const calculateTimeLeft = (deadline: number) => {
 		let difference = deadline - Date.now()

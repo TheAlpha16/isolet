@@ -16,5 +16,5 @@ export const Context = createContext<stateVars>({
 
 
 export default function User() {
-    return useContext(Context);
+	return useContext(Context)
 }

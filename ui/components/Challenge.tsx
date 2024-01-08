@@ -37,11 +37,11 @@ function Challenge(props: Props) {
 	const router = useRouter()
 
 	const fetchTimeout = (url: string, ms: number, signal: AbortSignal, options = {}) => {
-		const controller = new AbortController();
-		const promise = fetch(url, { signal: controller.signal, ...options });
-		if (signal) signal.addEventListener("abort", () => controller.abort(), true);
-		const timeout = setTimeout(() => controller.abort(), ms);
-		return promise.finally(() => clearTimeout(timeout));
+		const controller = new AbortController()
+		const promise = fetch(url, { signal: controller.signal, ...options })
+		if (signal) signal.addEventListener("abort", () => controller.abort(), true)
+		const timeout = setTimeout(() => controller.abort(), ms)
+		return promise.finally(() => clearTimeout(timeout))
 	}
 
 	const show = (status: string, message: string) => {
@@ -296,10 +296,10 @@ function Challenge(props: Props) {
 						"Authorization": `Bearer ${Cookies.get('token')}`
 					}
 				})
-				const instancesStatus = await instancesRequest.status;
+				const instancesStatus = await instancesRequest.status
 				if (instancesStatus != 200) {
 					show("info", "User not logged in!")
-					router.push("/logout");
+					router.push("/logout")
 				}
 				
 				let foundLevel = false
@@ -445,4 +445,4 @@ function Challenge(props: Props) {
 	)
 }
 
-export default Challenge;
+export default Challenge

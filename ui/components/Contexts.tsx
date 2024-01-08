@@ -1,7 +1,9 @@
+'use client'
+
 import { createContext } from "react"
 
 interface challData {
-	deadline: number;
+	deadline: number
 }
 
 export const challContext = createContext<challData>({
