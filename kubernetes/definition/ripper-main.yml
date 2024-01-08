@@ -65,4 +65,3 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: instance_name_secret
-
