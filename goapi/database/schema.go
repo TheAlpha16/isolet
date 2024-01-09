@@ -156,30 +156,5 @@ func CreateTables() error {
 		return err
 	}
 
-	// _, err = DB.QueryContext(ctx, `
-	// CREATE OR REPLACE FUNCTION user_score_timestamp() RETURNS trigger
-	// LANGUAGE plpgsql
-	// AS $$
-	// 	BEGIN
-	// 		UPDATE users SET lastsubmission = EXTRACT(EPOCH FROM NOW()) WHERE userid = NEW.userid;
-	// 		RETURN NEW;
-	// 	END;
-	// $$;
-	// `)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return err
-	// }
-
-	// _, err = DB.QueryContext(ctx, `
-	// CREATE OR REPLACE TRIGGER user_score_timestamp_trigger
-    // 	BEFORE UPDATE ON users
-    // 	EXECUTE PROCEDURE user_score_timestamp();
-	// `)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return err
-	// }
-
 	return nil
 }
