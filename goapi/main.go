@@ -4,6 +4,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 
 	"github.com/CyberLabs-Infosec/isolet/goapi/config"
 	"github.com/CyberLabs-Infosec/isolet/goapi/database"
@@ -20,10 +21,16 @@ func main() {
 	// Initialize error logging
 	logs.InitLogger()
 
-	log.Println("API version: 0.9.5")
+	log.Println("API version: 0.9.7")
 	// Connect to database
-	if err := database.Connect(); err != nil {
-		log.Fatal(err)
+	for {
+		if err := database.Connect(); err != nil {
+			log.Println(err)
+			log.Println("sleep for 1 minute")
+			time.Sleep(time.Minute)
+			continue
+		}
+		break
 	}
 
 	// Create tables

@@ -245,7 +245,7 @@ func VerifyFlag(c *fiber.Ctx, level int, userid int, flag string) (bool, string)
 		if currentlevel != level {
 			return false, fmt.Sprintf("Correct flag! no points added. Current level: %d Submitted level: %d", currentlevel, level)
 		}
-		DB.QueryContext(ctx, `UPDATE users SET score = $1 WHERE userid = $2`, level+1, userid)
+		DB.QueryContext(ctx, `UPDATE users SET score = $1, lastsubmission = EXTRACT(EPOCH FROM NOW()) WHERE userid = $2`, level+1, userid)
 
 		if err := DB.QueryRowContext(ctx, `SELECT solves FROM challenges WHERE level = $1`, level).Scan(&currentSolves); err != nil {
 			log.Println(err)
@@ -292,7 +292,7 @@ func ReadScores(c *fiber.Ctx) ([]models.Score, error) {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 	
-	rows, err := DB.QueryContext(ctx, `SELECT username, score from users ORDER BY score DESC`)
+	rows, err := DB.QueryContext(ctx, `SELECT username, score from users ORDER BY score DESC, lastsubmission`)
 	if err != nil {
 		return scores, err
 	}

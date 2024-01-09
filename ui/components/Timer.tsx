@@ -1,14 +1,15 @@
 'use client'
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useContext } from "react"
+import { challContext } from "./Contexts"
 
 interface Props {
-    deadline: number
 	level: number
 	classes: string
+	setTimeLeft: any
 }
 
 function Timer(props: Props) {
-    const [deadline, setDeadLine] = useState(props.deadline)
+	const { deadline } = useContext(challContext)
 
 	const calculateTimeLeft = (deadline: number) => {
 		let difference = deadline - Date.now()
@@ -25,7 +26,6 @@ function Timer(props: Props) {
 				seconds: Math.floor((difference / 1000) % 60)
 			}
 		}
-	
 		return timeLeft
 	}
 
@@ -33,15 +33,15 @@ function Timer(props: Props) {
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
-			setTimeLeft(calculateTimeLeft(deadline));
+			setTimeLeft(calculateTimeLeft(deadline))
 		}, 1000)
+
+		if (timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0) {
+			props.setTimeLeft(true)
+		}
 
 		return () => clearTimeout(timer)
 	})
-
-    useEffect(() => {
-        setDeadLine(props.deadline)
-    }, [props.deadline])
 
 	return (
 		<div data-level={ props.level } className={`${props.classes}`}>

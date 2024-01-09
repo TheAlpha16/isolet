@@ -140,13 +140,18 @@ func EvictPods() error {
 			continue
 		}
 
-		podStartTime := pod.Status.StartTime
-		if podStartTime == nil {
+		ann := pod.Annotations["deadline"]
+		if ann == ""{
 			continue
 		}
+		
+		deadline, err := strconv.ParseInt(ann, 10, 64)
+		if err != nil {
+			log.Printf("ERROR: %s\n", err.Error())
+			return err
+		}
 
-		startTime := time.Unix(podStartTime.Unix(), 0)
-		endTime := startTime.Add(time.Minute * time.Duration(config.INSTANCE_TIME))
+		endTime := time.UnixMilli(deadline)
 
 		if !time.Now().Before(endTime) {
 			log.Printf("DELETE: userid=%d, level=%d", userid, level)
@@ -158,12 +163,18 @@ func EvictPods() error {
 }
 
 func main() {
-	log.Printf("LOG: Starting ripper...\n")
 	log.Printf("LOG: Connecting to DB...\n")
 
-	if err := database.Connect(); err != nil {
-		log.Fatal(err)
+	for {
+		if err := database.Connect(); err != nil {
+			log.Println(err)
+			log.Println("sleep for 1 minute")
+			time.Sleep(time.Minute)
+			continue
+		}
+		break
 	}
+
 	log.Printf("LOG: DB connection established\n")
 
 	for {
