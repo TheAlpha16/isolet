@@ -3,8 +3,10 @@ package utils
 import (
 	"crypto/sha256"
 	"fmt"
+	"log"
 	"net/mail"
 	"os"
+	"regexp"
 	"strconv"
 
 	"github.com/CyberLabs-Infosec/isolet/goapi/config"
@@ -35,6 +37,23 @@ func Hash(secret string) string {
 // 	}
 // 	return true
 // }
+
+func CheckDomain(email string) bool {
+	allowedDomains := []string{"iitism.ac.in"}
+
+	for i := 0; i < len(allowedDomains); i++ {
+		domain := allowedDomains[i]
+		reg, err := regexp.Compile("^[A-Za-z0-9._%+-]+@" + domain +"$")
+		if err != nil {
+			log.Println(err)
+			return false
+		}
+		if reg.MatchString(email) {
+			return true
+		}
+	}
+	return false
+}
 
 func ValidateLoginInput(creds *models.Creds) (bool, string) {
 	if len(creds.Email) > config.EMAIL_LEN {
@@ -67,6 +86,10 @@ func ValidateRegisterInput(regInput *models.User) (bool, string) {
 
 	if _, err := mail.ParseAddress(regInput.Email); err != nil {
 		return false, "Not a valid email address"
+	}
+
+	if validDomain := CheckDomain(regInput.Email); !validDomain {
+		return false, "Domain is not allowed, please use your iitism.ac.in mail"
 	}
 
 	if database.EmailExists(regInput.Email) {
