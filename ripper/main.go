@@ -136,7 +136,7 @@ func EvictPods() error {
 		userid, _ := strconv.Atoi(pod.Labels["userid"])
 		level, _ := strconv.Atoi(pod.Labels["level"])
 
-		if pod.Status.Phase != core.PodRunning {
+		if pod.Status.Phase == core.PodPending {
 			continue
 		}
 
