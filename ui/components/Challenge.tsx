@@ -115,7 +115,9 @@ function Challenge(props: Props) {
 			return
 		}
 
-		data.append("flag", flag.value)
+		let flagValue = flag.value.trim()
+
+		data.append("flag", flagValue)
 		data.append("level", `${props.challObject.level}`)
 
 		const controller = new AbortController()
@@ -283,7 +285,6 @@ function Challenge(props: Props) {
 	}
 
 	const instanceEnded = async () => {
-		console.log("i am run")
 		const controller = new AbortController()
 		const { signal } = controller
 		// const launchButton = document.getElementById(`launch-${props.challObject.level}`) as HTMLButtonElement
