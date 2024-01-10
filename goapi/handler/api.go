@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/CyberLabs-Infosec/isolet/goapi/config"
 	"github.com/CyberLabs-Infosec/isolet/goapi/database"
@@ -187,6 +188,7 @@ func SubmitFlag(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid level"})
 	}
+	flag = strings.TrimSpace(flag)
 
 	if !database.UserExists(c, userid) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "user does not exist"})
