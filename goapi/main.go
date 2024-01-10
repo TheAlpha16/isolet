@@ -21,7 +21,7 @@ func main() {
 	// Initialize error logging
 	logs.InitLogger()
 
-	log.Println("API version: 0.9.8")
+	log.Println("API version: 1.0.0")
 	// Connect to database
 	for {
 		if err := database.Connect(); err != nil {
