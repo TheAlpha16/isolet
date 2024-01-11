@@ -46,7 +46,7 @@ host for frontend in case it exists. If kubernetes is being used for deployment,
 <SERVICE_NAME_OF_UI>.<NAMESPACE>.svc.cluster.local
 ```
 
-> [!info]
+> [!note]
 > for more information, head over to [dns for pods](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/)
 
 ### Instance
