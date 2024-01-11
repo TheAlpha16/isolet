@@ -8,7 +8,7 @@
     {
         "level": 1,
         "name": "Jail 1",
-        "prompt": "vim jail! Escape",
+        "prompt": "Vim jail! Escape",
         "tags": ["vim", "export", "env", "pwd"]
     },
     {
@@ -34,5 +34,17 @@
         "name": "Interpret",
         "prompt": "Ageratina altissima",
         "tags": ["python", "suid", "subprocess", "whoami"]
+    },
+    {
+        "level": 6,
+        "name": "Git 1",
+        "prompt": "Erase your mistakes",
+        "tags": ["clone", "commit", "diff", "checkout"]
+    },
+    {
+        "level": 7,
+        "name": "Git 2",
+        "prompt": "Git is a big tree",
+        "tags": ["clone", "commit", "diff", "checkout"]
     }
 ]
