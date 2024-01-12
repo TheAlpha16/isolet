@@ -45,6 +45,10 @@ spec:
             - name: db-pv
               mountPath: /var/lib/postgresql/data
               subPath: postgres
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "pg_ctl -D /var/lib/postgresql/data -w -t 60 -m fast stop"]
       volumes:
         - name: db-pv
           persistentVolumeClaim:
