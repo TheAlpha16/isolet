@@ -6,7 +6,7 @@ Isolet is a framework to deploy linux wargames like [Bandit](https://overthewire
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Setup](#setup)
-    - [Additional setup](#additional-setup)
+- [Installation](#installation)
 - [Configuration](#configuration)
     - [General](#general)
     - [Instance](#instance)
@@ -32,24 +32,6 @@ Isolet is a framework to deploy linux wargames like [Bandit](https://overthewire
 
 ## Setup
 
-1. Install [kubectl](https://kubernetes.io/docs/tasks/tools/) on your machine. 
-2. Spin up a cluster on your favourite cloud provider or if you wish to test locally, install [minikube](https://minikube.sigs.k8s.io/docs/start/).
-
-Here is a sample gcloud command line for the cluster
-
-```sh
-gcloud beta container --project <PROJECT_NAME> clusters create <CLUSTER_NAME> --no-enable-basic-auth --cluster-version "1.27.7-gke.1121000" --release-channel "regular" --machine-type "e2-medium" --image-type "COS_CONTAINERD" --disk-type "pd-balanced" --disk-size "30" --node-labels app=node --metadata disable-legacy-endpoints=true --scopes "https://www.googleapis.com/auth/devstorage.read_only","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/monitoring","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management.readonly","https://www.googleapis.com/auth/trace.append" --num-nodes "1" --logging=SYSTEM,WORKLOAD --monitoring=SYSTEM --enable-ip-alias --network "projects/<PROJECT_NAME>/global/networks/default" --subnetwork "projects/<PROJECT_NAME>/regions/<PROJECT_REGION>/subnetworks/default" --no-enable-intra-node-visibility --default-max-pods-per-node "110" --security-posture=standard --workload-vulnerability-scanning=disabled --enable-dataplane-v2 --no-enable-master-authorized-networks --addons HorizontalPodAutoscaling,HttpLoadBalancing,GcePersistentDiskCsiDriver --enable-autoupgrade --enable-autorepair --max-surge-upgrade 1 --max-unavailable-upgrade 0 --binauthz-evaluation-mode=DISABLED --enable-managed-prometheus --enable-shielded-nodes --tags "isolet-node" --node-locations "us-central1-c"
-```
-
-Change the instance configuration of nodes as per your workload requirements.
-
-> [!note]
-> Check out [gcloud reference](https://cloud.google.com/sdk/gcloud/reference/container/) for more information.
-
-3. Configure `kubectl` to access the cluster.
-
-### Additional setup
-
 This setup is specific for Standard [GKE](https://cloud.google.com/kubernetes-engine/) cluster. Check out the documentation of your service provider for specifics.
 
 - `StorageClass`
@@ -73,6 +55,54 @@ gcloud compute firewall-rules create kube-node-port-fw-rule \
     --source-ranges 0.0.0.0/0 \
     --rules tcp:30000-32767 \
     --no-enable-logging
+```
+
+- `ExternalIP`
+If you have a static IP address to use, especially useful in case you want to setup domain name for your deployment, replace the IP address in the `loadBalancerIP` field of proxy-service in [proxy-main.yml](./kubernetes/definition/proxy-main.yml)
+
+To reserve a static external IP address in GCP
+
+```sh
+gcloud compute addresses create <NAME_OF_THE_IP> --project=<PROJECT_ID> --region=us-central1
+```
+
+## Installation
+
+1. Install [kubectl](https://kubernetes.io/docs/tasks/tools/) on your machine
+2. Spin up a cluster on your favourite cloud provider or if you wish to test locally, install [minikube](https://minikube.sigs.k8s.io/docs/start/)
+
+Here is a sample gcloud command line for the cluster
+
+```sh
+gcloud beta container --project <PROJECT_ID> clusters create <CLUSTER_NAME> --no-enable-basic-auth --cluster-version "1.27.7-gke.1121000" --release-channel "regular" --machine-type "e2-medium" --image-type "COS_CONTAINERD" --disk-type "pd-balanced" --disk-size "30" --node-labels app=node --metadata disable-legacy-endpoints=true --scopes "https://www.googleapis.com/auth/devstorage.read_only","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/monitoring","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management.readonly","https://www.googleapis.com/auth/trace.append" --num-nodes "1" --logging=SYSTEM,WORKLOAD --monitoring=SYSTEM --enable-ip-alias --network "projects/<PROJECT_NAME>/global/networks/default" --subnetwork "projects/<PROJECT_NAME>/regions/<PROJECT_REGION>/subnetworks/default" --no-enable-intra-node-visibility --default-max-pods-per-node "110" --security-posture=standard --workload-vulnerability-scanning=disabled --enable-dataplane-v2 --no-enable-master-authorized-networks --addons HorizontalPodAutoscaling,HttpLoadBalancing,GcePersistentDiskCsiDriver --enable-autoupgrade --enable-autorepair --max-surge-upgrade 1 --max-unavailable-upgrade 0 --binauthz-evaluation-mode=DISABLED --enable-managed-prometheus --enable-shielded-nodes --tags "isolet-node" --node-locations "us-central1-c"
+```
+
+Change the instance configuration of nodes as per your workload requirements
+
+> [!note]
+> Check out [gcloud reference](https://cloud.google.com/sdk/gcloud/reference/container/) for more information
+
+3. Configure `kubectl` to access the cluster
+4. Clone the repository
+
+```sh
+git clone https://github.com/CyberLabs-Infosec/isolet.git
+```
+
+5. Edit the [challs.json](./goapi/challenges/challs.json) file according to your challenges
+6. Change the registry variable to your image repository in [update.sh](./update.sh)
+7. Run the `update.sh` script to build the images
+
+```sh
+./update.sh
+```
+
+8. Update the `image` in the yml files under [definition](./kubernetes/definition/)
+9. Configure the variable according to your requirements. Check out [Configuration](#configuration)
+10. Run the `init.sh` script
+
+```sh
+./init.sh
 ```
 
 ## Configuration
@@ -171,7 +201,8 @@ Time in seconds to be given to the pod for graceful shutdown.
 | route | methods | parameters | response | sample |
 |:---:|:---:|:---:|:---:|:---:|
 | /api/challs | GET | NONE | challenges | [{"chall_id":0, "level":1, "name":"demo", "prompt":"solve it", "tags":["ssh", "cat"]}] |
-| /api/launch | POST | chall_id, userid, level | status | {"status": "success", "message": "3b369c0b1fd5419b2f81da89cf5480d2 32747"} |
+| /api/launch | POST | chall_id, userid, level | status | {"status": "success", "message": ""} |
 | /api/stop | POST | userid, level | status | {"status": "failure", "message": "User does not exist"} |
 | /api/submit | POST | userid, level, flag | status | {"status": "failure", "message": "Flag copy detected. Incident reported!"} |
 | /api/status | GET | NONE | instances | {"status": "success", "message": "[{"userid":123614343, "level":1, "password":"8f1ee93113affe32078c", "port":"32134"}]"}
+| /api/extend | GET | NONE | new deadline | {"status": "success", "message": ""}
