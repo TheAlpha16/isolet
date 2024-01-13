@@ -393,12 +393,12 @@ function Challenge(props: Props) {
 						{ props.challObject.solves } solves
 					</div>
 				</div> 
-				<div id={`submit-${props.challObject.level}`} className={ `${props.isVisible ? "": "hidden"} flex flex-col p-3 font-mono transition duration-300 ease-in-out bg-gray-800 rounded-md` } data-level={ props.challObject.level }>
-					<div data-level={ props.challObject.level } className="flex font-light items-center p-2">
+				<div id={`submit-${props.challObject.level}`} className={ `${props.isVisible ? "": "hidden"} flex flex-col p-3 font-mono transition duration-300 ease-in-out bg-gray-800 rounded-md` }>
+					<div data-level={ props.challObject.level } className="flex font-light items-center p-2 max-w-max">
 						{ props.challObject.prompt }
 					</div>
-					<div data-level={ props.challObject.level } className="flex justify-between flex-wrap">
-						<div data-level={ props.challObject.level } className="flex gap-2 w-full justify-start flex-wrap">
+					<div className="flex justify-between flex-wrap">
+						<div className="flex gap-2 w-full justify-start flex-wrap">
 							<button id={`launch-${props.challObject.level}`} className={`p-2 w-32 rounded-md ${ isActive ? "text-palette-100": "text-black" } ${ isActive ? "bg-rose-500": "bg-palette-500" }`} data-level={ props.challObject.level }>{ isActive ? "Stop": "Start" }</button>
 							<button id={`extend-${props.challObject.level}`} className={`p-2 w-32 rounded-md bg-palette-500 text-black ${ isActive ? "": "hidden" }`} data-level={ props.challObject.level }>{ "Extend" }</button>
 							{ isActive ? <challContext.Provider value={{deadline}}><Timer setTimeLeft={setTimeLeft} level={ props.challObject.level } classes="flex items-center"/></challContext.Provider>: <div className="hidden"></div>}
@@ -408,7 +408,7 @@ function Challenge(props: Props) {
 						<input id={`flag-${props.challObject.level}`} placeholder="flag" name="flag" type="text" className="border p-2 grow outline-palette-500 rounded-md text-black" data-level={ props.challObject.level } required></input>
 						<button onClick={ handleSubmit } className="p-2 w-24 text-black bg-palette-500 rounded-md hover:bg-palette-400" data-level={ props.challObject.level }>Submit</button>
 					</div>
-					<div className="flex gap-2 pb-2 flex-wrap" data-level={ props.challObject.level }>
+					<div className="flex gap-2 pb-2 flex-wrap">
 						{
 							props.challObject.tags.map((tag, index) => {
 								return (
@@ -419,7 +419,7 @@ function Challenge(props: Props) {
 							})
 						}
 					</div>
-					<div className={`${isActive ? "": "hidden"} flex gap-2 pb-2 items-center`} data-level={ props.challObject.level }>
+					<div className={`${isActive ? "": "hidden"} flex gap-2 pb-2 items-center`}>
 						<div className="bg-slate-950 p-1 px-3 rounded-md text-palette-500" data-level={ props.challObject.level }>
 							{ `$ ssh level${props.challObject.level}@${hostname.current} -p ${port.current}` }
 						</div>
@@ -429,7 +429,7 @@ function Challenge(props: Props) {
 							</svg>
 						</div>
 					</div>
-					<div data-level={ props.challObject.level } className={`flex gap-2 items-center ${isActive ? "": "hidden"}`}>
+					<div className={`flex gap-2 items-center ${isActive ? "": "hidden"}`}>
 						<div className="bg-slate-950 p-1 px-3 rounded-md" data-level={ props.challObject.level }>
 							{`${password.current.substring(0, 7)}************${password.current.substring(27)}`}
 						</div>

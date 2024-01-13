@@ -12,6 +12,7 @@ echo -n "> "
 read choice
 
 resource=""
+registry="docker.io/thealpha16"
 
 case $choice in
     "1")
@@ -30,9 +31,9 @@ case $choice in
         echo ""
         echo "Invalid choice"
         echo "Valid options: 1, 2, 3"
-        echo "1. API   - rebuild isolet-goapi image"
-        echo "2. UI    - rebuild isolet-ui image"
-        echo "3. proxy - rebuild isolet-proxy image"
+        echo "1. API    - rebuild isolet-goapi image"
+        echo "2. UI     - rebuild isolet-ui image"
+        echo "3. proxy  - rebuild isolet-proxy image"
         echo "4. ripper - rebuild isolet-ripper image"
         echo ""
         echo "[-] exiting"
@@ -40,7 +41,7 @@ case $choice in
     ;;
 esac
 
-docker images | grep thealpha16/isolet-${resource}
+docker images | grep ${registry}/isolet-${resource}
 echo ""
 
 echo "Choose version to tag"
@@ -76,12 +77,12 @@ case $confirm in
 esac
 
 cd ./${resource}
-docker buildx build --tag thealpha16/isolet-${resource}:${version} --platform linux/arm64/v8,linux/amd64 --builder bob --push .
+docker buildx build --tag ${registry}/isolet-${resource}:${version} --platform linux/arm64/v8,linux/amd64 --builder bob --push .
 
 case $tag in
     "yes")
-        docker rmi -f thealpha16/isolet-$resource:latest
-        docker buildx build --tag thealpha16/isolet-${resource}:latest --platform linux/arm64/v8,linux/amd64 --builder bob --push .
+        docker rmi -f ${registry}/isolet-$resource:latest
+        docker buildx build --tag ${registry}/isolet-${resource}:latest --platform linux/arm64/v8,linux/amd64 --builder bob --push .
     ;;
     "no")
         echo "[*] Not removing latest tag"
