@@ -11,7 +11,7 @@ Isolet is a framework to deploy linux wargames like [Bandit](https://overthewire
     - [General](#general)
     - [Instance](#instance)
     - [Secrets](#secrets)
-- [API routes](#api-routes)
+
 
 ## Features
 
@@ -43,6 +43,15 @@ kubectl get sc
 
 Choose an appropriate one and replace `standard-rwo` it in the [db-volume.yml](./kubernetes/init/db-volume.yml) file.
 
+```yml
+metadata:
+  name: db-pv-claim
+spec:
+  storageClassName: standard-rwo
+  accessModes:
+    - ReadWriteOnce
+```
+
 - `NodePort`
 Isolet uses service of type `NodePort` to expose pods for the user. You might need to configure your cloud services to allow traffic into the instances.
 
@@ -59,6 +68,22 @@ gcloud compute firewall-rules create kube-node-port-fw-rule \
 
 - `ExternalIP`
 If you have a static IP address to use, especially useful in case you want to setup domain name for your deployment, replace the IP address in the `loadBalancerIP` field of proxy-service in [proxy-main.yml](./kubernetes/definition/proxy-main.yml)
+
+```yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxy-svc
+  labels:
+    app: proxy-svc
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: proxy
+  type: LoadBalancer
+  loadBalancerIP: 35.23.13.211
+```
 
 To reserve a static external IP address in GCP
 
@@ -91,6 +116,11 @@ git clone https://github.com/CyberLabs-Infosec/isolet.git
 
 5. Edit the [challs.json](./goapi/challenges/challs.json) file according to your challenges
 6. Change the registry variable to your image repository in [update.sh](./update.sh)
+
+```sh
+resource=""
+registry="docker.io/thealpha"
+```
 7. Run the `update.sh` script to build the images
 
 ```sh
@@ -98,6 +128,25 @@ git clone https://github.com/CyberLabs-Infosec/isolet.git
 ```
 
 8. Update the `image` in the yml files under [definition](./kubernetes/definition/)
+
+```yml
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: goapi
+  template:
+    metadata:
+      name: goapi-deployment
+      labels:
+        app: goapi
+    spec:
+      containers:
+        - name: goapi
+          image: docker.io/thealpha16/isolet-goapi
+          imagePullPolicy: Always
+```
+
 9. Configure the variable according to your requirements. Check out [Configuration](#configuration)
 10. Run the `init.sh` script
 
@@ -197,12 +246,3 @@ Time in seconds to be given to the pod for graceful shutdown.
 
 * `DB_NAME` Name of the database
 
-## API routes
-| route | methods | parameters | response | sample |
-|:---:|:---:|:---:|:---:|:---:|
-| /api/challs | GET | NONE | challenges | [{"chall_id":0, "level":1, "name":"demo", "prompt":"solve it", "tags":["ssh", "cat"]}] |
-| /api/launch | POST | chall_id, userid, level | status | {"status": "success", "message": ""} |
-| /api/stop | POST | userid, level | status | {"status": "failure", "message": "User does not exist"} |
-| /api/submit | POST | userid, level, flag | status | {"status": "failure", "message": "Flag copy detected. Incident reported!"} |
-| /api/status | GET | NONE | instances | {"status": "success", "message": "[{"userid":123614343, "level":1, "password":"8f1ee93113affe32078c", "port":"32134"}]"}
-| /api/extend | GET | NONE | new deadline | {"status": "success", "message": ""}
