@@ -32,6 +32,12 @@ Isolet is a framework to deploy linux wargames like [Bandit](https://overthewire
 
 ## Setup
 
+Clone the repository
+
+```sh
+git clone https://github.com/CyberLabs-Infosec/isolet.git
+```
+
 This setup is specific for Standard [GKE](https://cloud.google.com/kubernetes-engine/) cluster. Check out the documentation of your service provider for specifics.
 
 - `StorageClass`
@@ -108,26 +114,20 @@ Change the instance configuration of nodes as per your workload requirements
 > Check out [gcloud reference](https://cloud.google.com/sdk/gcloud/reference/container/) for more information
 
 3. Configure `kubectl` to access the cluster
-4. Clone the repository
-
-```sh
-git clone https://github.com/CyberLabs-Infosec/isolet.git
-```
-
-5. Edit the [challs.json](./goapi/challenges/challs.json) file according to your challenges
-6. Change the registry variable to your image repository in [update.sh](./update.sh)
+4. Edit the [challs.json](./goapi/challenges/challs.json) file according to your challenges
+5. Change the registry variable to your image repository in [update.sh](./update.sh)
 
 ```sh
 resource=""
 registry="docker.io/thealpha"
 ```
-7. Run the `update.sh` script to build the images
+6. Run the `update.sh` script to build the images
 
 ```sh
 ./update.sh
 ```
 
-8. Update the `image` in the yml files under [definition](./kubernetes/definition/)
+7. Update the `image` in the yml files under [definition](./kubernetes/definition/)
 
 ```yml
 spec:
@@ -147,8 +147,8 @@ spec:
           imagePullPolicy: Always
 ```
 
-9. Configure the variable according to your requirements. Check out [Configuration](#configuration)
-10. Run the `init.sh` script
+8. Configure the variable according to your requirements. Check out [Configuration](#configuration)
+9. Run the `init.sh` script
 
 ```sh
 ./init.sh
