@@ -394,7 +394,7 @@ function Challenge(props: Props) {
 					</div>
 				</div> 
 				<div id={`submit-${props.challObject.level}`} className={ `${props.isVisible ? "": "hidden"} flex flex-col p-3 font-mono transition duration-300 ease-in-out bg-gray-800 rounded-md` }>
-					<div data-level={ props.challObject.level } className="flex font-light items-center p-2">
+					<div data-level={ props.challObject.level } className="flex font-light items-center p-2 max-w-max">
 						{ props.challObject.prompt }
 					</div>
 					<div className="flex justify-between flex-wrap">
