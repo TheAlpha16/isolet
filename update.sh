@@ -12,7 +12,7 @@ echo -n "> "
 read choice
 
 resource=""
-registry="thealpha16"
+registry="docker.io/thealpha16"
 
 case $choice in
     "1")
