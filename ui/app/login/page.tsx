@@ -8,6 +8,8 @@ import Link from "next/link"
 
 function Login() {
 	const [view, setView] = useState(false)
+	const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
 	const user = User()
 	const router = useRouter()
 
@@ -82,6 +84,7 @@ function Login() {
 	return (
 		<>
 			<div className="flex flex-col gap-1 px-6 pt-6 pb-4 mt-6 font-mono justify-center self-center border-2 border-palette-600 text-palette-100 rounded-md">
+			<form onSubmit={handleSubmit}>
 				<div className="grid grid-cols-1 gap-y-4 justify-items-center">
 					<label>Creds please!</label>
 					<input
@@ -89,21 +92,31 @@ function Login() {
 						name="email"
 						placeholder="Email"
 						type="text"
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
 						className={ inputClass } 
 					></input>
 					<input
 						id="password"
 						name="password"
 						placeholder="Password"
-						type={ view ? "text": "password" } 
+						type={ view ? "text": "password" }
+						value={password}
+						onChange={(e) => setPassword(e.target.value)} 
+						onKeyDown={(e) => {
+							if (e.key == "Enter") {
+								handleSubmit();
+							}
+						}}
 						className={ inputClass }
 					></input>
 					<div className="flex gap-2 w-full">
 						<input type="checkbox" onClick={ handleShowHide } className="cursor-pointor"></input>
 						<div>Show Password</div>
 					</div>
-					<button className="px-5 py-2 relative duration-300 ease-in bg-palette-500 text-black rounded-md hover:bg-palette-400" onClick={ handleSubmit }>Login</button>
+					<button type="submit" className="px-5 py-2 relative duration-300 ease-in bg-palette-500 text-black rounded-md hover:bg-palette-400" onClick={ handleSubmit }>Login</button>
 				</div>
+			</form>
 				<Link href={ "/register" }>
 					<div className="text-blue-400 text-sm text-center underline">
 						Sign up
