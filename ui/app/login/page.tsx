@@ -9,7 +9,7 @@ import Link from "next/link"
 function Login() {
 	const [view, setView] = useState(false)
 	const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
+    	const [password, setPassword] = useState("")
 	const user = User()
 	const router = useRouter()
 
