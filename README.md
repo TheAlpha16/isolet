@@ -35,7 +35,7 @@ Isolet is a framework to deploy linux wargames like [Bandit](https://overthewire
 Clone the repository
 
 ```sh
-git clone https://github.com/CyberLabs-Infosec/isolet.git
+git clone https://github.com/TheAlpha16/isolet.git
 ```
 
 This setup is specific for Standard [GKE](https://cloud.google.com/kubernetes-engine/) cluster. Check out the documentation of your service provider for specifics.
