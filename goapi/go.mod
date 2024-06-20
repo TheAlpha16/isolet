@@ -1,4 +1,4 @@
-module github.com/CyberLabs-Infosec/isolet/goapi
+module github.com/TheAlpha16/isolet/goapi
 
 go 1.21.5
 

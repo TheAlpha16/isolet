@@ -1,4 +1,4 @@
-module github.com/CyberLabs-Infosec/isolet/ripper
+module github.com/TheAlpha16/isolet/ripper
 
 go 1.21.5
 

@@ -9,9 +9,9 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/CyberLabs-Infosec/isolet/goapi/config"
-	"github.com/CyberLabs-Infosec/isolet/goapi/database"
-	"github.com/CyberLabs-Infosec/isolet/goapi/models"
+	"github.com/TheAlpha16/isolet/goapi/config"
+	"github.com/TheAlpha16/isolet/goapi/database"
+	"github.com/TheAlpha16/isolet/goapi/models"
 )
 
 func UpdateKey(key string) error {
@@ -43,7 +43,7 @@ func CheckDomain(email string) bool {
 
 	for i := 0; i < len(allowedDomains); i++ {
 		domain := allowedDomains[i]
-		reg, err := regexp.Compile("^[A-Za-z0-9._%+-]+@" + domain +"$")
+		reg, err := regexp.Compile("^[A-Za-z0-9._%+-]+@" + domain + "$")
 		if err != nil {
 			log.Println(err)
 			return false

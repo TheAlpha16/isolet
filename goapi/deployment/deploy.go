@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CyberLabs-Infosec/isolet/goapi/config"
-	"github.com/CyberLabs-Infosec/isolet/goapi/database"
-	"github.com/CyberLabs-Infosec/isolet/goapi/utils"
+	"github.com/TheAlpha16/isolet/goapi/config"
+	"github.com/TheAlpha16/isolet/goapi/database"
+	"github.com/TheAlpha16/isolet/goapi/utils"
 	"github.com/gofiber/fiber/v2"
 
 	"k8s.io/client-go/kubernetes"
@@ -235,7 +235,7 @@ func AddTime(c *fiber.Ctx, userid int, level int) (bool, string, int64) {
 			log.Println(err)
 			return false, "instance not running", 1
 		}
-		
+
 		return false, "instance not running", 1
 	}
 
@@ -284,8 +284,8 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 							core.ResourceName(core.ResourceEphemeralStorage): resource.MustParse(config.DISK_LIMIT),
 						},
 						Requests: core.ResourceList{
-							core.ResourceName(core.ResourceCPU):    resource.MustParse(config.CPU_REQUEST),
-							core.ResourceName(core.ResourceMemory): resource.MustParse(config.MEMORY_REQUEST),
+							core.ResourceName(core.ResourceCPU):              resource.MustParse(config.CPU_REQUEST),
+							core.ResourceName(core.ResourceMemory):           resource.MustParse(config.MEMORY_REQUEST),
 							core.ResourceName(core.ResourceEphemeralStorage): resource.MustParse(config.DISK_REQUEST),
 						},
 					},

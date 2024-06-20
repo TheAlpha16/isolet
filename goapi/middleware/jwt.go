@@ -3,8 +3,8 @@ package middleware
 import (
 	"time"
 
-	"github.com/CyberLabs-Infosec/isolet/goapi/config"
-	"github.com/CyberLabs-Infosec/isolet/goapi/models"
+	"github.com/TheAlpha16/isolet/goapi/config"
+	"github.com/TheAlpha16/isolet/goapi/models"
 
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"

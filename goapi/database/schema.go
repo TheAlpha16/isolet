@@ -1,12 +1,12 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
-	"context"
 
-	"github.com/CyberLabs-Infosec/isolet/goapi/config"
+	"github.com/TheAlpha16/isolet/goapi/config"
 )
 
 func CreateTables() error {

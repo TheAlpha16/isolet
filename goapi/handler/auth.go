@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CyberLabs-Infosec/isolet/goapi/config"
-	"github.com/CyberLabs-Infosec/isolet/goapi/database"
-	"github.com/CyberLabs-Infosec/isolet/goapi/middleware"
-	"github.com/CyberLabs-Infosec/isolet/goapi/models"
-	"github.com/CyberLabs-Infosec/isolet/goapi/utils"
+	"github.com/TheAlpha16/isolet/goapi/config"
+	"github.com/TheAlpha16/isolet/goapi/database"
+	"github.com/TheAlpha16/isolet/goapi/middleware"
+	"github.com/TheAlpha16/isolet/goapi/models"
+	"github.com/TheAlpha16/isolet/goapi/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"

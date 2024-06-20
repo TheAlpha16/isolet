@@ -1,8 +1,8 @@
 package router
 
 import (
-	"github.com/CyberLabs-Infosec/isolet/goapi/handler"
-	"github.com/CyberLabs-Infosec/isolet/goapi/middleware"
+	"github.com/TheAlpha16/isolet/goapi/handler"
+	"github.com/TheAlpha16/isolet/goapi/middleware"
 
 	"github.com/gofiber/fiber/v2"
 )

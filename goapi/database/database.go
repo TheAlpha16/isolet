@@ -1,16 +1,16 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
-	"context"
-	"time"
 	"fmt"
 	"io"
 	"os"
+	"time"
 
-	"github.com/CyberLabs-Infosec/isolet/goapi/config"
-	"github.com/CyberLabs-Infosec/isolet/goapi/models"
+	"github.com/TheAlpha16/isolet/goapi/config"
+	"github.com/TheAlpha16/isolet/goapi/models"
 
 	_ "github.com/lib/pq"
 )

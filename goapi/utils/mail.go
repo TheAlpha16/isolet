@@ -7,8 +7,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/CyberLabs-Infosec/isolet/goapi/config"
-	"github.com/CyberLabs-Infosec/isolet/goapi/models"
+	"github.com/TheAlpha16/isolet/goapi/config"
+	"github.com/TheAlpha16/isolet/goapi/models"
 
 	"github.com/golang-jwt/jwt/v5"
 )

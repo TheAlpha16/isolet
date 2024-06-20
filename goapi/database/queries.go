@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/CyberLabs-Infosec/isolet/goapi/config"
-	"github.com/CyberLabs-Infosec/isolet/goapi/models"
+	"github.com/TheAlpha16/isolet/goapi/config"
+	"github.com/TheAlpha16/isolet/goapi/models"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/lib/pq"
@@ -165,7 +165,7 @@ func CanStartInstance(c *fiber.Ctx, userid int, level int) bool {
 func DeleteRunning(c *fiber.Ctx, userid int, level int) error {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
-	
+
 	if _, err := DB.QueryContext(ctx, `DELETE FROM running WHERE userid = $1 AND level = $2`, userid, level); err != nil {
 		return err
 	}
@@ -175,7 +175,7 @@ func DeleteRunning(c *fiber.Ctx, userid int, level int) error {
 func NewFlag(c *fiber.Ctx, userid int, level int, password string, flag string, port int32, hostname string, deadline int64) error {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
-	
+
 	if _, err := DB.QueryContext(ctx, `INSERT INTO flags (userid, level, flag, password, port, hostname, deadline) VALUES ($1, $2, $3, $4, $5, $6, $7)`, userid, level, flag, password, port, hostname, deadline); err != nil {
 		return err
 	}
@@ -185,7 +185,7 @@ func NewFlag(c *fiber.Ctx, userid int, level int, password string, flag string, 
 func DeleteFlag(c *fiber.Ctx, userid int, level int) error {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
-	
+
 	if _, err := DB.QueryContext(ctx, `DELETE FROM flags WHERE userid = $1 AND level = $2`, userid, level); err != nil {
 		return err
 	}
@@ -207,7 +207,7 @@ func ValidFlagEntry(c *fiber.Ctx, level int, userid int) bool {
 	var flag string
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
-	
+
 	if err := DB.QueryRowContext(ctx, `SELECT flag FROM flags WHERE level = $1 AND userid = $2`, level, userid).Scan(&flag); err != nil {
 		return false
 	}
@@ -291,7 +291,7 @@ func ReadScores(c *fiber.Ctx) ([]models.Score, error) {
 	scores := make([]models.Score, 0)
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
-	
+
 	rows, err := DB.QueryContext(ctx, `SELECT username, score from users ORDER BY score DESC, lastsubmission`)
 	if err != nil {
 		return scores, err
@@ -326,7 +326,7 @@ func AddTime(c *fiber.Ctx, userid int, level int) (bool, string, int64) {
 		return false, "limit reached", 1
 	}
 
-	_, err := DB.QueryContext(ctx, `UPDATE flags SET extended = $1 WHERE userid = $2 AND level = $3`, current + 1, userid, level)
+	_, err := DB.QueryContext(ctx, `UPDATE flags SET extended = $1 WHERE userid = $2 AND level = $3`, current+1, userid, level)
 	if err != nil {
 		log.Println(err)
 		return false, "error in extension, please contact admin", 1
