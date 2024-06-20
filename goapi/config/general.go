@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"os"
-	"strconv"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -14,6 +13,5 @@ var EMAIL_LEN = 320
 var PASS_LEN = 32
 var USERNAME_LEN = 32
 
-var DISCORD_FRONTEND, _ = strconv.ParseBool(os.Getenv("DISCORD_FRONTEND"))
 var CTF_NAME = os.Getenv("CTF_NAME")
 var APP_PORT = fmt.Sprintf(":%s", os.Getenv("APP_PORT"))

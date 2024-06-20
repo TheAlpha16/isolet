@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CyberLabs-Infosec/isolet/goapi/config"
 	"github.com/CyberLabs-Infosec/isolet/goapi/database"
 	"github.com/CyberLabs-Infosec/isolet/goapi/deployment"
 	"github.com/CyberLabs-Infosec/isolet/goapi/models"
@@ -20,19 +19,8 @@ func GetStatus(c *fiber.Ctx) error {
 	var userid int
 	var err error
 
-	if !config.DISCORD_FRONTEND {
-		claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
-		userid = int(claims["userid"].(float64))
-	} else {
-		userid_string := c.FormValue("userid")
-		if userid_string == "" {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing parameters in request"})
-		}
-		userid, err = strconv.Atoi(userid_string)
-		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid userid"})
-		}
-	}
+	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+	userid = int(claims["userid"].(float64))
 
 	instances, err := database.GetInstances(c, userid)
 	if err != nil {
@@ -55,19 +43,8 @@ func StartInstance(c *fiber.Ctx) error {
 	var userid int
 	var err error
 
-	if !config.DISCORD_FRONTEND {
-		claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
-		userid = int(claims["userid"].(float64))
-	} else {
-		userid_string := c.FormValue("userid")
-		if userid_string == "" {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing parameters in request"})
-		}
-		userid, err = strconv.Atoi(userid_string)
-		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid userid"})
-		}
-	}
+	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+	userid = int(claims["userid"].(float64))
 
 	level_string := c.FormValue("level")
 
@@ -81,10 +58,7 @@ func StartInstance(c *fiber.Ctx) error {
 	}
 
 	if !database.UserExists(c, userid) {
-		if !config.DISCORD_FRONTEND {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "user does not exist"})
-		}
-		database.AddToUsersDiscord(c, userid)
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "user does not exist"})
 	}
 
 	if !database.ValidChallenge(c, level) {
@@ -115,19 +89,8 @@ func StopInstance(c *fiber.Ctx) error {
 	var userid int
 	var err error
 
-	if !config.DISCORD_FRONTEND {
-		claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
-		userid = int(claims["userid"].(float64))
-	} else {
-		userid_string := c.FormValue("userid")
-		if userid_string == "" {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing parameters in request"})
-		}
-		userid, err = strconv.Atoi(userid_string)
-		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid userid"})
-		}
-	}
+	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+	userid = int(claims["userid"].(float64))
 
 	level_string := c.FormValue("level")
 
@@ -159,19 +122,8 @@ func SubmitFlag(c *fiber.Ctx) error {
 	var userid int
 	var err error
 
-	if !config.DISCORD_FRONTEND {
-		claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
-		userid = int(claims["userid"].(float64))
-	} else {
-		userid_string := c.FormValue("userid")
-		if userid_string == "" {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing parameters in request"})
-		}
-		userid, err = strconv.Atoi(userid_string)
-		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid userid"})
-		}
-	}
+	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+	userid = int(claims["userid"].(float64))
 
 	level_string := c.FormValue("level")
 	flag := c.FormValue("flag")
@@ -209,19 +161,8 @@ func ExtendTime(c *fiber.Ctx) error {
 	var userid int
 	var err error
 
-	if !config.DISCORD_FRONTEND {
-		claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
-		userid = int(claims["userid"].(float64))
-	} else {
-		userid_string := c.FormValue("userid")
-		if userid_string == "" {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing parameters in request"})
-		}
-		userid, err = strconv.Atoi(userid_string)
-		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid userid"})
-		}
-	}
+	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+	userid = int(claims["userid"].(float64))
 
 	level_string := c.FormValue("level")
 
