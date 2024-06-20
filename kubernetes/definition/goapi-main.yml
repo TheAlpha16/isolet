@@ -75,11 +75,11 @@ spec:
                 configMapKeyRef:
                   name: app-config
                   key: discord_frontend
-            - name: WARGAME_NAME
+            - name: CTF_NAME
               valueFrom:
                 configMapKeyRef:
                   name: app-config
-                  key: wargame_name
+                  key: ctf_name
             - name: APP_PORT
               valueFrom:
                 configMapKeyRef:

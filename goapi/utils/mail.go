@@ -47,7 +47,7 @@ func SendVerificationMail(user *models.User) error {
 	var body bytes.Buffer
 
 	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
-	body.Write([]byte(fmt.Sprintf("Subject: %s account verification \n%s\n\n", config.WARGAME_NAME, mimeHeaders)))
+	body.Write([]byte(fmt.Sprintf("Subject: %s account verification \n%s\n\n", config.CTF_NAME, mimeHeaders)))
 
 	t.Execute(&body, struct {
 		Username string
@@ -56,7 +56,7 @@ func SendVerificationMail(user *models.User) error {
 	}{
 		Username: user.Username,
 		Link:     config.AUTH_URL + token,
-		Wargame:  config.WARGAME_NAME,
+		Wargame:  config.CTF_NAME,
 	})
 
 	err = smtp.SendMail(config.SMTP_HOST+":"+config.SMTP_PORT, auth, from, to, body.Bytes())

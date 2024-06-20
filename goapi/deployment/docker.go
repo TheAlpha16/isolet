@@ -103,7 +103,7 @@ func GetParsedDockerfile(level int, flag string, password string, username strin
 		Username: username,
 		Password: password,
 		Flag:     flag,
-		Wargame:  config.WARGAME_NAME,
+		Wargame:  config.CTF_NAME,
 	})
 	if err != nil {
 		return nil, err

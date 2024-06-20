@@ -159,7 +159,7 @@ You can customize the application using environment variables passed to the depl
 
 ### General
 
-* `WARGAME_NAME` Name of the wargame to be deployed
+* `CTF_NAME` Name of the CTF to be deployed
 
 * `PUBLIC_URL` URL of the deployed application. Required for email verification
 

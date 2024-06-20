@@ -60,7 +60,7 @@ func GetKubeClient() (*kubernetes.Clientset, error) {
 func DeployInstance(c *fiber.Ctx, userid int, level int) (int64, string, int32, string, error) {
 	instance_name := utils.GetInstanceName(userid, level)
 	password := database.GenerateRandom()[0:32]
-	flag := config.WARGAME_NAME + "{" + database.GenerateRandom()[0:32] + "}"
+	flag := config.CTF_NAME + "{" + database.GenerateRandom()[0:32] + "}"
 	var deadline int64 = 1893456000000
 
 	// Hostname to be known when using subdomains for connections
@@ -292,8 +292,8 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 					ImagePullPolicy: core.PullAlways,
 					Env: []core.EnvVar{
 						{
-							Name:  "WARGAME",
-							Value: config.WARGAME_NAME,
+							Name:  "CTF_NAME",
+							Value: config.CTF_NAME,
 						},
 						{
 							Name:  "USER_PASSWORD",
