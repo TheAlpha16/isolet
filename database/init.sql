@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS toverify(
 -- Create challenges table
 CREATE TABLE IF NOT EXISTS challenges(
     chall_id serial PRIMARY KEY,
-    level integer NOT NULL UNIQUE,
+    level serial NOT NULL,
     chall_name text NOT NULL,
     category_id integer NOT NULL REFERENCES categories(category_id),
     prompt text,
