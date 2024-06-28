@@ -34,14 +34,14 @@ func main() {
 	}
 
 	// Create tables
-	if err := database.CreateTables(); err != nil {
-		log.Fatal(err)
-	}
+	// if err := database.CreateTables(); err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	// Initialize challenges
-	if err := database.PopulateChalls(); err != nil {
-		log.Fatal(err)
-	}
+	// if err := database.PopulateChalls(); err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	// Generate new secrets
 	if err := utils.UpdateKey("SESSION_SECRET"); err != nil {
