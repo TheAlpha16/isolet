@@ -218,7 +218,7 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: db_password
-            - name: PGUSER
+            - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
