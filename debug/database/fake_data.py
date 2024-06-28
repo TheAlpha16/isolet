@@ -6,13 +6,7 @@ fake = Faker()
 
 chall_types = ['static', 'dynamic', 'on-demand']
 
-categories = [
-    {"category_id": 1, "category_name": "web"},
-    {"category_id": 2, "category_name": "pwn"},
-    {"category_id": 3, "category_name": "reversing"},
-    {"category_id": 4, "category_name": "crypto"},
-    {"category_id": 5, "category_name": "misc"},
-]
+categories = ["web","pwn","reversing","crypto","misc","forensics","stego","osint","hardware","networking","mobile","blockchain","cloud","ai","iot"]
 
 def generate_fake_challenge():
     category = random.choice(categories)
@@ -24,7 +18,7 @@ def generate_fake_challenge():
 
     return {
         "chall_name": fake.catch_phrase(),
-        "category_id": category["category_id"],
+        "category": category,
         "prompt": fake.paragraph(),
         "flag": fake.password(length=12, special_chars=True),
         "type": chall_type,
