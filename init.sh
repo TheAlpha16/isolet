@@ -8,7 +8,7 @@ kubectl apply -f roles.yml
 
 # initialize secrets and configs
 cd ../configuration
-kubectl apply -f app-secrets.yml.local
+kubectl apply -f app-secrets.yml
 kubectl apply -f app-config.yml
 
 # initialize applications
