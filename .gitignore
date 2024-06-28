@@ -1,3 +1,5 @@
+/challenges/.venv
+
 goapi/.env
 goapi/logs/access.log
 goapi/logs/error.log
