@@ -79,7 +79,7 @@ class Challenge(Base):
     __tablename__ = 'challenges'
     
     chall_id = Column(Integer, primary_key=True, autoincrement=True)
-    level = Column(Integer, autoincrement=True)
+    # level = Column(Integer, autoincrement=True)
     chall_name = Column(Text, nullable=False)
     category_id = Column(Integer, ForeignKey('categories.category_id'), nullable=False)
     prompt = Column(Text)
@@ -87,7 +87,7 @@ class Challenge(Base):
     type = Column(chall_type_enum, nullable=False, default='static')
     points = Column(Integer, default=100)
     files = Column(ARRAY(Text), default=[])
-    hints = Column(ARRAY(Text))
+    hints = Column(ARRAY(BigInteger), default=[])
     solves = Column(Integer, default=0)
     author = Column(Text, default='anonymous')
     visible = Column(Boolean, default=False)
@@ -96,6 +96,15 @@ class Challenge(Base):
     subd = Column(Text, default='localhost')
     cpu = Column(Integer, default=5)
     mem = Column(Integer, default=10)
+
+class Hint(Base):
+    __tablename__ = 'hints'
+    
+    hid = Column(BigInteger, primary_key=True, autoincrement=True)
+    chall_id = Column(Integer, ForeignKey('challenges.chall_id'), nullable=False)
+    hint = Column(Text, nullable=False)
+    cost = Column(Integer, nullable=False, default=0)
+    visible = Column(Boolean, default=False)
 
 class Database:
     def __init__(self):
@@ -140,7 +149,43 @@ class Database:
 
         raise Exception("Could not connect to the database")
     
-    def new_challenge(self, **kwargs) -> None:
-        challenge = Challenge(**kwargs)
-        self.session.add(challenge)
+    def new_challenge(self, kwargs) -> None:
+        category_id = self.__create_category(kwargs.get("category"))
+        kwargs["category_id"] = category_id
+        del kwargs["category"]
+
+        hints = kwargs.get("hint_objects", [])
+        del kwargs["hint_objects"]
+
+        challenge = self.session.query(Challenge).filter_by(chall_name=kwargs["chall_name"]).first()
+        if not challenge:
+            challenge = Challenge(**kwargs)
+            self.session.add(challenge)
+        else:
+            for key, value in kwargs.items():
+                setattr(challenge, key, value) if value else None
+        
         self.session.commit()
+        self.__add_hints(challenge.chall_id, hints)
+
+    def __add_hints(self, challenge_id, hints) -> None:
+        for hint in hints:
+            old_hint = self.session.query(Hint).filter_by(chall_id=challenge_id, hint=hint["hint"]).first()
+            if old_hint:
+                for key, value in hint.items():
+                    setattr(old_hint, key, value) if value else None
+                continue
+            hint = Hint(chall_id=challenge_id, **hint)
+            self.session.add(hint)
+
+        self.session.commit()
+
+    def __create_category(self, category_name) -> None:
+        category = self.session.query(Category).filter_by(category_name=category_name).first()
+        if category:
+            return category.category_id
+        category = Category(category_name=category_name)
+        self.session.add(category)
+        self.session.commit()
+
+        return category.category_id
