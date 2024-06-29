@@ -12,27 +12,33 @@ def generate_fake_challenge():
     category = random.choice(categories)
     chall_type = random.choice(chall_types)
     files = [fake.file_name(extension='txt')
-             for _ in range(random.randint(1, 3))]
-    hints = [fake.sentence() for _ in range(random.randint(1, 3))]
-    tags = [fake.word() for _ in range(random.randint(1, 5))]
+             for _ in range(random.randint(0, 2))]
+    hints = [{"hint": fake.sentence(), "cost": random.randint(1, 500), "visible": random.choice([True, False])} for _ in range(random.randint(0, 2))]
+    tags = [fake.word() for _ in range(random.randint(0, 3))]
 
-    return {
+    final = {
         "chall_name": fake.catch_phrase(),
         "category": category,
         "prompt": fake.paragraph(),
         "flag": fake.password(length=12, special_chars=True),
         "type": chall_type,
         "points": random.randint(50, 500),
-        "files": files,
-        "hints": hints,
         "author": fake.user_name(),
-        "tags": tags,
-        "port": random.randint(1024, 65535) if chall_type != 'static' else None,
-        "subd": fake.hostname(),
-        "cpu": random.randint(1, 10),
-        "mem": random.randint(1, 16)
     }
 
+    if len(hints) > 0:
+        final["hints"] = hints
+    if len(files) > 0:
+        final["files"] = files
+    if len(tags) > 0:
+        final["tags"] = tags
+    if chall_type != 'static':
+        final["port"] = random.randint(1024, 65535)
+        final["subd"] = fake.hostname()
+        final["cpu"] = random.randint(1, 10)
+        final["mem"] = random.randint(1, 16)
+    
+    return final
 
 num_challenges = 10
 fake_challenges = [generate_fake_challenge() for _ in range(num_challenges)]
