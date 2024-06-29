@@ -1,269 +1,226 @@
 [
     {
-        "chall_name": "Ergonomic clear-thinking neural-net",
-        "category": "web",
-        "prompt": "Raise pretty walk impact.",
-        "flag": "w6H$zc%o*p%W",
+        "chall_name": "Reactive foreground function",
+        "category": "mobile",
+        "prompt": "City game particularly. Image hospital teach the near sense. Specific American could character seem cold boy.",
+        "flag": "Sj$qXYFt^8e3",
         "type": "on-demand",
-        "points": 179,
-        "files": [
-            "sure.txt",
-            "wall.txt",
-            "section.txt"
-        ],
+        "points": 463,
+        "author": "francisco78",
         "hints": [
-            "Same talk reach ability prove just.",
-            "Identify study again economic.",
-            "Actually view four."
+            {
+                "hint": "Reason politics behavior rule pressure major that.",
+                "cost": 183,
+                "visible": true
+            },
+            {
+                "hint": "Happen hope surface result trip.",
+                "cost": 2,
+                "visible": true
+            }
         ],
-        "author": "jphillips",
-        "tags": [
-            "morning",
-            "form",
-            "power"
-        ],
-        "port": 49912,
-        "subd": "srv-77.wilson-lynch.com",
-        "cpu": 10,
-        "mem": 3
-    },
-    {
-        "chall_name": "Balanced demand-driven instruction set",
-        "category": "stego",
-        "prompt": "Structure offer up each even without around. Half police speech attack effect not eye dinner. Report market each politics foreign society.",
-        "flag": "dz8WOrewl_eK",
-        "type": "static",
-        "points": 211,
-        "files": [
-            "case.txt",
-            "member.txt"
-        ],
-        "hints": [
-            "Move yard position material magazine several all dream."
-        ],
-        "author": "simmonskaren",
-        "tags": [
-            "clear",
-            "find",
-            "young",
-            "party",
-            "might"
-        ],
-        "port": null,
-        "subd": "web-54.vang.com",
+        "port": 52019,
+        "subd": "laptop-88.bailey-archer.com",
         "cpu": 9,
-        "mem": 13
+        "mem": 14
     },
     {
-        "chall_name": "Stand-alone asynchronous instruction set",
-        "category": "stego",
-        "prompt": "Particular director adult teach adult interest. Author teacher gas national subject theory Republican.",
-        "flag": "ZPuq^Qtur!a8",
-        "type": "on-demand",
-        "points": 340,
-        "files": [
-            "important.txt",
-            "rich.txt",
-            "country.txt"
-        ],
-        "hints": [
-            "While structure white standard few clear table.",
-            "Cell its force plant watch common around."
-        ],
-        "author": "brian10",
-        "tags": [
-            "result",
-            "hotel",
-            "good",
-            "resource"
-        ],
-        "port": 6924,
-        "subd": "web-38.lamb.com",
-        "cpu": 8,
-        "mem": 10
-    },
-    {
-        "chall_name": "Persevering even-keeled collaboration",
-        "category": "stego",
-        "prompt": "Take heavy summer late heavy field reason left.",
-        "flag": "d60VuL5Gd&PJ",
+        "chall_name": "Realigned real-time superstructure",
+        "category": "reversing",
+        "prompt": "Authority prove pretty adult fine between. Avoid though weight science. Development perhaps ball away detail. More paper no have.",
+        "flag": "n2B6MznI@7pk",
         "type": "static",
-        "points": 146,
+        "points": 171,
+        "author": "stanleylyons",
         "files": [
-            "discover.txt",
-            "prevent.txt",
-            "activity.txt"
+            "environmental.txt",
+            "foreign.txt"
         ],
-        "hints": [
-            "Allow spend himself stock military.",
-            "Then serve exactly everyone side major case."
-        ],
-        "author": "youngjared",
         "tags": [
-            "once",
-            "available",
-            "rich",
-            "research"
-        ],
-        "port": null,
-        "subd": "web-37.little.com",
-        "cpu": 2,
-        "mem": 3
+            "theory",
+            "all",
+            "maybe"
+        ]
     },
     {
-        "chall_name": "Proactive background flexibility",
-        "category": "blockchain",
-        "prompt": "Toward instead free life. Allow few take turn easy. Another certainly modern soon note would approach future.",
-        "flag": "6OfQC5rm@7uU",
-        "type": "static",
-        "points": 60,
-        "files": [
-            "consider.txt",
-            "bad.txt",
-            "enjoy.txt"
-        ],
-        "hints": [
-            "Great policy bill institution peace.",
-            "Rest may hear stock.",
-            "Along want young believe build arm."
-        ],
-        "author": "melissakennedy",
-        "tags": [
-            "beat",
-            "significant"
-        ],
-        "port": null,
-        "subd": "desktop-70.hanna-hall.info",
-        "cpu": 1,
-        "mem": 9
-    },
-    {
-        "chall_name": "Exclusive stable core",
+        "chall_name": "Robust multi-state flexibility",
         "category": "hardware",
-        "prompt": "West doctor probably social do. Lot information book college mother drive. Only visit program Mrs song care realize a.",
-        "flag": "*k)EbSwlXl2i",
-        "type": "static",
-        "points": 402,
-        "files": [
-            "pretty.txt",
-            "might.txt"
-        ],
-        "hints": [
-            "Own single leader.",
-            "Yes moment find ground nature news hear."
-        ],
-        "author": "nathan52",
-        "tags": [
-            "board",
-            "big"
-        ],
-        "port": null,
-        "subd": "desktop-73.holmes.com",
-        "cpu": 3,
-        "mem": 9
-    },
-    {
-        "chall_name": "Phased even-keeled process improvement",
-        "category": "pwn",
-        "prompt": "Nearly move off stop level. None song instead them attack lose last floor.",
-        "flag": "b(0Xx7Ie)wAV",
-        "type": "static",
-        "points": 408,
-        "files": [
-            "responsibility.txt",
-            "join.txt",
-            "join.txt"
-        ],
-        "hints": [
-            "Federal phone situation visit official second four.",
-            "I reality reflect class listen matter.",
-            "Practice fight smile."
-        ],
-        "author": "paula37",
-        "tags": [
-            "dream",
-            "how",
-            "position",
-            "fast",
-            "season"
-        ],
-        "port": null,
-        "subd": "desktop-47.spears-lee.biz",
-        "cpu": 6,
-        "mem": 2
-    },
-    {
-        "chall_name": "Re-engineered asynchronous adapter",
-        "category": "pwn",
-        "prompt": "Building the detail treat head wonder event. Firm response everything knowledge your only. Heart blood could form take response.",
-        "flag": "++__B^bF8wDS",
+        "prompt": "Develop strong with whose wife player.",
+        "flag": "&1dzJbZgBnT5",
         "type": "on-demand",
-        "points": 277,
+        "points": 115,
+        "author": "zgonzalez",
         "files": [
-            "dark.txt",
-            "the.txt"
+            "quality.txt",
+            "specific.txt"
         ],
-        "hints": [
-            "Drive hour involve arrive their wear.",
-            "Stuff house read modern."
-        ],
-        "author": "robin31",
         "tags": [
-            "money"
+            "beautiful",
+            "yes",
+            "sure"
         ],
-        "port": 10832,
-        "subd": "desktop-20.simmons.biz",
-        "cpu": 6,
-        "mem": 2
-    },
-    {
-        "chall_name": "Managed hybrid Internet solution",
-        "category": "reversing",
-        "prompt": "Easy why help light series rich despite. Or find door business article.",
-        "flag": "(YEpThlh4mD9",
-        "type": "on-demand",
-        "points": 148,
-        "files": [
-            "rest.txt"
-        ],
-        "hints": [
-            "Since send cut area inside feeling.",
-            "Result feel before goal."
-        ],
-        "author": "rodriguezlisa",
-        "tags": [
-            "why",
-            "wide",
-            "early",
-            "food"
-        ],
-        "port": 48256,
-        "subd": "srv-00.allen.biz",
-        "cpu": 6,
-        "mem": 7
-    },
-    {
-        "chall_name": "Fully-configurable logistical budgetary management",
-        "category": "reversing",
-        "prompt": "Week sell traditional into late paper.",
-        "flag": "O2T0e$P4(b1h",
-        "type": "on-demand",
-        "points": 154,
-        "files": [
-            "civil.txt"
-        ],
-        "hints": [
-            "Local success wonder news tree could."
-        ],
-        "author": "leejames",
-        "tags": [
-            "take",
-            "guy",
-            "tonight"
-        ],
-        "port": 44191,
-        "subd": "web-98.abbott-rivera.com",
-        "cpu": 3,
+        "port": 63740,
+        "subd": "srv-95.gilbert-hawkins.com",
+        "cpu": 5,
         "mem": 4
+    },
+    {
+        "chall_name": "Open-architected holistic data-warehouse",
+        "category": "blockchain",
+        "prompt": "Cost class black. We century join Democrat party sing idea. Baby whole job part dog cell.",
+        "flag": "_@9T7fcR*kW)",
+        "type": "dynamic",
+        "points": 468,
+        "author": "bwilson",
+        "files": [
+            "him.txt"
+        ],
+        "tags": [
+            "even",
+            "blood"
+        ],
+        "port": 58120,
+        "subd": "db-39.smith.com",
+        "cpu": 4,
+        "mem": 14
+    },
+    {
+        "chall_name": "Optional zero-defect instruction set",
+        "category": "mobile",
+        "prompt": "Western make nor husband her just begin. Beautiful very stage.",
+        "flag": "@^5nUVmom0TP",
+        "type": "static",
+        "points": 85,
+        "author": "anneguerra",
+        "hints": [
+            {
+                "hint": "That strategy address detail.",
+                "cost": 358,
+                "visible": true
+            },
+            {
+                "hint": "Probably cultural training.",
+                "cost": 23,
+                "visible": false
+            }
+        ],
+        "files": [
+            "company.txt",
+            "market.txt"
+        ]
+    },
+    {
+        "chall_name": "Function-based client-driven ability",
+        "category": "cloud",
+        "prompt": "Million theory Congress important product exist outside. Professor college hair data drive which. Authority mention goal.",
+        "flag": "@65bJq2lKJPo",
+        "type": "static",
+        "points": 301,
+        "author": "debra90",
+        "hints": [
+            {
+                "hint": "Finally bill century any born.",
+                "cost": 210,
+                "visible": true
+            }
+        ],
+        "tags": [
+            "blood",
+            "bring"
+        ]
+    },
+    {
+        "chall_name": "Distributed bandwidth-monitored superstructure",
+        "category": "web",
+        "prompt": "Little reach less I raise significant. Affect camera imagine put dream major trouble ground. Degree statement really dream front production. Executive fast method account fish public.",
+        "flag": "h!2rCIEo^nH)",
+        "type": "static",
+        "points": 491,
+        "author": "burnscourtney",
+        "hints": [
+            {
+                "hint": "One our large.",
+                "cost": 459,
+                "visible": true
+            }
+        ],
+        "files": [
+            "do.txt",
+            "something.txt"
+        ],
+        "tags": [
+            "discover",
+            "condition"
+        ]
+    },
+    {
+        "chall_name": "Persevering static knowledge user",
+        "category": "forensics",
+        "prompt": "Glass never chair reason course nice ground. Billion church any who arrive song. Tax before both.",
+        "flag": "+5yHr6cJ3zgJ",
+        "type": "static",
+        "points": 300,
+        "author": "vargasjohn",
+        "files": [
+            "player.txt"
+        ],
+        "tags": [
+            "magazine"
+        ]
+    },
+    {
+        "chall_name": "Compatible zero tolerance firmware",
+        "category": "blockchain",
+        "prompt": "Whole debate service. Situation fly fill property field.",
+        "flag": "%9Ukb2gD!M&z",
+        "type": "on-demand",
+        "points": 350,
+        "author": "cfischer",
+        "hints": [
+            {
+                "hint": "Single day front party recently knowledge since success.",
+                "cost": 250,
+                "visible": false
+            }
+        ],
+        "files": [
+            "suddenly.txt"
+        ],
+        "tags": [
+            "page",
+            "realize",
+            "sister"
+        ],
+        "port": 2140,
+        "subd": "desktop-37.walker-randolph.com",
+        "cpu": 10,
+        "mem": 16
+    },
+    {
+        "chall_name": "Switchable optimizing firmware",
+        "category": "hardware",
+        "prompt": "Total civil direction may. Scientist all fine else former threat somebody. Budget across station couple somebody me those.",
+        "flag": "FcbyY4UgBFf&",
+        "type": "dynamic",
+        "points": 279,
+        "author": "gabrielle11",
+        "hints": [
+            {
+                "hint": "Save black gas plan once information draw.",
+                "cost": 331,
+                "visible": false
+            }
+        ],
+        "files": [
+            "action.txt"
+        ],
+        "tags": [
+            "receive",
+            "return"
+        ],
+        "port": 22175,
+        "subd": "laptop-43.cherry.com",
+        "cpu": 6,
+        "mem": 1
     }
 ]
