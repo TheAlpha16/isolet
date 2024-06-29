@@ -56,18 +56,6 @@ CREATE TABLE IF NOT EXISTS flags(
     extended integer DEFAULT 1
 );
 
--- Create sublogs table
-CREATE TABLE IF NOT EXISTS sublogs(
-    sid bigserial PRIMARY KEY,
-    chall_id integer NOT NULL REFERENCES challenges(chall_id),
-    userid bigint NOT NULL REFERENCES users(userid),
-    teamid bigint NOT NULL REFERENCES teams(teamid),
-    flag text NOT NULL,
-    correct boolean NOT NULL,
-    ip inet NOT NULL,
-    subtime timestamp NOT NULL DEFAULT NOW()
-);
-
 -- Create running instances table
 CREATE TABLE IF NOT EXISTS running(
     runid bigserial,
@@ -83,6 +71,21 @@ CREATE TABLE IF NOT EXISTS toverify(
     password VARCHAR(100) NOT NULL,
     timestamp timestamp NOT NULL DEFAULT NOW()
 );
+
+-- Function to delete old toverify entries
+CREATE OR REPLACE FUNCTION toverify_delete_old_rows() RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    DELETE FROM toverify WHERE timestamp < NOW() - INTERVAL '30 minutes';
+    RETURN NEW;
+END;
+$$;
+
+-- Trigger to delete old toverify entries
+CREATE OR REPLACE TRIGGER toverify_delete_old_rows_trigger
+BEFORE INSERT ON toverify
+EXECUTE PROCEDURE toverify_delete_old_rows();
 
 -- Create challenges table
 CREATE TABLE IF NOT EXISTS challenges(
@@ -127,15 +130,17 @@ BEFORE INSERT OR UPDATE ON challenges
 FOR EACH ROW
 EXECUTE FUNCTION enforce_port_logic();
 
--- Function to delete old toverify entries
-CREATE OR REPLACE FUNCTION toverify_delete_old_rows() RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    DELETE FROM toverify WHERE timestamp < NOW() - INTERVAL '15 minutes';
-    RETURN NEW;
-END;
-$$;
+-- Create sublogs table
+CREATE TABLE IF NOT EXISTS sublogs(
+    sid bigserial PRIMARY KEY,
+    chall_id integer NOT NULL REFERENCES challenges(chall_id),
+    userid bigint NOT NULL REFERENCES users(userid),
+    teamid bigint NOT NULL REFERENCES teams(teamid),
+    flag text NOT NULL,
+    correct boolean NOT NULL,
+    ip inet NOT NULL,
+    subtime timestamp NOT NULL DEFAULT NOW()
+);
 
 -- Hints table
 CREATE TABLE IF NOT EXISTS hints(
@@ -160,11 +165,6 @@ $$;
 CREATE TRIGGER update_hints_trigger
 AFTER INSERT ON hints
 FOR EACH ROW EXECUTE PROCEDURE update_hints();
-
--- Trigger to delete old toverify entries
-CREATE OR REPLACE TRIGGER toverify_delete_old_rows_trigger
-BEFORE INSERT ON toverify
-EXECUTE PROCEDURE toverify_delete_old_rows();
 
 -- Function to enforce instance count
 CREATE OR REPLACE FUNCTION enforce_instance_count() RETURNS trigger
