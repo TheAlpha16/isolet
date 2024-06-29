@@ -95,11 +95,11 @@ CREATE TABLE IF NOT EXISTS challenges(
     type chall_type NOT NULL DEFAULT 'static',
     points integer NOT NULL DEFAULT 100,
     files text[] DEFAULT ARRAY[]::text[],
-    hints text[],
+    hints bigint[] NOT NULL DEFAULT ARRAY[]::bigint,
     solves integer DEFAULT 0,
     author text DEFAULT 'anonymous',
     visible boolean DEFAULT false,
-    tags text[],
+    tags text[] DEFAULT ARRAY[]::text[],
     port integer DEFAULT 0,
     subd text DEFAULT 'localhost',
     cpu integer DEFAULT 5,
@@ -136,6 +136,30 @@ BEGIN
     RETURN NEW;
 END;
 $$;
+
+-- Hints table
+CREATE TABLE IF NOT EXISTS hints(
+    hid bigserial PRIMARY KEY,
+    chall_id integer NOT NULL REFERENCES challenges(chall_id),
+    hint text NOT NULL,
+    cost integer NOT NULL DEFAULT 0,
+    visible boolean DEFAULT false
+);
+
+-- Function to uppdate hints in challenges table
+CREATE OR REPLACE FUNCTION update_hints() RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    UPDATE challenges SET hints = array_append(hints, NEW.hid) WHERE chall_id = NEW.chall_id;
+    RETURN NEW;
+END;
+$$;
+
+-- Trigger to update hints in challenges table
+CREATE TRIGGER update_hints_trigger
+AFTER INSERT ON hints
+FOR EACH ROW EXECUTE PROCEDURE update_hints();
 
 -- Trigger to delete old toverify entries
 CREATE OR REPLACE TRIGGER toverify_delete_old_rows_trigger
