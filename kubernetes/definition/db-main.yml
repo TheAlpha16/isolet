@@ -97,14 +97,14 @@ data:
     CREATE TABLE IF NOT EXISTS challenges(
         chall_id serial PRIMARY KEY,
         level serial NOT NULL,
-        chall_name text NOT NULL,
+        chall_name text NOT NULL UNIQUE,
         category_id integer NOT NULL REFERENCES categories(category_id),
         prompt text,
         flag text,
         type chall_type NOT NULL DEFAULT 'static',
         points integer NOT NULL DEFAULT 100,
         files text[] DEFAULT ARRAY[]::text[],
-        hints bigint[] NOT NULL DEFAULT ARRAY[]::bigint,
+        hints bigint[] NOT NULL DEFAULT '{}',
         solves integer DEFAULT 0,
         author text DEFAULT 'anonymous',
         visible boolean DEFAULT false,
@@ -114,27 +114,6 @@ data:
         cpu integer DEFAULT 5,
         mem integer DEFAULT 10
     );
-
-    -- Create trigger function to enforce port logic based on chall_type
-    CREATE OR REPLACE FUNCTION enforce_port_logic()
-    RETURNS TRIGGER AS $$
-    BEGIN
-        IF NEW.type = 'static' THEN
-            NEW.port := NULL;
-        ELSIF NEW.type = 'dynamic' THEN
-            IF NEW.port IS NULL THEN
-                RAISE EXCEPTION 'dynamic challenges must have a port specified';
-            END IF;
-        END IF;
-        RETURN NEW;
-    END;
-    $$ LANGUAGE plpgsql;
-
-    -- Create trigger to call the enforce_port_logic function before insert or update
-    CREATE TRIGGER enforce_port_logic_trigger
-    BEFORE INSERT OR UPDATE ON challenges
-    FOR EACH ROW
-    EXECUTE FUNCTION enforce_port_logic();
 
     -- Create sublogs table
     CREATE TABLE IF NOT EXISTS sublogs(
