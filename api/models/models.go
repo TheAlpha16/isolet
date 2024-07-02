@@ -11,11 +11,13 @@ type User struct {
 	Password string   `json:"password" form:"password"`
 	Confirm  string   `json:"confirm" form:"confirm"`
 	Rank	 int      `json:"rank"`
+	TeamID	 int	  `json:"teamid"`
 }
 
 type Creds struct {
 	Email 	 string `json:"email" form:"email"`
 	Password string `json:"password" form:"password"`
+	Username string `json:"username" form:"username"`
 }
 
 type VerifyClaims struct {
@@ -24,11 +26,23 @@ type VerifyClaims struct {
 }
 
 type Challenge struct {
+	ChallID  int	  `json:"challid"`
 	Level 	 int 	  `json:"level"`
 	Name 	 string   `json:"name"`
 	Prompt 	 string   `json:"prompt"`
+	Category string   `json:"category"`
+	Type 	 string   `json:"type"`
+	Points 	 int	  `json:"points"`
+	Files 	 []string `json:"files"`
+	Hints 	 []string `json:"hints"`
 	Solves	 int	  `json:"solves"`
+	Author 	 string   `json:"author"`
+	Visible  bool	  `json:"visible"`
 	Tags 	 []string `json:"tags"`
+	Port 	 int   	  `json:"port"`
+	Subd 	 string   `json:"subd"`
+	CPU 	 int 	  `json:"cpu"`
+	Memory 	 int	  `json:"memory"`
 }
 
 type Instance struct {
