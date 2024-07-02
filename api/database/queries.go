@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 	"crypto/rand"
-	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"log"
@@ -18,9 +18,9 @@ import (
 )
 
 func GenerateRandom() string {
-	buffer := make([]byte, 128)
+	buffer := make([]byte, 32)
 	rand.Read(buffer)
-	return fmt.Sprintf("%x", sha256.Sum256(buffer))
+	return hex.EncodeToString(buffer)
 }
 
 func ValidateCreds(c *fiber.Ctx, creds *models.Creds, user *models.User) error {
