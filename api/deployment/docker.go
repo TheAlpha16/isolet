@@ -13,7 +13,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/TheAlpha16/isolet/goapi/config"
+	"github.com/TheAlpha16/isolet/api/config"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"

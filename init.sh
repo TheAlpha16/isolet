@@ -15,6 +15,6 @@ kubectl apply -f app-config.yml
 cd ../definition
 kubectl apply -f db-main.yml
 kubectl apply -f ui-main.yml
-kubectl apply -f goapi-main.yml
+kubectl apply -f api-main.yml
 kubectl apply -f proxy-main.yml
 kubectl apply -f ripper-main.yml

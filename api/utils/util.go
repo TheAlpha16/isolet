@@ -9,9 +9,9 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/TheAlpha16/isolet/goapi/config"
-	"github.com/TheAlpha16/isolet/goapi/database"
-	"github.com/TheAlpha16/isolet/goapi/models"
+	"github.com/TheAlpha16/isolet/api/config"
+	"github.com/TheAlpha16/isolet/api/database"
+	"github.com/TheAlpha16/isolet/api/models"
 )
 
 func UpdateKey(key string) error {

@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/TheAlpha16/isolet/goapi/config"
+	"github.com/TheAlpha16/isolet/api/config"
 )
 
 func CreateTables() error {
@@ -16,7 +16,7 @@ func CreateTables() error {
 	defer cancel()
 
 	// challenge type
-	_, err = DB.QueryContext(ctx, 
+	_, err = DB.QueryContext(ctx,
 		`CREATE TYPE chall_type AS ENUM ('static', 'dynamic', 'on-demand'
 	)`)
 	if err != nil {
@@ -25,7 +25,7 @@ func CreateTables() error {
 	}
 
 	// challenge categories
-	_, err = DB.QueryContext(ctx, 
+	_, err = DB.QueryContext(ctx,
 		`CREATE TABLE IF NOT EXISTS categories(
 			category_id serial PRIMARY KEY,
 			category_name text NOT NULL UNIQUE
@@ -205,7 +205,7 @@ func CreateTables() error {
 		log.Println(err)
 		return err
 	}
-	
+
 	// trigger to add captain to members
 	_, err = DB.QueryContext(ctx, `
 	CREATE OR REPLACE FUNCTION add_captain_to_members()

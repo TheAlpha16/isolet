@@ -1,4 +1,4 @@
-module github.com/TheAlpha16/isolet/goapi
+module github.com/TheAlpha16/isolet/api
 
 go 1.21.5
 

@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/TheAlpha16/isolet/goapi/config"
-	"github.com/TheAlpha16/isolet/goapi/database"
-	"github.com/TheAlpha16/isolet/goapi/logs"
-	"github.com/TheAlpha16/isolet/goapi/router"
-	"github.com/TheAlpha16/isolet/goapi/utils"
+	"github.com/TheAlpha16/isolet/api/config"
+	"github.com/TheAlpha16/isolet/api/database"
+	"github.com/TheAlpha16/isolet/api/logs"
+	"github.com/TheAlpha16/isolet/api/router"
+	"github.com/TheAlpha16/isolet/api/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"

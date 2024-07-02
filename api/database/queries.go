@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/TheAlpha16/isolet/goapi/config"
-	"github.com/TheAlpha16/isolet/goapi/models"
+	"github.com/TheAlpha16/isolet/api/config"
+	"github.com/TheAlpha16/isolet/api/models"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/lib/pq"

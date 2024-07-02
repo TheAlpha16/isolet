@@ -1,9 +1,9 @@
 /challenges/.venv
 /challenges/__pycache__
 
-goapi/.env
-goapi/logs/access.log
-goapi/logs/error.log
+api/.env
+api/logs/access.log
+api/logs/error.log
 
 kubernetes/configuration/app-secrets.yml.local
 

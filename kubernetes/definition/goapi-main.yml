@@ -2,23 +2,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: goapi-deployment
+  name: api-deployment
   labels:
-    app: goapi
+    app: api
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: goapi
+      app: api
   template:
     metadata:
-      name: goapi-deployment
+      name: api-deployment
       labels:
-        app: goapi
+        app: api
     spec:
       containers:
-        - name: goapi
-          image: docker.io/thealpha16/isolet-goapi
+        - name: api
+          image: docker.io/thealpha16/isolet-api
           imagePullPolicy: Always
           resources:
             limits:
@@ -169,11 +169,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: goapi-svc
+  name: api-svc
   labels:
-    app: goapi-svc
+    app: api-svc
 spec:
   ports:
     - port: 80
   selector:
-    app: goapi
+    app: api

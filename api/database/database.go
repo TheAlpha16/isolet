@@ -9,8 +9,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/TheAlpha16/isolet/goapi/config"
-	"github.com/TheAlpha16/isolet/goapi/models"
+	"github.com/TheAlpha16/isolet/api/config"
+	"github.com/TheAlpha16/isolet/api/models"
 
 	_ "github.com/lib/pq"
 )

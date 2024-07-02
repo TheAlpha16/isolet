@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TheAlpha16/isolet/goapi/config"
-	"github.com/TheAlpha16/isolet/goapi/database"
-	"github.com/TheAlpha16/isolet/goapi/utils"
+	"github.com/TheAlpha16/isolet/api/config"
+	"github.com/TheAlpha16/isolet/api/database"
+	"github.com/TheAlpha16/isolet/api/utils"
 	"github.com/gofiber/fiber/v2"
 
 	"k8s.io/client-go/kubernetes"

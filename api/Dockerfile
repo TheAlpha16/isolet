@@ -6,8 +6,8 @@ COPY go.mod go.sum ./
 RUN go mod download && go mod verify
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o /goapi
+RUN CGO_ENABLED=0 GOOS=linux go build -o /api
 ENV GIN_MODE=release
 ENV TZ=UTC
 
-CMD ["/goapi"]
+CMD ["/api"]

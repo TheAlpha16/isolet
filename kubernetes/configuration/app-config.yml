@@ -19,7 +19,7 @@ data:
   termination_period: "10"
   public_url: "isolet.unixit.fun"
   ui_url: "ui-svc"
-  api_url: "goapi-svc"
+  api_url: "api-svc"
   proxy_server_name: "unixit.fun isolet.unixit.fun"
   instance_hostname: "isolet.unixit.fun"
   instance_time: "30"
