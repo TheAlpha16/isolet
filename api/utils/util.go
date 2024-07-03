@@ -88,9 +88,9 @@ func ValidateRegisterInput(regInput *models.ToVerify) (bool, string) {
 		return false, "Not a valid email address"
 	}
 
-	if validDomain := CheckDomain(regInput.Email); !validDomain {
-		return false, "Domain is not allowed, please use your iitism.ac.in mail"
-	}
+	// if validDomain := CheckDomain(regInput.Email); !validDomain {
+	// 	return false, "Domain is not allowed, please use your iitism.ac.in mail"
+	// }
 
 	if database.EmailExists(regInput.Email) {
 		return false, "Email already exists"
