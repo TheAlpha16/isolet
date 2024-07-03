@@ -14,7 +14,7 @@ import (
 	"github.com/TheAlpha16/isolet/api/models"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/lib/pq"
+	// "github.com/lib/pq"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -155,23 +155,17 @@ func ReadChallenges(c *fiber.Ctx) ([]models.Challenge, error) {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
-	challenges := make([]models.Challenge, 0)
-	rows, err := DB.QueryContext(ctx, `SELECT level, chall_name, prompt, solves, tags from challenges ORDER BY level ASC`)
-	if err != nil {
-		return challenges, err
-	}
-	defer rows.Close()
+	db := DB.WithContext(ctx)
 
-	for rows.Next() {
-		challenge := new(models.Challenge)
-		if err := rows.Scan(&challenge.Level, &challenge.Name, &challenge.Prompt, &challenge.Solves, pq.Array(&challenge.Tags)); err != nil {
-			return challenges, err
-		}
-		challenges = append(challenges, *challenge)
-	}
-	if err := rows.Err(); err != nil {
+	var challenges []models.Challenge
+	if err := db.Preload("Category").
+		Preload("Hints").
+		Where("visible = ?", true).
+		Order("level ASC").
+		Find(&challenges).Error; err != nil {
 		return challenges, err
 	}
+
 	return challenges, nil
 }
 
