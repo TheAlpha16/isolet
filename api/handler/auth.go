@@ -17,28 +17,27 @@ import (
 )
 
 func Login(c *fiber.Ctx) error {
-	creds := new(models.Creds)
 	user := new(models.User)
 
-	creds.Email = c.FormValue("email")
-	creds.Password = c.FormValue("password")
-	if creds.Email == "" || creds.Password == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "username and password required"})
+	user.Email = c.FormValue("email")
+	user.Password = c.FormValue("password")
+	if user.Email == "" || user.Password == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "username/email and password required"})
 	}
 
-	creds.Email = strings.TrimSpace(creds.Email)
-	creds.Password = strings.TrimSpace(creds.Password)
+	user.Email = strings.TrimSpace(user.Email)
+	user.Password = strings.TrimSpace(user.Password)
 
-	creds.Email = strings.ToLower(creds.Email)
+	user.Email = strings.ToLower(user.Email)
 
-	isValid, message := utils.ValidateLoginInput(creds)
+	isValid, message := utils.ValidateLoginInput(user)
 	if !isValid {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": message})
 	}
 
-	creds.Password = utils.Hash(creds.Password)
+	user.Password = utils.Hash(user.Password)
 
-	if err := database.ValidateCreds(c, creds, user); err != nil {
+	if err := database.ValidateCreds(c, user); err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "invalid credentials"})
 	}
 

@@ -55,16 +55,16 @@ func CheckDomain(email string) bool {
 	return false
 }
 
-func ValidateLoginInput(creds *models.Creds) (bool, string) {
-	if len(creds.Email) > config.EMAIL_LEN {
+func ValidateLoginInput(user *models.User) (bool, string) {
+	if len(user.Email) > config.EMAIL_LEN {
 		return false, fmt.Sprintf("Email length exceeded %d characters", config.EMAIL_LEN)
 	}
 
-	if _, err := mail.ParseAddress(creds.Email); err != nil {
+	if _, err := mail.ParseAddress(user.Email); err != nil {
 		return false, "Not a valid email address"
 	}
 
-	if len(creds.Password) > config.PASS_LEN {
+	if len(user.Password) > config.PASS_LEN {
 		return false, "Password length exceeded 32 characters"
 	}
 

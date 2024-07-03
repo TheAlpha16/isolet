@@ -14,7 +14,9 @@ import (
 	"github.com/TheAlpha16/isolet/api/models"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/lib/pq"
+	// "github.com/lib/pq"
+
+	"gorm.io/gorm"
 )
 
 func GenerateRandom() string {
@@ -23,11 +25,16 @@ func GenerateRandom() string {
 	return hex.EncodeToString(buffer)
 }
 
-func ValidateCreds(c *fiber.Ctx, creds *models.Creds, user *models.User) error {
+func ValidateCreds(c *fiber.Ctx, user *models.User) error {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
-	if err := DB.QueryRowContext(ctx, `SELECT userid, email, rank FROM users WHERE email = $1 AND password = $2`, creds.Email, creds.Password).Scan(&user.UserID, &user.Email, &user.Rank); err != nil {
+	db := DB.WithContext(ctx)
+
+	if err := db.Where("(email = ? OR username = ?) AND password = ?", user.Email, user.Email, user.Password).First(user).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return errors.New("invalid credentials")
+		}
 		log.Println(err)
 		return err
 	}
