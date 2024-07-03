@@ -1,39 +1,45 @@
 package database
 
 import (
-	"context"
-	"database/sql"
+	// "context"
+	// "database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
-	"time"
+	// "time"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 
 	"github.com/TheAlpha16/isolet/api/config"
 	"github.com/TheAlpha16/isolet/api/models"
 
-	_ "github.com/lib/pq"
+	// _ "github.com/lib/pq"
 )
 
-var DB *sql.DB
+var DB *gorm.DB
 
 func Connect() error {
 	var err error
 
 	connConfig := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", config.DB_HOST, config.DB_PORT, config.DB_USER, config.DB_PASS, config.DB_NAME)
 
-	DB, err = sql.Open("postgres", connConfig)
-	if err != nil {
-		return err
-	}
+	DB, err = gorm.Open(postgres.Open(connConfig), &gorm.Config{})
+	return err
+	// if err != nil {
+	// 	return err
+	// }
 
-	DB.SetMaxOpenConns(25)
-	DB.SetMaxIdleConns(25)
+	// sqlDB, err := DB.DB()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	// sqlDB.SetMaxOpenConns(25)
+	// sqlDB.SetMaxIdleConns(25)
 
-	return DB.PingContext(ctx)
+	// ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	// defer cancel()
+
+	// return sqlDB.PingContext(ctx)
 }
 
 func PopulateChalls() error {
