@@ -17,10 +17,10 @@ func SetupRoutes(app *fiber.App) {
 
 	api := app.Group("/api", middleware.CheckToken())
 	api.Get("/challs", handler.GetChalls)
-	api.Post("/launch", handler.StartInstance)
-	api.Post("/stop", handler.StopInstance)
-	api.Post("/submit", handler.SubmitFlag)
-	api.Get("/status", handler.GetStatus)
-	api.Get("/scoreboard", handler.ShowScoreBoard)
-	api.Post("/extend", handler.ExtendTime)
+	// api.Post("/launch", handler.StartInstance)
+	// api.Post("/stop", handler.StopInstance)
+	// api.Post("/submit", handler.SubmitFlag)
+	// api.Get("/status", handler.GetStatus)
+	// api.Get("/scoreboard", handler.ShowScoreBoard)
+	// api.Post("/extend", handler.ExtendTime)
 }
