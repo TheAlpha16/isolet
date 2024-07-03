@@ -60,7 +60,7 @@ func Login(c *fiber.Ctx) error {
 }
 
 func Register(c *fiber.Ctx) error {
-	regForm := new(models.User)
+	regForm := new(models.ToVerify)
 
 	regForm.Email = c.FormValue("email")
 	regForm.Username = c.FormValue("username")

@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -9,9 +11,17 @@ type User struct {
 	Email    string `gorm:"unique;not null" json:"email" form:"email"`
 	Username string `gorm:"unique;not null" json:"username" form:"username"`
 	Password string `gorm:"not null" json:"password" form:"password"`
-	Confirm  string `gorm:"-" json:"confirm" form:"confirm"`
 	Rank     int    `gorm:"default:3" json:"rank"`
 	TeamID   int    `gorm:"default:-1" json:"teamid"`
+}
+
+type ToVerify struct {
+	VID       uint      `gorm:"primaryKey;autoIncrement" json:"vid"`
+	Email     string    `gorm:"unique;not null" json:"email" form:"email"`
+	Username  string    `gorm:"unique;not null" json:"username" form:"username"`
+	Password  string    `gorm:"not null" json:"password" form:"password"`
+	Confirm  string `gorm:"-" json:"confirm" form:"confirm"`
+	Timestamp time.Time `gorm:"not null;default:CURRENT_TIMESTAMP" json:"timestamp"`
 }
 
 type VerifyClaims struct {
