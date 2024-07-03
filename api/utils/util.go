@@ -71,7 +71,7 @@ func ValidateLoginInput(user *models.User) (bool, string) {
 	return true, ""
 }
 
-func ValidateRegisterInput(regInput *models.User) (bool, string) {
+func ValidateRegisterInput(regInput *models.ToVerify) (bool, string) {
 	if len(regInput.Password) > config.PASS_LEN || len(regInput.Password) < 8 {
 		return false, fmt.Sprintf("Password should be of 8-%d characters", config.PASS_LEN)
 	}

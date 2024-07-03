@@ -27,7 +27,12 @@ func getToken(user *models.User) (string, error) {
 	return t, nil
 }
 
-func SendVerificationMail(user *models.User) error {
+func SendVerificationMail(regInput *models.ToVerify) error {
+
+	user := &models.User{
+		Email: regInput.Email,
+	}
+
 	token, err := getToken(user)
 	if err != nil {
 		return err
@@ -37,7 +42,7 @@ func SendVerificationMail(user *models.User) error {
 	secret := config.EMAIL_AUTH
 
 	to := []string{
-		user.Email,
+		regInput.Email,
 	}
 
 	auth := smtp.PlainAuth("", from, secret, config.SMTP_HOST)
@@ -54,7 +59,7 @@ func SendVerificationMail(user *models.User) error {
 		Link     string
 		Wargame  string
 	}{
-		Username: user.Username,
+		Username: regInput.Username,
 		Link:     config.AUTH_URL + token,
 		Wargame:  config.CTF_NAME,
 	})
