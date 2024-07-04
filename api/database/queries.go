@@ -159,9 +159,8 @@ func ReadChallenges(c *fiber.Ctx) ([]models.Challenge, error) {
 
 	var challenges []models.Challenge
 	if err := db.Preload("Category").
-		Preload("Hints").
+		Preload("Hints", "visible = ?", true).
 		Where("visible = ?", true).
-		Order("level ASC").
 		Find(&challenges).Error; err != nil {
 		return challenges, err
 	}
