@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/lib/pq"
 )
 
 type User struct {
@@ -30,25 +31,25 @@ type VerifyClaims struct {
 }
 
 type Challenge struct {
-	ChallID    int      `gorm:"primaryKey;column:chall_id" json:"chall_id"`
-	Level      int      `gorm:"not null" json:"level"`
-	Name       string   `gorm:"not null;unique" json:"name"`
-	Prompt     string   `gorm:"-" json:"prompt"`
-	Category   Category `gorm:"foreignKey:CategoryID" json:"category"`
-	CategoryID int      `gorm:"not null" json:"-"`
-	Flag       string   `gorm:"-" json:"flag"`
-	Type       string   `gorm:"type:chall_type;default:static" json:"type"`
-	Points     int      `gorm:"not null;default:100" json:"points"`
-	Files      []string `gorm:"type:text[]" json:"files"`
-	Hints      []Hint   `gorm:"foreignKey:ChallID" json:"hints"`
-	Solves     int      `gorm:"default:0" json:"solves"`
-	Author     string   `gorm:"default:anonymous" json:"author"`
-	Visible    bool     `gorm:"default:false" json:"visible"`
-	Tags       []string `gorm:"type:text[]" json:"tags"`
-	Port       int      `gorm:"default:0" json:"port"`
-	Subd       string   `gorm:"default:localhost" json:"subd"`
-	CPU        int      `gorm:"default:5;column:cpu" json:"cpu"`
-	Memory     int      `gorm:"default:10" json:"memory"`
+	ChallID    int            `gorm:"primaryKey;column:chall_id" json:"chall_id"`
+	Level      int            `gorm:"not null" json:"level"`
+	Name       string         `gorm:"not null;unique;column:chall_name" json:"name"`
+	Prompt     string         `json:"prompt"`
+	Category   Category       `gorm:"foreignKey:CategoryID" json:"category"`
+	CategoryID int            `gorm:"not null" json:"-"`
+	Flag       string         `gorm:"-" json:"-"`
+	Type       string         `gorm:"type:chall_type;default:static" json:"type"`
+	Points     int            `gorm:"not null;default:100" json:"points"`
+	Files      pq.StringArray `gorm:"type:text[]" json:"files"`
+	Hints      []Hint         `gorm:"foreignKey:ChallID" json:"hints"`
+	Solves     int            `gorm:"default:0" json:"solves"`
+	Author     string         `gorm:"default:anonymous" json:"author"`
+	Visible    bool           `gorm:"default:false" json:"-"`
+	Tags       pq.StringArray `gorm:"type:text[]" json:"tags"`
+	Port       int            `gorm:"default:0" json:"port"`
+	Subd       string         `gorm:"default:localhost" json:"subd"`
+	CPU        int            `gorm:"default:5;column:cpu" json:"-"`
+	Memory     int            `gorm:"default:10" json:"-"`
 }
 
 type Hint struct {
