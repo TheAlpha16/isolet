@@ -57,7 +57,7 @@ type Hint struct {
 	ChallID int    `gorm:"not null;column:chall_id" json:"chall_id"`
 	Hint    string `gorm:"not null" json:"hint"`
 	Cost    int    `gorm:"not null;default:0" json:"cost"`
-	Visible bool   `gorm:"default:false" json:"visible"`
+	Visible bool   `gorm:"default:false" json:"-"`
 }
 
 type Category struct {
