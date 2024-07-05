@@ -65,6 +65,14 @@ type Category struct {
 	CategoryName string `gorm:"not null;unique" json:"category_name"`
 }
 
+type Team struct {
+	TeamID   int           `gorm:"primaryKey;autoIncrement;column:teamid" json:"teamid"`
+	TeamName string        `gorm:"unique;not null;column:teamname" json:"teamname"`
+	Captain  int           `gorm:"not null" json:"captain"`
+	Members  pq.Int64Array `gorm:"type:integer[]" json:"members"`
+	Password string        `gorm:"not null" json:"password"`
+}
+
 type Instance struct {
 	UserID   int    `json:"userid"`
 	Level    int    `json:"level"`
