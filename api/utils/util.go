@@ -57,15 +57,15 @@ func CheckDomain(email string) bool {
 
 func ValidateLoginInput(user *models.User) (bool, string) {
 	if len(user.Email) > config.EMAIL_LEN {
-		return false, fmt.Sprintf("Email length exceeded %d characters", config.EMAIL_LEN)
+		return false, fmt.Sprintf("email/username length exceeded %d characters", config.EMAIL_LEN)
 	}
 
-	if _, err := mail.ParseAddress(user.Email); err != nil {
-		return false, "Not a valid email address"
-	}
+	// if _, err := mail.ParseAddress(user.Email); err != nil {
+	// 	return false, "not a valid email address"
+	// }
 
 	if len(user.Password) > config.PASS_LEN {
-		return false, "Password length exceeded 32 characters"
+		return false, "password length exceeded 32 characters"
 	}
 
 	return true, ""
@@ -73,19 +73,19 @@ func ValidateLoginInput(user *models.User) (bool, string) {
 
 func ValidateRegisterInput(regInput *models.ToVerify) (bool, string) {
 	if len(regInput.Password) > config.PASS_LEN || len(regInput.Password) < 8 {
-		return false, fmt.Sprintf("Password should be of 8-%d characters", config.PASS_LEN)
+		return false, fmt.Sprintf("password should be of 8-%d characters", config.PASS_LEN)
 	}
 
 	if regInput.Password != regInput.Confirm {
-		return false, "Passwords don't match"
+		return false, "passwords don't match"
 	}
 
 	if len(regInput.Email) > config.EMAIL_LEN {
-		return false, fmt.Sprintf("Email length exceeded %d characters", config.EMAIL_LEN)
+		return false, fmt.Sprintf("email length exceeded %d characters", config.EMAIL_LEN)
 	}
 
 	if _, err := mail.ParseAddress(regInput.Email); err != nil {
-		return false, "Not a valid email address"
+		return false, "not a valid email address"
 	}
 
 	// if validDomain := CheckDomain(regInput.Email); !validDomain {
@@ -93,19 +93,19 @@ func ValidateRegisterInput(regInput *models.ToVerify) (bool, string) {
 	// }
 
 	if database.EmailExists(regInput.Email) {
-		return false, "Email already exists"
+		return false, "email already exists"
 	}
 
 	if len(regInput.Username) > config.USERNAME_LEN {
-		return false, fmt.Sprintf("Username exceeded %d characters", config.USERNAME_LEN)
+		return false, fmt.Sprintf("username exceeded %d characters", config.USERNAME_LEN)
 	}
 
 	if len(regInput.Username) < 4 {
-		return false, "Username should be of atleast 4 characters"
+		return false, "username should be of atleast 4 characters"
 	}
 
 	if database.UsernameRegistered(regInput.Username, regInput.Email) {
-		return false, "Username already exists"
+		return false, "username already exists"
 	}
 
 	// if !PassValid(regInput.Password) {
