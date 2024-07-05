@@ -1,6 +1,9 @@
-goapi/.env
-goapi/logs/access.log
-goapi/logs/error.log
+/challenges/.venv
+/challenges/__pycache__
+
+api/.env
+api/logs/access.log
+api/logs/error.log
 
 kubernetes/configuration/app-secrets.yml.local
 

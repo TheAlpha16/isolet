@@ -1,4 +1,5 @@
 # isolet
+
 Isolet is a framework to deploy linux wargames like [Bandit](https://overthewire.org/wargames/bandit/). It uses pre-configured templates to provide isolated instance using kubernetes pods for each user.
 
 ## Contents
@@ -8,27 +9,26 @@ Isolet is a framework to deploy linux wargames like [Bandit](https://overthewire
 - [Setup](#setup)
 - [Installation](#installation)
 - [Configuration](#configuration)
-    - [General](#general)
-    - [Instance](#instance)
-    - [Secrets](#secrets)
-
+  - [General](#general)
+  - [Instance](#instance)
+  - [Secrets](#secrets)
 
 ## Features
 
-* Isolated access to each pod
-* Kubernetes manages the pods and scaling
-* Limited time for each instance
-* Instances can be extended
-* Run time variables to avoid rebuilding images
-* Email verification for registration
+- Isolated access to each pod
+- Kubernetes manages the pods and scaling
+- Limited time for each instance
+- Instances can be extended
+- Run time variables to avoid rebuilding images
+- Email verification for registration
 
 ## Tech Stack
 
-* Go
-* TypeScript
-* ReactJS
-* TailwindCSS
-* Kubernetes
+- Go
+- TypeScript
+- ReactJS
+- TailwindCSS
+- Kubernetes
 
 ## Setup
 
@@ -41,7 +41,7 @@ git clone https://github.com/TheAlpha16/isolet.git
 This setup is specific for Standard [GKE](https://cloud.google.com/kubernetes-engine/) cluster. Check out the documentation of your service provider for specifics.
 
 - `StorageClass`
-Isolet by default uses `standard-rwo` which supports only `ReadWriteOnce` the volume can be mounted as read-write by a single node. To change the `StorageClass` check the options available in your cluster
+  Isolet by default uses `standard-rwo` which supports only `ReadWriteOnce` the volume can be mounted as read-write by a single node. To change the `StorageClass` check the options available in your cluster
 
 ```sh
 kubectl get sc
@@ -59,7 +59,7 @@ spec:
 ```
 
 - `NodePort`
-Isolet uses service of type `NodePort` to expose pods for the user. You might need to configure your cloud services to allow traffic into the instances.
+  Isolet uses service of type `NodePort` to expose pods for the user. You might need to configure your cloud services to allow traffic into the instances.
 
 While creating node you need to add network tag to the node. Like in the sample above nodes are being added `isolet-node`.
 
@@ -73,7 +73,7 @@ gcloud compute firewall-rules create kube-node-port-fw-rule \
 ```
 
 - `ExternalIP`
-If you have a static IP address to use, especially useful in case you want to setup domain name for your deployment, replace the IP address in the `loadBalancerIP` field of proxy-service in [proxy-main.yml](./kubernetes/definition/proxy-main.yml)
+  If you have a static IP address to use, especially useful in case you want to setup domain name for your deployment, replace the IP address in the `loadBalancerIP` field of proxy-service in [proxy-main.yml](./kubernetes/definition/proxy-main.yml)
 
 ```yml
 apiVersion: v1
@@ -114,13 +114,14 @@ Change the instance configuration of nodes as per your workload requirements
 > Check out [gcloud reference](https://cloud.google.com/sdk/gcloud/reference/container/) for more information
 
 3. Configure `kubectl` to access the cluster
-4. Edit the [challs.json](./goapi/challenges/challs.json) file according to your challenges
+4. Edit the [challs.json](./api/challenges/challs.json) file according to your challenges
 5. Change the registry variable to your image repository in [update.sh](./update.sh)
 
 ```sh
 resource=""
 registry="docker.io/thealpha"
 ```
+
 6. Run the `update.sh` script to build the images
 
 ```sh
@@ -134,16 +135,16 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: goapi
+      app: api
   template:
     metadata:
-      name: goapi-deployment
+      name: api-deployment
       labels:
-        app: goapi
+        app: api
     spec:
       containers:
-        - name: goapi
-          image: docker.io/thealpha16/isolet-goapi
+        - name: api
+          image: docker.io/thealpha16/isolet-api
           imagePullPolicy: Always
 ```
 
@@ -155,38 +156,39 @@ spec:
 ```
 
 ## Configuration
+
 You can customize the application using environment variables passed to the deployments. All the options are available in [configuration](/kubernetes/configuration)
 
 ### General
 
-* `WARGAME_NAME` Name of the wargame to be deployed
+- `CTF_NAME` Name of the CTF to be deployed
 
-* `PUBLIC_URL` URL of the deployed application. Required for email verification
+- `PUBLIC_URL` URL of the deployed application. Required for email verification
 
-* `PROXY_SERVER_NAME` Domains and subdomains to be added under server_name directive in nginx proxy.
+- `PROXY_SERVER_NAME` Domains and subdomains to be added under server_name directive in nginx proxy.
 
 > [!note]
 > Check out the nginx documentation for format [server_name](https://nginx.org/en/docs/http/server_names.html)
 
-* `INSTANCE_HOSTNAME` Domain name for accessing the spawned instances
+- `INSTANCE_HOSTNAME` Domain name for accessing the spawned instances
 
-* `IMAGE_REGISTRY_PREFIX` Default registry for pulling challenge images. It is prefixed to `level` to get final repo url to be 
+- `IMAGE_REGISTRY_PREFIX` Default registry for pulling challenge images. It is prefixed to `level` to get final repo url to be
 
 > [!important]
 > If you specify your prefix to be `docker.io/thealpha16/` the final image path for level 1 will be `docker.io/thealpha16/level1`
 
-* `DISCORD_FRONTEND` Boolean to determine whether API needs `/auth` routes to be setup. If it is true, API will not authenticate the request.
+- `DISCORD_FRONTEND` Boolean to determine whether API needs `/auth` routes to be setup. If it is true, API will not authenticate the request.
 
 > [!warning]
 > This option should be used only when the API is not exposed to the public and the request is being forwarded by some other application which is properly authenticating
 
-* `KUBECONFIG_FILE_PATH` Path to the kubernetes config file to access cluster from outside
+- `KUBECONFIG_FILE_PATH` Path to the kubernetes config file to access cluster from outside
 
 > [!note]
 > for more information, check out [cluster access](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/)
 
-* `UI_URL`
-host for frontend in case it exists. If kubernetes is being used for deployment, you can specify URL to be
+- `UI_URL`
+  host for frontend in case it exists. If kubernetes is being used for deployment, you can specify URL to be
 
 ```
 <SERVICE_NAME_OF_UI>.<NAMESPACE>.svc.cluster.local
@@ -197,28 +199,28 @@ host for frontend in case it exists. If kubernetes is being used for deployment,
 
 ### Instance
 
-* `INSTANCE_NAMESPACE` Namespace for deploying the user requested pods.
+- `INSTANCE_NAMESPACE` Namespace for deploying the user requested pods.
 
-* `CONCURRENT_INSTANCES`  Number of concurrent pods that user can spawn.
+- `CONCURRENT_INSTANCES` Number of concurrent pods that user can spawn.
 
-* `TERMINATION_PERIOD` 
-Time in seconds to be given to the pod for graceful shutdown.
+- `TERMINATION_PERIOD`
+  Time in seconds to be given to the pod for graceful shutdown.
 
-* `INSTANCE_TIME` Time in minutes to be added in the pod annotations after which ripper will remove the instance
+- `INSTANCE_TIME` Time in minutes to be added in the pod annotations after which ripper will remove the instance
 
-* `MAX_INSTANCE_TIME` Time in minutes the user can extend the instance
+- `MAX_INSTANCE_TIME` Time in minutes the user can extend the instance
 
-* `CPU_REQUEST` Number of cores to be reserved for the pod
+- `CPU_REQUEST` Number of cores to be reserved for the pod
 
-* `CPU_LIMIT` Maximum number of cores the pod can consume
+- `CPU_LIMIT` Maximum number of cores the pod can consume
 
-* `MEMORY_REQUEST` Amount of memory to be reserved for the pod
+- `MEMORY_REQUEST` Amount of memory to be reserved for the pod
 
-* `MEMORY_LIMIT` Maximum amount of memory the pod can use
+- `MEMORY_LIMIT` Maximum amount of memory the pod can use
 
-* `DISK_REQUEST` Disk space to be reserved for the pod
+- `DISK_REQUEST` Disk space to be reserved for the pod
 
-* `DISK_LIMIT` Maximum disk space the pod can utilize
+- `DISK_LIMIT` Maximum disk space the pod can utilize
 
 > [!note]
 > for more information regarding kubernetes resources, check out [resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
@@ -228,21 +230,20 @@ Time in seconds to be given to the pod for graceful shutdown.
 > [!note]
 > Secrets should be base64 encoded
 
-* `SESSION_SECRET` Key used for signing jwt token after login
+- `SESSION_SECRET` Key used for signing jwt token after login
 
-* `TOKEN_SECRET` Key used for signing verification token sent to mail
+- `TOKEN_SECRET` Key used for signing verification token sent to mail
 
-* `INSTANCE_NAME_SECRET` Key used for determining unique instance name for the pods
+- `INSTANCE_NAME_SECRET` Key used for determining unique instance name for the pods
 
-* `EMAIL_ID` Email ID to be used when sending verification mails
+- `EMAIL_ID` Email ID to be used when sending verification mails
 
-* `EMAIL_AUTH` Password for authenticating to use smtp service
+- `EMAIL_AUTH` Password for authenticating to use smtp service
 
-* `DB_HOST` Host name of the database server
+- `DB_HOST` Host name of the database server
 
-* `DB_USER` Username for the database
+- `DB_USER` Username for the database
 
-* `DB_PASSWORD` Password to authenticate to the database
+- `DB_PASSWORD` Password to authenticate to the database
 
-* `DB_NAME` Name of the database
-
+- `DB_NAME` Name of the database

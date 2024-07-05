@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CyberLabs-Infosec/isolet/ripper/config"
-	"github.com/CyberLabs-Infosec/isolet/ripper/database"
-	"github.com/CyberLabs-Infosec/isolet/ripper/utils"
+	"github.com/TheAlpha16/isolet/ripper/config"
+	"github.com/TheAlpha16/isolet/ripper/database"
+	"github.com/TheAlpha16/isolet/ripper/utils"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -141,10 +141,10 @@ func EvictPods() error {
 		}
 
 		ann := pod.Annotations["deadline"]
-		if ann == ""{
+		if ann == "" {
 			continue
 		}
-		
+
 		deadline, err := strconv.ParseInt(ann, 10, 64)
 		if err != nil {
 			log.Printf("ERROR: %s\n", err.Error())

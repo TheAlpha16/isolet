@@ -9,7 +9,7 @@ interface Props{
 function NavBar(props: Props) {
 	var routes = [
 		{
-			path: "/challs",
+			path: "/challenges",
 			name: "Challenges",
 		},
 		{

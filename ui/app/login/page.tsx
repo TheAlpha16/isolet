@@ -84,7 +84,7 @@ function Login() {
 	return (
 		<>
 			<div className="flex flex-col gap-1 px-6 pt-6 pb-4 mt-6 font-mono justify-center self-center border-2 border-palette-600 text-palette-100 rounded-md">
-			<form onSubmit={handleSubmit}>
+			<div>
 				<div className="grid grid-cols-1 gap-y-4 justify-items-center">
 					<label>Creds please!</label>
 					<input
@@ -116,7 +116,7 @@ function Login() {
 					</div>
 					<button type="submit" className="px-5 py-2 relative duration-300 ease-in bg-palette-500 text-black rounded-md hover:bg-palette-400" onClick={ handleSubmit }>Login</button>
 				</div>
-			</form>
+			</div>
 				<Link href={ "/register" }>
 					<div className="text-blue-400 text-sm text-center underline">
 						Sign up
