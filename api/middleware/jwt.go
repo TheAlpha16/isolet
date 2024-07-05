@@ -28,6 +28,7 @@ func GenerateToken(user *models.User) (string, error) {
 		"userid": user.UserID,
 		"email":  user.Email,
 		"rank":   user.Rank,
+		"teamid": user.TeamID,
 		"exp":    time.Now().Add(time.Hour * time.Duration(config.SESSION_EXP)).Unix(),
 	}
 
