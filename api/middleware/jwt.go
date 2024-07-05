@@ -18,7 +18,7 @@ func CheckToken() fiber.Handler {
 			JWTAlg: jwtware.HS256,
 		},
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "invalid or expired JWT"})
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "invalid or expired session token"})
 		},
 	})
 }
