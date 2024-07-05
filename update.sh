@@ -16,7 +16,7 @@ registry="docker.io/thealpha16"
 
 case $choice in
     "1")
-        resource="goapi"
+        resource="api"
     ;;
     "2")
         resource="ui"
@@ -31,7 +31,7 @@ case $choice in
         echo ""
         echo "Invalid choice"
         echo "Valid options: 1, 2, 3"
-        echo "1. API    - rebuild isolet-goapi image"
+        echo "1. API    - rebuild isolet-api image"
         echo "2. UI     - rebuild isolet-ui image"
         echo "3. proxy  - rebuild isolet-proxy image"
         echo "4. ripper - rebuild isolet-ripper image"

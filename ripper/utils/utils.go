@@ -4,7 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 
-	"github.com/CyberLabs-Infosec/isolet/ripper/config"
+	"github.com/TheAlpha16/isolet/ripper/config"
 )
 
 func StringAddr(s string) *string {

@@ -1,12 +1,12 @@
 package database
 
 import (
-	"database/sql"
 	"context"
-	"time"
+	"database/sql"
 	"fmt"
+	"time"
 
-	"github.com/CyberLabs-Infosec/isolet/ripper/config"
+	"github.com/TheAlpha16/isolet/ripper/config"
 
 	_ "github.com/lib/pq"
 )
@@ -31,4 +31,3 @@ func Connect() error {
 
 	return DB.PingContext(ctx)
 }
-
