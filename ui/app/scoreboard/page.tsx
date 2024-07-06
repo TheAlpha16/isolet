@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react"
 import Cookies from "js-cookie"
 import { useRouter } from "next/navigation"
-import User from "@/components/User"
+import LoginStatus from "@/components/User"
 import { toast } from "react-toastify"
 
 function Scoreboard() {
-	const { loggedin, respHook } = User()
+	const { loggedin, respHook } = LoginStatus()
 	const router = useRouter()
 	const [ scores, setScores ] = useState([{"username": "", "score": 0}])
 

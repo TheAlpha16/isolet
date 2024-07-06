@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react"
-import User from "@/components/User"
+import LoginStatus from "@/components/User"
 import { useRouter } from "next/navigation"
 import { toast } from "react-toastify"
 import Link from "next/link"
@@ -10,7 +10,7 @@ function Login() {
 	const [view, setView] = useState(false)
 	const [email, setEmail] = useState("")
     	const [password, setPassword] = useState("")
-	const user = User()
+	const user = LoginStatus()
 	const router = useRouter()
 
 	useEffect(() => {

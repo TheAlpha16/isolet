@@ -15,6 +15,6 @@ export const Context = createContext<stateVars>({
 })
 
 
-export default function User() {
+export default function LoginStatus() {
 	return useContext(Context)
 }

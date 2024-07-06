@@ -4,11 +4,11 @@ import { useEffect } from "react";
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation'
 
-import User from "@/components/User";
+import LoginStatus from "@/components/User";
 
 export default function Page() {
     const router = useRouter();
-    const user = User();
+    const user = LoginStatus();
 
     useEffect(() => {
         Cookies.remove("token");

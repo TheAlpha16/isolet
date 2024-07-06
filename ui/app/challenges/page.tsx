@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import Cookies from "js-cookie"
 import { useRouter } from 'next/navigation'
 import { Challenge } from "@/components/Challenge"
-import User from "@/components/User"
+import LoginStatus from "@/components/User"
 import { toast } from "react-toastify"
 
 interface accessCredsItem {
@@ -23,7 +23,7 @@ interface activatedItem {
 }
 
 function Challenges(){
-	const { loggedin, respHook } = User()
+	const { loggedin, respHook } = LoginStatus()
 	// const visibleLevel = useRef("-1")
 	const [ challenges, setChallenges ] = useState<challList>([])
 	// const [ activated, setActivated ] = useState<activatedItem>({ 100000: {
