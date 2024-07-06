@@ -48,10 +48,6 @@ function Scoreboard() {
 					"Authorization": `Bearer ${Cookies.get("token")}`
 				}
 			})
-			const status = await request.status
-			// if (status != 200) {
-			// 	router.push("/logout")
-			// }
 	
 			const scoreJSON = await request.json()
 			setScores(scoreJSON)
