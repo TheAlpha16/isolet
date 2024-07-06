@@ -18,3 +18,11 @@ export const Context = createContext<stateVars>({
 export default function LoginStatus() {
 	return useContext(Context)
 }
+
+export interface User {
+	userid: number;
+	email: string;
+	username: string;
+	score: number;
+	teamid: number;
+}
