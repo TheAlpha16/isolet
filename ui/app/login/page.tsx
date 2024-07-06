@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import User from "@/components/User"
 import { useRouter } from "next/navigation"
 import { toast } from "react-toastify"
@@ -12,6 +12,14 @@ function Login() {
     	const [password, setPassword] = useState("")
 	const user = User()
 	const router = useRouter()
+
+	useEffect(() => {
+		if (user.respHook) {
+			if (user.loggedin) {
+				router.push("/")
+			}
+		}
+	}, [user.respHook]);
 
 	const show = (status: string, message: string) => {
 		switch (status) {
