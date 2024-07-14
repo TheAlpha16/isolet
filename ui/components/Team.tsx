@@ -8,7 +8,13 @@ export interface Team {
 	teamid: number;
 	teamname: string;
 	captain: number;
-	// members: User[];
+	members: TeamMember[];
+}
+
+interface TeamMember {
+	userid: number;
+	username: string;
+	score: number;
 }
 
 interface joinProps {
@@ -70,10 +76,10 @@ export function JoinTeam(props: joinProps) {
 		try {
 			const resp = await fetchTimeout("/api/team/join", 7000, signal, {
 				method: "POST",
-                body: formData,
-                headers: {
-                    "Authorization": `Bearer ${Cookies.get("token")}`
-                }
+				body: formData,
+				headers: {
+					Authorization: `Bearer ${Cookies.get("token")}`,
+				},
 			});
 			const jsonResp = await resp.json();
 			show(jsonResp.status, jsonResp.message);
