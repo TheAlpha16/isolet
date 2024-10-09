@@ -79,7 +79,6 @@ class Challenge(Base):
     __tablename__ = 'challenges'
     
     chall_id = Column(Integer, primary_key=True, autoincrement=True)
-    # level = Column(Integer, autoincrement=True)
     chall_name = Column(Text, nullable=False)
     category_id = Column(Integer, ForeignKey('categories.category_id'), nullable=False)
     prompt = Column(Text)
@@ -133,7 +132,7 @@ class Database:
         self.DB_CONFIG["port"] = int(os.getenv("POSTGRES_PORT")) if os.getenv("POSTGRES_PORT") and os.getenv("POSTGRES_PORT").isdigit() else 5432
 
     def __connect(self):
-        DATABASE_URL = f"postgresql+psycopg2://{self.DB_CONFIG['user']}:{self.DB_CONFIG['password']}@{self.DB_CONFIG['host']}:{self.DB_CONFIG["port"]}/{self.DB_CONFIG["database"]}"
+        DATABASE_URL = f"postgresql+psycopg2://{self.DB_CONFIG['user']}:{self.DB_CONFIG['password']}@{self.DB_CONFIG['host']}:{self.DB_CONFIG['port']}/{self.DB_CONFIG['database']}"
 
         for count in range(1, 6):
             try:
