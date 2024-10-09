@@ -90,7 +90,6 @@ EXECUTE PROCEDURE toverify_delete_old_rows();
 -- Create challenges table
 CREATE TABLE IF NOT EXISTS challenges(
     chall_id serial PRIMARY KEY,
-    level serial NOT NULL,
     chall_name text NOT NULL UNIQUE,
     category_id integer NOT NULL REFERENCES categories(category_id),
     prompt text,
