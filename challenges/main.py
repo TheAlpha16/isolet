@@ -44,7 +44,7 @@ class Hint:
         return self.visible
 
 class Challenge:
-    def __init__(self, chall_name, category, type, points, prompt=None, flag=None, files=[], hints=[], author=None, tags=[], port=None, subd=None, cpu=None, mem=None):
+    def __init__(self, chall_name, category, type, points, prompt=None, flag=None, files=[], requirements=[], hints=[], author=None, tags=[], port=None, subd=None, cpu=None, mem=None):
         self.chall_name = chall_name
         self.category = category
         self.prompt = prompt
@@ -52,6 +52,7 @@ class Challenge:
         self.type = type
         self.points = points
         self.files = files
+        self.requirements = requirements
         self.hint_objects = hints
         self.author = author
         self.tags = tags
@@ -68,6 +69,7 @@ class Challenge:
             {"object": self.type, "type": str, "optional": False, "key": "type"},
             {"object": self.points, "type": int, "optional": False, "key": "points"},
             {"object": self.files, "type": list, "optional": True, "default": [], "key": "files"},
+            {"object": self.requirements, "type": list, "optional": True, "default": [], "key": "requirements"},
             {"object": self.hint_objects, "type": list, "optional": True, "default": [], "key": "hint_objects"},
             {"object": self.author, "type": str, "optional": True, "default": "anonymous", "key": "author"},
             {"object": self.tags, "type": list, "optional": True, "default": [], "key": "tags"},
