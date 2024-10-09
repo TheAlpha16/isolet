@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS teams(
     captain bigint NOT NULL REFERENCES users(userid),
     members bigint[] NOT NULL DEFAULT '{}',
     password VARCHAR(100) NOT NULL,
-    solved int[] DEFAULT '{}',
+    solved text[] DEFAULT ARRAY[]::text[],
     uhints int[] DEFAULT '{}'
 );
 

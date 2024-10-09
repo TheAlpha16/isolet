@@ -32,7 +32,7 @@ class Team(Base):
     captain = Column(BigInteger, ForeignKey('users.userid'), nullable=False)
     members = Column(ARRAY(BigInteger), default=[])
     password = Column(String(100), nullable=False)
-    solved = Column(ARRAY(Integer), default=[])
+    solved = Column(ARRAY(Text), default=[])
     uhints = Column(ARRAY(Integer), default=[])
 
 class Flag(Base):
