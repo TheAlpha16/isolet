@@ -1,31 +1,15 @@
 package utils
 
 import (
-	"crypto/sha256"
 	"fmt"
 	"log"
 	"net/mail"
-	"os"
 	"regexp"
-	"strconv"
 
 	"github.com/TheAlpha16/isolet/api/config"
 	"github.com/TheAlpha16/isolet/api/database"
 	"github.com/TheAlpha16/isolet/api/models"
 )
-
-func UpdateKey(key string) error {
-	secret := database.GenerateRandom()
-	err := os.Setenv(key, secret)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func Hash(secret string) string {
-	return fmt.Sprintf("%x", sha256.Sum256([]byte(secret)))
-}
 
 // func PassValid(password string) bool {
 // 	tests := []string{".{9,}", "[a-z]", "[A-Z]", "[0-9]", "[$#@%&*.!]"}
@@ -115,25 +99,3 @@ func ValidateRegisterInput(regInput *models.ToVerify) (bool, string) {
 	return true, ""
 }
 
-func GetInstanceName(userid int, level int) string {
-	return Hash(fmt.Sprintf("%d@%d:%s", userid, level, config.INSTANCE_NAME_SECRET))[0:16]
-}
-
-func GetHostName(userid int, level int) string {
-	return config.INSTANCE_HOSTNAME
-}
-
-func BoolAddr(b bool) *bool {
-	boolVar := b
-	return &boolVar
-}
-
-func StringAddr(s string) *string {
-	tempString := s
-	return &tempString
-}
-
-func Int64Addr(i string) *int64 {
-	tempInt, _ := strconv.ParseInt(i, 10, 64)
-	return &tempInt
-}
