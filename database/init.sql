@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS teams(
     captain bigint NOT NULL REFERENCES users(userid),
     members bigint[] NOT NULL DEFAULT '{}',
     password VARCHAR(100) NOT NULL,
-    solved int[] DEFAULT '{}'
+    solved int[] DEFAULT '{}',
+    uhints int[] DEFAULT '{}',
 );
 
 -- Create trigger function to add captain to members array

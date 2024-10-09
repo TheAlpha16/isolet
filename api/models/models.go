@@ -72,6 +72,7 @@ type Team struct {
 	Members  pq.Int64Array `gorm:"type:integer[]" json:"members"`
 	Password string        `gorm:"not null" json:"password"`
 	Solved   pq.Int64Array `gorm:"type:integer[]" json:"solved"`
+	UHints   pq.Int64Array `gorm:"type:integer[]" json:"uhints"`
 }
 
 type Instance struct {
