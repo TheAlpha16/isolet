@@ -32,9 +32,8 @@ type VerifyClaims struct {
 
 type Challenge struct {
 	ChallID    int            `gorm:"primaryKey;column:chall_id" json:"chall_id"`
-	Level      int            `gorm:"not null" json:"level"`
 	Name       string         `gorm:"not null;unique;column:chall_name" json:"name"`
-	Prompt     string         `json:"prompt"`
+	Prompt     string         `gorm:"type:text" json:"prompt"`
 	Category   Category       `gorm:"foreignKey:CategoryID" json:"category"`
 	CategoryID int            `gorm:"not null" json:"-"`
 	Flag       string         `gorm:"-" json:"-"`
