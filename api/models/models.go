@@ -71,6 +71,7 @@ type Team struct {
 	Captain  int           `gorm:"not null" json:"captain"`
 	Members  pq.Int64Array `gorm:"type:integer[]" json:"members"`
 	Password string        `gorm:"not null" json:"password"`
+	Solved   pq.Int64Array `gorm:"type:integer[]" json:"solved"`
 }
 
 type Instance struct {
