@@ -1,226 +1,366 @@
 [
     {
-        "chall_name": "Reactive foreground function",
-        "category": "mobile",
-        "prompt": "City game particularly. Image hospital teach the near sense. Specific American could character seem cold boy.",
-        "flag": "Sj$qXYFt^8e3",
-        "type": "on-demand",
-        "points": 463,
-        "author": "francisco78",
-        "hints": [
-            {
-                "hint": "Reason politics behavior rule pressure major that.",
-                "cost": 183,
-                "visible": true
-            },
-            {
-                "hint": "Happen hope surface result trip.",
-                "cost": 2,
-                "visible": true
-            }
-        ],
-        "port": 52019,
-        "subd": "laptop-88.bailey-archer.com",
-        "cpu": 9,
-        "mem": 14
-    },
-    {
-        "chall_name": "Realigned real-time superstructure",
-        "category": "reversing",
-        "prompt": "Authority prove pretty adult fine between. Avoid though weight science. Development perhaps ball away detail. More paper no have.",
-        "flag": "n2B6MznI@7pk",
-        "type": "static",
-        "points": 171,
-        "author": "stanleylyons",
-        "files": [
-            "environmental.txt",
-            "foreign.txt"
-        ],
-        "tags": [
-            "theory",
-            "all",
-            "maybe"
-        ]
-    },
-    {
-        "chall_name": "Robust multi-state flexibility",
-        "category": "hardware",
-        "prompt": "Develop strong with whose wife player.",
-        "flag": "&1dzJbZgBnT5",
-        "type": "on-demand",
-        "points": 115,
-        "author": "zgonzalez",
-        "files": [
-            "quality.txt",
-            "specific.txt"
-        ],
-        "tags": [
-            "beautiful",
-            "yes",
-            "sure"
-        ],
-        "port": 63740,
-        "subd": "srv-95.gilbert-hawkins.com",
-        "cpu": 5,
-        "mem": 4
-    },
-    {
-        "chall_name": "Open-architected holistic data-warehouse",
-        "category": "blockchain",
-        "prompt": "Cost class black. We century join Democrat party sing idea. Baby whole job part dog cell.",
-        "flag": "_@9T7fcR*kW)",
-        "type": "dynamic",
-        "points": 468,
-        "author": "bwilson",
-        "files": [
-            "him.txt"
-        ],
-        "tags": [
-            "even",
-            "blood"
-        ],
-        "port": 58120,
-        "subd": "db-39.smith.com",
-        "cpu": 4,
-        "mem": 14
-    },
-    {
-        "chall_name": "Optional zero-defect instruction set",
-        "category": "mobile",
-        "prompt": "Western make nor husband her just begin. Beautiful very stage.",
-        "flag": "@^5nUVmom0TP",
-        "type": "static",
-        "points": 85,
-        "author": "anneguerra",
-        "hints": [
-            {
-                "hint": "That strategy address detail.",
-                "cost": 358,
-                "visible": true
-            },
-            {
-                "hint": "Probably cultural training.",
-                "cost": 23,
-                "visible": false
-            }
-        ],
-        "files": [
-            "company.txt",
-            "market.txt"
-        ]
-    },
-    {
-        "chall_name": "Function-based client-driven ability",
+        "chall_name": "Implemented bandwidth-monitored core",
         "category": "cloud",
-        "prompt": "Million theory Congress important product exist outside. Professor college hair data drive which. Authority mention goal.",
-        "flag": "@65bJq2lKJPo",
-        "type": "static",
-        "points": 301,
-        "author": "debra90",
-        "hints": [
-            {
-                "hint": "Finally bill century any born.",
-                "cost": 210,
-                "visible": true
-            }
-        ],
-        "tags": [
-            "blood",
-            "bring"
-        ]
-    },
-    {
-        "chall_name": "Distributed bandwidth-monitored superstructure",
-        "category": "web",
-        "prompt": "Little reach less I raise significant. Affect camera imagine put dream major trouble ground. Degree statement really dream front production. Executive fast method account fish public.",
-        "flag": "h!2rCIEo^nH)",
-        "type": "static",
-        "points": 491,
-        "author": "burnscourtney",
-        "hints": [
-            {
-                "hint": "One our large.",
-                "cost": 459,
-                "visible": true
-            }
-        ],
-        "files": [
-            "do.txt",
-            "something.txt"
-        ],
-        "tags": [
-            "discover",
-            "condition"
-        ]
-    },
-    {
-        "chall_name": "Persevering static knowledge user",
-        "category": "forensics",
-        "prompt": "Glass never chair reason course nice ground. Billion church any who arrive song. Tax before both.",
-        "flag": "+5yHr6cJ3zgJ",
-        "type": "static",
-        "points": 300,
-        "author": "vargasjohn",
-        "files": [
-            "player.txt"
-        ],
-        "tags": [
-            "magazine"
-        ]
-    },
-    {
-        "chall_name": "Compatible zero tolerance firmware",
-        "category": "blockchain",
-        "prompt": "Whole debate service. Situation fly fill property field.",
-        "flag": "%9Ukb2gD!M&z",
+        "prompt": "Share chance still finish now apply. Which prepare teach five yeah near. Clearly somebody around during despite prevent.",
+        "flag": "q(+l8QGeM0cl",
         "type": "on-demand",
-        "points": 350,
-        "author": "cfischer",
+        "points": 106,
+        "author": "bbrooks",
+        "requirements": [],
         "hints": [
             {
-                "hint": "Single day front party recently knowledge since success.",
-                "cost": 250,
+                "hint": "Executive morning organization choice some admit.",
+                "cost": 381,
                 "visible": false
             }
         ],
         "files": [
-            "suddenly.txt"
+            "part.txt"
         ],
         "tags": [
-            "page",
-            "realize",
-            "sister"
+            "prevent",
+            "establish",
+            "writer"
         ],
-        "port": 2140,
-        "subd": "desktop-37.walker-randolph.com",
+        "port": 61358,
+        "subd": "desktop-56.madden-kidd.com",
+        "cpu": 3,
+        "mem": 14
+    },
+    {
+        "chall_name": "Enterprise-wide responsive encoding",
+        "category": "misc",
+        "prompt": "Choose environmental student draw. Health let whatever question like. Realize choice it range.",
+        "flag": "C&*@hUdJ)N3u",
+        "type": "on-demand",
+        "points": 187,
+        "author": "nturner",
+        "requirements": [],
+        "hints": [
+            {
+                "hint": "Chance break little need no.",
+                "cost": 465,
+                "visible": false
+            },
+            {
+                "hint": "Spring benefit structure major.",
+                "cost": 112,
+                "visible": false
+            }
+        ],
+        "files": [
+            "response.txt",
+            "here.txt"
+        ],
+        "tags": [
+            "future",
+            "often",
+            "cut"
+        ],
+        "port": 39868,
+        "subd": "srv-50.williams.org",
+        "cpu": 9,
+        "mem": 2
+    },
+    {
+        "chall_name": "Cross-group radical database",
+        "category": "reversing",
+        "prompt": "High mission you. Medical better respond hard most. Only during economic fight.",
+        "flag": "ftRK+eFeX*9B",
+        "type": "on-demand",
+        "points": 156,
+        "author": "kgraham",
+        "requirements": [
+            "Enterprise-wide responsive encoding",
+            "Implemented bandwidth-monitored core"
+        ],
+        "hints": [
+            {
+                "hint": "Student price want.",
+                "cost": 281,
+                "visible": true
+            },
+            {
+                "hint": "Opportunity himself condition great reach best.",
+                "cost": 312,
+                "visible": true
+            }
+        ],
+        "port": 17448,
+        "subd": "web-85.montgomery.net",
         "cpu": 10,
+        "mem": 14
+    },
+    {
+        "chall_name": "Networked national challenge",
+        "category": "stego",
+        "prompt": "Case education control including see late population. Ball market science. Environment so finally air.",
+        "flag": "po0!OTiIs_Lm",
+        "type": "static",
+        "points": 468,
+        "author": "eproctor",
+        "requirements": [
+            "Enterprise-wide responsive encoding",
+            "Cross-group radical database"
+        ],
+        "files": [
+            "number.txt",
+            "beat.txt"
+        ],
+        "tags": [
+            "professional",
+            "notice",
+            "full"
+        ]
+    },
+    {
+        "chall_name": "Cross-platform value-added installation",
+        "category": "misc",
+        "prompt": "We too quality.",
+        "flag": "s5Eo5Xqla@F%",
+        "type": "static",
+        "points": 362,
+        "author": "daykenneth",
+        "requirements": [],
+        "hints": [
+            {
+                "hint": "Focus buy enough lot all site offer.",
+                "cost": 156,
+                "visible": true
+            },
+            {
+                "hint": "Pattern Republican debate development summer hand democratic.",
+                "cost": 22,
+                "visible": true
+            }
+        ],
+        "tags": [
+            "else",
+            "rather"
+        ]
+    },
+    {
+        "chall_name": "Exclusive uniform pricing structure",
+        "category": "pwn",
+        "prompt": "Politics feel never. Above job close reach activity which if many. Hit street single edge authority ball up so. Oil son real change outside they industry no.",
+        "flag": "CMsi^C#R^07M",
+        "type": "dynamic",
+        "points": 448,
+        "author": "kyle40",
+        "requirements": [
+            "Cross-group radical database"
+        ],
+        "hints": [
+            {
+                "hint": "Bad Mrs door.",
+                "cost": 252,
+                "visible": false
+            },
+            {
+                "hint": "Appear probably lot option which.",
+                "cost": 143,
+                "visible": false
+            },
+            {
+                "hint": "Fire four speech manage.",
+                "cost": 212,
+                "visible": false
+            },
+            {
+                "hint": "Class customer generation church.",
+                "cost": 85,
+                "visible": false
+            }
+        ],
+        "files": [
+            "anyone.txt"
+        ],
+        "tags": [
+            "everything",
+            "newspaper",
+            "type"
+        ],
+        "port": 61115,
+        "subd": "desktop-87.rogers.com",
+        "cpu": 1,
         "mem": 16
     },
     {
-        "chall_name": "Switchable optimizing firmware",
-        "category": "hardware",
-        "prompt": "Total civil direction may. Scientist all fine else former threat somebody. Budget across station couple somebody me those.",
-        "flag": "FcbyY4UgBFf&",
+        "chall_name": "User-centric intangible workforce",
+        "category": "blockchain",
+        "prompt": "Official skin step less of section view.",
+        "flag": "@O8uYpaLG05V",
         "type": "dynamic",
-        "points": 279,
-        "author": "gabrielle11",
+        "points": 386,
+        "author": "coleteresa",
+        "requirements": [],
         "hints": [
             {
-                "hint": "Save black gas plan once information draw.",
-                "cost": 331,
+                "hint": "Exist especially shake cut.",
+                "cost": 313,
+                "visible": false
+            },
+            {
+                "hint": "Thought almost high response.",
+                "cost": 218,
+                "visible": true
+            },
+            {
+                "hint": "Value military water describe surface seat poor.",
+                "cost": 110,
+                "visible": true
+            },
+            {
+                "hint": "Level suggest cut thus indeed stop in.",
+                "cost": 446,
+                "visible": false
+            },
+            {
+                "hint": "Reveal all opportunity share particularly.",
+                "cost": 124,
+                "visible": false
+            }
+        ],
+        "tags": [
+            "outside",
+            "standard"
+        ],
+        "port": 28171,
+        "subd": "db-86.proctor-long.biz",
+        "cpu": 3,
+        "mem": 9
+    },
+    {
+        "chall_name": "Pre-emptive homogeneous parallelism",
+        "category": "forensics",
+        "prompt": "Really major establish senior around drop. Tax seem mind also relate. Popular growth available occur figure this.",
+        "flag": "XgGb5J3t@1_i",
+        "type": "dynamic",
+        "points": 232,
+        "author": "wwilliamson",
+        "requirements": [],
+        "hints": [
+            {
+                "hint": "Back trip he morning heavy matter.",
+                "cost": 391,
+                "visible": true
+            },
+            {
+                "hint": "Defense detail region seat beat light some.",
+                "cost": 366,
+                "visible": false
+            },
+            {
+                "hint": "Character describe move.",
+                "cost": 197,
+                "visible": false
+            },
+            {
+                "hint": "How beyond continue.",
+                "cost": 158,
+                "visible": true
+            },
+            {
+                "hint": "Market admit stuff move.",
+                "cost": 121,
+                "visible": false
+            },
+            {
+                "hint": "Be quite think career recognize.",
+                "cost": 32,
                 "visible": false
             }
         ],
         "files": [
-            "action.txt"
+            "plant.txt"
         ],
         "tags": [
-            "receive",
-            "return"
+            "many",
+            "of",
+            "hospital"
         ],
-        "port": 22175,
-        "subd": "laptop-43.cherry.com",
-        "cpu": 6,
+        "port": 11400,
+        "subd": "web-53.le.com",
+        "cpu": 3,
+        "mem": 11
+    },
+    {
+        "chall_name": "Synchronized next generation groupware",
+        "category": "web",
+        "prompt": "Effort often sing book recognize. Western bad hear new. Religious begin how listen movie trip.",
+        "flag": "_5KN*sWS_yM^",
+        "type": "dynamic",
+        "points": 248,
+        "author": "ggriffith",
+        "requirements": [
+            "Cross-platform value-added installation",
+            "Implemented bandwidth-monitored core"
+        ],
+        "hints": [
+            {
+                "hint": "Clearly they identify capital.",
+                "cost": 497,
+                "visible": true
+            },
+            {
+                "hint": "Argue might owner glass I respond.",
+                "cost": 320,
+                "visible": false
+            },
+            {
+                "hint": "Would none glass political prove suffer.",
+                "cost": 8,
+                "visible": true
+            },
+            {
+                "hint": "Partner rule least citizen.",
+                "cost": 499,
+                "visible": true
+            },
+            {
+                "hint": "Relate why win economy interest share.",
+                "cost": 148,
+                "visible": false
+            }
+        ],
+        "port": 5172,
+        "subd": "lt-43.frederick-burke.com",
+        "cpu": 4,
         "mem": 1
+    },
+    {
+        "chall_name": "Upgradable actuating time-frame",
+        "category": "networking",
+        "prompt": "Claim how fund call budget market. Media more bag list Democrat.",
+        "flag": "tc&KIdpY1#r1",
+        "type": "dynamic",
+        "points": 114,
+        "author": "rebeccatorres",
+        "requirements": [
+            "Networked national challenge"
+        ],
+        "hints": [
+            {
+                "hint": "Summer cost whatever.",
+                "cost": 135,
+                "visible": false
+            },
+            {
+                "hint": "Degree institution forget interest.",
+                "cost": 484,
+                "visible": false
+            }
+        ],
+        "files": [
+            "increase.txt"
+        ],
+        "tags": [
+            "give"
+        ],
+        "port": 20068,
+        "subd": "web-49.garrett.net",
+        "cpu": 3,
+        "mem": 15
     }
 ]

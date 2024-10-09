@@ -8,12 +8,14 @@ chall_types = ['static', 'dynamic', 'on-demand']
 
 categories = ["web","pwn","reversing","crypto","misc","forensics","stego","osint","hardware","networking","mobile","blockchain","cloud","ai","iot"]
 
+already_init_challs = []
+
 def generate_fake_challenge():
     category = random.choice(categories)
     chall_type = random.choice(chall_types)
     files = [fake.file_name(extension='txt')
              for _ in range(random.randint(0, 2))]
-    hints = [{"hint": fake.sentence(), "cost": random.randint(1, 500), "visible": random.choice([True, False])} for _ in range(random.randint(0, 2))]
+    hints = [{"hint": fake.sentence(), "cost": random.randint(1, 500), "visible": random.choice([True, False])} for _ in range(random.randint(0, max(len(already_init_challs), 2)))]
     tags = [fake.word() for _ in range(random.randint(0, 3))]
 
     final = {
@@ -25,6 +27,11 @@ def generate_fake_challenge():
         "points": random.randint(50, 500),
         "author": fake.user_name(),
     }
+
+    requirements = random.sample(already_init_challs, k=random.randint(0, 2))
+    already_init_challs.append(final["chall_name"])
+
+    final["requirements"] = requirements
 
     if len(hints) > 0:
         final["hints"] = hints
