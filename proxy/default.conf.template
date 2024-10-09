@@ -14,5 +14,9 @@ server {
     location /auth {
         proxy_pass http://${API_URL}/auth;
     }
+
+    location /onboard {
+        proxy_pass http://${API_URL}/onboard;
+    }
 }
 
