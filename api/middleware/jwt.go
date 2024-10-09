@@ -23,6 +23,33 @@ func CheckToken() fiber.Handler {
 	})
 }
 
+func CheckOnBoardToken() fiber.Handler {
+	return jwtware.New(jwtware.Config{
+		SigningKey: jwtware.SigningKey{
+			Key:    []byte(config.SESSION_SECRET),
+			JWTAlg: jwtware.HS256,
+		},
+
+		// let this pass if and only if jwt consists of teamid = -1
+		SuccessHandler: func(c *fiber.Ctx) error {
+
+			user := c.Locals("user").(*jwt.Token)
+			claims := user.Claims.(jwt.MapClaims)
+			teamid := int(claims["teamid"].(float64))
+
+			if teamid == -1 {
+				return c.Next()
+			}
+
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "already on a team"})
+		},
+
+		ErrorHandler: func(c *fiber.Ctx, err error) error {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "invalid or expired session token"})
+		},
+	})
+}
+
 func GenerateToken(user *models.User) (string, error) {
 	claims := jwt.MapClaims{
 		"userid": user.UserID,
