@@ -86,6 +86,7 @@ class Challenge(Base):
     type = Column(chall_type_enum, nullable=False, default='static')
     points = Column(Integer, default=100)
     files = Column(ARRAY(Text), default=[])
+    requirements = Column(ARRAY(Text), default=[])
     hints = Column(ARRAY(BigInteger), default=[])
     solves = Column(Integer, default=0)
     author = Column(Text, default='anonymous')

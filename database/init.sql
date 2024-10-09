@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS challenges(
     type chall_type NOT NULL DEFAULT 'static',
     points integer NOT NULL DEFAULT 100,
     files text[] DEFAULT ARRAY[]::text[],
+    requirements text[] DEFAULT ARRAY[]::text[],
     hints bigint[] NOT NULL DEFAULT '{}',
     solves integer DEFAULT 0,
     author text DEFAULT 'anonymous',
