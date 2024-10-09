@@ -8,6 +8,7 @@ import (
 	// "strings"
 
 	"github.com/TheAlpha16/isolet/api/database"
+	"github.com/golang-jwt/jwt/v5"
 	// "github.com/TheAlpha16/isolet/api/utils"
 
 	// "github.com/TheAlpha16/isolet/api/deployment"
@@ -32,7 +33,12 @@ func GetStatus(c *fiber.Ctx) error {
 }
 
 func GetChalls(c *fiber.Ctx) error {
-	challenges, err := database.ReadChallenges(c)
+	var teamid int
+
+	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+	teamid = int(claims["teamid"].(float64))
+
+	challenges, err := database.ReadChallenges(c, teamid)
 	if err != nil {
 		log.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in reading challenges"})

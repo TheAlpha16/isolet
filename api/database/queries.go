@@ -2,14 +2,13 @@ package database
 
 import (
 	"context"
-	// "fmt"
 	"time"
 
 	// "github.com/TheAlpha16/isolet/api/config"
 	"github.com/TheAlpha16/isolet/api/models"
 
 	"github.com/gofiber/fiber/v2"
-	// "github.com/lib/pq"
+	"github.com/lib/pq"
 
 	"gorm.io/gorm/clause"
 )
@@ -33,21 +32,82 @@ func AddToChallenges(chall models.Challenge) error {
 	return nil
 }
 
-func ReadChallenges(c *fiber.Ctx) ([]models.Challenge, error) {
+func isChallengeSolved(challengeName string, solvedChalls pq.StringArray) bool {
+	for _, solved := range solvedChalls {
+		if solved == challengeName {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isRequirementMet(requirements pq.StringArray, solvedChalls pq.StringArray) bool {
+	for _, requiredChall := range requirements {
+		if !isChallengeSolved(requiredChall, solvedChalls) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func isHintUnlocked(hintID int64, unlockedHints pq.Int64Array) bool {
+	for _, unlocked := range unlockedHints {
+		if unlocked == hintID {
+			return true
+		}
+	}
+	return false
+}
+
+func ReadChallenges(c *fiber.Ctx, teamid int) (map[string][]models.Challenge, error) {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
 	db := DB.WithContext(ctx)
+
+	var team models.Team
+	if err := db.Where("teamid = ?", teamid).First(&team).Error; err != nil {
+		return nil, err
+	}
 
 	var challenges []models.Challenge
 	if err := db.Preload("Category").
 		Preload("Hints", "visible = ?", true).
 		Where("visible = ?", true).
 		Find(&challenges).Error; err != nil {
-		return challenges, err
+		return nil, err
 	}
 
-	return challenges, nil
+	// Post-fetch filtering and modifications
+	filteredChallenges := make(map[string][]models.Challenge)
+
+	for _, challenge := range challenges {
+		requirementsMet := isRequirementMet(challenge.Requirements, team.Solved)
+		if !requirementsMet {
+			continue
+		}
+
+		for i, hint := range challenge.Hints {
+			hintUnlocked := isHintUnlocked(int64(hint.HID), team.UHints)
+			if hint.Cost > 0 && !hintUnlocked {
+				challenge.Hints[i].Hint = ""
+			}
+
+			challenge.Hints[i].Unlocked = hintUnlocked
+		}
+
+		challenge.Done = isChallengeSolved(challenge.Name, team.Solved)
+
+		if catChallenges, exists := filteredChallenges[challenge.Category.CategoryName]; exists {
+			filteredChallenges[challenge.Category.CategoryName] = append(catChallenges, challenge)
+		} else {
+			filteredChallenges[challenge.Category.CategoryName] = []models.Challenge{challenge}
+		}
+	}
+
+	return filteredChallenges, nil
 }
 
 // func CanStartInstance(c *fiber.Ctx, userid int, level int) bool {
