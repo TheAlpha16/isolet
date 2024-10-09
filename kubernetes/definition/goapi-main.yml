@@ -165,6 +165,16 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: token_secret
+            - name: SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: smtp_host
+            - name: SMTP_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: smtp_port
 ---
 apiVersion: v1
 kind: Service
