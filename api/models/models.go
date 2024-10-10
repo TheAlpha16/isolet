@@ -46,11 +46,20 @@ type Challenge struct {
 	Author       string         `gorm:"default:anonymous" json:"author"`
 	Visible      bool           `gorm:"default:false" json:"-"`
 	Tags         pq.StringArray `gorm:"type:text[]" json:"tags"`
-	Port         int            `gorm:"default:0" json:"port"`
-	Subd         string         `gorm:"default:localhost" json:"subd"`
-	CPU          int            `gorm:"default:5;column:cpu" json:"-"`
-	Memory       int            `gorm:"default:10" json:"-"`
+	Links        pq.StringArray `gorm:"type:text[]" json:"links"`
 	Done         bool           `gorm:"-" json:"done"`
+}
+
+type Image struct {
+	IID        int    `gorm:"primaryKey;autoIncrement;column:iid" json:"iid"`
+	ChallID    int    `gorm:"not null;column:chall_id" json:"chall_id"`
+	Registry   string `gorm:"not null" json:"registry"`
+	Image      string `gorm:"not null" json:"image"`
+	Deployment string `gorm:"type:deployment_type;default:http" json:"deployment"`
+	Port       int    `gorm:"default:80" json:"port"`
+	Subd       string `gorm:"default:localhost" json:"subd"`
+	CPU        int    `gorm:"default:5;column:cpu" json:"-"`
+	Memory     int    `gorm:"default:10;column:mem" json:"-"`
 }
 
 type Hint struct {

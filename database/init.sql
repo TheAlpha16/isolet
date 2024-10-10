@@ -1,5 +1,6 @@
 -- Create types
 CREATE TYPE chall_type AS ENUM ('static', 'dynamic', 'on-demand');
+CREATE TYPE deployment_type AS ENUM ('ssh', 'nc', 'http');
 
 -- Create categories table
 CREATE TABLE IF NOT EXISTS categories(
@@ -105,10 +106,7 @@ CREATE TABLE IF NOT EXISTS challenges(
     author text DEFAULT 'anonymous',
     visible boolean DEFAULT false,
     tags text[] DEFAULT ARRAY[]::text[],
-    port integer DEFAULT 0,
-    subd text DEFAULT 'localhost',
-    cpu integer DEFAULT 5,
-    mem integer DEFAULT 10
+    links text[] DEFAULT ARRAY[]::text[]
 );
 
 -- Create sublogs table
@@ -146,6 +144,19 @@ $$;
 CREATE TRIGGER update_hints_trigger
 AFTER INSERT ON hints
 FOR EACH ROW EXECUTE PROCEDURE update_hints();
+
+-- Table to store deployment data for on-demand and dynamic challenges
+CREATE TABLE IF NOT EXISTS images(
+    iid bigserial PRIMARY KEY,
+    chall_id integer NOT NULL REFERENCES challenges(chall_id),
+    registry text NOT NULL,
+    image text NOT NULL,
+    deployment deployment_type NOT NULL DEFAULT 'http',
+    port integer DEFAULT 80,
+    subd text DEFAULT 'localhost',
+    cpu integer DEFAULT 5,
+    mem integer DEFAULT 10
+);
 
 -- Function to enforce instance count
 CREATE OR REPLACE FUNCTION enforce_instance_count() RETURNS trigger

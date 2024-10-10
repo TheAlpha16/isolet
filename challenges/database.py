@@ -6,6 +6,7 @@ import os
 
 Base = declarative_base()
 chall_type_enum = ENUM('static', 'dynamic', 'on-demand', name='chall_type', create_type=True)
+deployment_type_enum = ENUM('ssh', 'nc', 'http', name='deployment_type', create_type=True)
 
 class Category(Base):
     __tablename__ = 'categories'
@@ -94,10 +95,7 @@ class Challenge(Base):
     author = Column(Text, default='anonymous')
     visible = Column(Boolean, default=False)
     tags = Column(ARRAY(Text))
-    port = Column(Integer, default=0)
-    subd = Column(Text, default='localhost')
-    cpu = Column(Integer, default=5)
-    mem = Column(Integer, default=10)
+    links = Column(ARRAY(Text))
 
 class Hint(Base):
     __tablename__ = 'hints'
@@ -107,6 +105,19 @@ class Hint(Base):
     hint = Column(Text, nullable=False)
     cost = Column(Integer, nullable=False, default=0)
     visible = Column(Boolean, default=False)
+
+class Image(Base):
+    __tablename__ = 'images'
+    
+    iid = Column(BigInteger, primary_key=True, autoincrement=True)
+    chall_id = Column(Integer, ForeignKey('challenges.chall_id'), nullable=False)
+    registry = Column(Text, nullable=False)
+    image = Column(Text, nullable=False)
+    deployment = Column(deployment_type_enum, nullable=False, default='http')
+    port = Column(Integer, default=80)
+    subd = Column(Text, default='localhost')
+    cpu = Column(Integer, default=5)
+    mem = Column(Integer, default=10)
 
 class Database:
     def __init__(self):
@@ -159,6 +170,9 @@ class Database:
         hints = kwargs.get("hint_objects", [])
         del kwargs["hint_objects"]
 
+        image = kwargs.get("image_metadata", {})
+        del kwargs["image_metadata"]
+
         challenge = self.session.query(Challenge).filter_by(chall_name=kwargs["chall_name"]).first()
         if not challenge:
             challenge = Challenge(**kwargs)
@@ -169,6 +183,7 @@ class Database:
         
         self.session.commit()
         self.__add_hints(challenge.chall_id, hints)
+        if kwargs["type"] != "static": self.__create_image(challenge.chall_id, image)
 
     def __add_hints(self, challenge_id, hints) -> None:
         for hint in hints:
@@ -191,3 +206,13 @@ class Database:
         self.session.commit()
 
         return category.category_id
+    
+    def __create_image(self, challenge_id, image) -> None:
+        old_image = self.session.query(Image).filter_by(chall_id=challenge_id).first()
+        if old_image:
+            for key, value in image.items():
+                setattr(old_image, key, value) if value else None
+            return  
+        image = Image(chall_id=challenge_id, **image)
+        self.session.add(image)
+        self.session.commit()
