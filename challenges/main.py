@@ -44,7 +44,7 @@ class Hint:
         return self.visible
 
 class Challenge:
-    def __init__(self, chall_name, category, type, points, prompt=None, flag=None, files=[], requirements=[], hints=[], author=None, tags=[], port=None, subd=None, cpu=None, mem=None):
+    def __init__(self, chall_name, category, type, points, prompt=None, flag=None, files=[], requirements=[], hints=[], author=None, tags=[], links=[], image=None, registry=None, deployment=None, port=None, subd=None, cpu=None, mem=None):
         self.chall_name = chall_name
         self.category = category
         self.prompt = prompt
@@ -56,10 +56,16 @@ class Challenge:
         self.hint_objects = hints
         self.author = author
         self.tags = tags
-        self.port = port
-        self.subd = subd
-        self.cpu = cpu
-        self.mem = mem
+        self.links = links
+        self.image_metadata = {
+            "image": image,
+            "registry": registry,
+            "deployment": deployment,
+            "port": port,
+            "subd": subd,
+            "cpu": cpu,
+            "mem": mem
+        }
 
         self.fields = [
             {"object": self.chall_name, "type": str, "optional": False, "key": "chall_name"},
@@ -73,10 +79,8 @@ class Challenge:
             {"object": self.hint_objects, "type": list, "optional": True, "default": [], "key": "hint_objects"},
             {"object": self.author, "type": str, "optional": True, "default": "anonymous", "key": "author"},
             {"object": self.tags, "type": list, "optional": True, "default": [], "key": "tags"},
-            {"object": self.port, "type": int, "optional": True, "default": 0, "key": "port"},
-            {"object": self.subd, "type": str, "optional": True, "default": "localhost", "key": "subd"},
-            {"object": self.cpu, "type": int, "optional": True, "default": 5, "key": "cpu"},
-            {"object": self.mem, "type": int, "optional": True, "default": 10, "key": "mem"}
+            {"object": self.links, "type": list, "optional": True, "default": [], "key": "links"},
+            {"object": self.image_metadata, "type": dict, "optional": True, "default": {}, "key": "image_metadata"},
         ]
 
         self.__linter()
@@ -96,8 +100,22 @@ class Challenge:
         if not self.type in ['static', 'dynamic', 'on-demand']:
             raise ValueError("Invalid challenge type")
         
+        if self.type != 'static':
+            if not self.image_metadata["image"]:
+                raise ValueError(f"Missing image name for {self.chall_name} (dynamic or on-demand)")
+            if not self.image_metadata["registry"]:
+                raise ValueError(f"Missing registry for {self.chall_name} (dynamic or on-demand)")
+            if not self.image_metadata["port"]:
+                raise ValueError(f"Missing port metadata for {self.chall_name} (dynamic or on-demand)")
+            if not self.image_metadata["subd"]:
+                raise ValueError(f"Missing subd metadata for {self.chall_name} (dynamic or on-demand)")
+            if not self.image_metadata["deployment"]:
+                raise ValueError(f"Missing deployment metadata for {self.chall_name} (dynamic or on-demand)")
+            elif not self.image_metadata["deployment"] in ['http', 'ssh', 'nc']:
+                raise ValueError(f"Invalid deployment method for {self.chall_name}, should be in ('http', 'ssh', 'nc')")
+
         if self.points < 0:
-            raise ValueError("Points must be greater than 0")
+            raise ValueError("Points must be greater or equal than 0")
         
         self.hint_objects = [Hint(hint["hint"], hint["cost"], hint.get("visible", False)) for hint in self.hint_objects]
 
