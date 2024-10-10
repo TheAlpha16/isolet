@@ -8,6 +8,7 @@ import (
 )
 
 var SESSION_SECRET = os.Getenv("SESSION_SECRET")
+var CHALL_DOMAIN = os.Getenv("CHALL_DOMAIN")
 var SESSION_EXP = 72
 var EMAIL_LEN = 320
 var PASS_LEN = 32

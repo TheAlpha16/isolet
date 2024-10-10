@@ -140,6 +140,11 @@ spec:
                 configMapKeyRef:
                   name: app-config
                   key: max_instance_time
+            - name: CHALL_DOMAIN
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: chall_domain
             - name: EMAIL_ID
               valueFrom:
                 secretKeyRef:
