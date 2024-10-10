@@ -2,8 +2,6 @@ package database
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"errors"
 	// "fmt"
 	"log"
@@ -16,12 +14,6 @@ import (
 
 	"gorm.io/gorm"
 )
-
-func GenerateRandom() string {
-	buffer := make([]byte, 32)
-	rand.Read(buffer)
-	return hex.EncodeToString(buffer)
-}
 
 func ValidateCreds(c *fiber.Ctx, user *models.User) error {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
