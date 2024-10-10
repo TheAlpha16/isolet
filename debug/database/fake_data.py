@@ -40,6 +40,9 @@ def generate_fake_challenge():
     if len(tags) > 0:
         final["tags"] = tags
         
+    if random.randint(1, 10) < 2:
+        final["links"] = [fake.url() for _ in range(random.randint(1, 3))]
+    
     if chall_type != 'static':
         final["port"] = random.randint(1024, 65535)
         final["subd"] = fake.domain_word()
