@@ -46,6 +46,7 @@ def generate_fake_challenge():
         final["mem"] = random.randint(1, 16)
         final["image"] = fake.domain_word()
         final["registry"] = fake.url()
+        final["deployment"] = random.choice(['http', 'ssh', 'nc'])
     
     return final
 
