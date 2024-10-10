@@ -8,7 +8,6 @@ import (
 	"github.com/TheAlpha16/isolet/api/models"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/lib/pq"
 
 	"gorm.io/gorm/clause"
 )
@@ -30,35 +29,6 @@ func AddToChallenges(chall models.Challenge) error {
 	}
 
 	return nil
-}
-
-func isChallengeSolved(challengeName string, solvedChalls pq.StringArray) bool {
-	for _, solved := range solvedChalls {
-		if solved == challengeName {
-			return true
-		}
-	}
-
-	return false
-}
-
-func isRequirementMet(requirements pq.StringArray, solvedChalls pq.StringArray) bool {
-	for _, requiredChall := range requirements {
-		if !isChallengeSolved(requiredChall, solvedChalls) {
-			return false
-		}
-	}
-
-	return true
-}
-
-func isHintUnlocked(hintID int64, unlockedHints pq.Int64Array) bool {
-	for _, unlocked := range unlockedHints {
-		if unlocked == hintID {
-			return true
-		}
-	}
-	return false
 }
 
 func ReadChallenges(c *fiber.Ctx, teamid int) (map[string][]models.Challenge, error) {
@@ -96,6 +66,19 @@ func ReadChallenges(c *fiber.Ctx, teamid int) (map[string][]models.Challenge, er
 			}
 
 			challenge.Hints[i].Unlocked = hintUnlocked
+		}
+
+		if challenge.Type == "dynamic" {
+			imageMetaData := new(models.Image) 
+			
+			// fetch deployment, port, subd from images table using chall_id as key
+			if err := db.Select("deployment, port, subd").Where("chall_id = ?", challenge.ChallID).First(imageMetaData).Error; err != nil {
+				return nil, err
+			}
+			
+			connLink := GenerateChallengeEndpoint(imageMetaData.Deployment, imageMetaData.Subd, imageMetaData.Port)
+
+			challenge.Links = append(challenge.Links, connLink)
 		}
 
 		challenge.Done = isChallengeSolved(challenge.Name, team.Solved)
