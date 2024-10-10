@@ -28,7 +28,7 @@ def generate_fake_challenge():
         "author": fake.user_name(),
     }
 
-    requirements = random.sample(already_init_challs, k=random.randint(0, max(len(already_init_challs), 2)))
+    requirements = random.sample(already_init_challs, k=random.randint(0, min(len(already_init_challs), 2)))
     already_init_challs.append(final["chall_name"])
 
     final["requirements"] = requirements
@@ -39,6 +39,7 @@ def generate_fake_challenge():
         final["files"] = files
     if len(tags) > 0:
         final["tags"] = tags
+        
     if chall_type != 'static':
         final["port"] = random.randint(1024, 65535)
         final["subd"] = fake.domain_word()
