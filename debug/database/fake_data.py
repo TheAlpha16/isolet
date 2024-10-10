@@ -41,9 +41,11 @@ def generate_fake_challenge():
         final["tags"] = tags
     if chall_type != 'static':
         final["port"] = random.randint(1024, 65535)
-        final["subd"] = fake.hostname()
+        final["subd"] = fake.domain_word()
         final["cpu"] = random.randint(1, 10)
         final["mem"] = random.randint(1, 16)
+        final["image"] = fake.domain_word()
+        final["registry"] = fake.url()
     
     return final
 
