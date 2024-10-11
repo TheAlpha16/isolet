@@ -15,9 +15,9 @@ func GenerateRandom() string {
 	return hex.EncodeToString(buffer)
 }
 
-func isChallengeSolved(challengeName string, solvedChalls pq.StringArray) bool {
+func isChallengeSolved(challengeID int64, solvedChalls pq.Int64Array) bool {
 	for _, solved := range solvedChalls {
-		if solved == challengeName {
+		if solved == challengeID {
 			return true
 		}
 	}
@@ -25,7 +25,7 @@ func isChallengeSolved(challengeName string, solvedChalls pq.StringArray) bool {
 	return false
 }
 
-func isRequirementMet(requirements pq.StringArray, solvedChalls pq.StringArray) bool {
+func isRequirementMet(requirements pq.Int64Array, solvedChalls pq.Int64Array) bool {
 	for _, requiredChall := range requirements {
 		if !isChallengeSolved(requiredChall, solvedChalls) {
 			return false
