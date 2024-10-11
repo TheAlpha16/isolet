@@ -150,6 +150,13 @@ CREATE TABLE IF NOT EXISTS images(
     mem integer DEFAULT 10
 );
 
+-- Table to store buffer for running on-demand challenges
+CREATE TABLE IF NOT EXISTS running(
+    runid bigserial,
+    teamid bigint NOT NULL REFERENCES teams(teamid),
+    chall_id integer
+)
+
 -- Function to enforce instance count
 CREATE OR REPLACE FUNCTION enforce_instance_count() RETURNS trigger
 LANGUAGE plpgsql
@@ -165,10 +172,10 @@ BEGIN
 
     IF must_check THEN
         -- prevent concurrent inserts from multiple transactions
-        LOCK TABLE flags IN EXCLUSIVE MODE;
+        LOCK TABLE running IN EXCLUSIVE MODE;
 
         SELECT INTO instance_count COUNT(*) 
-        FROM flags 
+        FROM running 
         WHERE teamid = NEW.teamid;
 
         IF instance_count > max_instance_count THEN
@@ -182,5 +189,5 @@ $$;
 
 -- Trigger to enforce instance count
 CREATE OR REPLACE TRIGGER enforce_instance_count_trigger
-BEFORE INSERT ON flags
+BEFORE INSERT ON running
 FOR EACH ROW EXECUTE PROCEDURE enforce_instance_count();
