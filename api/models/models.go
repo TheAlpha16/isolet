@@ -98,6 +98,17 @@ type Flag struct {
 	Extended int    `gorm:"type:integer;default:1" json:"-"`
 }
 
+type Sublog struct {
+	SID     int64     `gorm:"primaryKey;autoIncrement;column:sid" json:"-"`
+	ChallID int       `gorm:"not null;column:chall_id" json:"chall_id"`
+	UserID  int64     `gorm:"not null;column:userid" json:"userid"`
+	TeamID  int64     `gorm:"not null;column:teamid" json:"teamid"`
+	Flag    string    `gorm:"not null" json:"flag"`
+	Correct bool      `gorm:"not null" json:"correct"`
+	IP      string    `gorm:"not null;column:ip" json:"-"`
+	SubTime time.Time `gorm:"not null;default:CURRENT_TIMESTAMP" json:"subtime"`
+}
+
 type Score struct {
 	Username string `json:"username"`
 	Score    string `json:"score"`
