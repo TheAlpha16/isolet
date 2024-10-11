@@ -1,304 +1,284 @@
 [
     {
-        "chall_name": "Innovative 24hour Local Area Network",
-        "category": "networking",
-        "prompt": "Whom seat trouble he billion end store. Plan he laugh difference long.",
-        "flag": "NG3o8Vi%(+H#",
-        "type": "static",
-        "points": 458,
-        "author": "josephwilliam",
-        "requirements": [],
-        "files": [
-            "least.txt"
-        ],
-        "tags": [
-            "community"
-        ]
-    },
-    {
-        "chall_name": "Phased disintermediate open architecture",
-        "category": "stego",
-        "prompt": "Born maybe investment foreign choose. Ten score culture when.",
-        "flag": "RclET!)e#L5(",
-        "type": "dynamic",
-        "points": 193,
-        "author": "christina55",
-        "requirements": [
-            "Innovative 24hour Local Area Network"
-        ],
-        "hints": [
-            {
-                "hint": "Subject foot baby wall reflect red listen.",
-                "cost": 19,
-                "visible": true
-            }
-        ],
-        "files": [
-            "head.txt",
-            "myself.txt"
-        ],
-        "tags": [
-            "if"
-        ],
-        "port": 38429,
-        "subd": "wood",
-        "cpu": 2,
-        "mem": 2,
-        "image": "bradshaw",
-        "registry": "http://jackson.net/",
-        "deployment": "http"
-    },
-    {
-        "chall_name": "Focused 5thgeneration website",
-        "category": "hardware",
-        "prompt": "Three case try instead develop performance certain. Recently west push lay system. Meeting hear claim process family chance us.",
-        "flag": "7hXsUydA%$wt",
-        "type": "on-demand",
-        "points": 469,
-        "author": "cynthiajarvis",
-        "requirements": [
-            "Innovative 24hour Local Area Network",
-            "Phased disintermediate open architecture"
-        ],
-        "hints": [
-            {
-                "hint": "Discuss notice cut morning give call weight.",
-                "cost": 178,
-                "visible": false
-            }
-        ],
-        "files": [
-            "just.txt"
-        ],
-        "tags": [
-            "science"
-        ],
-        "port": 33874,
-        "subd": "smith-williams",
-        "cpu": 7,
-        "mem": 12,
-        "image": "day",
-        "registry": "http://wilson.com/",
-        "deployment": "http"
-    },
-    {
-        "chall_name": "Devolved holistic groupware",
-        "category": "osint",
-        "prompt": "Strong party protect experience crime. Market without war common as ready six.",
-        "flag": "_^()bOK)Bi1S",
-        "type": "static",
-        "points": 412,
-        "author": "walkerkristin",
-        "requirements": [],
-        "hints": [
-            {
-                "hint": "Firm report speak trip meet set scientist.",
-                "cost": 263,
-                "visible": true
-            },
-            {
-                "hint": "Subject she treat president his.",
-                "cost": 373,
-                "visible": true
-            }
-        ],
-        "tags": [
-            "rock",
-            "law"
-        ]
-    },
-    {
-        "chall_name": "Up-sized human-resource forecast",
+        "chall_name": "Ameliorated systematic task-force",
         "category": "web",
-        "prompt": "Wall authority somebody century guy they spend send. Experience live every church as. Nice wife unit suffer short decide.",
-        "flag": "LLi$Bf5wL@fi",
+        "prompt": "Do discussion tonight just. Which effect affect citizen interesting PM.",
+        "flag": "kG9r&3Un#oHn",
         "type": "static",
-        "points": 109,
-        "author": "rodriguezjohn",
-        "requirements": [
-            "Phased disintermediate open architecture"
-        ],
+        "points": 243,
+        "author": "ashley15",
+        "requirements": [],
         "hints": [
             {
-                "hint": "Continue wall their understand.",
-                "cost": 117,
-                "visible": false
-            },
-            {
-                "hint": "Hotel him arm create design writer.",
-                "cost": 469,
+                "hint": "Lot parent or.",
+                "cost": 280,
                 "visible": true
             }
         ],
-        "files": [
-            "film.txt"
-        ],
         "tags": [
-            "risk"
-        ],
-        "links": [
-            "https://peters.net/"
+            "official",
+            "clearly",
+            "society"
         ]
     },
     {
-        "chall_name": "Triple-buffered discrete parallelism",
-        "category": "crypto",
-        "prompt": "Market trade able become true mouth relate present. Ever mother above.",
-        "flag": "%6n4oOvx4uVD",
-        "type": "static",
-        "points": 467,
-        "author": "sara23",
+        "chall_name": "Mandatory object-oriented budgetary management",
+        "category": "osint",
+        "prompt": "Seem man maybe staff top Democrat. Cost away always measure. After college cost class say computer.",
+        "flag": "Ln6*UoxGQ4!0",
+        "type": "on-demand",
+        "points": 228,
+        "author": "smithjennifer",
         "requirements": [
-            "Innovative 24hour Local Area Network"
+            "Ameliorated systematic task-force"
         ],
         "hints": [
             {
-                "hint": "Effect professional ball citizen not.",
-                "cost": 156,
-                "visible": false
+                "hint": "Bag deep mouth Democrat.",
+                "cost": 47,
+                "visible": true
             }
         ],
-        "files": [
-            "majority.txt",
-            "list.txt"
-        ]
+        "tags": [
+            "establish"
+        ],
+        "port": 57908,
+        "subd": "ingram",
+        "cpu": 6,
+        "mem": 8,
+        "image": "strickland",
+        "registry": "https://garcia-martinez.com/",
+        "deployment": "http"
     },
     {
-        "chall_name": "Universal empowering interface",
-        "category": "crypto",
-        "prompt": "Exist management job tree reduce worker. Senior letter article.",
-        "flag": "_5rQe(VGx)92",
+        "chall_name": "Integrated bifurcated budgetary management",
+        "category": "reversing",
+        "prompt": "Each election condition design above miss budget happy. Administration when important particularly woman.",
+        "flag": "43fKv%IA+J3t",
         "type": "static",
-        "points": 135,
-        "author": "nicole43",
+        "points": 434,
+        "author": "michael36",
         "requirements": [
-            "Innovative 24hour Local Area Network",
-            "Up-sized human-resource forecast"
+            "Mandatory object-oriented budgetary management",
+            "Ameliorated systematic task-force"
         ],
         "hints": [
             {
-                "hint": "Film floor tell minute.",
+                "hint": "Price skill responsibility various mother trip.",
+                "cost": 100,
+                "visible": false
+            },
+            {
+                "hint": "Amount thought over happy involve stop.",
+                "cost": 203,
+                "visible": true
+            }
+        ],
+        "tags": [
+            "skin"
+        ]
+    },
+    {
+        "chall_name": "Programmable high-level array",
+        "category": "mobile",
+        "prompt": "One respond suffer decision one born.",
+        "flag": "1ch*Ql6l+3Iv",
+        "type": "on-demand",
+        "points": 494,
+        "author": "matthewaustin",
+        "requirements": [
+            "Mandatory object-oriented budgetary management",
+            "Integrated bifurcated budgetary management"
+        ],
+        "hints": [
+            {
+                "hint": "Admit live response culture school including.",
+                "cost": 421,
+                "visible": false
+            },
+            {
+                "hint": "Specific left feeling night.",
                 "cost": 486,
                 "visible": false
+            }
+        ],
+        "files": [
+            "she.txt"
+        ],
+        "port": 56335,
+        "subd": "wright-rogers",
+        "cpu": 4,
+        "mem": 15,
+        "image": "harris",
+        "registry": "http://www.lopez-thomas.org/",
+        "deployment": "nc"
+    },
+    {
+        "chall_name": "Monitored zero-defect customer loyalty",
+        "category": "blockchain",
+        "prompt": "Beyond reveal beautiful top. Various fear fear onto.",
+        "flag": "(il8tByl8g8k",
+        "type": "dynamic",
+        "points": 133,
+        "author": "gregory61",
+        "requirements": [
+            "Programmable high-level array"
+        ],
+        "hints": [
+            {
+                "hint": "Improve kitchen type along.",
+                "cost": 292,
+                "visible": false
             },
             {
-                "hint": "Beat customer wide shoulder.",
-                "cost": 60,
+                "hint": "Tax bring operation recent like choice heart.",
+                "cost": 20,
                 "visible": true
             }
         ],
         "files": [
-            "another.txt",
-            "late.txt"
+            "report.txt",
+            "great.txt"
         ],
         "tags": [
-            "hear",
-            "check"
-        ]
-    },
-    {
-        "chall_name": "Reactive empowering array",
-        "category": "iot",
-        "prompt": "Teacher difficult black west.",
-        "flag": "YL4_ffim0q5K",
-        "type": "dynamic",
-        "points": 218,
-        "author": "john57",
-        "requirements": [
-            "Devolved holistic groupware",
-            "Focused 5thgeneration website"
+            "child",
+            "data"
         ],
-        "hints": [
-            {
-                "hint": "Site get trouble social.",
-                "cost": 190,
-                "visible": true
-            },
-            {
-                "hint": "Special address impact result.",
-                "cost": 70,
-                "visible": true
-            }
-        ],
-        "tags": [
-            "minute",
-            "throw"
-        ],
-        "port": 44535,
-        "subd": "stevens",
-        "cpu": 5,
-        "mem": 16,
-        "image": "marks-coleman",
-        "registry": "https://www.walker.org/",
+        "port": 43796,
+        "subd": "brown",
+        "cpu": 4,
+        "mem": 8,
+        "image": "foster",
+        "registry": "http://www.morton.com/",
         "deployment": "ssh"
     },
     {
-        "chall_name": "Digitized disintermediate hub",
+        "chall_name": "Distributed bandwidth-monitored attitude",
         "category": "osint",
-        "prompt": "Nature cost cost too type could.",
-        "flag": "t5!yOHIa@2%l",
-        "type": "dynamic",
-        "points": 100,
-        "author": "katherinemiller",
+        "prompt": "Purpose practice soldier stop cold have. Toward level force do politics less. School before wear social back strong.",
+        "flag": "%iQKY*Lmfn$1",
+        "type": "static",
+        "points": 144,
+        "author": "mercerandrew",
         "requirements": [
-            "Up-sized human-resource forecast"
+            "Mandatory object-oriented budgetary management"
         ],
         "hints": [
             {
-                "hint": "War government doctor kitchen remain thank perform.",
-                "cost": 46,
+                "hint": "Development section glass throw wife someone.",
+                "cost": 62,
+                "visible": false
+            },
+            {
+                "hint": "Close able bill manage dark attention professor.",
+                "cost": 233,
                 "visible": true
             }
         ],
         "files": [
-            "trouble.txt",
-            "garden.txt"
+            "wish.txt"
         ],
-        "port": 80,
-        "subd": "wilkinson",
-        "cpu": 3,
-        "mem": 10,
-        "image": "spears",
-        "registry": "http://greene.com/",
-        "deployment": "http"
+        "tags": [
+            "effort"
+        ]
     },
     {
-        "chall_name": "Expanded content-based methodology",
+        "chall_name": "Down-sized even-keeled Internet solution",
         "category": "stego",
-        "prompt": "Be successful speak system bit security everything. Certainly summer baby financial top.",
-        "flag": "@Cu96sBl^mc$",
-        "type": "dynamic",
-        "points": 228,
-        "author": "jamie35",
+        "prompt": "Form everyone within deep to enter. Low make area discuss child. Develop could soldier interview key heart.",
+        "flag": "(KuYN7oZf8G7",
+        "type": "static",
+        "points": 450,
+        "author": "douglasmiller",
         "requirements": [
-            "Triple-buffered discrete parallelism"
+            "Distributed bandwidth-monitored attitude",
+            "Programmable high-level array"
         ],
         "hints": [
             {
-                "hint": "Into career commercial.",
-                "cost": 267,
-                "visible": true
-            },
-            {
-                "hint": "Fear rock station up push tend.",
-                "cost": 231,
+                "hint": "Action order hold could director.",
+                "cost": 215,
                 "visible": false
             }
         ],
         "files": [
-            "herself.txt",
-            "standard.txt"
+            "experience.txt"
         ],
         "tags": [
-            "fear",
-            "number"
+            "doctor",
+            "form",
+            "region"
+        ]
+    },
+    {
+        "chall_name": "Multi-tiered mission-critical architecture",
+        "category": "reversing",
+        "prompt": "Own general spend sit common might organization. Attention new international all line. Think as agent country.",
+        "flag": "Iw6e+MoH%4&)",
+        "type": "on-demand",
+        "points": 483,
+        "author": "myerscody",
+        "requirements": [],
+        "tags": [
+            "car"
         ],
-        "port": 26684,
-        "subd": "lam",
-        "cpu": 8,
-        "mem": 7,
-        "image": "rodriguez",
-        "registry": "http://bullock-mata.com/",
+        "links": [
+            "https://www.ponce-powell.com/",
+            "http://www.stone-pace.com/",
+            "https://www.cunningham-hunt.net/"
+        ],
+        "port": 21729,
+        "subd": "rhodes",
+        "cpu": 2,
+        "mem": 10,
+        "image": "mcfarland",
+        "registry": "http://white.com/",
+        "deployment": "http"
+    },
+    {
+        "chall_name": "Cross-platform client-server firmware",
+        "category": "blockchain",
+        "prompt": "Small true heavy once. Material always several.",
+        "flag": "!7DI#yia0Kb%",
+        "type": "dynamic",
+        "points": 488,
+        "author": "xbrooks",
+        "requirements": [],
+        "tags": [
+            "investment",
+            "church"
+        ],
+        "port": 53581,
+        "subd": "barrett",
+        "cpu": 7,
+        "mem": 5,
+        "image": "williams",
+        "registry": "https://www.gonzalez.com/",
         "deployment": "nc"
+    },
+    {
+        "chall_name": "Versatile real-time focus group",
+        "category": "forensics",
+        "prompt": "Suffer kitchen quickly still rather something product get. Pick break mouth.",
+        "flag": "7rdfVUmO_nH@",
+        "type": "static",
+        "points": 229,
+        "author": "brittanysanchez",
+        "requirements": [],
+        "hints": [
+            {
+                "hint": "None let democratic middle.",
+                "cost": 465,
+                "visible": false
+            },
+            {
+                "hint": "Democratic rest thought.",
+                "cost": 408,
+                "visible": false
+            }
+        ],
+        "files": [
+            "also.txt"
+        ]
     }
 ]
