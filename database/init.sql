@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS teams(
     captain bigint NOT NULL REFERENCES users(userid),
     members bigint[] NOT NULL DEFAULT '{}',
     password VARCHAR(100) NOT NULL,
-    solved text[] DEFAULT ARRAY[]::text[],
+    solved int[] DEFAULT '{}',
     uhints int[] DEFAULT '{}'
 );
 
@@ -44,19 +44,6 @@ CREATE TRIGGER add_captain_to_members_trigger
 BEFORE INSERT ON teams
 FOR EACH ROW
 EXECUTE FUNCTION add_captain_to_members();
-
--- Create flags table
-CREATE TABLE IF NOT EXISTS flags(
-    flagid bigserial,
-    teamid bigint NOT NULL REFERENCES teams(teamid),
-    chall_id integer NOT NULL REFERENCES challenges(chall_id),
-    password text,
-    flag text NOT NULL,
-    port integer,
-    hostname text,
-    deadline bigint DEFAULT 2526249600,
-    extended integer DEFAULT 1
-);
 
 -- Create toverify table
 CREATE TABLE IF NOT EXISTS toverify(
@@ -92,13 +79,26 @@ CREATE TABLE IF NOT EXISTS challenges(
     type chall_type NOT NULL DEFAULT 'static',
     points integer NOT NULL DEFAULT 100,
     files text[] DEFAULT ARRAY[]::text[],
-    requirements text[] DEFAULT ARRAY[]::text[],
+    requirements int[] DEFAULT '{}',
     hints int[] NOT NULL DEFAULT '{}',
     solves integer DEFAULT 0,
     author text DEFAULT 'anonymous',
     visible boolean DEFAULT false,
     tags text[] DEFAULT ARRAY[]::text[],
     links text[] DEFAULT ARRAY[]::text[]
+);
+
+-- Create flags table
+CREATE TABLE IF NOT EXISTS flags(
+    flagid bigserial,
+    teamid bigint NOT NULL REFERENCES teams(teamid),
+    chall_id integer NOT NULL REFERENCES challenges(chall_id),
+    password text,
+    flag text NOT NULL,
+    port integer,
+    hostname text,
+    deadline bigint DEFAULT 2526249600,
+    extended integer DEFAULT 1
 );
 
 -- Create sublogs table
@@ -155,7 +155,7 @@ CREATE OR REPLACE FUNCTION enforce_instance_count() RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    max_instance_count INTEGER := 5; -- Replace with your value from config
+    max_instance_count INTEGER := 2; 
     instance_count INTEGER := 0;
     must_check BOOLEAN := false;
 BEGIN
@@ -165,14 +165,14 @@ BEGIN
 
     IF must_check THEN
         -- prevent concurrent inserts from multiple transactions
-        LOCK TABLE running IN EXCLUSIVE MODE;
+        LOCK TABLE flags IN EXCLUSIVE MODE;
 
         SELECT INTO instance_count COUNT(*) 
-        FROM running 
-        WHERE userid = NEW.userid;
+        FROM flags 
+        WHERE teamid = NEW.teamid;
 
-        IF instance_count >= max_instance_count THEN
-            RAISE EXCEPTION 'Cannot start more instances for the user.';
+        IF instance_count > max_instance_count THEN
+            RAISE EXCEPTION 'Cannot start more instances for the team.';
         END IF;
     END IF;
 
@@ -182,5 +182,5 @@ $$;
 
 -- Trigger to enforce instance count
 CREATE OR REPLACE TRIGGER enforce_instance_count_trigger
-BEFORE INSERT ON running
+BEFORE INSERT ON flags
 FOR EACH ROW EXECUTE PROCEDURE enforce_instance_count();
