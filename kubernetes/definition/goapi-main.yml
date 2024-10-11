@@ -70,11 +70,6 @@ spec:
                 configMapKeyRef:
                   name: app-config
                   key: concurrent_instances
-            - name: DISCORD_FRONTEND
-              valueFrom:
-                configMapKeyRef:
-                  name: app-config
-                  key: discord_frontend
             - name: CTF_NAME
               valueFrom:
                 configMapKeyRef:

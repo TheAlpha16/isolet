@@ -5,7 +5,6 @@ import (
 	"errors"
 	// "fmt"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/TheAlpha16/isolet/api/models"
@@ -96,27 +95,6 @@ func AddToUsers(c *fiber.Ctx, email string) (string, error) {
 	}
 
 	_ = db.Where("email = ?", toVerifyData.Email).Delete(&models.ToVerify{}).Error
-
-	return "", nil
-}
-
-func AddToUsersDiscord(c *fiber.Ctx, userid int) (string, error) {
-	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
-	defer cancel()
-
-	db := DB.WithContext(ctx)
-
-	userData := models.User{
-		UserID:   uint(userid),
-		Email:    strconv.Itoa(userid),
-		Username: strconv.Itoa(userid),
-		Password: GenerateRandom(),
-	}
-
-	if err := db.Create(&userData).Error; err != nil {
-		log.Println(err.Error())
-		return "error in creating user, please contact admin", err
-	}
 
 	return "", nil
 }

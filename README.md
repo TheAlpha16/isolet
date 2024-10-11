@@ -177,11 +177,6 @@ You can customize the application using environment variables passed to the depl
 > [!important]
 > If you specify your prefix to be `docker.io/thealpha16/` the final image path for level 1 will be `docker.io/thealpha16/level1`
 
-- `DISCORD_FRONTEND` Boolean to determine whether API needs `/auth` routes to be setup. If it is true, API will not authenticate the request.
-
-> [!warning]
-> This option should be used only when the API is not exposed to the public and the request is being forwarded by some other application which is properly authenticating
-
 - `KUBECONFIG_FILE_PATH` Path to the kubernetes config file to access cluster from outside
 
 > [!note]

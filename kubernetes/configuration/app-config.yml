@@ -6,7 +6,6 @@ data:
   instance_namespace: "isolet"
   image_registry_prefix: "docker.io/thealpha16/unixit-"
   concurrent_instances: "2"
-  discord_frontend: "false"
   ctf_name: "unixit"
   app_port: "80"
   kubeconfig_file_path: "/root/.kube/config"
