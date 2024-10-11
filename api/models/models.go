@@ -86,14 +86,16 @@ type Team struct {
 	UHints   pq.Int64Array  `gorm:"type:integer[];column:uhints" json:"uhints"`
 }
 
-type Instance struct {
-	UserID   int    `json:"userid"`
-	Level    int    `json:"level"`
-	Password string `json:"password"`
-	Port     string `json:"port"`
-	Verified bool   `json:"verified"`
-	Hostname string `json:"hostname"`
-	Deadline int64  `json:"deadline"`
+type Flag struct {
+	FlagID int    `gorm:"primaryKey;autoIncrement;column:flagid" json:"-"`
+	TeamID int    `gorm:"not null;column:teamid" json:"-"`
+	ChallID int    `gorm:"not null;column:chall_id" json:"chall_id"`
+	Flag   string `gorm:"not null" json:"-"`
+	Password string `gorm:"type:text" json:"password"`
+	Port int `gorm:"type:integer" json:"port"`
+	Hostname string `gorm:"type:text" json:"hostname"`
+	Deadline int64 `gorm:"type:integer" json:"deadline"`
+	Extended int `gorm:"type:integer;default:1" json:"-"`
 }
 
 type Score struct {
@@ -114,8 +116,4 @@ type ExtendDeadline struct {
 
 func (ToVerify) TableName() string {
 	return "toverify"
-}
-
-func (Instance) TableName() string {
-	return "flags"
 }
