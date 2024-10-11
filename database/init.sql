@@ -48,22 +48,15 @@ EXECUTE FUNCTION add_captain_to_members();
 -- Create flags table
 CREATE TABLE IF NOT EXISTS flags(
     flagid bigserial,
-    userid bigint NOT NULL REFERENCES users(userid),
-    level integer,
+    teamid bigint NOT NULL REFERENCES teams(teamid),
+    chall_id integer NOT NULL REFERENCES challenges(chall_id),
     password text,
     flag text NOT NULL,
-    port integer NOT NULL,
+    port integer,
     verified boolean DEFAULT false,
     hostname text,
     deadline bigint DEFAULT 2526249600,
     extended integer DEFAULT 1
-);
-
--- Create running instances table
-CREATE TABLE IF NOT EXISTS running(
-    runid bigserial,
-    userid bigint NOT NULL REFERENCES users(userid),
-    level integer
 );
 
 -- Create toverify table
