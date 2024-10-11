@@ -36,11 +36,11 @@ type Challenge struct {
 	Prompt       string         `gorm:"type:text" json:"prompt"`
 	Category     Category       `gorm:"foreignKey:CategoryID;references:CategoryID" json:"-"`
 	CategoryID   int            `gorm:"not null;column:category_id" json:"-"`
-	Flag         string         `gorm:"-" json:"-"`
+	Flag         string         `gorm:"type:text" json:"-"`
 	Type         string         `gorm:"type:chall_type;default:static" json:"type"`
 	Points       int            `gorm:"not null;default:100" json:"points"`
 	Files        pq.StringArray `gorm:"type:text[]" json:"files"`
-	Requirements pq.StringArray `gorm:"type:text[]" json:"-"`
+	Requirements pq.Int64Array  `gorm:"type:integer[]" json:"-"`
 	Hints        []Hint         `gorm:"foreignKey:ChallID" json:"hints"`
 	Solves       int            `gorm:"default:0" json:"solves"`
 	Author       string         `gorm:"default:anonymous" json:"author"`
@@ -77,13 +77,13 @@ type Category struct {
 }
 
 type Team struct {
-	TeamID   int64          `gorm:"primaryKey;autoIncrement;column:teamid" json:"teamid"`
-	TeamName string         `gorm:"unique;not null;column:teamname" json:"teamname"`
-	Captain  int64          `gorm:"not null" json:"captain"`
-	Members  pq.Int64Array  `gorm:"type:integer[]" json:"members"`
-	Password string         `gorm:"not null" json:"password"`
-	Solved   pq.StringArray `gorm:"type:text[]" json:"solved"`
-	UHints   pq.Int64Array  `gorm:"type:integer[];column:uhints" json:"uhints"`
+	TeamID   int64         `gorm:"primaryKey;autoIncrement;column:teamid" json:"teamid"`
+	TeamName string        `gorm:"unique;not null;column:teamname" json:"teamname"`
+	Captain  int64         `gorm:"not null" json:"captain"`
+	Members  pq.Int64Array `gorm:"type:integer[]" json:"members"`
+	Password string        `gorm:"not null" json:"password"`
+	Solved   pq.Int64Array `gorm:"type:integer[]" json:"solved"`
+	UHints   pq.Int64Array `gorm:"type:integer[];column:uhints" json:"uhints"`
 }
 
 type Flag struct {
@@ -106,7 +106,7 @@ type Sublog struct {
 	Flag    string    `gorm:"not null" json:"flag"`
 	Correct bool      `gorm:"not null" json:"correct"`
 	IP      string    `gorm:"not null;column:ip" json:"-"`
-	SubTime time.Time `gorm:"not null;default:CURRENT_TIMESTAMP" json:"subtime"`
+	SubTime time.Time `gorm:"not null;default:CURRENT_TIMESTAMP;column:subtime" json:"subtime"`
 }
 
 type Score struct {

@@ -41,11 +41,10 @@ class Flag(Base):
     
     flagid = Column(BigInteger, primary_key=True, autoincrement=True)
     userid = Column(BigInteger, ForeignKey('users.userid'), nullable=False)
-    level = Column(Integer)
+    teamid = Column(BigInteger, ForeignKey('teamd.teamid'), nullable=False)
     password = Column(Text)
     flag = Column(Text, nullable=False)
-    port = Column(Integer, nullable=False)
-    verified = Column(Boolean, default=False)
+    port = Column(Integer)
     hostname = Column(Text)
     deadline = Column(Integer, default=2526249600)
     extended = Column(Integer, default=1)
@@ -61,13 +60,6 @@ class Sublog(Base):
     correct = Column(Boolean, nullable=False)
     ip = Column(INET, nullable=False)
     subtime = Column(TIMESTAMP, default='NOW()')
-
-class Running(Base):
-    __tablename__ = 'running'
-    
-    runid = Column(BigInteger, primary_key=True, autoincrement=True)
-    userid = Column(BigInteger, ForeignKey('users.userid'), nullable=False)
-    level = Column(Integer)
 
 class ToVerify(Base):
     __tablename__ = 'toverify'
@@ -89,7 +81,7 @@ class Challenge(Base):
     type = Column(chall_type_enum, nullable=False, default='static')
     points = Column(Integer, default=100)
     files = Column(ARRAY(Text), default=[])
-    requirements = Column(ARRAY(Text), default=[])
+    requirements = Column(ARRAY(Integer), default=[])
     hints = Column(ARRAY(BigInteger), default=[])
     solves = Column(Integer, default=0)
     author = Column(Text, default='anonymous')
@@ -109,7 +101,7 @@ class Hint(Base):
 class Image(Base):
     __tablename__ = 'images'
     
-    iid = Column(BigInteger, primary_key=True, autoincrement=True)
+    iid = Column(Integer, primary_key=True, autoincrement=True)
     chall_id = Column(Integer, ForeignKey('challenges.chall_id'), nullable=False)
     registry = Column(Text, nullable=False)
     image = Column(Text, nullable=False)
@@ -172,6 +164,16 @@ class Database:
 
         image = kwargs.get("image_metadata", {})
         del kwargs["image_metadata"]
+
+        # replace requirements with their ids
+        requirements = kwargs.get("requirements", [])
+        kwargs["requirements"] = []
+
+        for requirement in requirements:
+            requirement_id = self.session.query(Challenge).filter_by(chall_name=requirement).first()
+            if not requirement_id:
+                raise ValueError(f"Requirement {requirement} does not exist for {kwargs['chall_name']}")
+            kwargs["requirements"].append(requirement_id.chall_id)
 
         challenge = self.session.query(Challenge).filter_by(chall_name=kwargs["chall_name"]).first()
         if not challenge:

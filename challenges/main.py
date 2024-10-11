@@ -127,7 +127,30 @@ class Challenge:
 
 def main():
     challenges = json.loads(open('challs.json', 'r').read())
-    for challenge in challenges:
+    final_challenges = []
+    got_till_now = []
+    processed = True
+
+    while len(final_challenges) < len(challenges):
+        if not processed:
+            raise ValueError("Circular dependency detected, check requirements")
+        
+        processed = False
+        for challenge in challenges:
+            if challenge["chall_name"] in got_till_now:
+                continue
+
+            if not challenge["requirements"]:
+                processed = True
+                final_challenges.append(challenge)
+                got_till_now.append(challenge["chall_name"])
+            else:
+                if all([req in got_till_now for req in challenge["requirements"]]):
+                    processed = True
+                    final_challenges.append(challenge)
+                    got_till_now.append(challenge["chall_name"])
+
+    for challenge in final_challenges:
         Challenge(**challenge).create()
 
 if __name__ == "__main__":
