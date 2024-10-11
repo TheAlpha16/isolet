@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/TheAlpha16/isolet/api/config"
+	"github.com/TheAlpha16/isolet/api/database"
 	"github.com/TheAlpha16/isolet/api/models"
 
 	jwtware "github.com/gofiber/contrib/jwt"
@@ -22,13 +23,19 @@ func CheckToken() fiber.Handler {
 
 			user := c.Locals("user").(*jwt.Token)
 			claims := user.Claims.(jwt.MapClaims)
-			teamid := int(claims["teamid"].(float64))
+			userid := int64(claims["userid"].(float64))
+			teamid := int64(claims["teamid"].(float64))
 
-			if teamid != -1 {
+			if !database.UserExists(c, userid) {
+				c.ClearCookie("token")
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "user does not exist"})
+			}
+
+			if database.TeamExists(c, teamid) {
 				return c.Next()
 			}
 
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "please create or join a team"})
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "team does not exist"})
 		},
 
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
@@ -49,7 +56,13 @@ func CheckOnBoardToken() fiber.Handler {
 
 			user := c.Locals("user").(*jwt.Token)
 			claims := user.Claims.(jwt.MapClaims)
-			teamid := int(claims["teamid"].(float64))
+			userid := int64(claims["userid"].(float64))
+			teamid := int64(claims["teamid"].(float64))
+
+			if !database.UserExists(c, userid) {
+				c.ClearCookie("token")
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "user does not exist"})
+			}
 
 			if teamid == -1 {
 				return c.Next()
