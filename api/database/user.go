@@ -110,7 +110,7 @@ func UserExists(c *fiber.Ctx, userid int64) bool {
 		if err == gorm.ErrRecordNotFound {
 			return false
 		}
-		// Handle other possible errors here if necessary
+
 		return false
 	}
 
