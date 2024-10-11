@@ -48,6 +48,7 @@ type Challenge struct {
 	Tags         pq.StringArray `gorm:"type:text[]" json:"tags"`
 	Links        pq.StringArray `gorm:"type:text[]" json:"links"`
 	Done         bool           `gorm:"-" json:"done"`
+	FlagID       int            `gorm:"-" json:"-"`
 }
 
 type Image struct {
