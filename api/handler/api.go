@@ -1,21 +1,14 @@
 package handler
 
 import (
-	// "encoding/json"
-	"strconv"
-	// "fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/TheAlpha16/isolet/api/database"
-	"github.com/golang-jwt/jwt/v5"
-
-	// "github.com/TheAlpha16/isolet/api/utils"
-
-	// "github.com/TheAlpha16/isolet/api/deployment"
-	// "github.com/TheAlpha16/isolet/api/models"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 

@@ -1,12 +1,11 @@
 package database
 
 import (
-	"context"
-	"errors"
 	"log"
 	"time"
+	"context"
+	"errors"
 
-	// "github.com/TheAlpha16/isolet/api/config"
 	"github.com/TheAlpha16/isolet/api/models"
 
 	"github.com/gofiber/fiber/v2"
