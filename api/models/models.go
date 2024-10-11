@@ -8,16 +8,16 @@ import (
 )
 
 type User struct {
-	UserID   uint   `gorm:"primaryKey;autoIncrement;column:userid" json:"userid"`
+	UserID   int64  `gorm:"primaryKey;autoIncrement;column:userid" json:"userid"`
 	Email    string `gorm:"unique;not null" json:"email" form:"email"`
 	Username string `gorm:"unique;not null" json:"username" form:"username"`
 	Password string `gorm:"not null" json:"password" form:"password"`
 	Rank     int    `gorm:"default:3" json:"rank"`
-	TeamID   int    `gorm:"default:-1;column:teamid" json:"teamid"`
+	TeamID   int64  `gorm:"default:-1;column:teamid" json:"teamid"`
 }
 
 type ToVerify struct {
-	VID       uint      `gorm:"primaryKey;autoIncrement;column:vid" json:"vid"`
+	VID       int64     `gorm:"primaryKey;autoIncrement;column:vid" json:"vid"`
 	Email     string    `gorm:"unique;not null" json:"email" form:"email"`
 	Username  string    `gorm:"unique;not null" json:"username" form:"username"`
 	Password  string    `gorm:"not null" json:"password" form:"password"`
@@ -48,7 +48,6 @@ type Challenge struct {
 	Tags         pq.StringArray `gorm:"type:text[]" json:"tags"`
 	Links        pq.StringArray `gorm:"type:text[]" json:"links"`
 	Done         bool           `gorm:"-" json:"done"`
-	FlagID       int            `gorm:"-" json:"-"`
 }
 
 type Image struct {
@@ -78,9 +77,9 @@ type Category struct {
 }
 
 type Team struct {
-	TeamID   int            `gorm:"primaryKey;autoIncrement;column:teamid" json:"teamid"`
+	TeamID   int64          `gorm:"primaryKey;autoIncrement;column:teamid" json:"teamid"`
 	TeamName string         `gorm:"unique;not null;column:teamname" json:"teamname"`
-	Captain  int            `gorm:"not null" json:"captain"`
+	Captain  int64          `gorm:"not null" json:"captain"`
 	Members  pq.Int64Array  `gorm:"type:integer[]" json:"members"`
 	Password string         `gorm:"not null" json:"password"`
 	Solved   pq.StringArray `gorm:"type:text[]" json:"solved"`
@@ -88,15 +87,15 @@ type Team struct {
 }
 
 type Flag struct {
-	FlagID int    `gorm:"primaryKey;autoIncrement;column:flagid" json:"-"`
-	TeamID int    `gorm:"not null;column:teamid" json:"-"`
-	ChallID int    `gorm:"not null;column:chall_id" json:"chall_id"`
-	Flag   string `gorm:"not null" json:"-"`
+	FlagID   int64  `gorm:"primaryKey;autoIncrement;column:flagid" json:"-"`
+	TeamID   int64  `gorm:"not null;column:teamid" json:"-"`
+	ChallID  int    `gorm:"not null;column:chall_id" json:"chall_id"`
+	Flag     string `gorm:"not null" json:"-"`
 	Password string `gorm:"type:text" json:"password"`
-	Port int `gorm:"type:integer" json:"port"`
+	Port     int    `gorm:"type:integer" json:"port"`
 	Hostname string `gorm:"type:text" json:"hostname"`
-	Deadline int64 `gorm:"type:integer" json:"deadline"`
-	Extended int `gorm:"type:integer;default:1" json:"-"`
+	Deadline int64  `gorm:"type:integer" json:"deadline"`
+	Extended int    `gorm:"type:integer;default:1" json:"-"`
 }
 
 type Score struct {
