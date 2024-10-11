@@ -9,6 +9,7 @@ import (
 
 func SetupRoutes(app *fiber.App) {
 	app.Get("/ping", handler.Ping)
+	app.Use(middleware.ResolveIP())
 
 	auth := app.Group("/auth")
 	auth.Post("/login", handler.Login)
@@ -23,7 +24,7 @@ func SetupRoutes(app *fiber.App) {
 	api.Get("/challs", handler.GetChalls)
 	// api.Post("/launch", handler.StartInstance)
 	// api.Post("/stop", handler.StopInstance)
-	// api.Post("/submit", handler.SubmitFlag)
+	api.Post("/submit", handler.SubmitFlag)
 	api.Get("/status", handler.GetStatus)
 	// api.Get("/scoreboard", handler.ShowScoreBoard)
 	// api.Post("/extend", handler.ExtendTime)
