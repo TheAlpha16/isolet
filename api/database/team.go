@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func TeamExists(teamid int) bool {
+func TeamExists(teamid int64) bool {
 	var team models.Team
 	if err := DB.Where("teamid = ?", teamid).First(&team).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -72,7 +72,7 @@ func AuthenticateTeam(c *fiber.Ctx, team *models.Team) error {
 	return nil
 }
 
-func JoinTeam(c *fiber.Ctx, teamname string, userid int) error {
+func JoinTeam(c *fiber.Ctx, teamname string, userid int64) error {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 

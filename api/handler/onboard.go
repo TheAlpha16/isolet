@@ -16,7 +16,7 @@ import (
 
 
 func CreateTeam(c *fiber.Ctx) error {
-	var userid int
+	var userid int64
 	var teamid int
 	var email string
 	var rank int
@@ -24,7 +24,7 @@ func CreateTeam(c *fiber.Ctx) error {
 	user := new(models.User)
 
 	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
-	userid = int(claims["userid"].(float64))
+	userid = int64(claims["userid"].(float64))
 	email = claims["email"].(string)
 	teamid = int(claims["teamid"].(float64))
 	rank = int(claims["rank"].(float64))
@@ -60,7 +60,7 @@ func CreateTeam(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in creating team, contact admin"})
 	}
 
-	user.UserID = uint(userid)
+	user.UserID = int64(userid)
 	user.Email = email
 	user.Rank = rank
 	user.TeamID = team.TeamID
@@ -82,17 +82,17 @@ func CreateTeam(c *fiber.Ctx) error {
 }
 
 func JoinTeam(c *fiber.Ctx) error {
-	var userid int
-	var teamid int
+	var userid int64
+	var teamid int64
 	var email string
 	var rank int
 	team := new(models.Team)
 	user := new(models.User)
 
 	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
-	userid = int(claims["userid"].(float64))
+	userid = int64(claims["userid"].(float64))
 	email = claims["email"].(string)
-	teamid = int(claims["teamid"].(float64))
+	teamid = int64(claims["teamid"].(float64))
 	rank = int(claims["rank"].(float64))
 
 	if teamid != -1 || database.UserInTeam(c, userid) {
@@ -120,7 +120,7 @@ func JoinTeam(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": err.Error()})
 	}
 
-	user.UserID = uint(userid)
+	user.UserID = int64(userid)
 	user.Email = email
 	user.Rank = rank
 	user.TeamID = team.TeamID

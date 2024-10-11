@@ -99,7 +99,7 @@ func AddToUsers(c *fiber.Ctx, email string) (string, error) {
 	return "", nil
 }
 
-func UserExists(c *fiber.Ctx, userid int) bool {
+func UserExists(c *fiber.Ctx, userid int64) bool {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
@@ -117,7 +117,7 @@ func UserExists(c *fiber.Ctx, userid int) bool {
 	return true
 }
 
-func UserInTeam(c *fiber.Ctx, userid int) bool {
+func UserInTeam(c *fiber.Ctx, userid int64) bool {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
@@ -131,7 +131,7 @@ func UserInTeam(c *fiber.Ctx, userid int) bool {
 	return user.TeamID != -1
 }
 
-func UpdateUserTeam(c *fiber.Ctx, userid int, teamid int) error {
+func UpdateUserTeam(c *fiber.Ctx, userid int64, teamid int64) error {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
