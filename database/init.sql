@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS challenges(
     points integer NOT NULL DEFAULT 100,
     files text[] DEFAULT ARRAY[]::text[],
     requirements text[] DEFAULT ARRAY[]::text[],
-    hints bigint[] NOT NULL DEFAULT '{}',
+    hints int[] NOT NULL DEFAULT '{}',
     solves integer DEFAULT 0,
     author text DEFAULT 'anonymous',
     visible boolean DEFAULT false,
@@ -115,7 +115,7 @@ CREATE TABLE IF NOT EXISTS sublogs(
 
 -- Hints table
 CREATE TABLE IF NOT EXISTS hints(
-    hid bigserial PRIMARY KEY,
+    hid serial PRIMARY KEY,
     chall_id integer NOT NULL REFERENCES challenges(chall_id),
     hint text NOT NULL,
     cost integer NOT NULL DEFAULT 0,
@@ -139,7 +139,7 @@ FOR EACH ROW EXECUTE PROCEDURE update_hints();
 
 -- Table to store deployment data for on-demand and dynamic challenges
 CREATE TABLE IF NOT EXISTS images(
-    iid bigserial PRIMARY KEY,
+    iid serial PRIMARY KEY,
     chall_id integer NOT NULL REFERENCES challenges(chall_id),
     registry text NOT NULL,
     image text NOT NULL,
