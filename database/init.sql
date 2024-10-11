@@ -53,7 +53,6 @@ CREATE TABLE IF NOT EXISTS flags(
     password text,
     flag text NOT NULL,
     port integer,
-    verified boolean DEFAULT false,
     hostname text,
     deadline bigint DEFAULT 2526249600,
     extended integer DEFAULT 1
