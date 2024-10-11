@@ -49,7 +49,7 @@ func CreateTeam(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "password should be between 8 and 32 characters"})
 	}
 
-	if database.TeamExists(team.TeamName) {
+	if database.TeamNameExists(team.TeamName) {
 		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"status": "failure", "message": "teamname already taken"})
 	}
 
@@ -106,7 +106,7 @@ func JoinTeam(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing teamname or password in request"})
 	}
 
-	if !database.TeamExists(team.TeamName) {
+	if !database.TeamNameExists(team.TeamName) {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "failure", "message": "team does not exist"})
 	}
 

@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func TeamExists(teamname string) bool {
+func TeamNameExists(teamname string) bool {
 	var team models.Team
 	if err := DB.Where("teamname = ?", teamname).First(&team).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
