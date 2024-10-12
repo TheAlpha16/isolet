@@ -86,7 +86,7 @@ func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64, connDetails *model
 
 	if challenge.Flag != "" {
 		flagObject.Flag = strings.TrimSuffix(challenge.Flag, "}")
-		flagObject.Flag = flagObject.Flag + database.GenerateRandom()[0:16] + "}"
+		flagObject.Flag = flagObject.Flag + "_" + database.GenerateRandom()[0:16] + "}"
 	} else {
 		flagObject.Flag = config.CTF_NAME + "{" + database.GenerateRandom()[0:32] + "}"
 	}
