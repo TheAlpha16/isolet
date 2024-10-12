@@ -47,14 +47,18 @@ func isHintUnlocked(hintID int64, unlockedHints pq.Int64Array) bool {
 func GenerateChallengeEndpoint(method string, subdomain string, port int, username ...string) string {
 	var connString string
 
+	if subdomain != "" {
+		subdomain = subdomain + "."
+	}
+
 	switch method {
 		case "http":
 			if port == 80 {
-				connString = fmt.Sprintf("http://%s.%s", subdomain, config.CHALL_DOMAIN) 
+				connString = fmt.Sprintf("http://%s%s", subdomain, config.INSTANCE_HOSTNAME) 
 			} else if port == 443 {
-				connString = fmt.Sprintf("https://%s.%s", subdomain, config.CHALL_DOMAIN)
+				connString = fmt.Sprintf("https://%s%s", subdomain, config.INSTANCE_HOSTNAME)
 			} else {
-				connString = fmt.Sprintf("http://%s.%s:%d", subdomain, config.CHALL_DOMAIN, port)
+				connString = fmt.Sprintf("http://%s%s:%d", subdomain, config.INSTANCE_HOSTNAME, port)
 			}
 		
 		case "ssh":
@@ -67,13 +71,13 @@ func GenerateChallengeEndpoint(method string, subdomain string, port int, userna
 			}
 
 			if port == 22 {
-				connString = fmt.Sprintf("ssh %s@%s.%s", user, subdomain, config.CHALL_DOMAIN)
+				connString = fmt.Sprintf("ssh %s@%s%s", user, subdomain, config.INSTANCE_HOSTNAME)
 			} else {
-				connString = fmt.Sprintf("ssh %s@%s.%s -p %d", user, subdomain, config.CHALL_DOMAIN, port)
+				connString = fmt.Sprintf("ssh %s@%s%s -p %d", user, subdomain, config.INSTANCE_HOSTNAME, port)
 			}
 
 		case "nc":
-			connString = fmt.Sprintf("nc %s.%s %d", subdomain, config.CHALL_DOMAIN, port)
+			connString = fmt.Sprintf("nc %s%s %d", subdomain, config.INSTANCE_HOSTNAME, port)
 	}
 	
 	return connString
