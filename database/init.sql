@@ -155,7 +155,7 @@ CREATE TABLE IF NOT EXISTS running(
     runid bigserial,
     teamid bigint NOT NULL REFERENCES teams(teamid),
     chall_id integer
-)
+);
 
 -- Function to enforce instance count
 CREATE OR REPLACE FUNCTION enforce_instance_count() RETURNS trigger
