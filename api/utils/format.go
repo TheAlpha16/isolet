@@ -7,8 +7,8 @@ import (
 	"github.com/TheAlpha16/isolet/api/config"
 )
 
-func GetInstanceName(userid int, level int) string {
-	return Hash(fmt.Sprintf("%d@%d:%s", userid, level, config.INSTANCE_NAME_SECRET))[0:16]
+func GetInstanceName(chall_id int, teamid int64) string {
+	return Hash(fmt.Sprintf("%d@%d:%s", teamid, chall_id, config.INSTANCE_NAME_SECRET))[0:16]
 }
 
 func GetHostName(userid int, level int) string {
