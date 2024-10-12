@@ -62,7 +62,7 @@ func NewFlag(c *fiber.Ctx, flagObject *models.Flag) error {
 		log.Println(err)
 		return errors.New("error in starting the instance, contact admin")
 	}
-	
+
 	return nil
 }
 
@@ -129,7 +129,7 @@ func IsRunning (ctx context.Context, chall_id int, teamid int64) (string, error)
 	if err := db.Model(&models.Flag{}).
 		Select("flag").
 		Where("chall_id = ? AND teamid = ?", chall_id, teamid).
-    	Take(flag).Error; err != nil {
+    	First(&flag).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
 			log.Println(err)
 		}
