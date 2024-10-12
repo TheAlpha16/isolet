@@ -313,7 +313,7 @@ func getPodObject(instance_name string, flagObject models.Flag, image *models.Im
 	}
 
 	imagePath = strings.TrimSuffix(imagePath, "/")
-	imagePath = fmt.Sprintf("%s/%s:latest", imagePath, image.Image)
+	imagePath = fmt.Sprintf("%s/%s", imagePath, image.Image)
 
 	if image.CPU == 0 {
 		cpu = config.CPU_LIMIT
@@ -326,6 +326,8 @@ func getPodObject(instance_name string, flagObject models.Flag, image *models.Im
 	} else {
 		memory = fmt.Sprintf("%dMi", image.Memory)
 	}
+
+	log.Println(imagePath)
 
 	return &core.Pod{
 		ObjectMeta: metav1.ObjectMeta{
