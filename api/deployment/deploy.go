@@ -203,7 +203,7 @@ func DeleteInstance(c *fiber.Ctx, chall_id int, teamid int64) error {
 	kubeclient, err := GetKubeClient()
 	if err != nil {
 		log.Println(err)
-		return err
+		return errors.New("error in deletion, please contact admin")
 	}
 
 	err = kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Delete(context.TODO(), instance_name, metav1.DeleteOptions{})
@@ -211,14 +211,14 @@ func DeleteInstance(c *fiber.Ctx, chall_id int, teamid int64) error {
 
 		if !strings.Contains(err.Error(), "not found") {
 			log.Println(err)
-			return err
+			return errors.New("error in deletion, please contact admin")
 		}
 
 		err = kubeclient.CoreV1().Services(config.INSTANCE_NAMESPACE).Delete(context.TODO(), fmt.Sprintf("svc-%s", instance_name), metav1.DeleteOptions{})
 		if err != nil {
 			if !strings.Contains(err.Error(), "not found") {
 				log.Println(err)
-				return err
+				return errors.New("error in deletion, please contact admin")
 			}
 		}
 
@@ -244,7 +244,7 @@ func DeleteInstance(c *fiber.Ctx, chall_id int, teamid int64) error {
 	if err != nil {
 		if !strings.Contains(err.Error(), "not found") {
 			log.Println(err)
-			return err
+			return errors.New("error in deletion, please contact admin")
 		}
 	}
 
@@ -259,47 +259,58 @@ func DeleteInstance(c *fiber.Ctx, chall_id int, teamid int64) error {
 	return nil
 }
 
-// func AddTime(c *fiber.Ctx, userid int, level int) (bool, string, int64) {
-// 	instance_name := utils.GetInstanceName(userid, level)
-// 	kubeclient, err := GetKubeClient()
-// 	if err != nil {
-// 		log.Println(err)
-// 		return false, "error in extension, please contact admin", 1
-// 	}
+func AddTime(c *fiber.Ctx, chall_id int, teamid int64) (models.AccessDetails, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
 
-// 	_, err = kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Get(c.Context(), instance_name, metav1.GetOptions{})
-// 	if err != nil {
-// 		if !strings.Contains(err.Error(), "not found") {
-// 			log.Println(err)
-// 			return false, "error in extension, please contact admin", 1
-// 		}
+	if _, err := database.IsRunning(ctx, chall_id, teamid); err != nil {
+		return err
+	}
 
-// 		if err := database.DeleteFlag(c, userid, level); err != nil {
-// 			log.Println(err)
-// 			return false, "instance not running", 1
-// 		}
+	instance_name := utils.GetInstanceName(chall_id, teamid)
+	kubeclient, err := GetKubeClient()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	if err != nil {
+		log.Println(err)
+		return false, "error in extension, please contact admin", 1
+	}
 
-// 		if err := database.DeleteRunning(c, userid, level); err != nil {
-// 			log.Println(err)
-// 			return false, "instance not running", 1
-// 		}
+	_, err = kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Get(c.Context(), instance_name, metav1.GetOptions{})
+	if err != nil {
+		if !strings.Contains(err.Error(), "not found") {
+			log.Println(err)
+			return false, "error in extension, please contact admin", 1
+		}
 
-// 		return false, "instance not running", 1
-// 	}
+		if err := database.DeleteFlag(c, userid, level); err != nil {
+			log.Println(err)
+			return false, "instance not running", 1
+		}
 
-// 	isOK, message, newdeadline := database.AddTime(c, userid, level)
-// 	if !isOK {
-// 		return isOK, message, 1
-// 	}
+		if err := database.DeleteRunning(c, userid, level); err != nil {
+			log.Println(err)
+			return false, "instance not running", 1
+		}
 
-// 	err = UpdateDeadline(kubeclient, instance_name, newdeadline)
-// 	if err != nil {
-// 		log.Println(err)
-// 		return false, "error in extension, please contact admin", 1
-// 	}
+		return false, "instance not running", 1
+	}
 
-// 	return true, "updated deadline successfully", newdeadline
-// }
+	isOK, message, newdeadline := database.AddTime(c, userid, level)
+	if !isOK {
+		return isOK, message, 1
+	}
+
+	err = UpdateDeadline(kubeclient, instance_name, newdeadline)
+	if err != nil {
+		log.Println(err)
+		return false, "error in extension, please contact admin", 1
+	}
+
+	return true, , newdeadline
+}
 
 func getPodObject(instance_name string, flagObject models.Flag, image *models.Image) *core.Pod {
 	var imagePath string
