@@ -1,10 +1,11 @@
 package database
 
 import (
-	"log"
-	"time"
-	"errors"
 	"context"
+	"errors"
+	"log"
+	"strings"
+	"time"
 
 	"github.com/TheAlpha16/isolet/api/models"
 
@@ -28,11 +29,11 @@ func CanStartInstance(c *fiber.Ctx, chall_id int, teamid int64) error {
 	}
 
 	if err := db.Model(&models.Running{}).Create(&models.Running{ChallID: chall_id, TeamID: teamid}).Error; err != nil {
-		if err.Error() != "Cannot start more instances for the team." {
-			log.Println(err)
-			return errors.New("error in starting the instance, contact admin")		
+		if strings.Contains(err.Error(), "start more instances for the team") {
+			return errors.New("concurrent instance limit reached for the team")
 		}
-		return err
+		log.Println(err)
+		return errors.New("error in starting the instance, contact admin")
 	}
 
 	return nil
