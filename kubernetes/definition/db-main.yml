@@ -151,9 +151,9 @@ data:
         image text NOT NULL,
         deployment deployment_type NOT NULL DEFAULT 'http',
         port integer DEFAULT 80,
-        subd text DEFAULT 'localhost',
-        cpu integer DEFAULT 5,
-        mem integer DEFAULT 10
+        subd text DEFAULT '',
+        cpu integer DEFAULT 0,
+        mem integer DEFAULT 0
     );
 
     -- Table to store buffer for running on-demand challenges
