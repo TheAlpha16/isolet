@@ -1,84 +1,66 @@
 package handler
 
+import (
+	"strconv"
 
-// func StartInstance(c *fiber.Ctx) error {
-// 	var userid int
-// 	var err error
+	"github.com/TheAlpha16/isolet/api/deployment"
+	"github.com/TheAlpha16/isolet/api/models"
 
-// 	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
-// 	userid = int(claims["userid"].(float64))
+	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
+)
 
-// 	level_string := c.FormValue("level")
+func StartInstance(c *fiber.Ctx) error {
+	var teamid int64
+	var err error
 
-// 	if level_string == "" {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing level in request"})
-// 	}
+	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+	teamid = int64(claims["teamid"].(float64))
 
-// 	level, err := strconv.Atoi(level_string)
-// 	if err != nil {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid level"})
-// 	}
+	chall_id_string := c.FormValue("chall_id")
 
-// 	if !database.UserExists(c, userid) {
-// 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "user does not exist"})
-// 	}
+	if chall_id_string == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing challenge id in the request"})
+	}
 
-// 	if !database.ValidChallenge(c, level) {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "level does not exist"})
-// 	}
+	chall_id, err := strconv.Atoi(chall_id_string)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid challenge id"})
+	}
 
-// 	if !database.CanStartInstance(c, userid, level) {
-// 		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"status": "failure", "message": "concurrent instances limit reached"})
-// 	}
+	packed := new(models.AccessDetails)
 
-// 	deadline, password, port, hostname, err := deployment.DeployInstance(c, userid, level)
-// 	if err != nil {
-// 		database.DeleteRunning(c, userid, level)
-// 		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": "error in initiating instance, contact admin"})
-// 	}
+	if err := deployment.DeployInstance(c, chall_id, teamid, packed); err != nil {
+		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": err.Error()})
+	}
 
-// 	packed, err := json.Marshal(models.AccessDetails{Password: password, Port: port, Hostname: hostname, Deadline: deadline})
-// 	if err != nil {
-// 		log.Println(err)
-// 		deployment.DeleteInstance(c, userid, level)
-// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in initiating instance, contact admin"})
-// 	}
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success", "message": packed})
+}
 
-// 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success", "message": packed})
-// }
+func StopInstance(c *fiber.Ctx) error {
+	var teamid int64
+	var err error
 
-// func StopInstance(c *fiber.Ctx) error {
-// 	var userid int
-// 	var err error
+	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+	teamid = int64(claims["teamid"].(float64))
 
-// 	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
-// 	userid = int(claims["userid"].(float64))
+	chall_id_string := c.FormValue("chall_id")
 
-// 	level_string := c.FormValue("level")
+	if chall_id_string == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing challenge id in the request"})
+	}
 
-// 	if level_string == "" {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing parameters in request"})
-// 	}
+	chall_id, err := strconv.Atoi(chall_id_string)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid challenge id"})
+	}
 
-// 	level, err := strconv.Atoi(level_string)
-// 	if err != nil {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid level"})
-// 	}
+	if err := deployment.DeleteInstance(c, chall_id, teamid); err != nil {
+		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": err.Error()})
+	}
 
-// 	if !database.UserExists(c, userid) {
-// 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "user does not exist"})
-// 	}
-
-// 	if !database.ValidFlagEntry(c, level, userid) {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "instance stopped, reload page"})
-// 	}
-
-// 	if err := deployment.DeleteInstance(c, userid, level); err != nil {
-// 		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": "error in stopping instance, contact admin"})
-// 	}
-
-// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "instance stopped successfully"})
-// }
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "instance stopped successfully"})
+}
 
 
 // func ExtendTime(c *fiber.Ctx) error {
