@@ -101,7 +101,7 @@ func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64, connDetails *model
 	pod, err = kubeclient.CoreV1().Pods(pod.Namespace).Create(context.TODO(), pod, metav1.CreateOptions{})
 	if err != nil {
 		if !strings.Contains(err.Error(), "already exists") {
-			_ = database.DeleteFlag(c, chall_id, teamid)
+			_ = database.DeleteRunning(c, chall_id, teamid)
 			log.Println(err)
 			return errors.New("error in deployment, please contact admin")
 		}
@@ -110,7 +110,7 @@ func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64, connDetails *model
 	for {
 		createdPod, err := kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Get(context.TODO(), instance_name, metav1.GetOptions{})
 		if err != nil {
-			_ = database.DeleteFlag(c, chall_id, teamid)
+			_ = database.DeleteRunning(c, chall_id, teamid)
 			log.Println(err)
 			return errors.New("error in deployment, please contact admin")
 		}
@@ -119,7 +119,7 @@ func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64, connDetails *model
 			if createdPod.Status.ContainerStatuses[0].State.Waiting != nil && (createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CrashLoopBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ErrImagePull" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ImagePullBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerConfigError" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "InvalidImageName" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerError") {
 				kubeclient.CoreV1().Pods(pod.Namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{})
 				log.Printf("Error in launch: chall_id-%d reason: %s", chall_id, createdPod.Status.ContainerStatuses[0].State.Waiting.Reason)
-				_ = database.DeleteFlag(c, chall_id, teamid)
+				_ = database.DeleteRunning(c, chall_id, teamid)
 				return errors.New("error in deployment, please contact admin")
 			}
 		}
