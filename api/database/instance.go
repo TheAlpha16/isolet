@@ -107,7 +107,7 @@ func ValidOnDemandChallenge(c *fiber.Ctx, chall_id int, teamid int64, challenge 
 		return errors.New("challenge does not exist")
 	}
 
-	if isChallengeSolved(int64(challenge.ChallID), team.Solved) {
+	if isChallengeSolved(int64(chall_id), team.Solved) {
 		return errors.New("challenge already solved")
 	}
 
