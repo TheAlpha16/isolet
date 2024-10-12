@@ -140,6 +140,11 @@ spec:
                 configMapKeyRef:
                   name: app-config
                   key: chall_domain
+            - name: ALLOWED_DOMAINS
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: allowed_domains
             - name: EMAIL_ID
               valueFrom:
                 secretKeyRef:

@@ -24,3 +24,4 @@ data:
   instance_time: "30"
   max_instance_time: "60"
   chall_domain: "chall.unixit.fun"
+  allowed_domains: "iitism.ac.in,gmail.com,yahoo.com,protonmail.com"

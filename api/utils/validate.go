@@ -3,8 +3,9 @@ package utils
 import (
 	"fmt"
 	"log"
-	"net/mail"
 	"regexp"
+	"strings"
+	"net/mail"
 
 	"github.com/TheAlpha16/isolet/api/config"
 	"github.com/TheAlpha16/isolet/api/database"
@@ -23,7 +24,12 @@ import (
 // }
 
 func CheckDomain(email string) bool {
-	allowedDomains := []string{"iitism.ac.in"}
+	domains := config.ALLOWED_DOMAINS
+	if domains == "" {
+		return true
+	}
+
+	allowedDomains := strings.Split(domains, ",")
 
 	for i := 0; i < len(allowedDomains); i++ {
 		domain := allowedDomains[i]
