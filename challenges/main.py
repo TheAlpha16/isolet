@@ -103,12 +103,8 @@ class Challenge:
         if self.type != 'static':
             if not self.image_metadata["image"]:
                 raise ValueError(f"Missing image name for {self.chall_name} (dynamic or on-demand)")
-            if not self.image_metadata["registry"]:
-                raise ValueError(f"Missing registry for {self.chall_name} (dynamic or on-demand)")
             if not self.image_metadata["port"]:
                 raise ValueError(f"Missing port metadata for {self.chall_name} (dynamic or on-demand)")
-            if not self.image_metadata["subd"]:
-                raise ValueError(f"Missing subd metadata for {self.chall_name} (dynamic or on-demand)")
             if not self.image_metadata["deployment"]:
                 raise ValueError(f"Missing deployment metadata for {self.chall_name} (dynamic or on-demand)")
             elif not self.image_metadata["deployment"] in ['http', 'ssh', 'nc']:
