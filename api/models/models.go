@@ -109,6 +109,12 @@ type Sublog struct {
 	SubTime time.Time `gorm:"not null;default:CURRENT_TIMESTAMP;column:subtime" json:"subtime"`
 }
 
+type Running struct {
+	RunID   int64 `gorm:"primaryKey;autoIncrement;column:runid" json:"-"`
+	TeamID  int64 `gorm:"not null;column:teamid" json:"teamid"`
+	ChallID int   `gorm:"not null;column:chall_id" json:"chall_id"`
+}
+
 type Score struct {
 	Username string `json:"username"`
 	Score    string `json:"score"`
