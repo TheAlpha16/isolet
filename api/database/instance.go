@@ -107,10 +107,6 @@ func ValidOnDemandChallenge(c *fiber.Ctx, chall_id int, teamid int64, challenge 
 		return errors.New("challenge does not exist")
 	}
 
-	if isChallengeSolved(int64(chall_id), team.Solved) {
-		return errors.New("challenge already solved")
-	}
-
 	if err := db.Where("chall_id = ?", chall_id).First(image).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
 			log.Println(err)
