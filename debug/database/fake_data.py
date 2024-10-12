@@ -43,12 +43,12 @@ def generate_fake_challenge():
     if random.randint(1, 10) < 2:
         final["links"] = [fake.url() for _ in range(random.randint(1, 3))]
         final["registry"] = fake.url()
+        final["cpu"] = random.randint(1, 10)
+        final["mem"] = random.randint(1, 16)
     
     if chall_type != 'static':
         final["port"] = random.randint(1024, 65535)
         final["subd"] = fake.domain_word()
-        final["cpu"] = random.randint(1, 10)
-        final["mem"] = random.randint(1, 16)
         final["image"] = fake.domain_word()
         final["deployment"] = random.choice(['http', 'ssh', 'nc'])
     
