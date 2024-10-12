@@ -211,7 +211,7 @@
         ]
     },
     {
-        "chall_name": "Multi-tiered mission-critical architecture",
+        "chall_name": "web test",
         "category": "reversing",
         "prompt": "Own general spend sit common might organization. Attention new international all line. Think as agent country.",
         "flag": "Iw6e+MoH%4&)",
@@ -227,20 +227,18 @@
             "http://www.stone-pace.com/",
             "https://www.cunningham-hunt.net/"
         ],
-        "port": 21729,
+        "port": 80,
         "subd": "rhodes",
-        "cpu": 2,
-        "mem": 10,
-        "image": "mcfarland",
-        "registry": "http://white.com/",
+        "image": "nginx:alpine-slim",
+        "registry": "public.ecr.aws/nginx/",
         "deployment": "http"
     },
     {
-        "chall_name": "Cross-platform client-server firmware",
+        "chall_name": "nc test",
         "category": "blockchain",
         "prompt": "Small true heavy once. Material always several.",
-        "flag": "!7DI#yia0Kb%",
-        "type": "dynamic",
+        "flag": "isolet-dev{l1st3n_c4r3fully_1t5_1mp0rt4nt}",
+        "type": "on-demand",
         "points": 488,
         "author": "xbrooks",
         "requirements": [],
@@ -250,18 +248,17 @@
         ],
         "port": 53581,
         "subd": "barrett",
-        "cpu": 7,
-        "mem": 5,
-        "image": "williams",
-        "registry": "https://www.gonzalez.com/",
+        "cpu": 20,
+        "mem": 50,
+        "image": "nc-test",
         "deployment": "nc"
     },
     {
-        "chall_name": "Versatile real-time focus group",
+        "chall_name": "ssh test",
         "category": "forensics",
         "prompt": "Suffer kitchen quickly still rather something product get. Pick break mouth.",
-        "flag": "7rdfVUmO_nH@",
-        "type": "static",
+        "flag": "isolet-dev{1_kn0w_y0u_kn0w_1t}",
+        "type": "on-demand",
         "points": 229,
         "author": "brittanysanchez",
         "requirements": [],
@@ -279,6 +276,11 @@
         ],
         "files": [
             "also.txt"
-        ]
+        ],
+        "port": 22,
+        "subd": "rhodes",
+        "image": "unixit-level0",
+        "registry": "docker.io/infoseccl",
+        "deployment": "ssh"
     }
 ]
