@@ -178,7 +178,7 @@ BEGIN
         FROM running 
         WHERE teamid = NEW.teamid;
 
-        IF instance_count > max_instance_count THEN
+        IF instance_count >= max_instance_count THEN
             RAISE EXCEPTION 'Cannot start more instances for the team.';
         END IF;
     END IF;
