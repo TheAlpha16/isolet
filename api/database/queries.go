@@ -121,7 +121,7 @@ func ValidFlagEntry(ctx context.Context, chall_id int, teamid int64) (models.Cha
 		return challenge, errors.New("challenge requirements not met")
 	}
 
-	if isChallengeSolved(int64(challenge.ChallID), team.Solved) {
+	if isChallengeSolved(int64(chall_id), team.Solved) {
 		return challenge, errors.New("challenge already solved")
 	}
 
