@@ -1,62 +1,143 @@
 package database
 
+import (
+	"log"
+	"time"
+	"errors"
+	"context"
 
-// func CanStartInstance(c *fiber.Ctx, userid int, level int) bool {
-// 	var runid int
-// 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
-// 	defer cancel()
+	"github.com/TheAlpha16/isolet/api/models"
 
-// 	if err := DB.QueryRowContext(ctx, `SELECT runid FROM running WHERE userid = $1 AND level = $2`, userid, level).Scan(&runid); err == nil {
-// 		return false
-// 	}
+	"github.com/gofiber/fiber/v2"
 
-// 	if _, err := DB.QueryContext(ctx, `INSERT INTO running (userid, level) VALUES ($1, $2)`, userid, level); err != nil {
-// 		log.Println(err)
-// 		return false
-// 	}
-// 	return true
-// }
+	"gorm.io/gorm"
+)
 
-// func DeleteRunning(c *fiber.Ctx, userid int, level int) error {
-// 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
-// 	defer cancel()
+func CanStartInstance(c *fiber.Ctx, chall_id int, teamid int64) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
 
-// 	if _, err := DB.QueryContext(ctx, `DELETE FROM running WHERE userid = $1 AND level = $2`, userid, level); err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
+	db := DB.WithContext(ctx)
+	running := new(models.Running)
 
-// func NewFlag(c *fiber.Ctx, userid int, level int, password string, flag string, port int32, hostname string, deadline int64) error {
-// 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
-// 	defer cancel()
+	if err := db.Select("runid").Where("chall_id = ? AND teamid = ?", chall_id, teamid).First(running).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			log.Println(err)
+		}
+		return errors.New("instance already running")
+	}
 
-// 	if _, err := DB.QueryContext(ctx, `INSERT INTO flags (userid, level, flag, password, port, hostname, deadline) VALUES ($1, $2, $3, $4, $5, $6, $7)`, userid, level, flag, password, port, hostname, deadline); err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
+	if err := db.Model(&models.Running{}).Create(&models.Running{ChallID: chall_id, TeamID: teamid}).Error; err != nil {
+		if err.Error() != "Cannot start more instances for the team." {
+			log.Println(err)
+			return errors.New("error in starting the instance, contact admin")		
+		}
+		return err
+	}
 
-// func DeleteFlag(c *fiber.Ctx, userid int, level int) error {
-// 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
-// 	defer cancel()
+	return nil
+}
 
-// 	if _, err := DB.QueryContext(ctx, `DELETE FROM flags WHERE userid = $1 AND level = $2`, userid, level); err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
+func DeleteRunning(c *fiber.Ctx, chall_id int, teamid int64) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
 
-// func ValidChallenge(c *fiber.Ctx, level int) bool {
-// 	var chall_name string
-// 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
-// 	defer cancel()
+	db := DB.WithContext(ctx)
 
-// 	if err := DB.QueryRowContext(ctx, `SELECT chall_name FROM challenges WHERE level = $1`, level).Scan(&chall_name); err != nil {
-// 		return false
-// 	}
-// 	return true
-// }
+	if err := db.Where("chall_id = ? AND teamid = ?", chall_id, teamid).Delete(&models.Running{}).Error; err != nil {
+		log.Println(err)
+		return errors.New("error in stopping the instance, contact admin")
+	}
+
+	return nil
+}
+
+func NewFlag(c *fiber.Ctx, flagObject *models.Flag) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+
+	if err := db.Create(flagObject).Error; err != nil {
+		log.Println(err)
+		return errors.New("error in starting the instance, contact admin")
+	}
+	
+	return nil
+}
+
+func DeleteFlag(c *fiber.Ctx, chall_id int, teamid int64) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+	
+	if err := db.Where("chall_id = ? AND teamid = ?", chall_id, teamid).Delete(&models.Flag{}).Error; err != nil {
+		log.Println(err)
+		return errors.New("error in stopping the instance, contact admin")
+	}
+
+	return nil
+}
+
+func ValidOnDemandChallenge(c *fiber.Ctx, chall_id int, teamid int64, challenge *models.Challenge, image *models.Image) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+	var team models.Team
+
+	if err := db.Select("type, flag, requirements").Where("chall_id = ? AND visible = ?", chall_id, true).First(challenge).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			log.Println(err)
+		}
+		return errors.New("challenge does not exist")
+	}
+	
+	if challenge.Type != "on-demand" {
+		return errors.New("challenge is not on-demand")
+	}
+
+	if err := db.Select("solved").Where("teamid = ?", teamid).First(&team).Error; err != nil {
+		log.Println(err)
+		return errors.New("error in fetching team data")
+	}
+
+	if !isRequirementMet(challenge.Requirements, team.Solved) {
+		return errors.New("challenge does not exist")
+	}
+
+	if isChallengeSolved(int64(challenge.ChallID), team.Solved) {
+		return errors.New("challenge already solved")
+	}
+
+	if err := db.Select("image").Where("chall_id = ?", chall_id).First(image).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			log.Println(err)
+		}
+		log.Printf("image details not set for %d", chall_id)
+		return errors.New("error in starting the instance, contact admin")
+	}
+
+	return nil
+}
+
+func IsRunning (ctx context.Context, chall_id int, teamid int64) (string, error) {
+	var flag string
+	db := DB.WithContext(ctx)
+
+	if err := db.Model(&models.Flag{}).
+		Select("flag").
+		Where("chall_id = ? AND teamid = ?", chall_id, teamid).
+    	Take(flag).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			log.Println(err)
+		}
+		return "", errors.New("instance not running")
+	}
+
+	return flag, nil
+}
 
 // func GetInstances(c *fiber.Ctx, userid int) ([]models.Instance, error) {
 // 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
