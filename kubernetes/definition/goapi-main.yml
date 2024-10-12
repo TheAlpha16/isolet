@@ -55,11 +55,11 @@ spec:
                 configMapKeyRef:
                   name: app-config
                   key: instance_namespace
-            - name: IMAGE_REGISTRY_PREFIX
+            - name: IMAGE_REGISTRY
               valueFrom:
                 configMapKeyRef:
                   name: app-config
-                  key: image_registry_prefix
+                  key: image_registry
             - name: INSTANCE_HOSTNAME
               valueFrom:
                 configMapKeyRef:

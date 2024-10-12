@@ -172,10 +172,7 @@ You can customize the application using environment variables passed to the depl
 
 - `INSTANCE_HOSTNAME` Domain name for accessing the spawned instances
 
-- `IMAGE_REGISTRY_PREFIX` Default registry for pulling challenge images. It is prefixed to `level` to get final repo url to be
-
-> [!important]
-> If you specify your prefix to be `docker.io/thealpha16/` the final image path for level 1 will be `docker.io/thealpha16/level1`
+- `IMAGE_REGISTRY` Default registry for pulling challenge images. Can be overridden in the challenge configuration for individual challenges
 
 - `KUBECONFIG_FILE_PATH` Path to the kubernetes config file to access cluster from outside
 

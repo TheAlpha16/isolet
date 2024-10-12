@@ -4,7 +4,7 @@ metadata:
   name: app-config
 data:
   instance_namespace: "isolet"
-  image_registry_prefix: "docker.io/thealpha16/unixit-"
+  image_registry: "docker.io/thealpha16"
   concurrent_instances: "2"
   ctf_name: "unixit"
   app_port: "80"
