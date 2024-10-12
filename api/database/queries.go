@@ -3,9 +3,10 @@ package database
 import (
 	"log"
 	"time"
-	"context"
 	"errors"
+	"context"
 
+	"github.com/TheAlpha16/isolet/api/config"
 	"github.com/TheAlpha16/isolet/api/models"
 
 	"github.com/gofiber/fiber/v2"
@@ -77,7 +78,7 @@ func ReadChallenges(c *fiber.Ctx, teamid int64) (map[string][]models.Challenge, 
 				return nil, err
 			}
 			
-			connLink := GenerateChallengeEndpoint(imageMetaData.Deployment, imageMetaData.Subd, imageMetaData.Port)
+			connLink := GenerateChallengeEndpoint(imageMetaData.Deployment, imageMetaData.Subd, config.INSTANCE_HOSTNAME, imageMetaData.Port)
 
 			challenge.Links = append(challenge.Links, connLink)
 		}
@@ -96,6 +97,7 @@ func ReadChallenges(c *fiber.Ctx, teamid int64) (map[string][]models.Challenge, 
 
 func ValidFlagEntry(ctx context.Context, chall_id int, teamid int64) (models.Challenge, error) {
 	db := DB.WithContext(ctx)
+	var err error
 
 	var challenge models.Challenge
 	if err := db.Select("chall_name, type, flag, points, requirements").Where("chall_id = ? AND visible = ?", chall_id, true).First(&challenge).Error; err != nil {
@@ -124,11 +126,8 @@ func ValidFlagEntry(ctx context.Context, chall_id int, teamid int64) (models.Cha
 	}
 
 	if challenge.Type == "on-demand" {
-		if err := db.Select("flag").Where("chall_id = ? AND teamid = ?", chall_id, teamid).First(&challenge.Flag).Error; err != nil {
-			if err != gorm.ErrRecordNotFound {
-				log.Println(err)
-			}
-			return challenge, errors.New("instance not running")
+		if challenge.Flag, err = IsRunning(ctx, chall_id, teamid); err != nil {
+			return challenge, err
 		}
 	}
 
