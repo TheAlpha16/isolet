@@ -20,11 +20,11 @@ func CanStartInstance(c *fiber.Ctx, chall_id int, teamid int64) error {
 	db := DB.WithContext(ctx)
 	running := new(models.Running)
 
-	if err := db.Select("runid").Where("chall_id = ? AND teamid = ?", chall_id, teamid).First(running).Error; err != nil {
-		if err != gorm.ErrRecordNotFound {
-			log.Println(err)
-		}
+	if err := db.Select("runid").Where("chall_id = ? AND teamid = ?", chall_id, teamid).First(running).Error; err == nil {
 		return errors.New("instance already running")
+	} else if err != gorm.ErrRecordNotFound {
+		log.Println(err)
+		return errors.New("error in starting the instance, contact admin")
 	}
 
 	if err := db.Model(&models.Running{}).Create(&models.Running{ChallID: chall_id, TeamID: teamid}).Error; err != nil {
@@ -111,7 +111,7 @@ func ValidOnDemandChallenge(c *fiber.Ctx, chall_id int, teamid int64, challenge 
 		return errors.New("challenge already solved")
 	}
 
-	if err := db.Select("image").Where("chall_id = ?", chall_id).First(image).Error; err != nil {
+	if err := db.Where("chall_id = ?", chall_id).First(image).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
 			log.Println(err)
 		}
