@@ -1,18 +1,21 @@
 package deployment
 
 import (
-	"context"
 	"fmt"
-	// "log"
-	"path/filepath"
+	"log"
+	"time"
+	"errors"
 	"strconv"
-	// "strings"
-	// "time"
+	"strings"
+	"context"
+	"path/filepath"
+
 
 	"github.com/TheAlpha16/isolet/api/config"
-	// "github.com/TheAlpha16/isolet/api/database"
+	"github.com/TheAlpha16/isolet/api/database"
+	"github.com/TheAlpha16/isolet/api/models"
 	"github.com/TheAlpha16/isolet/api/utils"
-	// "github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -57,159 +60,201 @@ func GetKubeClient() (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
-// func DeployInstance(c *fiber.Ctx, userid int, level int) (int64, string, int32, string, error) {
-// 	instance_name := utils.GetInstanceName(userid, level)
-// 	password := database.GenerateRandom()[0:32]
-// 	flag := config.CTF_NAME + "{" + database.GenerateRandom()[0:32] + "}"
-// 	var deadline int64 = 1893456000000
+func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64, connDetails *models.AccessDetails) error {
+	challenge := new(models.Challenge)
+	image := new(models.Image)
 
-// 	// Hostname to be known when using subdomains for connections
-// 	hostname := utils.GetHostName(userid, level)
+	if err := database.ValidOnDemandChallenge(c, chall_id, teamid, challenge, image); err != nil {
+		return err
+	}
 
-// 	kubeclient, err := GetKubeClient()
-// 	if err != nil {
-// 		log.Println(err)
-// 		return deadline, "", -1, "", err
-// 	}
+	if err := database.CanStartInstance(c, chall_id, teamid); err != nil {
+		return err
+	}
 
-// 	pod := getPodObject(instance_name, level, userid, password, flag)
-// 	pod, err = kubeclient.CoreV1().Pods(pod.Namespace).Create(context.TODO(), pod, metav1.CreateOptions{})
-// 	if err != nil {
-// 		if !strings.Contains(err.Error(), "already exists") {
-// 			log.Println(err)
-// 			return deadline, "", -1, "", err
-// 		}
-// 	}
+	instance_name := utils.GetInstanceName(chall_id, teamid)
 
-// 	for {
-// 		createdPod, err := kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Get(context.TODO(), instance_name, metav1.GetOptions{})
-// 		if err != nil {
-// 			log.Println(err)
-// 			return deadline, "", -1, "", err
-// 		}
+	flagObject := models.Flag{
+		TeamID: teamid,
+		ChallID: chall_id,
+		Flag: "",
+		Password: database.GenerateRandom()[0:32],
+		Port: image.Port,
+		Hostname: utils.GetHostName(chall_id, teamid),
+		Deadline: 1893456000000,
+	}
 
-// 		if len(createdPod.Status.ContainerStatuses) > 0 {
-// 			if createdPod.Status.ContainerStatuses[0].State.Waiting != nil && (createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CrashLoopBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ErrImagePull" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ImagePullBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerConfigError" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "InvalidImageName" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerError") {
-// 				kubeclient.CoreV1().Pods(pod.Namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{})
-// 				log.Printf("Error in launch: level%d reason: %s", level, createdPod.Status.ContainerStatuses[0].State.Waiting.Reason)
-// 				return deadline, "", -1, "", fmt.Errorf("runtime error in image - level%d not found in registry", level)
-// 			}
-// 		}
+	if challenge.Flag != "" {
+		flagObject.Flag = strings.TrimSuffix(challenge.Flag, "}")
+		flagObject.Flag = flagObject.Flag + database.GenerateRandom()[0:16] + "}"
+	} else {
+		flagObject.Flag = config.CTF_NAME + "{" + database.GenerateRandom()[0:32] + "}"
+	}
 
-// 		if createdPod.Status.Phase == "Running" && createdPod.Status.StartTime != nil {
-// 			deadline = createdPod.Status.StartTime.Add(time.Minute * time.Duration(config.INSTANCE_TIME)).UnixMilli()
-// 			break
-// 		}
-// 	}
+	kubeclient, err := GetKubeClient()
+	if err != nil {
+		log.Println(err)
+		return errors.New("error in deployment, please contact admin")
+	}
 
-// 	err = UpdateDeadline(kubeclient, instance_name, deadline)
-// 	if err != nil {
-// 		_ = DeleteInstance(c, userid, level)
-// 		log.Println(err)
-// 		return deadline, "", -1, "", err
-// 	}
+	pod := getPodObject(instance_name, flagObject, image)
+	pod, err = kubeclient.CoreV1().Pods(pod.Namespace).Create(context.TODO(), pod, metav1.CreateOptions{})
+	if err != nil {
+		if !strings.Contains(err.Error(), "already exists") {
+			log.Println(err)
+			return errors.New("error in deployment, please contact admin")
+		}
+	}
 
-// 	svcConfig := getServiceObject(instance_name, level, userid)
-// 	_, err = kubeclient.CoreV1().Services(svcConfig.Namespace).Create(context.TODO(), svcConfig, metav1.CreateOptions{})
-// 	if err != nil {
-// 		log.Println(err)
-// 		if !strings.Contains(err.Error(), "already exists") {
-// 			return deadline, "", -1, "", err
-// 		}
-// 	}
+	for {
+		createdPod, err := kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Get(context.TODO(), instance_name, metav1.GetOptions{})
+		if err != nil {
+			log.Println(err)
+			return errors.New("error in deployment, please contact admin")
+		}
 
-// 	createdService, err := kubeclient.CoreV1().Services(svcConfig.Namespace).Get(context.TODO(), svcConfig.Name, metav1.GetOptions{})
-// 	if err != nil {
-// 		log.Println(err)
-// 		return deadline, "", -1, "", err
-// 	}
-// 	port := createdService.Spec.Ports[0].NodePort
+		if len(createdPod.Status.ContainerStatuses) > 0 {
+			if createdPod.Status.ContainerStatuses[0].State.Waiting != nil && (createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CrashLoopBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ErrImagePull" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "ImagePullBackOff" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerConfigError" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "InvalidImageName" || createdPod.Status.ContainerStatuses[0].State.Waiting.Reason == "CreateContainerError") {
+				kubeclient.CoreV1().Pods(pod.Namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{})
+				log.Printf("Error in launch: chall_id-%d reason: %s", chall_id, createdPod.Status.ContainerStatuses[0].State.Waiting.Reason)
+				return errors.New("error in deployment, please contact admin")
+			}
+		}
 
-// 	nodes, err := kubeclient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
-// 	if err != nil {
-// 		log.Println(err)
-// 		return deadline, "", -1, "", err
-// 	}
-// 	nodeip := nodes.Items[0].Status.Addresses
-// 	for i := 0; i < len(nodeip); i++ {
-// 		if nodeip[i].Type == "ExternalIP" {
-// 			hostname = nodeip[i].Address
-// 			break
-// 		}
-// 	}
+		if createdPod.Status.Phase == "Running" && createdPod.Status.StartTime != nil {
+			flagObject.Deadline = createdPod.Status.StartTime.Add(time.Minute * time.Duration(config.INSTANCE_TIME)).UnixMilli()
+			break
+		}
+	}
 
-// 	if err := database.NewFlag(c, userid, level, password, flag, port, hostname, deadline); err != nil {
-// 		log.Println(err)
-// 		return deadline, "", -1, "", err
-// 	}
+	err = UpdateDeadline(kubeclient, instance_name, flagObject.Deadline)
+	if err != nil {
+		_ = DeleteInstance(c, chall_id, teamid)
+		log.Println(err)
+		return errors.New("error in deployment, please contact admin")
+	}
 
-// 	return deadline, password, port, hostname, nil
-// }
+	svcConfig := getServiceObject(instance_name, flagObject)
+	_, err = kubeclient.CoreV1().Services(svcConfig.Namespace).Create(context.TODO(), svcConfig, metav1.CreateOptions{})
+	if err != nil {
+		log.Println(err)
+		if !strings.Contains(err.Error(), "already exists") {
+			return errors.New("error in deployment, please contact admin")
+		}
+	}
 
-// func DeleteInstance(c *fiber.Ctx, userid int, level int) error {
-// 	instance_name := utils.GetInstanceName(userid, level)
-// 	kubeclient, err := GetKubeClient()
-// 	if err != nil {
-// 		log.Println(err)
-// 		return err
-// 	}
+	createdService, err := kubeclient.CoreV1().Services(svcConfig.Namespace).Get(context.TODO(), svcConfig.Name, metav1.GetOptions{})
+	if err != nil {
+		log.Println(err)
+		return errors.New("error in deployment, please contact admin")
+	}
 
-// 	err = kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Delete(context.TODO(), instance_name, metav1.DeleteOptions{})
-// 	if err != nil {
+	port := createdService.Spec.Ports[0].NodePort
+	hostname := config.INSTANCE_HOSTNAME
 
-// 		if !strings.Contains(err.Error(), "not found") {
-// 			log.Println(err)
-// 			return err
-// 		}
+	nodes, err := kubeclient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		log.Println(err)
+		return errors.New("error in deployment, please contact admin")
+	}
 
-// 		err = kubeclient.CoreV1().Services(config.INSTANCE_NAMESPACE).Delete(context.TODO(), fmt.Sprintf("svc-%s", instance_name), metav1.DeleteOptions{})
-// 		if err != nil {
-// 			if !strings.Contains(err.Error(), "not found") {
-// 				log.Println(err)
-// 				return err
-// 			}
-// 		}
+	nodeip := nodes.Items[0].Status.Addresses
+	for i := 0; i < len(nodeip); i++ {
+		if nodeip[i].Type == "ExternalIP" {
+			hostname = nodeip[i].Address
+			break
+		}
+	}
 
-// 		if err := database.DeleteFlag(c, userid, level); err != nil {
-// 			log.Println(err)
-// 			return err
-// 		}
+	flagObject.Port = int(port)
+	flagObject.Hostname = hostname
 
-// 		if err := database.DeleteRunning(c, userid, level); err != nil {
-// 			log.Println(err)
-// 			return err
-// 		}
+	if err := database.NewFlag(c, &flagObject); err != nil {
+		return err
+	}
 
-// 		return nil
-// 	}
+	var connString string
+	if image.Deployment == "ssh" {
+		connString = database.GenerateChallengeEndpoint(image.Deployment, "", flagObject.Hostname, flagObject.Port, config.DEFAULT_USERNAME)
+	} else {
+		connString = database.GenerateChallengeEndpoint(image.Deployment, "", flagObject.Hostname, flagObject.Port)
+	}
 
-// 	for {
-// 		_, err := kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Get(context.TODO(), instance_name, metav1.GetOptions{})
-// 		if err != nil {
-// 			break
-// 		}
-// 	}
+	connDetails.ChallID = chall_id
+	connDetails.Password = flagObject.Password
+	connDetails.ConnString = connString
+	connDetails.Deadline = flagObject.Deadline
 
-// 	err = kubeclient.CoreV1().Services(config.INSTANCE_NAMESPACE).Delete(context.TODO(), fmt.Sprintf("svc-%s", instance_name), metav1.DeleteOptions{})
-// 	if err != nil {
-// 		if !strings.Contains(err.Error(), "not found") {
-// 			log.Println(err)
-// 			return err
-// 		}
-// 	}
+	return nil
+}
 
-// 	if err := database.DeleteFlag(c, userid, level); err != nil {
-// 		log.Println(err)
-// 		return err
-// 	}
+func DeleteInstance(c *fiber.Ctx, chall_id int, teamid int64) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
 
-// 	if err := database.DeleteRunning(c, userid, level); err != nil {
-// 		log.Println(err)
-// 		return err
-// 	}
+	if _, err := database.IsRunning(ctx, chall_id, teamid); err != nil {
+		return err
+	}
 
-// 	return nil
-// }
+	instance_name := utils.GetInstanceName(chall_id, teamid)
+	kubeclient, err := GetKubeClient()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	err = kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Delete(context.TODO(), instance_name, metav1.DeleteOptions{})
+	if err != nil {
+
+		if !strings.Contains(err.Error(), "not found") {
+			log.Println(err)
+			return err
+		}
+
+		err = kubeclient.CoreV1().Services(config.INSTANCE_NAMESPACE).Delete(context.TODO(), fmt.Sprintf("svc-%s", instance_name), metav1.DeleteOptions{})
+		if err != nil {
+			if !strings.Contains(err.Error(), "not found") {
+				log.Println(err)
+				return err
+			}
+		}
+
+		if err := database.DeleteFlag(c, chall_id, teamid); err != nil {
+			return err
+		}
+
+		if err := database.DeleteRunning(c, chall_id, teamid); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	for {
+		_, err := kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Get(context.TODO(), instance_name, metav1.GetOptions{})
+		if err != nil {
+			break
+		}
+	}
+
+	err = kubeclient.CoreV1().Services(config.INSTANCE_NAMESPACE).Delete(context.TODO(), fmt.Sprintf("svc-%s", instance_name), metav1.DeleteOptions{})
+	if err != nil {
+		if !strings.Contains(err.Error(), "not found") {
+			log.Println(err)
+			return err
+		}
+	}
+
+	if err := database.DeleteFlag(c, chall_id, teamid); err != nil {
+		return err
+	}
+
+	if err := database.DeleteRunning(c, chall_id, teamid); err != nil {
+		return err
+	}
+
+	return nil
+}
 
 // func AddTime(c *fiber.Ctx, userid int, level int) (bool, string, int64) {
 // 	instance_name := utils.GetInstanceName(userid, level)
@@ -253,14 +298,39 @@ func GetKubeClient() (*kubernetes.Clientset, error) {
 // 	return true, "updated deadline successfully", newdeadline
 // }
 
-func getPodObject(instance_name string, level int, userid int, password string, flag string) *core.Pod {
+func getPodObject(instance_name string, flagObject models.Flag, image *models.Image) *core.Pod {
+	var imagePath string
+	var cpu string
+	var memory string
+
+	if image.Registry != "" {
+		imagePath = image.Registry
+	} else {
+		imagePath = config.IMAGE_REGISTRY
+	}
+
+	imagePath = strings.TrimSuffix(imagePath, "/")
+	imagePath = fmt.Sprintf("%s/%s:latest", imagePath, image.Image)
+
+	if image.CPU == 0 {
+		cpu = config.CPU_LIMIT
+	} else {
+		cpu = fmt.Sprintf("%dm", image.CPU)
+	}
+
+	if image.Memory == 0 {
+		memory = config.MEMORY_LIMIT
+	} else {
+		memory = fmt.Sprintf("%dMi", image.Memory)
+	}
+
 	return &core.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      instance_name,
 			Namespace: config.INSTANCE_NAMESPACE,
 			Labels: map[string]string{
-				"level":  fmt.Sprintf("%d", level),
-				"userid": fmt.Sprintf("%d", userid),
+				"chall_id":  fmt.Sprintf("%d", flagObject.ChallID),
+				"teamid": fmt.Sprintf("%d", flagObject.TeamID),
 				"app":    "instance",
 			},
 		},
@@ -271,10 +341,10 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 			Containers: []core.Container{
 				{
 					Name:  instance_name,
-					Image: fmt.Sprintf("%slevel%d:latest", config.IMAGE_REGISTRY_PREFIX, level),
+					Image: imagePath,
 					Ports: []core.ContainerPort{
 						{
-							ContainerPort: 22,
+							ContainerPort: int32(image.Port),
 						},
 					},
 					Resources: core.ResourceRequirements{
@@ -284,8 +354,8 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 							core.ResourceName(core.ResourceEphemeralStorage): resource.MustParse(config.DISK_LIMIT),
 						},
 						Requests: core.ResourceList{
-							core.ResourceName(core.ResourceCPU):              resource.MustParse(config.CPU_REQUEST),
-							core.ResourceName(core.ResourceMemory):           resource.MustParse(config.MEMORY_REQUEST),
+							core.ResourceName(core.ResourceCPU):              resource.MustParse(cpu),
+							core.ResourceName(core.ResourceMemory):           resource.MustParse(memory),
 							core.ResourceName(core.ResourceEphemeralStorage): resource.MustParse(config.DISK_REQUEST),
 						},
 					},
@@ -296,12 +366,16 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 							Value: config.CTF_NAME,
 						},
 						{
+							Name: "USERNAME",
+							Value: config.DEFAULT_USERNAME,
+						},
+						{
 							Name:  "USER_PASSWORD",
-							Value: password,
+							Value: flagObject.Password,
 						},
 						{
 							Name:  "FLAG",
-							Value: flag,
+							Value: flagObject.Flag,
 						},
 					},
 				},
@@ -310,26 +384,26 @@ func getPodObject(instance_name string, level int, userid int, password string, 
 	}
 }
 
-func getServiceObject(instance_name string, level int, userid int) *core.Service {
+func getServiceObject(instance_name string, flagObject models.Flag) *core.Service {
 	return &core.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("svc-%s", instance_name),
 			Namespace: config.INSTANCE_NAMESPACE,
 			Labels: map[string]string{
-				"level":  fmt.Sprintf("%d", level),
-				"userid": fmt.Sprintf("%d", userid),
+				"chall_id":  fmt.Sprintf("%d", flagObject.ChallID),
+				"teamid": fmt.Sprintf("%d", flagObject.TeamID),
 			},
 		},
 		Spec: core.ServiceSpec{
 			Type: "NodePort",
 			Ports: []core.ServicePort{
 				{
-					Port: 22,
+					Port: int32(flagObject.Port),
 				},
 			},
 			Selector: map[string]string{
-				"level":  fmt.Sprintf("%d", level),
-				"userid": fmt.Sprintf("%d", userid),
+				"chall_id":  fmt.Sprintf("%d", flagObject.ChallID),
+				"teamid": fmt.Sprintf("%d", flagObject.TeamID),
 				"app":    "instance",
 			},
 		},
