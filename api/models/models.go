@@ -115,10 +115,10 @@ type Score struct {
 }
 
 type AccessDetails struct {
-	Password string `json:"password"`
-	Port     int32  `json:"port"`
-	Hostname string `json:"hostname"`
-	Deadline int64  `json:"deadline"`
+	ChallID    int    `json:"chall_id"`
+	Password   string `json:"password"`
+	ConnString string `json:"connstring"`
+	Deadline   int64  `json:"deadline"`
 }
 
 type ExtendDeadline struct {
