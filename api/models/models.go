@@ -134,3 +134,7 @@ type ExtendDeadline struct {
 func (ToVerify) TableName() string {
 	return "toverify"
 }
+
+func (Running) TableName() string {
+	return "running"
+}
