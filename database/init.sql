@@ -141,7 +141,7 @@ FOR EACH ROW EXECUTE PROCEDURE update_hints();
 CREATE TABLE IF NOT EXISTS images(
     iid serial PRIMARY KEY,
     chall_id integer NOT NULL REFERENCES challenges(chall_id),
-    registry text,
+    registry text DEFAULT '',
     image text NOT NULL,
     deployment deployment_type NOT NULL DEFAULT 'http',
     port integer DEFAULT 80,

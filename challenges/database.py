@@ -103,7 +103,7 @@ class Image(Base):
     
     iid = Column(Integer, primary_key=True, autoincrement=True)
     chall_id = Column(Integer, ForeignKey('challenges.chall_id'), nullable=False)
-    registry = Column(Text, nullable=False)
+    registry = Column(Text, default='')
     image = Column(Text, nullable=False)
     deployment = Column(deployment_type_enum, nullable=False, default='http')
     port = Column(Integer, default=80)

@@ -53,7 +53,7 @@ type Challenge struct {
 type Image struct {
 	IID        int    `gorm:"primaryKey;autoIncrement;column:iid" json:"iid"`
 	ChallID    int    `gorm:"not null;column:chall_id" json:"chall_id"`
-	Registry   string `gorm:"not null" json:"registry"`
+	Registry   string `gorm:"text;default:" json:"registry"`
 	Image      string `gorm:"not null" json:"image"`
 	Deployment string `gorm:"type:deployment_type;default:http" json:"deployment"`
 	Port       int    `gorm:"default:80" json:"port"`
