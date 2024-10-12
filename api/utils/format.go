@@ -11,7 +11,7 @@ func GetInstanceName(chall_id int, teamid int64) string {
 	return Hash(fmt.Sprintf("%d@%d:%s", teamid, chall_id, config.INSTANCE_NAME_SECRET))[0:16]
 }
 
-func GetHostName(userid int, level int) string {
+func GetHostName(chall_id int, teamid int64) string {
 	return config.INSTANCE_HOSTNAME
 }
 
