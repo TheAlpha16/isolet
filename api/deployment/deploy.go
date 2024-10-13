@@ -259,7 +259,7 @@ func DeleteInstance(c *fiber.Ctx, chall_id int, teamid int64) error {
 	return nil
 }
 
-func AddTime(c *fiber.Ctx, chall_id int, teamid int64) (models.AccessDetails, error) {
+func AddTime(c *fiber.Ctx, chall_id int, teamid int64, deadline *models.ExtendDeadline) error {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
@@ -271,45 +271,40 @@ func AddTime(c *fiber.Ctx, chall_id int, teamid int64) (models.AccessDetails, er
 	kubeclient, err := GetKubeClient()
 	if err != nil {
 		log.Println(err)
-		return err
-	}
-	if err != nil {
-		log.Println(err)
-		return false, "error in extension, please contact admin", 1
+		return errors.New("error in extension, please contact admin")
 	}
 
 	_, err = kubeclient.CoreV1().Pods(config.INSTANCE_NAMESPACE).Get(c.Context(), instance_name, metav1.GetOptions{})
 	if err != nil {
 		if !strings.Contains(err.Error(), "not found") {
 			log.Println(err)
-			return false, "error in extension, please contact admin", 1
+			return errors.New("error in extension, please contact admin")
 		}
 
-		if err := database.DeleteFlag(c, userid, level); err != nil {
-			log.Println(err)
-			return false, "instance not running", 1
+		if err := database.DeleteFlag(c, chall_id, teamid); err != nil {
+			return errors.New("instance not running")
 		}
 
-		if err := database.DeleteRunning(c, userid, level); err != nil {
-			log.Println(err)
-			return false, "instance not running", 1
+		if err := database.DeleteRunning(c, chall_id, teamid); err != nil {
+			return errors.New("instance not running")
 		}
 
-		return false, "instance not running", 1
+		return errors.New("instance not running")
 	}
 
-	isOK, message, newdeadline := database.AddTime(c, userid, level)
-	if !isOK {
-		return isOK, message, 1
+	newdeadline, err := database.AddTime(c, chall_id, teamid)
+	if err != nil {
+		return err
 	}
 
 	err = UpdateDeadline(kubeclient, instance_name, newdeadline)
 	if err != nil {
 		log.Println(err)
-		return false, "error in extension, please contact admin", 1
+		return errors.New("error in extension, please contact admin")
 	}
 
-	return true, , newdeadline
+	deadline.Deadline = newdeadline
+	return nil
 }
 
 func getPodObject(instance_name string, flagObject models.Flag, image *models.Image) *core.Pod {
