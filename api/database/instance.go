@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/TheAlpha16/isolet/api/models"
+	"github.com/TheAlpha16/isolet/api/config"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -161,33 +162,39 @@ func IsRunning (ctx context.Context, chall_id int, teamid int64) (string, error)
 // }
 
 
-// func AddTime(c *fiber.Ctx, userid int, level int) (bool, string, int64) {
-// 	var current int
-// 	var deadline int64
-// 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
-// 	defer cancel()
+func AddTime(c *fiber.Ctx, chall_id int, teamid int64) (int64, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
 
-// 	if err := DB.QueryRowContext(ctx, `SELECT extended, deadline FROM flags WHERE level = $1 AND userid = $2`, level, userid).Scan(&current, &deadline); err != nil {
-// 		log.Println(err)
-// 		return false, "error in extension, please contact admin", 1
-// 	}
+	db := DB.WithContext(ctx)
+	record := new(models.Flag)
 
-// 	if (current + 1) > (config.MAX_INSTANCE_TIME / config.INSTANCE_TIME) {
-// 		return false, "limit reached", 1
-// 	}
+	if err := db.Select("extended, deadline").
+		Where("chall_id = ? AND teamid = ?", chall_id, teamid).
+		First(&record).Error; err != nil {
+		log.Println(err)
+		return 0, errors.New("error in extension, please contact admin")
+	}
 
-// 	_, err := DB.QueryContext(ctx, `UPDATE flags SET extended = $1 WHERE userid = $2 AND level = $3`, current+1, userid, level)
-// 	if err != nil {
-// 		log.Println(err)
-// 		return false, "error in extension, please contact admin", 1
-// 	}
+	if (record.Extended + 1) > (config.MAX_INSTANCE_TIME / config.INSTANCE_TIME) {
+		return 0, errors.New("limit reached")
+	}
 
-// 	newdeadline := time.UnixMilli(deadline).Add(time.Minute * time.Duration(config.INSTANCE_TIME)).UnixMilli()
+	if err := db.Model(&models.Flag{}).
+		Where("chall_id = ? AND teamid = ?", chall_id, teamid).
+		Update("extended", record.Extended + 1).Error; err != nil {
+		log.Println(err)
+		return 0, errors.New("error in extension, please contact admin")
+	}
 
-// 	_, err = DB.QueryContext(ctx, `UPDATE flags SET deadline = $1 WHERE userid = $2 AND level = $3`, newdeadline, userid, level)
-// 	if err != nil {
-// 		log.Println(err)
-// 		return false, "error in extension, please contact admin", 1
-// 	}
-// 	return true, "", newdeadline
-// }
+	newdeadline := time.UnixMilli(record.Deadline).Add(time.Minute * time.Duration(config.INSTANCE_TIME)).UnixMilli()
+
+	if err := db.Model(&models.Flag{}).
+		Where("chall_id = ? AND teamid = ?", chall_id, teamid).
+		Update("deadline", newdeadline).Error; err != nil {
+		log.Println(err)
+		return 0, errors.New("error in extension, please contact admin")
+	}
+
+	return newdeadline, nil
+}
