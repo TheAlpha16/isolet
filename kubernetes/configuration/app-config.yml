@@ -24,3 +24,5 @@ data:
   instance_time: "30"
   max_instance_time: "60"
   allowed_domains: "iitism.ac.in,gmail.com,yahoo.com,protonmail.com"
+  event_start: "1728813375"
+  event_end: "1728986175"

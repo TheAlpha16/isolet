@@ -9,6 +9,8 @@ import (
 
 var SESSION_SECRET = os.Getenv("SESSION_SECRET")
 var ALLOWED_DOMAINS = os.Getenv("ALLOWED_DOMAINS")
+var EVENT_START = os.Getenv("EVENT_START")
+var EVENT_END = os.Getenv("EVENT_END")
 var SESSION_EXP = 72
 var EMAIL_LEN = 320
 var PASS_LEN = 32

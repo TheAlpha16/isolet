@@ -140,6 +140,16 @@ spec:
                 configMapKeyRef:
                   name: app-config
                   key: allowed_domains
+            - name: EVENT_START
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: event_start
+            - name: EVENT_END
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: event_end
             - name: EMAIL_ID
               valueFrom:
                 secretKeyRef:
