@@ -13,10 +13,43 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+func CheckTime() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		startTime, err := strconv.ParseInt(config.EVENT_START, 10, 64)
+		if err != nil {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
+				"status":  "failure",
+				"message": "invalid event start time",
+			})
+		}
+
+		endTime, err := strconv.ParseInt(config.EVENT_END, 10, 64)
+		if err != nil {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
+				"status":  "failure",
+				"message": "invalid event end time",
+			})
+		}
+
+		if time.Now().Before(time.Unix(startTime, 0)) {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
+				"status":  "failure",
+				"message": "event has not started yet",
+			})
+		}
+
+		if time.Now().After(time.Unix(endTime, 0)) && config.POST_EVENT == "false" {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
+				"status":  "failure",
+				"message": "event has ended",
+			})
+		}
+
+		return c.Next()
+	}
+}
+
 func CheckToken() fiber.Handler {
-	var startTime int64
-	var endTime int64
-	var err error
 
 	return jwtware.New(jwtware.Config{
 		SigningKey: jwtware.SigningKey{
@@ -25,23 +58,6 @@ func CheckToken() fiber.Handler {
 		},
 
 		SuccessHandler: func(c *fiber.Ctx) error {
-			startTime, err = strconv.ParseInt(config.EVENT_START, 10, 64) 
-			if err == nil {
-				return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": "invalid event start time"})
-			}
-
-			endTime, err = strconv.ParseInt(config.EVENT_END, 10, 64) 
-			if err == nil {
-				return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": "invalid event end time"})
-			}
-
-			if time.Now().Before(time.Unix(startTime, 0)) {
-				return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": "event has not started yet"})
-			}
-
-			if time.Now().After(time.Unix(endTime, 0)) && config.POST_EVENT == "false" {
-				return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": "event has ended"})
-			}
 
 			user := c.Locals("user").(*jwt.Token)
 			claims := user.Claims.(jwt.MapClaims)
