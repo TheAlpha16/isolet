@@ -115,16 +115,19 @@ type Running struct {
 	ChallID int   `gorm:"not null;column:chall_id" json:"chall_id"`
 }
 
+type Instance struct {
+    ChallID    int    `gorm:"column:chall_id" json:"chall_id"`
+    Password   string `gorm:"column:password" json:"password"`
+    Port       int    `gorm:"column:port" json:"-"`
+    Hostname   string `gorm:"column:hostname" json:"-"`
+    Deadline   int64  `gorm:"column:deadline" json:"deadline"`
+    Deployment string `gorm:"column:deployment" json:"-"`
+	ConnString string `gorm:"-" json:"connstring"` 
+}
+
 type Score struct {
 	Username string `json:"username"`
 	Score    string `json:"score"`
-}
-
-type AccessDetails struct {
-	ChallID    int    `json:"chall_id"`
-	Password   string `json:"password"`
-	ConnString string `json:"connstring"`
-	Deadline   int64  `json:"deadline"`
 }
 
 type ExtendDeadline struct {

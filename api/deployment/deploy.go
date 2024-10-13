@@ -60,7 +60,7 @@ func GetKubeClient() (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
-func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64, connDetails *models.AccessDetails) error {
+func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64, connDetails *models.Instance) error {
 	challenge := new(models.Challenge)
 	image := new(models.Image)
 
