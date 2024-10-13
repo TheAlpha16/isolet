@@ -154,6 +154,14 @@ func VerifyFlag(c *fiber.Ctx, chall_id int, userid int64, teamid int64, flag str
 		IP: c.Locals("clientIP").(string),
 	}
 
+	if config.POST_EVENT != "false" {
+		if !sublog.Correct {
+			return sublog.Correct, "incorrect flag"
+		} else {
+			return sublog.Correct, "correct flag"
+		}
+	}
+
 	if err := db.Create(&sublog).Error; err != nil {
 		log.Println(err)
 		return false, "error in verification, please contact admin"

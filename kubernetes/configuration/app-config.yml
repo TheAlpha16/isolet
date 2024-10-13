@@ -26,3 +26,4 @@ data:
   allowed_domains: "iitism.ac.in,gmail.com,yahoo.com,protonmail.com"
   event_start: "1728813375"
   event_end: "1728986175"
+  post_event: "false"

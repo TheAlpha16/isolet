@@ -150,6 +150,11 @@ spec:
                 configMapKeyRef:
                   name: app-config
                   key: event_end
+            - name: POST_EVENT
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: post_event
             - name: EMAIL_ID
               valueFrom:
                 secretKeyRef:
