@@ -198,26 +198,50 @@ func VerifyFlag(c *fiber.Ctx, chall_id int, userid int64, teamid int64, flag str
 	return true, "correct flag"
 }
 
-// func ReadScores(c *fiber.Ctx) ([]models.Score, error) {
-// 	scores := make([]models.Score, 0)
-// 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
-// 	defer cancel()
+func ReadScores(c *fiber.Ctx, page int) (models.ScoreBoard, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
 
-// 	rows, err := DB.QueryContext(ctx, `SELECT username, score from users ORDER BY score DESC, lastsubmission`)
-// 	if err != nil {
-// 		return scores, err
-// 	}
-// 	defer rows.Close()
+	db := DB.WithContext(ctx)
 
-// 	for rows.Next() {
-// 		score := new(models.Score)
-// 		if err := rows.Scan(&score.Username, &score.Score); err != nil {
-// 			return scores, err
-// 		}
-// 		scores = append(scores, *score)
-// 	}
-// 	if err := rows.Err(); err != nil {
-// 		return scores, err
-// 	}
-// 	return scores, nil
-// }
+	perPage := 10 
+	offset := (page - 1) * perPage
+	scores := make([]models.Score, 0)
+	var totalTeams int64
+	
+	if err := db.Model(&models.Team{}).Count(&totalTeams).Error; err != nil {
+		return models.ScoreBoard{}, err
+	}
+
+	pageCount := int((totalTeams + int64(perPage) - 1) / int64(perPage))
+	if pageCount < page {
+		return models.ScoreBoard{
+			PageCount: pageCount,
+			Page:      page,
+			Scores:    scores,
+		}, nil
+	}
+
+	err := db.Table("users").
+		Select("teams.teamid as teamid, teams.teamname as teamname, SUM(users.score) as score").
+		Joins("LEFT JOIN teams ON users.teamid = teams.teamid").
+		Group("teams.teamid").
+		Order("SUM(users.score) DESC").
+		Limit(perPage).
+		Offset(offset).
+		Scan(&scores).Error
+
+	if err != nil {
+		return models.ScoreBoard{}, err
+	}
+
+	for i := range scores {
+		scores[i].Rank = offset + i + 1
+	}
+
+	return models.ScoreBoard{
+		PageCount: pageCount,
+		Page:      page,
+		Scores:    scores,
+	}, nil
+}

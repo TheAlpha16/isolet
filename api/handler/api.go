@@ -60,11 +60,25 @@ func SubmitFlag(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "correct flag"})
 }
 
-// func ShowScoreBoard(c *fiber.Ctx) error {
-// 	board, err := database.ReadScores(c)
-// 	if err != nil {
-// 		log.Println(err)
-// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in reading scores"})
-// 	}
-// 	return c.Status(fiber.StatusOK).JSON(board)
-// }
+func ShowScoreBoard(c *fiber.Ctx) error {
+	page_string := c.Query("page", "1")
+
+	page, err := strconv.Atoi(page_string)
+	if err != nil {
+		page = 1
+	}
+
+	if page < 1 {
+		page = 1
+	}
+
+	board, err := database.ReadScores(c, page)
+	if err != nil {
+		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
+			"status": "failure", 
+			"message": "cannot retrieve scoreboard at the moment",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(board)
+}

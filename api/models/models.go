@@ -14,6 +14,7 @@ type User struct {
 	Password string `gorm:"not null" json:"password" form:"password"`
 	Rank     int    `gorm:"default:3" json:"rank"`
 	TeamID   int64  `gorm:"default:-1;column:teamid" json:"teamid"`
+	Score    int    `gorm:"default:0" json:"score"`
 }
 
 type ToVerify struct {
@@ -116,18 +117,26 @@ type Running struct {
 }
 
 type Instance struct {
-    ChallID    int    `gorm:"column:chall_id" json:"chall_id"`
-    Password   string `gorm:"column:password" json:"password"`
-    Port       int    `gorm:"column:port" json:"-"`
-    Hostname   string `gorm:"column:hostname" json:"-"`
-    Deadline   int64  `gorm:"column:deadline" json:"deadline"`
-    Deployment string `gorm:"column:deployment" json:"-"`
-	ConnString string `gorm:"-" json:"connstring"` 
+	ChallID    int    `gorm:"column:chall_id" json:"chall_id"`
+	Password   string `gorm:"column:password" json:"password"`
+	Port       int    `gorm:"column:port" json:"-"`
+	Hostname   string `gorm:"column:hostname" json:"-"`
+	Deadline   int64  `gorm:"column:deadline" json:"deadline"`
+	Deployment string `gorm:"column:deployment" json:"-"`
+	ConnString string `gorm:"-" json:"connstring"`
 }
 
 type Score struct {
-	Username string `json:"username"`
-	Score    string `json:"score"`
+	Rank     int    `gorm:"-" json:"rank"`
+	TeamID   string `gorm:"column:teamid" json:"teamid"`
+	TeamName string `gorm:"column:teamname" json:"teamname"`
+	Score    string `gorm:"column:score" json:"score"`
+}
+
+type ScoreBoard struct {
+	PageCount int     `json:"page_count"`
+	Page      int     `json:"page"`
+	Scores    []Score `json:"scores"`
 }
 
 type ExtendDeadline struct {
