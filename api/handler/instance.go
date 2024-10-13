@@ -3,8 +3,9 @@ package handler
 import (
 	"strconv"
 
-	"github.com/TheAlpha16/isolet/api/deployment"
 	"github.com/TheAlpha16/isolet/api/models"
+	"github.com/TheAlpha16/isolet/api/database"
+	"github.com/TheAlpha16/isolet/api/deployment"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -28,13 +29,13 @@ func StartInstance(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid challenge id"})
 	}
 
-	packed := new(models.AccessDetails)
+	instance := new(models.Instance)
 
-	if err := deployment.DeployInstance(c, chall_id, teamid, packed); err != nil {
+	if err := deployment.DeployInstance(c, chall_id, teamid, instance); err != nil {
 		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": err.Error()})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success", "message": packed})
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success", "message": instance})
 }
 
 func StopInstance(c *fiber.Ctx) error {
@@ -89,17 +90,17 @@ func ExtendTime(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": packed})
 }
 
-// func GetStatus(c *fiber.Ctx) error {
-// 	// var userid int
-// 	// var err error
+func GetStatus(c *fiber.Ctx) error {
+	var teamid int64
+	var err error
 
-// 	// claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
-// 	// userid = int(claims["userid"].(float64))
+	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+	teamid = int64(claims["teamid"].(float64))
 
-// 	// instances, err := database.GetInstances(c, userid)
-// 	// if err != nil {
-// 	// 	log.Println(err)
-// 	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "contact admin"})
-// 	// }
-// 	return c.SendStatus(fiber.StatusOK)
-// }
+	instances, err := database.GetInstances(c, teamid)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "contact admin"})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": instances})
+}

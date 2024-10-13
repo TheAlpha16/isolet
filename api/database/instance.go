@@ -137,30 +137,33 @@ func IsRunning (ctx context.Context, chall_id int, teamid int64) (string, error)
 	return flag, nil
 }
 
-// func GetInstances(c *fiber.Ctx, userid int) ([]models.Instance, error) {
-// 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
-// 	defer cancel()
+func GetInstances(c *fiber.Ctx, teamid int64) ([]models.Instance, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
 
-// 	instances := make([]models.Instance, 0)
-// 	rows, err := DB.QueryContext(ctx, `SELECT userid, level, password, port, verified, hostname, deadline from flags WHERE userid = $1`, userid)
-// 	if err != nil {
-// 		return instances, err
-// 	}
-// 	defer rows.Close()
+	instances := make([]models.Instance, 0)
 
-// 	for rows.Next() {
-// 		instance := new(models.Instance)
-// 		if err := rows.Scan(&instance.UserID, &instance.Level, &instance.Password, &instance.Port, &instance.Verified, &instance.Hostname, &instance.Deadline); err != nil {
-// 			return instances, err
-// 		}
-// 		instances = append(instances, *instance)
-// 	}
-// 	if err := rows.Err(); err != nil {
-// 		return instances, err
-// 	}
-// 	return instances, nil
-// }
+	db := DB.WithContext(ctx)
 
+	if err := db.Model(&models.Flag{}).
+		Select("flags.chall_id, flags.password, flags.port, flags.hostname, flags.deadline, images.deployment").
+		Joins("JOIN images ON flags.chall_id = images.chall_id").
+		Where("flags.teamid = ?", teamid).
+		Find(&instances).Error; err != nil {
+		log.Println(err)
+		return instances, errors.New("error in fetching instances, please contact admin")
+	}
+
+	for i := range instances {
+		if instances[i].Deployment == "ssh" {
+			instances[i].ConnString = GenerateChallengeEndpoint(instances[i].Deployment, "", instances[i].Hostname, instances[i].Port, config.DEFAULT_USERNAME)
+		} else {
+			instances[i].ConnString = GenerateChallengeEndpoint(instances[i].Deployment, "", instances[i].Hostname, instances[i].Port)
+		}
+	}
+
+	return instances, nil
+}
 
 func AddTime(c *fiber.Ctx, chall_id int, teamid int64) (int64, error) {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
