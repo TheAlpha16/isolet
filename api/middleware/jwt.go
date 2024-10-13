@@ -39,7 +39,7 @@ func CheckToken() fiber.Handler {
 				return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": "event has not started yet"})
 			}
 
-			if time.Now().After(time.Unix(endTime, 0)) {
+			if time.Now().After(time.Unix(endTime, 0)) && config.POST_EVENT == "false" {
 				return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": "event has ended"})
 			}
 
