@@ -171,30 +171,6 @@ func VerifyFlag(c *fiber.Ctx, chall_id int, userid int64, teamid int64, flag str
 		return false, "incorrect flag"
 	}
 
-	if err := db.Model(&models.Team{}).
-		Where("teamid = ?", teamid).
-		Update("solved", gorm.Expr("array_append(solved, ?)", chall_id)).
-		Error; err != nil {
-		log.Println(err)
-		return false, "error in verification, please contact admin"
-	}
-
-	if err := db.Model(&models.User{}).
-		Where("userid = ?", userid).
-		Update("score", gorm.Expr("score + ?", challenge.Points)).
-		Error; err != nil {
-		log.Println(err)
-		return false, "error in verification, please contact admin"
-	}
-
-	if err := db.Model(&models.Challenge{}).
-		Where("chall_id = ?", chall_id).
-		Update("solves", gorm.Expr("solves + 1")).
-		Error; err != nil {
-		log.Println(err)
-		return false, "error in verification, please contact admin"
-	}
-
 	return true, "correct flag"
 }
 
