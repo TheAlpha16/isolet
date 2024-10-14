@@ -14,7 +14,6 @@ type User struct {
 	Password string `gorm:"not null" json:"password" form:"password"`
 	Rank     int    `gorm:"default:3" json:"rank"`
 	TeamID   int64  `gorm:"default:-1;column:teamid" json:"teamid"`
-	Score    int    `gorm:"default:0" json:"score"`
 }
 
 type ToVerify struct {
@@ -128,9 +127,9 @@ type Instance struct {
 
 type Score struct {
 	Rank     int    `gorm:"-" json:"rank"`
-	TeamID   string `gorm:"column:teamid" json:"teamid"`
+	TeamID   int64 `gorm:"column:teamid" json:"teamid"`
 	TeamName string `gorm:"column:teamname" json:"teamname"`
-	Score    string `gorm:"column:score" json:"score"`
+	Score    int `gorm:"column:score" json:"score"`
 }
 
 type ScoreBoard struct {
