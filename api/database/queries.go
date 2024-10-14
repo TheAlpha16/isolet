@@ -68,6 +68,11 @@ func ReadChallenges(c *fiber.Ctx, teamid int64) (map[string][]models.Challenge, 
 				challenge.Hints[i].Hint = ""
 			}
 
+			if hint.Cost == 0 {
+				challenge.Hints[i].Unlocked = true
+				continue
+			}
+
 			challenge.Hints[i].Unlocked = hintUnlocked
 		}
 
