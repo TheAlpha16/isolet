@@ -333,8 +333,6 @@ func getPodObject(instance_name string, flagObject models.Flag, image *models.Im
 		memory = fmt.Sprintf("%dMi", image.Memory)
 	}
 
-	log.Println(imagePath)
-
 	return &core.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      instance_name,
