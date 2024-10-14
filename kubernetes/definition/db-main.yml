@@ -19,7 +19,6 @@ data:
         userid bigserial PRIMARY KEY,
         email text NOT NULL UNIQUE,
         username text NOT NULL UNIQUE,
-        score integer DEFAULT 0,
         rank integer DEFAULT 3,
         password VARCHAR(100) NOT NULL,
         teamid bigint DEFAULT -1
@@ -33,7 +32,9 @@ data:
         members bigint[] NOT NULL DEFAULT '{}',
         password VARCHAR(100) NOT NULL,
         solved int[] DEFAULT '{}',
-        uhints int[] DEFAULT '{}'
+        uhints int[] DEFAULT '{}',
+        cost int DEFAULT 0,
+        last_submission bigint DEFAULT EXTRACT(EPOCH FROM NOW())
     );
 
     -- Create trigger function to add captain to members array
@@ -50,6 +51,25 @@ data:
     BEFORE INSERT ON teams
     FOR EACH ROW
     EXECUTE FUNCTION add_captain_to_members();
+
+    -- Function to update last_submission on a solve
+    CREATE OR REPLACE FUNCTION update_last_submission()
+    RETURNS TRIGGER AS $$
+    BEGIN
+        IF NEW.solved IS DISTINCT FROM OLD.solved THEN
+            NEW.last_submission := EXTRACT(EPOCH FROM NOW());
+        END IF;
+
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+
+    -- Trigger to update last_submission on solve
+    CREATE TRIGGER update_last_submission_trigger
+    BEFORE UPDATE OF solved
+    ON teams
+    FOR EACH ROW
+    EXECUTE FUNCTION update_last_submission();
 
     -- Create toverify table
     CREATE TABLE IF NOT EXISTS toverify(
@@ -142,6 +162,37 @@ data:
     CREATE TRIGGER update_hints_trigger
     AFTER INSERT ON hints
     FOR EACH ROW EXECUTE PROCEDURE update_hints();
+
+    -- Function to update cost in teams when a new hint is unlocked
+    CREATE OR REPLACE FUNCTION update_team_cost()
+    RETURNS TRIGGER AS $$
+    DECLARE
+        new_hint int;
+        hint_cost int;
+    BEGIN
+        FOR new_hint IN (
+            SELECT unnest(NEW.uhints)
+            EXCEPT
+            SELECT unnest(OLD.uhints)
+        )
+        LOOP
+            SELECT cost INTO hint_cost
+            FROM hints
+            WHERE hid = new_hint;
+
+            NEW.cost := NEW.cost + hint_cost;
+        END LOOP;
+
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+
+    -- Trigger to initiate hint cost update function
+    CREATE TRIGGER update_team_cost_trigger
+    BEFORE UPDATE OF uhints
+    ON teams
+    FOR EACH ROW
+    EXECUTE FUNCTION update_team_cost();
 
     -- Table to store deployment data for on-demand and dynamic challenges
     CREATE TABLE IF NOT EXISTS images(

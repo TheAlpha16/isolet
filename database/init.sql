@@ -13,7 +13,6 @@ CREATE TABLE IF NOT EXISTS users(
     userid bigserial PRIMARY KEY,
     email text NOT NULL UNIQUE,
     username text NOT NULL UNIQUE,
-    score integer DEFAULT 0,
     rank integer DEFAULT 3,
     password VARCHAR(100) NOT NULL,
     teamid bigint DEFAULT -1
@@ -27,7 +26,9 @@ CREATE TABLE IF NOT EXISTS teams(
     members bigint[] NOT NULL DEFAULT '{}',
     password VARCHAR(100) NOT NULL,
     solved int[] DEFAULT '{}',
-    uhints int[] DEFAULT '{}'
+    uhints int[] DEFAULT '{}',
+    cost int DEFAULT 0,
+    last_submission bigint DEFAULT EXTRACT(EPOCH FROM NOW())
 );
 
 -- Create trigger function to add captain to members array
@@ -44,6 +45,25 @@ CREATE TRIGGER add_captain_to_members_trigger
 BEFORE INSERT ON teams
 FOR EACH ROW
 EXECUTE FUNCTION add_captain_to_members();
+
+-- Function to update last_submission on a solve
+CREATE OR REPLACE FUNCTION update_last_submission()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.solved IS DISTINCT FROM OLD.solved THEN
+        NEW.last_submission := EXTRACT(EPOCH FROM NOW());
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to update last_submission on solve
+CREATE TRIGGER update_last_submission_trigger
+BEFORE UPDATE OF solved
+ON teams
+FOR EACH ROW
+EXECUTE FUNCTION update_last_submission();
 
 -- Create toverify table
 CREATE TABLE IF NOT EXISTS toverify(
@@ -137,6 +157,37 @@ CREATE TRIGGER update_hints_trigger
 AFTER INSERT ON hints
 FOR EACH ROW EXECUTE PROCEDURE update_hints();
 
+-- Function to update cost in teams when a new hint is unlocked
+CREATE OR REPLACE FUNCTION update_team_cost()
+RETURNS TRIGGER AS $$
+DECLARE
+    new_hint int;
+    hint_cost int;
+BEGIN
+    FOR new_hint IN (
+        SELECT unnest(NEW.uhints)
+        EXCEPT
+        SELECT unnest(OLD.uhints)
+    )
+    LOOP
+        SELECT cost INTO hint_cost
+        FROM hints
+        WHERE hid = new_hint;
+
+        NEW.cost := NEW.cost + hint_cost;
+    END LOOP;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to initiate hint cost update function
+CREATE TRIGGER update_team_cost_trigger
+BEFORE UPDATE OF uhints
+ON teams
+FOR EACH ROW
+EXECUTE FUNCTION update_team_cost();
+
 -- Table to store deployment data for on-demand and dynamic challenges
 CREATE TABLE IF NOT EXISTS images(
     iid serial PRIMARY KEY,
@@ -191,3 +242,28 @@ $$;
 CREATE OR REPLACE TRIGGER enforce_instance_count_trigger
 BEFORE INSERT ON running
 FOR EACH ROW EXECUTE PROCEDURE enforce_instance_count();
+
+-- Create the function to update the teams and challenges
+CREATE OR REPLACE FUNCTION handle_correct_submission() 
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.correct = TRUE THEN
+        UPDATE teams
+        SET solved = array_append(solved, NEW.chall_id)
+        WHERE teamid = NEW.teamid
+        AND NOT (solved @> ARRAY[NEW.chall_id]); -- Prevent duplicate challenge ID
+
+        UPDATE challenges
+        SET solves = solves + 1
+        WHERE chall_id = NEW.chall_id;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create the trigger on the sublogs table
+CREATE TRIGGER correct_submission_trigger
+AFTER INSERT ON sublogs
+FOR EACH ROW
+EXECUTE FUNCTION handle_correct_submission();
