@@ -210,6 +210,7 @@ func ReadScores(c *fiber.Ctx, page int) (models.ScoreBoard, error) {
 	var totalTeams int64
 	
 	if err := db.Model(&models.Team{}).Count(&totalTeams).Error; err != nil {
+		log.Println(err)
 		return models.ScoreBoard{}, err
 	}
 
@@ -222,16 +223,19 @@ func ReadScores(c *fiber.Ctx, page int) (models.ScoreBoard, error) {
 		}, nil
 	}
 
-	err := db.Table("users").
-		Select("teams.teamid as teamid, teams.teamname as teamname, SUM(users.score) as score").
-		Joins("LEFT JOIN teams ON users.teamid = teams.teamid").
+	err := db.Table("teams").
+		Select(`teams.teamid AS teamid, 
+				teams.teamname AS teamname, 
+				COALESCE(SUM(challenges.points), 0) - teams.cost AS score`).
+		Joins("LEFT JOIN challenges ON challenges.chall_id = ANY(teams.solved)").
 		Group("teams.teamid").
-		Order("SUM(users.score) DESC").
+		Order("score DESC, teams.last_submission ASC").
 		Limit(perPage).
 		Offset(offset).
 		Scan(&scores).Error
 
 	if err != nil {
+		log.Println(err)
 		return models.ScoreBoard{}, err
 	}
 
