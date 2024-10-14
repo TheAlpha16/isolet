@@ -20,7 +20,6 @@ class User(Base):
     userid = Column(BigInteger, primary_key=True, autoincrement=True)
     email = Column(Text, nullable=False, unique=True)
     username = Column(Text, nullable=False, unique=True)
-    score = Column(Integer, default=0)
     rank = Column(Integer, default=3)
     password = Column(String(100), nullable=False)
     teamid = Column(BigInteger, default=-1)
