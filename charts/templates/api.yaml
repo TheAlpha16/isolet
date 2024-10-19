@@ -27,7 +27,7 @@ spec:
       {{- end }}
       containers:
         - name: api
-          image: "{{ .Values.registry.url }}/{{ .Values.platform.api.image }}:{{ .Values.platform.api.tag }}"
+          image: "{{ .Values.registry.url }}/{{ .Values.platform.api.image }}:{{ .Values.platform.api.tag | default "latest" }}"
           imagePullPolicy: Always
           resources:
             limits:
