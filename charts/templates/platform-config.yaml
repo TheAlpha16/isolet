@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: platform-config
+  namespace: {{ .Values.platform.namespace }}
+  labels: 
+    app.kubernetes.io/component: platform
+    app.kubernetes.io/part-of: config
+    {{- include "charts.labels" . | nindent 4 }}
+data:
+  instance_namespace: {{ .Values.isolet.namespace }}
+  image_registry: {{ .Values.registry.url }}
+  concurrent_instances: {{ .Values.isolet.concurrentInstances }}
+  ctf_name: {{ .Values.event.name }}
+  app_port: 80
+  kubeconfig_file_path: "/root/.kube/config"
+  cpu_limit: {{ .Values.isolet.limitCPU }}
+  cpu_request: {{ .Values.isolet.defaultCPU }}
+  memory_limit: {{ .Values.isolet.limitMemory }}
+  memory_request: {{ .Values.isolet.defaultMemory }}
+  disk_limit: "1Gi"
+  disk_request: "128Mi"
+  termination_period: "10"
+  public_url: {{ .Values.event.url }}
+  ui_url: "ui-svc"
+  api_url: "api-svc"
+  proxy_server_name: {{ .Values.event.url }}
+  instance_hostname: {{ .Values.isolet.url }}
+  instance_time: {{ .Values.isolet.defaultInstanceTime }}
+  max_instance_time: {{ .Values.isolet.maxInstanceTime }}
+  allowed_domains: "{{ .Values.event.allowedDomains | join "," }}"
+  event_start: {{ .Values.event.startTime | quote }}
+  event_end: {{ .Values.event.endTime | quote }}
+  post_event: {{ .Values.event.postEvent | quote }}

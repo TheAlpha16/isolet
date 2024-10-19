@@ -1,12 +1,36 @@
+# general
+event:
+  name: unixit
+  startTime: 1728813375
+  endTime: 1728986175
+  postEvent: false
+  url: unixit.fun
+  allowedDomains: 
+    - gmail.com
+    - yahoo.com
+    - protonmail.com
+    - iitism.ac.in
+
+registry:
+  type: public
+  url: docker.io/thealpha16
+  secretFile: "" 
+
 # platform unit
 platform:
   namespace: platform
+
   database:
     storageClass: standard
     capacity: 2Gi
+
   phoros: # fileserver
     storageClass: standard
     capacity: 3Gi
+  
+  api:
+    image: isolet-api
+    tag: v2.0.0
 
 # dynamic challenges unit
 dynamic:
@@ -15,6 +39,15 @@ dynamic:
 # isolated challenges unit
 isolet:
   namespace: isolet
+  url: isolet.unixit.fun
+
+  concurrentInstances: 2
+  defaultCPU: 15m
+  defaultMemory: 32Mi
+  limitCPU: 50m
+  limitMemory: 128Mi
+  defaultInstanceTime: 30 # minutes
+  maxInstanceTime: 60 # minutes
 
 # automation task unit
 automated:
@@ -23,3 +56,23 @@ automated:
 # admin unit
 admin:
   namespace: admin
+
+# base64 encoded secrets
+## PLEASE DO NOT USE DEFAULT VALUES FOR PRODUCTION
+secrets:
+  signing:
+    sessionSecret: ODE1NWIyODgwOWQ2MGJlMDQxNjM4N2E5OWM5NDI5NzU=
+    tokenSecret: MTQyNGU2ZjBhMTQ2MzM5Yjc0YWYyNzlkNjRhOTIzNjI=
+    instanceNameSecret: N2Q2YzllOGY2ODcwZWZhNGU1YmJiYzU3YjdiY2JmZDM=
+
+  smtp:
+    emailID: dGVzdGluZy5vbkBtZS5jb20=
+    emailAuth: bm90YXNlY3JldA==
+    smtpHost: c210cC5nbWFpbC5jb20=
+    smtpPort: NTg3
+
+  database:
+    dbHost: ZGF0YWJhc2Utc3Zj
+    dbUser: cG9zdGdyZXM=
+    dbPassword: TXlmb290c3Ryb25ncGFzc3dkMDQzLgo=
+    dbName: cG9zdGdyZXM= # it's better to have same name as db_user. Change it if you know what you are doing. 
