@@ -322,13 +322,13 @@ func getPodObject(instance_name string, flagObject models.Flag, image *models.Im
 	imagePath = fmt.Sprintf("%s/%s", imagePath, image.Image)
 
 	if image.CPU == 0 {
-		cpu = config.CPU_LIMIT
+		cpu = config.CPU_REQUEST
 	} else {
 		cpu = fmt.Sprintf("%dm", image.CPU)
 	}
 
 	if image.Memory == 0 {
-		memory = config.MEMORY_LIMIT
+		memory = config.MEMORY_REQUEST
 	} else {
 		memory = fmt.Sprintf("%dMi", image.Memory)
 	}
