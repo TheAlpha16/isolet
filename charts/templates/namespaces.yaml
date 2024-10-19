@@ -26,7 +26,7 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ .Values.automated.namespace }}
+  name: {{ .Values.automation.namespace }}
   labels:
     {{- include "charts.labels" . | nindent 4 }}
 
