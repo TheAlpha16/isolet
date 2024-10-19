@@ -1,0 +1,19 @@
+# platform unit
+platform:
+  namespace: platform
+
+# dynamic challenges unit
+dynamic:
+  namespace: dynamic
+
+# isolated challenges unit
+isolet:
+  namespace: isolet
+
+# automation task unit
+automated:
+  namespace: automated
+
+# admin unit
+admin:
+  namespace: admin

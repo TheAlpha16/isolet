@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.platform.namespace }}
+  labels:
+    {{- include "charts.labels" . | nindent 4 }}
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.dynamic.namespace }}
+  labels:
+    {{- include "charts.labels" . | nindent 4 }}
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.isolet.namespace }}
+  labels:
+    {{- include "charts.labels" . | nindent 4 }}
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.automated.namespace }}
+  labels:
+    {{- include "charts.labels" . | nindent 4 }}
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.admin.namespace }}
+  labels:
+    {{- include "charts.labels" . | nindent 4 }}
