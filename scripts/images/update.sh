@@ -76,7 +76,7 @@ case $confirm in
     ;;
 esac
 
-cd ./${resource}
+cd $(dirname "$0")/../${resource}
 docker buildx build --tag ${registry}/isolet-${resource}:${version} --platform linux/arm64/v8,linux/amd64 --builder bob --push .
 
 case $tag in
