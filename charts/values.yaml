@@ -31,6 +31,10 @@ platform:
   api:
     image: isolet-api
     tag: v2.0.0
+    
+  ui:
+    image: isolet-ui
+    tag: v2.0.0
 
 # dynamic challenges unit
 dynamic:
