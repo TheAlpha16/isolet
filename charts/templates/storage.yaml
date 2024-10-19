@@ -23,7 +23,7 @@ metadata:
   name: phoros-pv-claim
   namespace: {{ .Values.platform.namespace }}
   labels: 
-    {{- include "charts.labels" . | nindent 4}}
+    {{- include "charts.labels" . | nindent 4 }}
     app.kubernetes.io/component: persistent-storage
     app.kubernetes.io/part-of: phoros
 spec:
