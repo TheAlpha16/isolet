@@ -5,9 +5,9 @@ metadata:
   name: db-pv-claim
   namespace: {{ .Values.platform.namespace }}
   labels:
-    {{- include "charts.labels" . | nindent 2 }}
     app.kubernetes.io/component: persistent-storage
     app.kubernetes.io/part-of: database
+    {{- include "charts.labels" . | nindent 2 }}
 spec:
   storageClassName: {{ .Values.platform.database.storageClass }}
   accessModes:
@@ -23,9 +23,9 @@ metadata:
   name: phoros-pv-claim
   namespace: {{ .Values.platform.namespace }}
   labels: 
-    {{- include "charts.labels" . | nindent 2 }}
     app.kubernetes.io/component: persistent-storage
     app.kubernetes.io/part-of: phoros
+    {{- include "charts.labels" . | nindent 2 }}
 spec:
   storageClassName: {{ .Values.platform.phoros.storageClass }}
   accessModes:
