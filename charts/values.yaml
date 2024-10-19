@@ -54,8 +54,12 @@ isolet:
   maxInstanceTime: 60 # minutes
 
 # automation task unit
-automated:
-  namespace: automated
+automation:
+  namespace: automation
+
+  ripper:
+    image: isolet-ripper
+    tag: v2.0.0
 
 # admin unit
 admin:

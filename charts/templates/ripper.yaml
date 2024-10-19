@@ -1,0 +1,68 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ripper-deployment
+  namespace: {{ .Values.automation.namespace }}
+  labels: 
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: ripper
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: deployment
+      app.kubernetes.io/part-of: ripper
+  template:
+    metadata:
+      name: ripper-deployment
+      labels: 
+        app.kubernetes.io/component: deployment
+        app.kubernetes.io/part-of: ripper
+    spec:
+      containers:
+        - name: ripper
+          image: "{{ .Values.registry.url }}/{{ .Values.automation.ripper.image }}:{{ .Values.automation.ripper.tag | default "latest" }}"
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+            requests:
+              memory: "32Mi"
+              cpu: "300m"
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: automation-secrets
+                  key: POSTGRES_PASSWORD
+
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: automation-secrets
+                  key: POSTGRES_USER
+
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: automation-secrets
+                  key: POSTGRES_HOST
+
+            - name: POSTGRES_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: automation-secrets
+                  key: POSTGRES_DATABASE
+
+            - name: INSTANCE_NAME_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: automation-secrets
+                  key: INSTANCE_NAME_SECRET
+
+            - name: INSTANCE_NAMESPACE
+              value: {{ .Values.isolet.namespace }}
+ 
