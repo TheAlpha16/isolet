@@ -1,6 +1,12 @@
 # platform unit
 platform:
   namespace: platform
+  database:
+    storageClass: standard
+    capacity: 2Gi
+  phoros: # fileserver
+    storageClass: standard
+    capacity: 3Gi
 
 # dynamic challenges unit
 dynamic:
