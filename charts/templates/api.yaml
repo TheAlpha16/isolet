@@ -21,6 +21,7 @@ spec:
         app.kubernetes.io/component: deployment
         app.kubernetes.io/part-of: api
     spec:
+      serviceAccountName: api-service-account
       {{- if eq .Values.registry.type "private" }}
       imagePullSecrets:
       - name: build-registry-secret

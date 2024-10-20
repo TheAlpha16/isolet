@@ -21,6 +21,7 @@ spec:
         app.kubernetes.io/component: deployment
         app.kubernetes.io/part-of: ripper
     spec:
+      serviceAccountName: ripper-service-account
       {{- if eq .Values.registry.type "private" }}
       imagePullSecrets:
       - name: build-registry-secret
