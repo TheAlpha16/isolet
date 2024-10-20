@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: platform-config
+  namespace: {{ .Values.platform.namespace }}
+  labels: 
+    app.kubernetes.io/component: platform
+    app.kubernetes.io/part-of: config
+    {{- include "charts.labels" . | nindent 4 }}
+data:
+  OBJECT_STORE: {{ .Values.platform.fileserver.objectStore.type }}
