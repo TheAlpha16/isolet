@@ -31,6 +31,8 @@ platform:
     tag: v1.0.0
     storageClass: standard
     capacity: 3Gi
+    objectStore: 
+      type: native
   
   api:
     image: isolet-api
@@ -84,6 +86,7 @@ secrets:
     sessionSecret: ODE1NWIyODgwOWQ2MGJlMDQxNjM4N2E5OWM5NDI5NzU=
     tokenSecret: MTQyNGU2ZjBhMTQ2MzM5Yjc0YWYyNzlkNjRhOTIzNjI=
     instanceNameSecret: N2Q2YzllOGY2ODcwZWZhNGU1YmJiYzU3YjdiY2JmZDM=
+    adminSecret: YTE1ZTMwNDk2Mzg3YTcyNzgzMjIzNDg3ZjU5NjljZmY=
 
   smtp:
     emailID: dGVzdGluZy5vbkBtZS5jb20=
