@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fileserver-deployment
+  namespace: {{ .Values.platform.namespace }}
+  labels: 
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: fileserver
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: deployment
+      app.kubernetes.io/part-of: fileserver
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: deployment
+        app.kubernetes.io/part-of: fileserver
+    spec:
+      {{- if eq .Values.registry.type "private" }}
+      imagePullSecrets:
+      - name: build-registry-secret
+      {{- end }}
+      containers:
+        - name: phoros-fileserver
+          image: "{{ .Values.registry.url }}/{{ .Values.platform.fileserver.image }}:{{ .Values.platform.fileserver.tag | default "latest" }}"
+          imagePullPolicy: Always
+          env:
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: SESSION_SECRET
+            - name: ADMIN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: ADMIN_SECRET
+            - name: EVENT_START
+              valueFrom:
+                configMapKeyRef:
+                  name: api-config
+                  key: EVENT_START
+            - name: EVENT_END
+              valueFrom:
+                configMapKeyRef:
+                  name: api-config
+                  key: EVENT_END
+            - name: POST_EVENT
+              valueFrom:
+                configMapKeyRef:
+                  name: api-config
+                  key: POST_EVENT
+            - name: OBJECT_STORE
+              valueFrom:
+                configMapKeyRef:
+                  name: platform-config
+                  key: OBJECT_STORE
+            - name: APP_PORT
+              value: 9409
+          ports:
+            - name: phoros-app-port
+              containerPort: 9409
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: phoros-app-port
+            initialDelaySeconds: 10
+            failureThreshold: 3
+            periodSeconds: 10
+          resources:
+            limits:
+              cpu: 300m
+              memory: 256Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+          {{- if eq .Values.platform.fileserver.objectStore.type "native" }}
+          volumeMounts:
+            - name: phoros-storage
+              mountPath: /etc/phoros
+          {{- end }}
+      {{- if eq .Values.platform.fileserver.objectStore.type "native" }}
+      volumes:
+        - name: phoros-storage
+          persistentVolumeClaim:
+            claimName: phoros-pv-claim
+      {{- end}}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fileserver-svc
+  namespace: {{ .Values.platform.namespace }}
+  labels: 
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: fileserver
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 80
+      targetPort: 9409
+      protocol: TCP
+  selector:
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: fileserver
