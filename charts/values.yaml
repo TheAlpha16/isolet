@@ -14,7 +14,7 @@ event:
 registry:
   type: public
   url: docker.io/thealpha16
-  secretFile: "" 
+  dockerconfig: # leave it empty for public registry
 
 # platform unit
 platform:
@@ -40,18 +40,18 @@ platform:
 dynamic:
   namespace: dynamic
   registry:
-    type: public
-    url: docker.io/thealpha16
-    secretFile: ""
+    type: private
+    url: docker.io/unixit.fun
+    dockerConfig: # base64 encoded docker config json file (required for private registry)
 
 # isolated challenges unit
 isolet:
   namespace: isolet
   url: isolet.unixit.fun
   registry:
-    type: public
-    url: docker.io/thealpha16
-    secretFile: ""
+    type: private
+    url: docker.io/unixit.fun
+    dockerConfig: # base64 encoded docker config json file (required for private registry)
 
   concurrentInstances: 2
   defaultCPU: 15m
