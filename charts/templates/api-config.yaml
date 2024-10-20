@@ -9,7 +9,7 @@ metadata:
     {{- include "charts.labels" . | nindent 4 }}
 data:
   INSTANCE_NAMESPACE: {{ .Values.isolet.namespace }}
-  IMAGE_REGISTRY: {{ .Values.registry.url }}
+  IMAGE_REGISTRY: {{ .Values.isolet.registry.url }}
   CONCURRENT_INSTANCES: {{ .Values.isolet.concurrentInstances }}
   CTF_NAME: {{ .Values.event.name }}
   APP_PORT: 80

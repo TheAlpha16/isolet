@@ -39,11 +39,19 @@ platform:
 # dynamic challenges unit
 dynamic:
   namespace: dynamic
+  registry:
+    type: public
+    url: docker.io/thealpha16
+    secretFile: ""
 
 # isolated challenges unit
 isolet:
   namespace: isolet
   url: isolet.unixit.fun
+  registry:
+    type: public
+    url: docker.io/thealpha16
+    secretFile: ""
 
   concurrentInstances: 2
   defaultCPU: 15m

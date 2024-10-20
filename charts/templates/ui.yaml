@@ -21,6 +21,10 @@ spec:
         app.kubernetes.io/component: deployment
         app.kubernetes.io/part-of: ui
     spec:
+      {{- if eq .Values.registry.type "private" }}
+      imagePullSecrets:
+      - name: build-registry-secret
+      {{- end }}
       containers:
         - name: ui
           image: "{{ .Values.registry.url }}/{{ .Values.platform.ui.image }}:{{ .Values.platform.ui.tag | default "latest" }}"
