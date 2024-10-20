@@ -21,7 +21,9 @@ platform:
   namespace: platform
 
   database:
-    storageClass: standard
+    image: postgres
+    tag: 17.0
+    storageClass: standard # check with the cloud provider for the a persistent storage class
     capacity: 2Gi
 
   phoros: # fileserver
