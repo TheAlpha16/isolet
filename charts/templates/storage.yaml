@@ -16,6 +16,7 @@ spec:
     requests:
       storage: {{ .Values.platform.database.capacity }}
 
+{{ if eq .Values.platform.fileserver.objectStore.type "native" }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -24,12 +25,14 @@ metadata:
   namespace: {{ .Values.platform.namespace }}
   labels: 
     app.kubernetes.io/component: persistent-storage
-    app.kubernetes.io/part-of: phoros
+    app.kubernetes.io/part-of: fileserver
     {{- include "charts.labels" . | nindent 4 }}
 spec:
-  storageClassName: {{ .Values.platform.phoros.storageClass }}
+  storageClassName: {{ .Values.platform.fileserver.storageClass }}
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.platform.phoros.capacity }}
+      storage: {{ .Values.platform.fileserver.capacity }}
+
+{{ end }}
