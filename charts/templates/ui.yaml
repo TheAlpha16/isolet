@@ -44,7 +44,9 @@ kind: Service
 metadata:
   name: ui-svc
   labels:
-    app: ui-svc
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: ui
+    {{- include "charts.labels" . | nindent 4 }}
 spec:
   ports:
     - port: 80
