@@ -59,7 +59,7 @@ spec:
                   name: platform-config
                   key: OBJECT_STORE
             - name: APP_PORT
-              value: 9409
+              value: "9409"
           ports:
             - name: phoros-app-port
               containerPort: 9409
