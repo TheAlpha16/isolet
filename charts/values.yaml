@@ -36,11 +36,11 @@ platform:
   
   api:
     image: isolet-api
-    tag: v2.0.0
+    tag: v2.0.0-dev
     
   ui:
     image: isolet-ui
-    tag: v2.0.0
+    tag: v2.0.0-dev
 
 # dynamic challenges unit
 dynamic:
@@ -73,7 +73,7 @@ automation:
 
   ripper:
     image: isolet-ripper
-    tag: v2.0.0
+    tag: v2.0.0-dev
 
 # admin unit
 admin:
