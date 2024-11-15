@@ -70,10 +70,13 @@ case $tag in
 esac
 
 cd $(dirname "$0")/../../${resource}
+
+dcoker rmi -f ${registry}/isolet-${resource}:${version}
 docker buildx build --tag ${registry}/isolet-${resource}:${version} --platform linux/amd64 --push .
 
 case $tag in
     "yes")
+        docker rmi -f ${registry}/isolet-${resource}:latest
         docker buildx build --tag ${registry}/isolet-${resource}:latest --platform linux/amd64 --push .
     ;;
     "no")
