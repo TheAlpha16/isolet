@@ -71,7 +71,7 @@ esac
 
 cd $(dirname "$0")/../../${resource}
 
-dcoker rmi -f ${registry}/isolet-${resource}:${version}
+docker rmi -f ${registry}/isolet-${resource}:${version}
 docker buildx build --tag ${registry}/isolet-${resource}:${version} --platform linux/amd64 --push .
 
 case $tag in
