@@ -95,7 +95,7 @@ secrets:
     smtpPort: NTg3
 
   database:
-    dbHost: ZGF0YWJhc2Utc3Zj
+    dbHost: ZGF0YWJhc2Utc3Zj # do not change this
     dbUser: cG9zdGdyZXM=
     dbPassword: TXlmb290c3Ryb25ncGFzc3dkMDQzLgo=
     dbName: cG9zdGdyZXM= # it's better to have same name as db_user. Change it if you know what you are doing. 
