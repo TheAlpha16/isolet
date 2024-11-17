@@ -56,6 +56,7 @@ func CheckToken() fiber.Handler {
 			Key:    []byte(config.SESSION_SECRET),
 			JWTAlg: jwtware.HS256,
 		},
+		TokenLookup: "cookie:token",
 
 		SuccessHandler: func(c *fiber.Ctx) error {
 
@@ -88,6 +89,7 @@ func CheckOnBoardToken() fiber.Handler {
 			Key:    []byte(config.SESSION_SECRET),
 			JWTAlg: jwtware.HS256,
 		},
+		TokenLookup: "cookie:token",
 
 		// let this pass if and only if jwt consists of teamid = -1
 		SuccessHandler: func(c *fiber.Ctx) error {
