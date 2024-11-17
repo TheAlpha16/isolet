@@ -51,7 +51,7 @@ func Login(c *fiber.Ctx) error {
 	cookie.Name = "token"
 	cookie.Value = token
 	cookie.SameSite = fiber.CookieSameSiteStrictMode
-	// cookie.HTTPOnly = true
+	cookie.HTTPOnly = true
 	cookie.Expires = time.Now().Add(72 * time.Hour)
 	// cookie.Secure = true change this
 	c.Cookie(cookie)
