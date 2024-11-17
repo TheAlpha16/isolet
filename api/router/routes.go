@@ -29,4 +29,5 @@ func SetupRoutes(app *fiber.App) {
 	api.Get("/scoreboard", handler.ShowScoreBoard)
 	api.Post("/extend", handler.ExtendTime)
 	api.Get("/identify", handler.Identify)
+	api.Get("/logout", handler.Logout)
 }

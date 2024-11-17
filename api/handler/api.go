@@ -99,3 +99,8 @@ func Identify(c *fiber.Ctx) error {
 			"teamid": teamid,
 		})
 }
+
+func Logout(c *fiber.Ctx) error {
+	c.ClearCookie("token")
+	return c.SendStatus(fiber.StatusOK)
+}
