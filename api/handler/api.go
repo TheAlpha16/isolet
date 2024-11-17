@@ -82,3 +82,22 @@ func ShowScoreBoard(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(board)
 }
+
+func Identify(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+	userid := int64(claims["userid"].(float64))
+	email := claims["email"].(string)
+	username := claims["username"].(string)
+	rank := int(claims["rank"].(float64))
+	teamid := int64(claims["teamid"].(float64))
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status": "success",
+		"user": fiber.Map{
+			"userid": userid,
+			"email": email,
+			"username": username,
+			"rank": rank,
+			"teamid": teamid,
+		}})
+}
