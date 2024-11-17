@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"time"
 	"strconv"
+	"time"
 
 	"github.com/TheAlpha16/isolet/api/config"
 	"github.com/TheAlpha16/isolet/api/database"
@@ -119,11 +119,12 @@ func CheckOnBoardToken() fiber.Handler {
 
 func GenerateToken(user *models.User) (string, error) {
 	claims := jwt.MapClaims{
-		"userid": user.UserID,
-		"email":  user.Email,
-		"rank":   user.Rank,
-		"teamid": user.TeamID,
-		"exp":    time.Now().Add(time.Hour * time.Duration(config.SESSION_EXP)).Unix(),
+		"userid":   user.UserID,
+		"email":    user.Email,
+		"username": user.Username,
+		"rank":     user.Rank,
+		"teamid":   user.TeamID,
+		"exp":      time.Now().Add(time.Hour * time.Duration(config.SESSION_EXP)).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
