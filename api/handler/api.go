@@ -92,12 +92,10 @@ func Identify(c *fiber.Ctx) error {
 	teamid := int64(claims["teamid"].(float64))
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"status": "success",
-		"user": fiber.Map{
 			"userid": userid,
 			"email": email,
 			"username": username,
 			"rank": rank,
 			"teamid": teamid,
-		}})
+		})
 }
