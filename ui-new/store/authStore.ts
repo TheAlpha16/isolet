@@ -24,8 +24,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     setUser: (user) => set({ user }),
 
     logout: async () => {
-        set({ loggedIn: false, user: null });
         await fetchTimeout("/api/logout", 5000, new AbortController().signal);
+        set({ loggedIn: false, user: null });
     },
 
     fetchUser: async () => {
