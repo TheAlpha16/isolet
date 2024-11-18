@@ -2,6 +2,7 @@ package handler
 
 import (
 	"log"
+	"time"
 	"strconv"
 	"strings"
 
@@ -101,6 +102,11 @@ func Identify(c *fiber.Ctx) error {
 }
 
 func Logout(c *fiber.Ctx) error {
-	c.ClearCookie("token")
+	c.Cookie(&fiber.Cookie{
+		Name:     "token",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+	})
+	
 	return c.SendStatus(fiber.StatusOK)
 }
