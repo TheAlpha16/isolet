@@ -56,7 +56,13 @@ func Login(c *fiber.Ctx) error {
 	// cookie.Secure = true change this
 	c.Cookie(cookie)
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "login successful"})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"userid": user.UserID,
+		"email": user.Email,
+		"username": user.Username,
+		"rank": user.Rank,
+		"teamid": user.TeamID,
+	})
 }
 
 func Register(c *fiber.Ctx) error {
