@@ -1,35 +1,48 @@
-import type { Metadata } from "next";
+'use client'
+
 import localFont from "next/font/local";
 import "@/styles/globals.css";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/ReactToastify.css";
+import { useEffect } from "react";
+import { useAuthStore } from "@/store/authStore";
 
 const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
+	src: "./fonts/GeistVF.woff",
+	variable: "--font-geist-sans",
+	weight: "100 900",
 });
 const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+	src: "./fonts/GeistMonoVF.woff",
+	variable: "--font-geist-mono",
+	weight: "100 900",
 });
 
-export const metadata: Metadata = {
-  title: "isolet",
-  description: "Let isolet worry about deployments, so that you can focus on challenge quality",
-};
-
 export default function RootLayout({
-  children,
+	children,
 }: Readonly<{
-  children: React.ReactNode;
+	children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
-    </html>
-  );
+
+	const { loggedIn, fetchUser } = useAuthStore();
+
+	useEffect(() => {
+		if (!loggedIn) {
+			fetchUser();
+		}
+	}, [loggedIn, fetchUser]);
+
+	return (
+		<html lang="en">
+			<body
+				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+			>
+				<ToastContainer />
+				{children}
+				<div className={`${geistSans.variable} ${geistMono.variable} fixed bottom-5 end-5 text-slate-500`}>
+					powered by isolet
+				</div>
+			</body>
+		</html>
+	);
 }
