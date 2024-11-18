@@ -34,7 +34,6 @@ export const useAuthStore = create<AuthState>((set) => ({
             if (res.ok) {
                 const user = await res.json();
                 set({ user, loggedIn: true });
-                showToast(ToastStatus.Success, `Welcome back ${user.username}!`);
             } else {
                 set({ loggedIn: false, user: null });
             }
