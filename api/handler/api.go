@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/TheAlpha16/isolet/api/database"
+	"github.com/TheAlpha16/isolet/api/models"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -92,12 +93,20 @@ func Identify(c *fiber.Ctx) error {
 	rank := int(claims["rank"].(float64))
 	teamid := int64(claims["teamid"].(float64))
 
+	var TeamNameKey models.TeamNameKey
+
+	teamname := c.Locals(TeamNameKey)
+	if teamname == nil {
+		teamname = ""
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"userid": userid,
 			"email": email,
 			"username": username,
 			"rank": rank,
 			"teamid": teamid,
+			"teamname": teamname,
 		})
 }
 

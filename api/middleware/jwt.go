@@ -64,13 +64,15 @@ func CheckToken() fiber.Handler {
 			claims := user.Claims.(jwt.MapClaims)
 			userid := int64(claims["userid"].(float64))
 			teamid := int64(claims["teamid"].(float64))
+			var TeamNameKey models.TeamNameKey
 
 			if !database.UserExists(c, userid) {
 				c.ClearCookie("token")
 				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "user does not exist"})
 			}
 
-			if database.TeamExists(c, teamid) {
+			if teamname, exists := database.TeamExists(c, teamid); exists {
+				c.Locals(TeamNameKey, teamname)
 				return c.Next()
 			}
 

@@ -47,6 +47,8 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in token generation. contact admin"})
 	}
 
+	teamname, _ := database.TeamExists(c, user.TeamID)
+
 	cookie := new(fiber.Cookie)
 	cookie.Name = "token"
 	cookie.Value = token
@@ -62,6 +64,7 @@ func Login(c *fiber.Ctx) error {
 		"username": user.Username,
 		"rank": user.Rank,
 		"teamid": user.TeamID,
+		"teamname": teamname,
 	})
 }
 
