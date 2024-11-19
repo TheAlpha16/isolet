@@ -31,7 +31,6 @@ function useLogin() {
 
             if (res.ok) {
                 const user = await res.json();
-                console.log(user);
                 setUser(user);
                 setLoggedIn(true);
                 showToast(ToastStatus.Success, `Welcome back ${user.username}!`);
