@@ -9,11 +9,6 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL("/login", request.url));
     }
 
-    if (!user) {
-        logout();
-        return NextResponse.redirect(new URL("/login", request.url));
-    }
-
     if (request.nextUrl.pathname.startsWith("/teaminit")) {
         if (user?.teamid !== -1) {
             return NextResponse.redirect(new URL("/", request.url));
