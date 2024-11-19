@@ -11,6 +11,7 @@ interface AuthState {
         username: string;
         rank: number;
         teamid: number;
+        teamname: string;
     } | null;
     setUser: (user: AuthState["user"]) => void;
     logout: () => void;
