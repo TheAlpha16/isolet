@@ -115,7 +115,7 @@ func JoinTeam(c *fiber.Ctx) error {
 	team.Password = utils.Hash(team.Password)
 
 	if err := database.AuthenticateTeam(c, team); err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "invalid team credentials"})
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "failure", "message": "invalid team credentials"})
 	}
 
 	if err := database.JoinTeam(c, team.TeamName, userid); err != nil {
