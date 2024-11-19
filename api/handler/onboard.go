@@ -78,7 +78,7 @@ func CreateTeam(c *fiber.Ctx) error {
 	cookie.Expires = time.Now().Add(72 * time.Hour)
 	c.Cookie(cookie)
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"teamid": team.TeamID,
 	})
 }
