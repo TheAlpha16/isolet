@@ -4,21 +4,23 @@ import React, { useEffect, useState } from "react";
 import useLogin from "@/hooks/useLogin";
 import { useRouter } from "next/navigation";
 import FormButton from "@/components/extras/buttons";
+import Link from "next/link";
 
 function Login() {
 	const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const { loading, loginAPI } = useLogin();
-    const router = useRouter();
+	const [password, setPassword] = useState("");
+	const { loading, loginAPI } = useLogin();
+	const router = useRouter();
 
-    const handleSubmit = async () => {
-        let result = await loginAPI(email, password);
-        if (result) {
-            router.push('/');
-        }
-    };
+	const handleSubmit = async () => {
+		let result = await loginAPI(email, password);
+		if (result) {
+			router.push("/");
+		}
+	};
 
-    let inputClass = "px-4 py-2 w-72 border border-gray-600 rounded-md bg-background text-foreground";
+	let inputClass =
+		"px-4 py-2 w-72 border border-gray-600 rounded-md bg-background text-foreground";
 
 	return (
 		<div>
@@ -57,9 +59,11 @@ function Login() {
 					<FormButton type="submit">
 						{loading ? "Logging in..." : "Login"}
 					</FormButton>
-					<FormButton type="button" variant="secondary">
-						<a href="/register">Register</a>
-					</FormButton>
+					<Link href="/register">
+						<FormButton type="button" variant="secondary">
+							Register
+						</FormButton>
+					</Link>
 				</div>
 			</form>
 		</div>
