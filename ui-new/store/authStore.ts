@@ -4,6 +4,7 @@ import showToast, { ToastStatus } from "@/utils/toastHelper";
 
 interface AuthState {
     loggedIn: boolean;
+    loading: boolean;
     user: {
         userid: number;
         email: string;
@@ -22,6 +23,7 @@ const expiryHours = 24;
 
 export const useAuthStore = create<AuthState>((set) => ({
     loggedIn: false,
+    loading: true,
     user: null, 
 
     setUser: (user) => {
@@ -49,7 +51,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
         if (storedData && expiry) {
             const userData = JSON.parse(storedData);
-            set({ loggedIn: true, user: userData });
+            set({ loggedIn: true, user: userData, loading: false });
             return;
         }
 
@@ -60,12 +62,12 @@ export const useAuthStore = create<AuthState>((set) => ({
                 const newExpiry = Date.now() + 1000 * 60 * 60 * expiryHours;
                 localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(user));
                 localStorage.setItem(EXPIRY_KEY, newExpiry.toString());
-                set({ user, loggedIn: true });
+                set({ user, loggedIn: true, loading: false });
             } else {
-                set({ loggedIn: false, user: null });
+                set({ loggedIn: false, user: null, loading: false });
             }
         } catch (error: any) {
-            set({ loggedIn: false, user: null });
+            set({ loggedIn: false, user: null, loading: false });
 
             if (error.name === "AbortError") {
                 showToast(ToastStatus.Failure, "verification timed out, reload!");

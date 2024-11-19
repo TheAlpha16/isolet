@@ -9,7 +9,7 @@ interface Route {
 }
 
 function NavBar() {
-	const { loggedIn, user, logout } = useAuthStore();
+	const { loggedIn, loading, user, logout } = useAuthStore();
 	const routes: Route[] = [
 		{ path: "/users", name: "Users" },
 		{ path: "/teams", name: "Teams" },
@@ -37,43 +37,45 @@ function NavBar() {
 				</nav>
 			)}
 
-			<div className="ml-auto">
-				{loggedIn ? (
-					<div className="flex gap-4">
-						<Link href="/profile">
+			{!loading && (
+				<div className="ml-auto">
+					{loggedIn ? (
+						<div className="flex gap-4">
+							<Link href="/profile">
+								<Image
+									className="svg-icon"
+									src="/profile.svg"
+									alt="profile"
+									width={28}
+									height={28}
+								></Image>
+							</Link>
 							<Image
-								className="svg-icon"
-								src="/profile.svg"
-								alt="profile"
+								className="svg-icon hover:cursor-pointer"
+								src="/logout.svg"
+								alt="logout"
 								width={28}
 								height={28}
+								onClick={logout}
 							></Image>
-						</Link>
-						<Image
-							className="svg-icon hover:cursor-pointer"
-							src="/logout.svg"
-							alt="logout"
-							width={28}
-							height={28}
-							onClick={logout}
-						></Image>
-					</div>
-				) : (
-					<div className="flex gap-2">
-						<Link
-							className="flex items-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent p-2 rounded-md transition-colors border border-solid border-black/[.08] dark:border-white/[.145]"
-							href="/register"
-						>
-							<span>Register</span>
-						</Link>
-						<Link href="/login">
-							<FormButton type="button" variant="primary">
-								Login
-							</FormButton>
-						</Link>
-					</div>
-				)}
-			</div>
+						</div>
+					) : (
+						<div className="flex gap-2">
+							<Link
+								className="flex items-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent p-2 rounded-md transition-colors border border-solid border-black/[.08] dark:border-white/[.145]"
+								href="/register"
+							>
+								<span>Register</span>
+							</Link>
+							<Link href="/login">
+								<FormButton type="button" variant="primary">
+									Login
+								</FormButton>
+							</Link>
+						</div>
+					)}
+				</div>
+			)}
 		</div>
 	);
 }
