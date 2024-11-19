@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 function useLogin() {
     const [loading, setLoading] = useState(false);
-    const { setLoggedIn, setUser } = useAuthStore();
+    const { setUser } = useAuthStore();
 
     const loginAPI = async (email: string, password: string) => {
         setLoading(true);
@@ -32,7 +32,6 @@ function useLogin() {
             if (res.ok) {
                 const user = await res.json();
                 setUser(user);
-                setLoggedIn(true);
                 showToast(ToastStatus.Success, `Welcome back ${user.username}!`);
                 return true;
             } else {

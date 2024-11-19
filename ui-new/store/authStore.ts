@@ -11,7 +11,6 @@ interface AuthState {
         rank: number;
         teamid: number;
     } | null;
-    setLoggedIn: (status: boolean) => void;
     setUser: (user: AuthState["user"]) => void;
     logout: () => void;
     fetchUser: () => void;
@@ -24,13 +23,13 @@ const expiryHours = 24;
 export const useAuthStore = create<AuthState>((set) => ({
     loggedIn: false,
     user: null, 
-    setLoggedIn: (status) => set({ loggedIn: status }),
 
     setUser: (user) => {
         const expiry = Date.now() + 1000 * 60 * 60 * expiryHours;
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(user));
         localStorage.setItem(EXPIRY_KEY, expiry.toString());
-        set({ user })
+        set({ user });
+        set({ loggedIn: true });
     },
 
     logout: async () => {
