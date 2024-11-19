@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func TeamExists(c *fiber.Ctx, teamid int64) bool {
+func TeamExists(c *fiber.Ctx, teamid int64) (string, bool) {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
@@ -23,12 +23,12 @@ func TeamExists(c *fiber.Ctx, teamid int64) bool {
 	var team models.Team
 	if err := db.Where("teamid = ?", teamid).First(&team).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return false
+			return "", false
 		}
 		log.Println(err)
-		return false
+		return "", false
 	}
-	return true
+	return team.TeamName, true
 }
 
 func TeamNameExists(teamname string) bool {
