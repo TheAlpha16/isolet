@@ -12,7 +12,7 @@ export default function FormButton({
 	...props
 }: HighLightButtonProps) {
     const baseStyles =
-		"rounded-md border border-solid transition-colors flex items-center justify-center text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5";
+		"rounded-md border border-solid transition-colors flex items-center justify-center text-sm sm:text-base h-10 px-4 sm:px-5";
     
 	const variantStyles =
 		variant === "primary"
