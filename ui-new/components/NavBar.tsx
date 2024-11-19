@@ -9,7 +9,7 @@ interface Route {
 }
 
 function NavBar() {
-	const { loggedIn, loading, user, logout } = useAuthStore();
+	const { loggedIn, fetching, user, logout } = useAuthStore();
 	const routes: Route[] = [
 		{ path: "/users", name: "Users" },
 		{ path: "/teams", name: "Teams" },
@@ -37,7 +37,7 @@ function NavBar() {
 				</nav>
 			)}
 
-			{!loading && (
+			{!fetching && (
 				<div className="ml-auto">
 					{loggedIn ? (
 						<div className="flex gap-4">
