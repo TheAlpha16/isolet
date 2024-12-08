@@ -20,7 +20,6 @@ export default function RootLayout({ children, }: { children: React.ReactNode })
 	}
 
 	if (user?.teamid !== -1) {
-		console.log("Yes i am invoked!")
 		return redirect('/');
 	}
 
