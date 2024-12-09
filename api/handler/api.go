@@ -56,7 +56,7 @@ func SubmitFlag(c *fiber.Ctx) error {
 	flag = strings.TrimSpace(flag)
 
 	if isOK, message := database.VerifyFlag(c, chall_id, userid, teamid, flag); !isOK {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "failure", "message": message})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": message})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "correct flag"})
