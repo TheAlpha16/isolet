@@ -124,6 +124,13 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
 
                     return { challenges: updatedChallenges };
                 })
+            } else if (res.status === 401) {
+                showToast(ToastStatus.Warning, "login to continue");
+                logout();
+                redirect("/login");
+            } else {
+                const response = await res.json();
+                showToast(ToastStatus.Failure, response.message);
             };
 
         } catch (error: any) {
