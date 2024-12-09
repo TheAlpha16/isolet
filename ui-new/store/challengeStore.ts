@@ -10,7 +10,7 @@ enum ChallType {
     OnDemand
 };
 
-export interface Hint {
+export interface HintType {
     hid: number;
     chall_id: number;
     hint: string;
@@ -25,7 +25,7 @@ export interface Challenge {
     type: ChallType;
     points: number;
     files: string[];
-    hints: Hint[];
+    hints: HintType[];
     solves: number;
     author: string;
     tags: string[];
