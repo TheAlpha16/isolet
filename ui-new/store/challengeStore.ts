@@ -18,7 +18,7 @@ export interface HintType {
     unlocked: boolean;
 };
 
-export interface Challenge {
+export interface ChallengeType {
     chall_id: number;
     name: string;
     prompt: string;
@@ -34,7 +34,7 @@ export interface Challenge {
 };
 
 export interface ChallengeData {
-    [category: string]: Challenge[];
+    [category: string]: ChallengeType[];
 }
 
 interface ChallengeStore {
