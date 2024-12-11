@@ -1,7 +1,5 @@
 import showToast, { ToastStatus } from "@/utils/toastHelper";
-import { useAuthStore } from "@/store/authStore";
 import { create } from "zustand";
-import { redirect } from "next/navigation";
 import fetchTimeout from "@/utils/fetchTimeOut";
 
 enum ChallType {
@@ -51,7 +49,6 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
     loading: false,
 
     fetchChallenges: async () => {
-        const { logout } = useAuthStore();
         set({ loading: true });
 
         try {
@@ -72,8 +69,6 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
 
             } else if (res.status === 401) {
                 showToast(ToastStatus.Warning, "login to continue");
-                logout();
-                redirect("/login");
             } else if (res.status === 503) {
                 showToast(ToastStatus.Failure, "event has not yet started");
             } else {
@@ -91,7 +86,6 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
     },
 
     submitFlag: async (chall_id, flag) => {
-        const { logout } = useAuthStore();
         flag = flag.trim();
 
         if (!flag) {
@@ -126,8 +120,6 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
                 })
             } else if (res.status === 401) {
                 showToast(ToastStatus.Warning, "login to continue");
-                logout();
-                redirect("/login");
             } else {
                 const response = await res.json();
                 showToast(ToastStatus.Failure, response.message);
