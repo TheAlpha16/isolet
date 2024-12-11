@@ -45,14 +45,13 @@ interface ChallengeStore {
     // unlockHint: (chall_id: number, hint_id: number) => void;
 };
 
-const { logout } = useAuthStore();
-
 export const useChallengeStore = create<ChallengeStore>((set) => ({
 
     challenges: {},
     loading: false,
 
     fetchChallenges: async () => {
+        const { logout } = useAuthStore();
         set({ loading: true });
 
         try {
@@ -92,6 +91,7 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
     },
 
     submitFlag: async (chall_id, flag) => {
+        const { logout } = useAuthStore();
         flag = flag.trim();
 
         if (!flag) {
