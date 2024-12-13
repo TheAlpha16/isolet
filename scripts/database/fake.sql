@@ -80,7 +80,7 @@ INSERT INTO images (chall_id, registry, image, deployment, port, subd, cpu, mem)
 -- Users
 INSERT INTO users (userid, email, username, password, teamid) VALUES 
 (1, 'menoexist@gmail.com', 'standalone',  'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 1),
-(2, 'live.stream@gmail.com', 'getone', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 1),
+(2, 'live.stream@gmail.com', 'getone', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 2),
 (3, 'kingkongvsgodzilla@gmail.com', 'uselesscop', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 1),
 (4, 'lord.shardul@gmail.com', 'rayofhope', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 1),
 (5, 'getthisout@gmail.com', 'glimpse', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 2),
@@ -88,7 +88,7 @@ INSERT INTO users (userid, email, username, password, teamid) VALUES
 
 -- Teams
 INSERT INTO teams (teamid, teamname, captain, members, password) VALUES
-(1, 'TitanCrew', 1, '{2,3,4}', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4'),
+(1, 'TitanCrew', 1, '{3,4}', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4'),
 (2, 'BIT CRIMINALS', 2, '{5,6}', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4');
 
 -- Sublogs
@@ -105,3 +105,11 @@ INSERT INTO sublogs
 -- Hints
 UPDATE teams SET uhints = '{1,2}' WHERE teamid = 1;
 UPDATE teams SET uhints = '{2}' WHERE teamid = 2;
+
+SELECT setval('categories_category_id_seq', 4);
+SELECT setval('challenges_chall_id_seq', 6);
+SELECT setval('hints_hid_seq', 3);
+SELECT setval('images_iid_seq', 5);
+SELECT setval('users_userid_seq', 6);
+SELECT setval('teams_teamid_seq', 2);
+SELECT setval('sublogs_sid_seq', 2);

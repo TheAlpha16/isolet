@@ -2,10 +2,12 @@ package handler
 
 import (
 	"log"
+	"time"
 	"strconv"
 	"strings"
 
 	"github.com/TheAlpha16/isolet/api/database"
+	"github.com/TheAlpha16/isolet/api/models"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -54,7 +56,7 @@ func SubmitFlag(c *fiber.Ctx) error {
 	flag = strings.TrimSpace(flag)
 
 	if isOK, message := database.VerifyFlag(c, chall_id, userid, teamid, flag); !isOK {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "failure", "message": message})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": message})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "correct flag"})
@@ -81,4 +83,39 @@ func ShowScoreBoard(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(board)
+}
+
+func Identify(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+	userid := int64(claims["userid"].(float64))
+	email := claims["email"].(string)
+	username := claims["username"].(string)
+	rank := int(claims["rank"].(float64))
+	teamid := int64(claims["teamid"].(float64))
+
+	var TeamNameKey models.TeamNameKey
+
+	teamname := c.Locals(TeamNameKey)
+	if teamname == nil {
+		teamname = ""
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"userid": userid,
+			"email": email,
+			"username": username,
+			"rank": rank,
+			"teamid": teamid,
+			"teamname": teamname,
+		})
+}
+
+func Logout(c *fiber.Ctx) error {
+	c.Cookie(&fiber.Cookie{
+		Name:     "token",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+	})
+	
+	return c.SendStatus(fiber.StatusOK)
 }

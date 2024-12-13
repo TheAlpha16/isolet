@@ -2,8 +2,8 @@
 /challenges/__pycache__
 
 api/.env
-api/logs/access.log
-api/logs/error.log
+api/access.log
+api/error.log
 
 kubernetes/configuration/app-secrets.yml.local
 

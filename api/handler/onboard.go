@@ -78,7 +78,9 @@ func CreateTeam(c *fiber.Ctx) error {
 	cookie.Expires = time.Now().Add(72 * time.Hour)
 	c.Cookie(cookie)
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success", "message": "team created successfully"})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"teamid": team.TeamID,
+	})
 }
 
 func JoinTeam(c *fiber.Ctx) error {
@@ -113,7 +115,7 @@ func JoinTeam(c *fiber.Ctx) error {
 	team.Password = utils.Hash(team.Password)
 
 	if err := database.AuthenticateTeam(c, team); err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "invalid team credentials"})
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "failure", "message": "invalid team credentials"})
 	}
 
 	if err := database.JoinTeam(c, team.TeamName, userid); err != nil {
@@ -138,5 +140,7 @@ func JoinTeam(c *fiber.Ctx) error {
 	cookie.Expires = time.Now().Add(72 * time.Hour)
 	c.Cookie(cookie)
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "joined team successfully"})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"teamid": team.TeamID,
+	})
 }

@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"time"
 	"strconv"
+	"time"
 
 	"github.com/TheAlpha16/isolet/api/config"
 	"github.com/TheAlpha16/isolet/api/database"
@@ -56,6 +56,7 @@ func CheckToken() fiber.Handler {
 			Key:    []byte(config.SESSION_SECRET),
 			JWTAlg: jwtware.HS256,
 		},
+		TokenLookup: "cookie:token",
 
 		SuccessHandler: func(c *fiber.Ctx) error {
 
@@ -63,13 +64,15 @@ func CheckToken() fiber.Handler {
 			claims := user.Claims.(jwt.MapClaims)
 			userid := int64(claims["userid"].(float64))
 			teamid := int64(claims["teamid"].(float64))
+			var TeamNameKey models.TeamNameKey
 
 			if !database.UserExists(c, userid) {
 				c.ClearCookie("token")
 				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "failure", "message": "user does not exist"})
 			}
 
-			if database.TeamExists(c, teamid) {
+			if teamname, exists := database.TeamExists(c, teamid); exists {
+				c.Locals(TeamNameKey, teamname)
 				return c.Next()
 			}
 
@@ -88,6 +91,7 @@ func CheckOnBoardToken() fiber.Handler {
 			Key:    []byte(config.SESSION_SECRET),
 			JWTAlg: jwtware.HS256,
 		},
+		TokenLookup: "cookie:token",
 
 		// let this pass if and only if jwt consists of teamid = -1
 		SuccessHandler: func(c *fiber.Ctx) error {
@@ -117,11 +121,12 @@ func CheckOnBoardToken() fiber.Handler {
 
 func GenerateToken(user *models.User) (string, error) {
 	claims := jwt.MapClaims{
-		"userid": user.UserID,
-		"email":  user.Email,
-		"rank":   user.Rank,
-		"teamid": user.TeamID,
-		"exp":    time.Now().Add(time.Hour * time.Duration(config.SESSION_EXP)).Unix(),
+		"userid":   user.UserID,
+		"email":    user.Email,
+		"username": user.Username,
+		"rank":     user.Rank,
+		"teamid":   user.TeamID,
+		"exp":      time.Now().Add(time.Hour * time.Duration(config.SESSION_EXP)).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

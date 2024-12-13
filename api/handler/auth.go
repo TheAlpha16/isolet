@@ -47,16 +47,25 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in token generation. contact admin"})
 	}
 
+	teamname, _ := database.TeamExists(c, user.TeamID)
+
 	cookie := new(fiber.Cookie)
 	cookie.Name = "token"
 	cookie.Value = token
 	cookie.SameSite = fiber.CookieSameSiteStrictMode
-	// cookie.HTTPOnly = true
+	cookie.HTTPOnly = true
 	cookie.Expires = time.Now().Add(72 * time.Hour)
 	// cookie.Secure = true change this
 	c.Cookie(cookie)
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "login successful"})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"userid": user.UserID,
+		"email": user.Email,
+		"username": user.Username,
+		"rank": user.Rank,
+		"teamid": user.TeamID,
+		"teamname": teamname,
+	})
 }
 
 func Register(c *fiber.Ctx) error {
