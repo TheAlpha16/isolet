@@ -2,7 +2,7 @@ import showToast, { ToastStatus } from "@/utils/toastHelper";
 import { create } from "zustand";
 import fetchTimeout from "@/utils/fetchTimeOut";
 
-enum ChallType {
+export enum ChallType {
     Static,
     Dynamic,
     OnDemand
