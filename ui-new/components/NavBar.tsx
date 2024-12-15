@@ -1,7 +1,8 @@
 import { useAuthStore } from "@/store/authStore";
-import FormButton from "@/components/extras/buttons";
+import { Button } from "@/components/extras/buttons";
 import Link from "next/link";
 import Image from "next/image";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface Route {
 	path: string;
@@ -68,14 +69,15 @@ function NavBar() {
 								<span>Register</span>
 							</Link>
 							<Link href="/login">
-								<FormButton type="button" variant="primary">
+								<Button type="button">
 									Login
-								</FormButton>
+								</Button>
 							</Link>
 						</div>
 					)}
 				</div>
 			)}
+			<ThemeToggle />
 		</div>
 	);
 }
