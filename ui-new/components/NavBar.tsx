@@ -3,80 +3,73 @@ import { Button } from "@/components/extras/buttons";
 import Link from "next/link";
 import Image from "next/image";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { CircleUserRound, LogOut, Users, Users2, Trophy, Flag } from 'lucide-react';
 
 interface Route {
-	path: string;
-	name: string;
+path: string;
+name: string;
+icon: React.ReactNode;
 }
 
 function NavBar() {
 	const { loggedIn, fetching, user, logout } = useAuthStore();
+
 	const routes: Route[] = [
-		{ path: "/users", name: "Users" },
-		{ path: "/teams", name: "Teams" },
-		{ path: "/scoreboard", name: "Scoreboard" },
-		{ path: "/challenges", name: "Challenges" },
+		{ path: "/users", name: "Users", icon: <Users size={18} /> },
+		{ path: "/teams", name: "Teams", icon: <Users2 size={18} /> },
+		{ path: "/scoreboard", name: "Scoreboard", icon: <Trophy size={18} /> },
+		{ path: "/challenges", name: "Challenges", icon: <Flag size={18} /> },
 	];
 
 	return (
-		<div className="flex gap-4 bg-transparent p-4 font-mono items-center">
-			<Link href="/">
-				<div className="text-foreground text-2xl font-bold">isolet</div>
-			</Link>
+		<div className="flex items-center justify-between bg-transparent p-4 font-mono">
+			<div className="flex items-center gap-4">
+				<Link href="/">
+					<div className="text-foreground text-2xl font-bold">isolet</div>
+				</Link>
 
-			{loggedIn && (
-				<nav className="flex h-full items-center gap-2">
-					{routes.map(({ path, name }) => (
+				{loggedIn &&
+					<nav className="flex items-center gap-2">
+					{routes.map(({ path, name, icon }) => (
 						<Link
 							key={path}
-							className="hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent p-2 rounded-md transition-colors"
+							className="flex items-center gap-2 rounded-md p-2 transition-colors hover:bg-accent hover:text-accent-foreground"
 							href={path}
 						>
+							{icon}
 							<span>{name}</span>
 						</Link>
 					))}
-				</nav>
-			)}
+					</nav>
+				}
+			</div>
 
-			{!fetching && (
-				<div className="ml-auto">
-					{loggedIn ? (
-						<div className="flex gap-4">
-							<Link href="/profile">
-								<Image
-									className="svg-icon"
-									src="/profile.svg"
-									alt="profile"
-									width={28}
-									height={28}
-								></Image>
-							</Link>
-							<Image
-								className="svg-icon hover:cursor-pointer"
-								src="/logout.svg"
-								alt="logout"
-								width={28}
-								height={28}
-								onClick={logout}
-							></Image>
-						</div>
-					) : (
-						<div className="flex gap-2">
-							<Link href="/register">
-								<Button variant={"secondary"}>
-									Register
-								</Button>
-							</Link>
-							<Link href="/login">
-								<Button>
-									Login
-								</Button>
-							</Link>
-						</div>
-					)}
-				</div>
-			)}
-			<ThemeToggle />
+			<div className="flex items-center gap-4">
+				{!fetching && (
+					<>{loggedIn ? (<>
+						<Link href="/profile">
+							<Button variant="ghost" size="icon">
+								<CircleUserRound size={18} />
+								<span className="sr-only">Profile</span>
+							</Button>
+						</Link>
+						<Button variant="ghost" size="icon" onClick={logout}>
+							<LogOut size={18} />
+							<span className="sr-only">Logout</span>
+						</Button>
+					</>) : (
+					<>
+						<Link href="/register">
+							<Button variant="secondary">Register</Button>
+						</Link>
+						<Link href="/login">
+							<Button>Login</Button>
+						</Link>
+					</>
+					)}</>
+				)}
+				<ThemeToggle />
+			</div>
 		</div>
 	);
 }
