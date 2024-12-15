@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import useJoinTeam from "@/hooks/useJoinTeam";
-import FormButton from "@/components/extras/buttons";
+import { Button } from "@/components/extras/buttons";
 
 function TeamInit() {
 	const [teamname, setTeamName] = useState("");
@@ -55,12 +55,12 @@ function TeamInit() {
 						required
 					></input>
 					<div className="flex gap-2">
-						<FormButton type="submit" id="join">
+						<Button type="submit" id="join">
 							{loading ? "Joining..." : "Join"}
-						</FormButton>
-						<FormButton type="submit" variant="secondary" id="create">
+						</Button>
+						<Button type="submit" variant="secondary" id="create">
 							{loading ? "Creating..." : "Create"}
-						</FormButton>
+						</Button>
 					</div>
 				</form>
 			</div>

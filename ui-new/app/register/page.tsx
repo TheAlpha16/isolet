@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import useRegister from "@/hooks/useRegister";
-import FormButton from "@/components/extras/buttons";
+import { Button } from "@/components/extras/buttons";
 import Link from "next/link";
 
 function Register() {
@@ -76,13 +76,13 @@ function Register() {
 					required
 				></input>
 				<div className="flex gap-2">
-					<FormButton type="submit" disabled={loading}>
+					<Button type="submit" disabled={loading}>
 						{loading ? "Waiting..." : "Register"}
-					</FormButton>
+					</Button>
 					<Link href="/login">
-						<FormButton type="button" variant="secondary">
+						<Button type="button" variant="secondary">
 							Login
-						</FormButton>
+						</Button>
 					</Link>
 				</div>
 			</form>
