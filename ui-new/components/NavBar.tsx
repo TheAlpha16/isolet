@@ -62,14 +62,13 @@ function NavBar() {
 						</div>
 					) : (
 						<div className="flex gap-2">
-							<Link
-								className="flex items-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent p-2 rounded-md transition-colors border border-solid border-black/[.08] dark:border-white/[.145]"
-								href="/register"
-							>
-								<span>Register</span>
+							<Link href="/register">
+								<Button variant={"secondary"}>
+									Register
+								</Button>
 							</Link>
 							<Link href="/login">
-								<Button type="button">
+								<Button>
 									Login
 								</Button>
 							</Link>
