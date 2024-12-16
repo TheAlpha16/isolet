@@ -1,8 +1,8 @@
 import React from "react";
 import { ChallengeType } from "@/store/challengeStore";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/extras/card";
-import { Badge } from "@/components/extras/badge";
-import { Button } from "@/components/extras/buttons";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/buttons";
 import { Trophy, Flag, FileText } from 'lucide-react';
 
 interface ChallengeCardProps {

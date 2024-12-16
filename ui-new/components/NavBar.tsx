@@ -1,7 +1,6 @@
 import { useAuthStore } from "@/store/authStore";
-import { Button } from "@/components/extras/buttons";
+import { Button } from "@/components/ui/buttons";
 import Link from "next/link";
-import Image from "next/image";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { CircleUserRound, LogOut, Users, Users2, Trophy, Flag } from 'lucide-react';
 
