@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import useRegister from "@/hooks/useRegister";
-import { Button } from "@/components/ui/buttons";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 function Register() {
