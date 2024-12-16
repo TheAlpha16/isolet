@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import useJoinTeam from "@/hooks/useJoinTeam";
-import { Button } from "@/components/extras/buttons";
+import { Button } from "@/components/ui/buttons";
 
 function TeamInit() {
 	const [teamname, setTeamName] = useState("");
