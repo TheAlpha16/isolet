@@ -37,7 +37,7 @@ function Challenges() {
 				</TabsList>
 				{categories.map((category) => (
 					<TabsContent key={category} value={category}>
-						<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+						<div className="flex flex-wrap gap-4">
 							{challenges[category].map((challenge) => (
 								<ChallengeCard
 									key={challenge.chall_id}
