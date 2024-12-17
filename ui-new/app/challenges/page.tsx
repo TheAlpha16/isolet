@@ -1,57 +1,62 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChallengeType, useChallengeStore } from "@/store/challengeStore";
-import { StaticChallenge } from "@/components/challenges/Challenge";
+import { ChallengeCard } from "@/components/challenges/ChallengeCard";
+import { ChallengeModal } from "@/components/challenges/ChallengeModal";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function Challenges() {
+	const [currentChallenge, setCurrentChallenge] = useState<ChallengeType | null>(null);
 	const { challenges, fetchChallenges, loading } = useChallengeStore();
-	const [current, setCurrent] = useState<ChallengeType | null>(null);
-
-	const closeChallenge = () => {
-		setCurrent(null);
-	}
+	const categories = Object.keys(challenges);
 
 	useEffect(() => {
 		fetchChallenges();
 	}, []);
 
+	if (loading) {
+		return (
+		<div className="container mx-auto p-4">
+			<h1 className="text-3xl font-bold mb-6">Challenges</h1>
+			<p className="text-center text-lg">Loading challenges...</p>
+		</div>
+    );
+}
+
 	return (
-		<>
-			<div className={`flex flex-col gap-4 p-4 ${current ? "blur-sm": ""}`}>
-				{loading ? (<div>Loading...</div>) : (
-					(
-						Object.keys(challenges).map((category: string) => {
-							return (
-								<div key={category} className="flex flex-col gap-2 p-2">
-									<div>{category}</div>
-									<div className="flex gap-2 flex-wrap">
-										{challenges[category].map((challenge) => {
-											return (
-												<StaticChallenge
-													key={challenge.chall_id}
-													challenge={challenge}
-													onClick={() => setCurrent(challenge)}
-												/>
-											)
-										})}
-									</div>
-								</div>
-							)
-					}))
-				)}
-			</div>
-			{current && (
-				<div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center" onClick={closeChallenge}>
-					<StaticChallenge 
-						challenge={current} 
-						isFocussed={true} 
-						closeChallenge={closeChallenge}
-					/>
-				</div>
+		<div className="container p-4 items-center justify-start h-full flex flex-col">
+			<h1 className="text-3xl font-bold mb-6">Challenges</h1>
+			<Tabs defaultValue={categories[0]} className="w-full">
+				<TabsList className="mb-4">
+					{categories.map((category) => (
+						<TabsTrigger key={category} value={category}>
+							{category}
+						</TabsTrigger>
+					))}
+				</TabsList>
+				{categories.map((category) => (
+					<TabsContent key={category} value={category}>
+						<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+							{challenges[category].map((challenge) => (
+								<ChallengeCard
+									key={challenge.chall_id}
+									challenge={challenge}
+									onClick={() => setCurrentChallenge(challenge)}
+								/>
+							))}
+						</div>
+					</TabsContent>
+				))}
+			</Tabs>
+			{currentChallenge && (
+				<ChallengeModal
+					challenge={currentChallenge}
+					onClose={() => setCurrentChallenge(null)}
+				/>
 			)}
-		</>
-	)
+		</div>
+	);
 }
 
 export default Challenges;
