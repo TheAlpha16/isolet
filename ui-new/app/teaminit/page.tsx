@@ -2,70 +2,84 @@
 
 import React, { useState } from "react";
 import useJoinTeam from "@/hooks/useJoinTeam";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Loader2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
-function TeamInit() {
+export default function TeamInit() {
 	const [teamname, setTeamName] = useState("");
 	const [password, setPassword] = useState("");
 	const { loading, teamJoin } = useJoinTeam();
 
-	const handleSubmit = async (action: string) => {
+	async function onSubmit(action: string) {
+		console.log(action);
 		await teamJoin(teamname, password, action);
-	};
-
-	let inputClass =
-		"px-4 py-2 w-72 border border-gray-600 rounded-md bg-background text-foreground";
+	}
 
 	return (
-		<div className="flex flex-col gap-4">
-			<div className="flex justify-center">
-				Please join a team or create a new team to continue.
-			</div>
-			<div>
-				<form
-					onSubmit={(event) => {
-						event.preventDefault();
-						const action = (event.nativeEvent as SubmitEvent).submitter?.id || "";
-						handleSubmit(action);
+		<div className="container flex flex-col items-center justify-center h-full">
+		<Card className="w-[350px]">
+			<CardHeader className="space-y-1">
+			<CardTitle className="text-2xl">Team</CardTitle>
+			<CardDescription>
+				Please create/join a team to continue
+			</CardDescription>
+			</CardHeader>
+			<CardContent className="grid gap-4">
+			<div className="grid gap-2">
+				<Label htmlFor="teamname">Team Name</Label>
+				<Input
+					id="teamname" 
+					type="text"
+					placeholder="teamname"
+					name="teamname"
+					autoComplete="teamname"
+					onChange={(event) => {
+						setTeamName(event.target.value);
 					}}
-					className="flex flex-col gap-2 justify-center items-center"
-				>
-					<input
-						id="teamname"
-						type="text"
-						name="teamname"
-						placeholder="teamname"
-						value={teamname}
-						onChange={(event) => {
-							setTeamName(event.target.value);
-						}}
-						className={inputClass}
-						required
-					></input>
-					<input
-						id="password"
-						type="password"
-						name="password"
-						placeholder="password"
-						value={password}
-						onChange={(event) => {
-							setPassword(event.target.value);
-						}}
-						className={inputClass}
-						required
-					></input>
-					<div className="flex gap-2">
-						<Button type="submit" id="join">
-							{loading ? "Joining..." : "Join"}
-						</Button>
-						<Button type="submit" variant="secondary" id="create">
-							{loading ? "Creating..." : "Create"}
-						</Button>
-					</div>
-				</form>
+					required
+				/>
 			</div>
+			<div className="grid gap-2">
+				<Label htmlFor="password">Password</Label>
+				<Input 
+					id="password" 
+					type="password" 
+					placeholder="password"
+					name="password"
+					autoComplete="current-password"
+					onChange={(event) => {
+						setPassword(event.target.value);
+					}}
+					required
+				/>
+			</div>
+			</CardContent>
+			<CardFooter>
+			<div className="flex gap-2">
+				<Button className="w-full" onClick={(event) => {
+					event.preventDefault();
+					onSubmit("join")
+				}}>
+					{loading && (
+						<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+					)}
+					Join
+				</Button>
+				<Button className="w-full" variant={"secondary"} onClick={(event) => {
+					event.preventDefault();
+					onSubmit("create")
+				}}>
+					{loading && (
+						<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+					)}
+					Create
+				</Button>
+			</div>
+			</CardFooter>
+		</Card>
 		</div>
-	);
+	)
 }
-
-export default TeamInit;
