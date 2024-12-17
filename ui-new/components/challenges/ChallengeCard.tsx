@@ -3,7 +3,7 @@ import { ChallengeType } from "@/store/challengeStore";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, Flag, FileText } from 'lucide-react';
+import { Trophy, Flag, Check } from 'lucide-react';
 
 interface ChallengeCardProps {
 	challenge: ChallengeType;
@@ -34,11 +34,11 @@ export function ChallengeCard({ challenge, onClick }: ChallengeCardProps) {
 					<Trophy className="w-4 h-4 mr-1" />
 					<span>{challenge.solves} solves</span>
 				</div>
-				<Button onClick={onClick} size="sm">
+				<Button onClick={onClick} size="sm" variant={challenge.done ? "secondary" : "default"}>
 					{challenge.done ? (
 						<>
-							<FileText className="w-4 h-4 mr-2" />
-							View
+							<Check className="w-4 h-4 mr-2 text-green-600 dark:text-green-500" />
+							Solved
 						</>
 					) : (
 						<>
