@@ -39,6 +39,8 @@ export default function Login() {
 					id="email" 
 					type="email"
 					placeholder="titan@titancrew"
+					name="email"
+					autoComplete="email"
 					onChange={(event) => {
 						setEmail(event.target.value);
 					}}
@@ -51,6 +53,8 @@ export default function Login() {
 					id="password" 
 					type="password" 
 					placeholder="password"
+					name="password"
+					autoComplete="current-password"
 					onChange={(event) => {
 						setPassword(event.target.value);
 					}}
