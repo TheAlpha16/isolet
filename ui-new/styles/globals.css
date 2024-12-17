@@ -103,7 +103,21 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+  
+  input:-webkit-autofill {
+    background-color: hsl(var(--muted)) !important;
+    color: hsl(var(--muted-foreground)) !important;
+    -webkit-box-shadow: 0 0 0px 1000px hsl(var(--muted)) inset !important;
+    border-color: hsl(var(--border)) !important;
+  }
+
+  input:-webkit-autofill:focus {
+    background-color: hsl(var(--accent)) !important;
+    color: hsl(var(--accent-foreground)) !important;
+    border-color: hsl(var(--ring)) !important;
   }
 }
