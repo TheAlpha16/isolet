@@ -40,7 +40,7 @@ export default function RootLayout({
 				className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col h-screen`}
 			>
 				<ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-					<ToastContainer />
+					<ToastContainer className="toast-container" />
 					<NavBar />
 					{children}
 					<div className={`${geistSans.variable} ${geistMono.variable} fixed bottom-5 end-5 text-slate-500`}>

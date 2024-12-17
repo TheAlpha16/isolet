@@ -107,7 +107,7 @@
   body {
     @apply bg-background text-foreground;
   }
-  
+
   input:-webkit-autofill {
     background-color: hsl(var(--muted)) !important;
     color: hsl(var(--muted-foreground)) !important;
@@ -119,5 +119,10 @@
     background-color: hsl(var(--accent)) !important;
     color: hsl(var(--accent-foreground)) !important;
     border-color: hsl(var(--ring)) !important;
+  }
+
+  .toast-container .Toastify__toast {
+    background-color: hsl(var(--secondary));
+    color: hsl(var(--foreground));
   }
 }
