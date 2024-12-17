@@ -112,4 +112,4 @@ SELECT setval('hints_hid_seq', 3);
 SELECT setval('images_iid_seq', 5);
 SELECT setval('users_userid_seq', 6);
 SELECT setval('teams_teamid_seq', 2);
-SELECT setval('sublogs_sid_seq', 2);
+SELECT setval('sublogs_sid_seq', 7);
