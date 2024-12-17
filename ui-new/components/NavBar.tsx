@@ -21,7 +21,7 @@ function NavBar() {
 	];
 
 	return (
-		<div className="flex items-center justify-between bg-transparent p-4 font-mono border-b">
+		<div className="flex items-center justify-between bg-transparent p-4 font-mono border-b sticky top-0 z-10">
 			<div className="flex items-center gap-4">
 				<Link href="/">
 					<div className="text-foreground text-2xl font-bold">isolet</div>
