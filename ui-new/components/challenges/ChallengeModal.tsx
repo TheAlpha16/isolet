@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { ChallengeType, ChallType, useChallengeStore } from "@/store/challengeStore";
+import { ChallengeType, ChallType, HintType, useChallengeStore } from "@/store/challengeStore";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import Hint from "@/components/Hint";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Download, ExternalLink, ChevronDown, ChevronUp, Copy, Check, Users, Play, StopCircle } from 'lucide-react';
 
@@ -49,7 +49,10 @@ export function ChallengeModal({ challenge, onClose }: ChallengeModalProps) {
 		<DialogContent className="sm:max-w-[600px]">
 			<DialogHeader>
 				<DialogTitle className="text-2xl font-bold flex items-center justify-between">
-					<span>{challenge.name}</span>
+					<div className="flex items-center gap-2">
+						<span>{challenge.name}</span>
+						{challenge.done && <Check className="w-5 h-5 text-green-500" strokeWidth={2.5}/>}
+					</div>
 					<Badge variant="secondary" className="ml-2">{challenge.points} pts</Badge>
 				</DialogTitle>
 				<div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -113,23 +116,16 @@ export function ChallengeModal({ challenge, onClose }: ChallengeModalProps) {
 					</div>
 				)}
 				
-				{challenge.hints.length > 0 && (
-					<Collapsible open={hintsOpen} onOpenChange={setHintsOpen}>
-						<CollapsibleTrigger asChild>
-							<Button variant="outline" className="flex items-center justify-between w-full">
-								Hints
-								{hintsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-							</Button>
-						</CollapsibleTrigger>
-						<CollapsibleContent className="mt-2 space-y-2">
-							{challenge.hints.map((hint) => (
-								<p key={hint.hid} className="p-2 bg-muted rounded">
-									{hint.unlocked ? hint.hint : `Cost: ${hint.cost} points`}
-								</p>
-							))}
-						</CollapsibleContent>
-					</Collapsible>
-				)}
+                {challenge.hints.length > 0 && (
+                    <div>
+                        <h3 className="text-lg font-semibold mb-2">Hints</h3>
+                        <div className="flex gap-2">
+                            {challenge.hints.map((hint: HintType) => (
+                                <Hint key={hint.hid} {...hint} />
+                            ))}
+                        </div>
+                    </div>
+                )}
 				
 				{challenge.type === ChallType.OnDemand && (
 					<div className="mt-4">
