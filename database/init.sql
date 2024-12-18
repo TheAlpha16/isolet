@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS teams(
 CREATE TABLE IF NOT EXISTS solves(
     chall_id integer NOT NULL REFERENCES challenges(chall_id),
     teamid bigint NOT NULL REFERENCES teams(teamid),
-    timestamp timestamp NOT NULL DEFAULT NOW()
+    timestamp timestamp NOT NULL DEFAULT NOW(),
     PRIMARY KEY (teamid, chall_id)
 );
 
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS solves(
 CREATE TABLE IF NOT EXISTS uhints(
     hid integer NOT NULL REFERENCES hints(hid),
     teamid bigint NOT NULL REFERENCES teams(teamid),
-    timestamp timestamp NOT NULL DEFAULT NOW()
+    timestamp timestamp NOT NULL DEFAULT NOW(),
     PRIMARY KEY (teamid, hid)
 );
 
