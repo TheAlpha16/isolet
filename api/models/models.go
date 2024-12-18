@@ -138,6 +138,18 @@ type ScoreBoard struct {
 	Scores    []Score `json:"scores"`
 }
 
+type Solve struct {
+	ChallID int `gorm:"column:chall_id" json:"chall_id"`
+	TeamID  int64 `gorm:"column:teamid" json:"teamid"`
+	Timestamp time.Time `gorm:"column:timestamp" json:"timestamp"`
+}
+
+type UHint struct {
+	HID     int `gorm:"column:hid" json:"hid"`
+	TeamID  int64 `gorm:"column:teamid" json:"teamid"`
+	Timestamp time.Time `gorm:"column:timestamp" json:"timestamp"`
+}
+
 type ExtendDeadline struct {
 	Deadline int64 `json:"deadline"`
 }
@@ -148,4 +160,8 @@ func (ToVerify) TableName() string {
 
 func (Running) TableName() string {
 	return "running"
+}
+
+func (UHint) TableName() string {
+	return "uhints"
 }
