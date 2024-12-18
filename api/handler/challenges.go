@@ -77,9 +77,10 @@ func UnlockHint(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid hid"})
 	}
 
-	if isOK, message := database.UnlockHint(c, hid, teamid); !isOK {
+	isOK, message := database.UnlockHint(c, hid, teamid)
+	if !isOK {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": message})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "hint unlocked"})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": message})
 }
