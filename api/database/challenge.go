@@ -178,3 +178,63 @@ func VerifyFlag(c *fiber.Ctx, chall_id int, userid int64, teamid int64, flag str
 
 	return true, "correct flag"
 }
+
+func UnlockHint(c *fiber.Ctx, hid int, teamid int64) (bool, string) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+	var err error
+
+	var hint models.Hint
+	if err := db.Select("cost, hint, chall_id").Where("hid = ? AND visible = ?", hid, true).First(&hint).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			log.Println(err)
+		}
+		return false, "hint does not exist"
+	}
+
+	var challenge models.Challenge
+	if err := db.Select("requirements").Where("chall_id = ? AND visible = ?", hint.ChallID, true).First(&challenge).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false, "hint does not exist"
+		}
+	}
+
+	var team models.Team
+	if err := db.Select("cost, uhints, solved").Where("teamid = ?", teamid).First(&team).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false, "team does not exist"
+		}
+
+		log.Println(err)
+		return false, "error in fetching team data"
+	}
+
+	if isHintUnlocked(int64(hid), team.UHints) {
+		return false, "hint already unlocked"
+	}
+
+	for _, requirement := range challenge.Requirements {
+		if !isChallengeSolved(int64(requirement), team.Solved) {
+			return false, "hint does not exist"
+		}
+	}
+
+	var score int
+	if score, err = GetTeamScore(teamid); err != nil {
+		log.Println(err)
+		return false, "error in fetching team score"
+	}
+
+	if hint.Cost > score {
+		return false, "insufficient points"
+	}
+
+	if err := db.Model(&team).Where("teamid = ?", teamid).Update("uhints", gorm.Expr("array_append(uhints, ?)", hid)).Error; err != nil {
+		log.Println(err)
+		return false, "error in unlocking hint"
+	}
+
+	return true, hint.Hint
+}
