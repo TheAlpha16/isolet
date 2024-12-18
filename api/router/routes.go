@@ -30,4 +30,5 @@ func SetupRoutes(app *fiber.App) {
 	api.Post("/extend", handler.ExtendTime)
 	api.Get("/identify", handler.Identify)
 	api.Get("/logout", handler.Logout)
+	api.Post("/hint/unlock", handler.UnlockHint)
 }
