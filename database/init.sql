@@ -268,10 +268,6 @@ BEGIN
         SET solved = array_append(solved, NEW.chall_id)
         WHERE teamid = NEW.teamid
         AND NOT (solved @> ARRAY[NEW.chall_id]); -- Prevent duplicate challenge ID
-
-        UPDATE challenges
-        SET solves = solves + 1
-        WHERE chall_id = NEW.chall_id;
     END IF;
 
     RETURN NEW;
@@ -283,3 +279,26 @@ CREATE TRIGGER correct_submission_trigger
 AFTER INSERT ON sublogs
 FOR EACH ROW
 EXECUTE FUNCTION handle_correct_submission();
+
+-- Function to add entry to solves table on correct submission
+CREATE OR REPLACE FUNCTION add_solve_entry()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.correct = TRUE THEN
+        INSERT INTO solves (chall_id, teamid, timestamp)
+        VALUES (NEW.chall_id, NEW.teamid, NOW());
+
+        UPDATE challenges
+        SET solves = solves + 1
+        WHERE chall_id = NEW.chall_id;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to add entry to solves table on correct submission
+CREATE TRIGGER add_solve_entry_trigger
+AFTER INSERT ON sublogs
+FOR EACH ROW
+EXECUTE FUNCTION add_solve_entry();
