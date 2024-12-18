@@ -31,22 +31,6 @@ CREATE TABLE IF NOT EXISTS teams(
     last_submission bigint DEFAULT EXTRACT(EPOCH FROM NOW())
 );
 
--- Create solves table
-CREATE TABLE IF NOT EXISTS solves(
-    chall_id integer NOT NULL REFERENCES challenges(chall_id),
-    teamid bigint NOT NULL REFERENCES teams(teamid),
-    timestamp timestamp NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (teamid, chall_id)
-);
-
--- Create unlocked hints table
-CREATE TABLE IF NOT EXISTS uhints(
-    hid integer NOT NULL REFERENCES hints(hid),
-    teamid bigint NOT NULL REFERENCES teams(teamid),
-    timestamp timestamp NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (teamid, hid)
-);
-
 -- Create trigger function to add captain to members array
 CREATE OR REPLACE FUNCTION add_captain_to_members()
 RETURNS TRIGGER AS $$
@@ -203,6 +187,22 @@ BEFORE UPDATE OF uhints
 ON teams
 FOR EACH ROW
 EXECUTE FUNCTION update_team_cost();
+
+-- Create solves table
+CREATE TABLE IF NOT EXISTS solves(
+    chall_id integer NOT NULL REFERENCES challenges(chall_id),
+    teamid bigint NOT NULL REFERENCES teams(teamid),
+    timestamp timestamp NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (teamid, chall_id)
+);
+
+-- Create unlocked hints table
+CREATE TABLE IF NOT EXISTS uhints(
+    hid integer NOT NULL REFERENCES hints(hid),
+    teamid bigint NOT NULL REFERENCES teams(teamid),
+    timestamp timestamp NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (teamid, hid)
+);
 
 -- Table to store deployment data for on-demand and dynamic challenges
 CREATE TABLE IF NOT EXISTS images(
