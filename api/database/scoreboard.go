@@ -61,3 +61,25 @@ func ReadScores(c *fiber.Ctx, page int) (models.ScoreBoard, error) {
 		Scores:    scores,
 	}, nil
 }
+
+func GetTeamScore(teamid int64) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+
+	var score int
+	err := db.Table("teams").
+		Select(`COALESCE(SUM(challenges.points), 0) - teams.cost AS score`).
+		Joins("LEFT JOIN challenges ON challenges.chall_id = ANY(teams.solved)").
+		Where("teams.teamid = ?", teamid).
+		Group("teams.teamid").
+		Scan(&score).Error
+
+	if err != nil {
+		log.Println(err)
+		return 0, err
+	}
+
+	return score, nil
+}
