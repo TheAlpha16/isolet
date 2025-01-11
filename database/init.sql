@@ -302,3 +302,6 @@ CREATE OR REPLACE add_solve_entry_trigger
 AFTER INSERT ON sublogs
 FOR EACH ROW
 EXECUTE FUNCTION add_solve_entry();
+
+-- Create a GIN index on the requirements column
+CREATE OR REPLACE INDEX idx_requirements_gin ON challenges USING gin (requirements);
