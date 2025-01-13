@@ -305,3 +305,74 @@ EXECUTE FUNCTION add_solve_entry();
 
 -- Create a GIN index on the requirements column
 CREATE OR REPLACE INDEX idx_requirements_gin ON challenges USING gin (requirements);
+
+-- Create a function to retrieve the challenge data for a team
+CREATE OR REPLACE FUNCTION get_challenges(team_id bigint)
+RETURNS TABLE (
+    chall_id integer,
+    chall_name text,
+    prompt text,
+    type chall_type,
+    points integer,
+    files text[],
+    hints json,
+    solves integer,
+    author text,
+    tags text[],
+    links text[],
+    category_name text,
+    deployment deployment_type,
+    port integer,
+    subd text,
+    done boolean
+) AS $$
+BEGIN
+    RETURN QUERY 
+    WITH solved_challenges AS (
+        SELECT ARRAY_AGG(solves.chall_id) AS solved_array
+        FROM solves
+        WHERE teamid = team_id
+    )
+    SELECT 
+        ch.chall_id,
+        ch.chall_name,
+        ch.prompt,
+        ch.type,
+        ch.points,
+        ch.files,
+        (
+            SELECT json_agg(
+                jsonb_build_object(
+                    'hid', h.hid,
+                    'hint', CASE WHEN uh.hid IS NOT NULL THEN h.hint ELSE '' END,
+                    'cost', h.cost,
+                    'unlocked', uh.hid IS NOT NULL
+                )
+            ) 
+            FROM hints h
+            LEFT JOIN uhints uh ON uh.teamid = team_id AND uh.hid = h.hid 
+            WHERE h.visible = true 
+            AND h.hid = any(ch.hints)
+        ) AS hints,
+        ch.solves,
+        ch.author,
+        ch.tags,
+        ch.links,
+        cat.category_name,
+        COALESCE(img.deployment, 'http') AS deployment,
+        COALESCE(img.port, 0) AS port,
+        COALESCE(img.subd, '') AS subd,
+        ch.chall_id = any(solved_array) AS done
+    FROM challenges ch
+    JOIN categories cat 
+        ON ch.category_id = cat.category_id
+    JOIN images img 
+        ON img.chall_id = ch.chall_id
+    CROSS JOIN solved_challenges
+    WHERE ch.visible = true
+    AND (
+        ch.requirements = '{}' 
+        OR ch.requirements <@ solved_array
+    );
+END;
+$$ LANGUAGE plpgsql;
