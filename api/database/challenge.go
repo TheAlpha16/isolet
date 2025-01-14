@@ -5,6 +5,7 @@ import (
 	"time"
 	"errors"
 	"context"
+	"strings"
 
 	"github.com/TheAlpha16/isolet/api/config"
 	"github.com/TheAlpha16/isolet/api/models"
@@ -149,57 +150,24 @@ func UnlockHint(c *fiber.Ctx, hid int, teamid int64) (bool, string) {
 	defer cancel()
 
 	db := DB.WithContext(ctx)
-	var err error
 
-	var hint models.Hint
-	if err := db.Select("cost, hint, chall_id").Where("hid = ? AND visible = ?", hid, true).First(&hint).Error; err != nil {
-		if err != gorm.ErrRecordNotFound {
-			log.Println(err)
-		}
-		return false, "hint does not exist"
-	}
+	var hint string
+	var error_msg string
+	if err := db.Raw("SELECT unlock_hint(?, ?)", teamid, hid).Scan(&hint).Error; err != nil {
+		error_msg = err.Error()
+		if strings.Contains(error_msg, "hint ") || strings.Contains(error_msg, "insufficient") {
+			error_msg = strings.TrimPrefix(error_msg, "ERROR: ")
+			prefixIndex := strings.Index(error_msg, " (SQLSTATE")
+			if prefixIndex != -1 {
+				error_msg = error_msg[:prefixIndex]
+			}
 
-	var challenge models.Challenge
-	if err := db.Select("requirements").Where("chall_id = ? AND visible = ?", hint.ChallID, true).First(&challenge).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return false, "hint does not exist"
-		}
-	}
-
-	var team models.Team
-	if err := db.Select("cost, uhints, solved").Where("teamid = ?", teamid).First(&team).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return false, "team does not exist"
+			return false, error_msg
 		}
 
-		log.Println(err)
-		return false, "error in fetching team data"
-	}
-
-	if isHintUnlocked(int64(hid), team.UHints) {
-		return false, "hint already unlocked"
-	}
-
-	for _, requirement := range challenge.Requirements {
-		if !isChallengeSolved(int64(requirement), team.Solved) {
-			return false, "hint does not exist"
-		}
-	}
-
-	var score int
-	if score, err = GetTeamScore(teamid); err != nil {
-		log.Println(err)
-		return false, "error in fetching team score"
-	}
-
-	if hint.Cost > score {
-		return false, "insufficient points"
-	}
-
-	if err := db.Model(&team).Where("teamid = ?", teamid).Update("uhints", gorm.Expr("array_append(uhints, ?)", hid)).Error; err != nil {
 		log.Println(err)
 		return false, "error in unlocking hint"
 	}
 
-	return true, hint.Hint
+	return true, hint
 }
