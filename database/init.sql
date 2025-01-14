@@ -136,6 +136,22 @@ CREATE TRIGGER update_hints_trigger
 AFTER INSERT ON hints
 FOR EACH ROW EXECUTE PROCEDURE update_hints();
 
+-- Create solves table
+CREATE TABLE IF NOT EXISTS solves(
+    chall_id integer NOT NULL REFERENCES challenges(chall_id),
+    teamid bigint NOT NULL REFERENCES teams(teamid),
+    timestamp timestamp NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (teamid, chall_id)
+);
+
+-- Create unlocked hints table
+CREATE TABLE IF NOT EXISTS uhints(
+    hid integer NOT NULL REFERENCES hints(hid),
+    teamid bigint NOT NULL REFERENCES teams(teamid),
+    timestamp timestamp NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (teamid, hid)
+);
+
 -- Function to update cost in teams when a new hint is unlocked
 CREATE OR REPLACE FUNCTION update_team_cost()
 RETURNS TRIGGER AS $$
@@ -160,22 +176,6 @@ AFTER INSERT
 ON uhints
 FOR EACH ROW
 EXECUTE FUNCTION update_team_cost();
-
--- Create solves table
-CREATE TABLE IF NOT EXISTS solves(
-    chall_id integer NOT NULL REFERENCES challenges(chall_id),
-    teamid bigint NOT NULL REFERENCES teams(teamid),
-    timestamp timestamp NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (teamid, chall_id)
-);
-
--- Create unlocked hints table
-CREATE TABLE IF NOT EXISTS uhints(
-    hid integer NOT NULL REFERENCES hints(hid),
-    teamid bigint NOT NULL REFERENCES teams(teamid),
-    timestamp timestamp NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (teamid, hid)
-);
 
 -- Table to store deployment data for on-demand and dynamic challenges
 CREATE TABLE IF NOT EXISTS images(
@@ -349,5 +349,65 @@ BEGIN
     GROUP BY t.teamid;
 
     RETURN score;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION unlock_hint(team_id bigint, hint_id integer)
+RETURNS text AS $$
+DECLARE
+    hint_cost integer;
+    hint_hint text;
+    challid integer;
+    challname text;
+    team_score integer;
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM uhints
+        WHERE teamid = team_id AND hid = hint_id
+    ) THEN
+        RAISE EXCEPTION 'hint already unlocked.';
+    END IF;
+
+    SELECT cost, hint, chall_id 
+    INTO hint_cost, hint_hint, challid
+    FROM hints
+    WHERE hid = hint_id AND visible = true;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'hint does not exist';
+    END IF;
+
+    WITH solved_challenges AS (
+        SELECT ARRAY_AGG(solves.chall_id) AS solved_array
+        FROM solves
+        WHERE teamid = team_id
+    )
+
+    SELECT challenges.chall_name 
+    INTO challname
+    FROM challenges
+    CROSS JOIN solved_challenges
+    WHERE challenges.chall_id = challid
+    AND challenges.visible = true
+    AND (
+        challenges.requirements = '{}' 
+        OR challenges.requirements <@ solved_array
+    );
+
+    IF challname IS NULL THEN
+        RAISE EXCEPTION 'hint does not exist';
+    END IF;
+
+    SELECT calculate_score(team_id) INTO team_score;
+
+    IF team_score < hint_cost THEN
+        RAISE EXCEPTION 'insufficient points';
+    END IF;
+
+    INSERT INTO uhints (hid, teamid)
+    VALUES (hint_id, team_id);
+
+    RETURN hint_hint;
 END;
 $$ LANGUAGE plpgsql;
