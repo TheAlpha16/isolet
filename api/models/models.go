@@ -145,7 +145,7 @@ type Instance struct {
 }
 
 type Score struct {
-	Rank     int    `gorm:"-" json:"rank"`
+	Rank     int64  `gorm:"column:rank" json:"rank"`
 	TeamID   int64  `gorm:"column:teamid" json:"teamid"`
 	TeamName string `gorm:"column:teamname" json:"teamname"`
 	Score    int    `gorm:"column:score" json:"score"`
