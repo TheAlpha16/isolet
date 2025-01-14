@@ -57,7 +57,7 @@ type ChallengeData struct {
 	Type         string         `gorm:"type:chall_type" json:"type"`
 	Points       int            `gorm:"column:points" json:"points"`
 	Files        pq.StringArray `gorm:"column:files;type:text[]" json:"files"`
-	Hints        []Hint     `gorm:"serializer:json" json:"hints"`
+	Hints        []Hint         `gorm:"serializer:json" json:"hints"`
 	Solves       int            `gorm:"column:solves" json:"solves"`
 	Author       string         `gorm:"column:author" json:"author"`
 	Tags         pq.StringArray `gorm:"column:tags;type:text[]" json:"tags"`
@@ -146,9 +146,9 @@ type Instance struct {
 
 type Score struct {
 	Rank     int    `gorm:"-" json:"rank"`
-	TeamID   int64 `gorm:"column:teamid" json:"teamid"`
+	TeamID   int64  `gorm:"column:teamid" json:"teamid"`
 	TeamName string `gorm:"column:teamname" json:"teamname"`
-	Score    int `gorm:"column:score" json:"score"`
+	Score    int    `gorm:"column:score" json:"score"`
 }
 
 type ScoreBoard struct {
@@ -158,14 +158,14 @@ type ScoreBoard struct {
 }
 
 type Solve struct {
-	ChallID int `gorm:"column:chall_id" json:"chall_id"`
-	TeamID  int64 `gorm:"column:teamid" json:"teamid"`
+	ChallID   int       `gorm:"column:chall_id" json:"chall_id"`
+	TeamID    int64     `gorm:"column:teamid" json:"teamid"`
 	Timestamp time.Time `gorm:"column:timestamp" json:"timestamp"`
 }
 
 type UHint struct {
-	HID     int `gorm:"column:hid" json:"hid"`
-	TeamID  int64 `gorm:"column:teamid" json:"teamid"`
+	HID       int       `gorm:"column:hid" json:"hid"`
+	TeamID    int64     `gorm:"column:teamid" json:"teamid"`
 	Timestamp time.Time `gorm:"column:timestamp" json:"timestamp"`
 }
 
