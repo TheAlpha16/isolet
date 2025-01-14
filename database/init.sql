@@ -304,7 +304,7 @@ FOR EACH ROW
 EXECUTE FUNCTION add_solve_entry();
 
 -- Create a GIN index on the requirements column
-CREATE OR REPLACE INDEX idx_requirements_gin ON challenges USING gin (requirements);
+CREATE INDEX IF NOT EXISTS idx_requirements_gin ON challenges USING gin (requirements);
 
 -- Create a function to retrieve the challenge data for a team
 CREATE OR REPLACE FUNCTION get_challenges(team_id bigint)
