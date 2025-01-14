@@ -161,21 +161,15 @@ FOR EACH ROW EXECUTE PROCEDURE update_hints();
 CREATE OR REPLACE FUNCTION update_team_cost()
 RETURNS TRIGGER AS $$
 DECLARE
-    new_hint int;
     hint_cost int;
 BEGIN
-    FOR new_hint IN (
-        SELECT unnest(NEW.uhints)
-        EXCEPT
-        SELECT unnest(OLD.uhints)
-    )
-    LOOP
-        SELECT cost INTO hint_cost
-        FROM hints
-        WHERE hid = new_hint;
+    SELECT cost INTO hint_cost
+    FROM hints
+    WHERE hid = NEW.hid;
 
-        NEW.cost := NEW.cost + hint_cost;
-    END LOOP;
+    UPDATE teams
+    SET cost = cost + hint_cost
+    WHERE teamid = NEW.teamid;
 
     RETURN NEW;
 END;
@@ -183,8 +177,8 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger to initiate hint cost update function
 CREATE TRIGGER update_team_cost_trigger
-BEFORE UPDATE OF uhints
-ON teams
+AFTER INSERT
+ON uhints
 FOR EACH ROW
 EXECUTE FUNCTION update_team_cost();
 
