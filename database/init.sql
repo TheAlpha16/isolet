@@ -45,25 +45,6 @@ BEFORE INSERT ON teams
 FOR EACH ROW
 EXECUTE FUNCTION add_captain_to_members();
 
--- Function to update last_submission on a solve
-CREATE OR REPLACE FUNCTION update_last_submission()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.solved IS DISTINCT FROM OLD.solved THEN
-        NEW.last_submission := EXTRACT(EPOCH FROM NOW());
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Trigger to update last_submission on solve
-CREATE TRIGGER update_last_submission_trigger
-BEFORE UPDATE OF solved
-ON teams
-FOR EACH ROW
-EXECUTE FUNCTION update_last_submission();
-
 -- Create toverify table
 CREATE TABLE IF NOT EXISTS toverify(
     vid bigserial PRIMARY KEY,
