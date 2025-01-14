@@ -35,15 +35,6 @@ func isRequirementMet(requirements pq.Int64Array, solvedChalls pq.Int64Array) bo
 	return true
 }
 
-func isHintUnlocked(hintID int64, unlockedHints pq.Int64Array) bool {
-	for _, unlocked := range unlockedHints {
-		if unlocked == hintID {
-			return true
-		}
-	}
-	return false
-}
-
 func GenerateChallengeEndpoint(method string, subdomain string, domain string, port int, username ...string) string {
 	var connString string
 
