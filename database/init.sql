@@ -25,7 +25,6 @@ CREATE TABLE IF NOT EXISTS teams(
     captain bigint NOT NULL REFERENCES users(userid),
     members bigint[] NOT NULL DEFAULT '{}',
     password VARCHAR(100) NOT NULL,
-    uhints int[] DEFAULT '{}',
     cost int DEFAULT 0,
     last_submission bigint DEFAULT EXTRACT(EPOCH FROM NOW())
 );
