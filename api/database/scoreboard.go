@@ -67,15 +67,7 @@ func GetTeamScore(teamid int64) (int, error) {
 	db := DB.WithContext(ctx)
 
 	var score int
-	err := db.Table("teams").
-		Select(`COALESCE(SUM(challenges.points), 0) - teams.cost AS score`).
-		Joins("LEFT JOIN solves ON solves.teamid = teams.teamid").
-		Joins("LEFT JOIN challenges ON challenges.chall_id = solves.chall_id").
-		Where("teams.teamid = ?", teamid).
-		Group("teams.teamid").
-		Scan(&score).Error
-
-	if err != nil {
+	if err := db.Raw("SELECT calculate_score(?)", teamid).Scan(&score).Error; err != nil {
 		log.Println(err)
 		return 0, err
 	}
