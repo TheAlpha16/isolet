@@ -340,7 +340,7 @@ BEGIN
         ch.type,
         ch.points,
         ch.files,
-        (
+        COALESCE((
             SELECT json_agg(
                 jsonb_build_object(
                     'hid', h.hid,
@@ -353,7 +353,7 @@ BEGIN
             LEFT JOIN uhints uh ON uh.teamid = team_id AND uh.hid = h.hid 
             WHERE h.visible = true 
             AND h.hid = any(ch.hints)
-        ) AS hints,
+        ), '[]'::json) AS hints,
         ch.solves,
         ch.author,
         ch.tags,
