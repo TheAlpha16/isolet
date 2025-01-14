@@ -366,7 +366,7 @@ BEGIN
     FROM challenges ch
     JOIN categories cat 
         ON ch.category_id = cat.category_id
-    JOIN images img 
+    LEFT JOIN images img 
         ON img.chall_id = ch.chall_id
     CROSS JOIN solved_challenges
     WHERE ch.visible = true
