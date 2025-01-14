@@ -50,6 +50,25 @@ type Challenge struct {
 	Done         bool           `gorm:"-" json:"done"`
 }
 
+type ChallengeData struct {
+	ChallID      int            `gorm:"column:chall_id" json:"chall_id"`
+	Name         string         `gorm:"column:chall_name" json:"name"`
+	Prompt       string         `gorm:"type:text" json:"prompt"`
+	Type         string         `gorm:"type:chall_type" json:"type"`
+	Points       int            `gorm:"column:points" json:"points"`
+	Files        pq.StringArray `gorm:"column:files;type:text[]" json:"files"`
+	Hints        []Hint     `gorm:"serializer:json" json:"hints"`
+	Solves       int            `gorm:"column:solves" json:"solves"`
+	Author       string         `gorm:"column:author" json:"author"`
+	Tags         pq.StringArray `gorm:"column:tags;type:text[]" json:"tags"`
+	Links        pq.StringArray `gorm:"column:links;type:text[]" json:"links"`
+	CategoryName string         `gorm:"column:category_name" json:"-"`
+	Deployment   string         `gorm:"type:deployment_type" json:"-"`
+	Port         int            `gorm:"column:port" json:"-"`
+	Subd         string         `gorm:"column:subd" json:"-"`
+	Done         bool           `gorm:"column:done" json:"done"`
+}
+
 type Image struct {
 	IID        int    `gorm:"primaryKey;autoIncrement;column:iid" json:"iid"`
 	ChallID    int    `gorm:"not null;column:chall_id" json:"chall_id"`
@@ -64,7 +83,7 @@ type Image struct {
 
 type Hint struct {
 	HID      int    `gorm:"primaryKey;column:hid" json:"hid"`
-	ChallID  int    `gorm:"not null;column:chall_id" json:"chall_id"`
+	ChallID  int    `gorm:"not null;column:chall_id" json:"-"`
 	Hint     string `gorm:"not null" json:"hint"`
 	Cost     int    `gorm:"not null;default:0" json:"cost"`
 	Visible  bool   `gorm:"default:false" json:"-"`
@@ -164,4 +183,8 @@ func (Running) TableName() string {
 
 func (UHint) TableName() string {
 	return "uhints"
+}
+
+func (ChallengeData) TableName() string {
+	return "get_challenges"
 }
