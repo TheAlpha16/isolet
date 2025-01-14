@@ -259,27 +259,6 @@ CREATE OR REPLACE TRIGGER enforce_instance_count_trigger
 BEFORE INSERT ON running
 FOR EACH ROW EXECUTE PROCEDURE enforce_instance_count();
 
--- Create the function to update the teams and challenges
-CREATE OR REPLACE FUNCTION handle_correct_submission() 
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.correct = TRUE THEN
-        UPDATE teams
-        SET solved = array_append(solved, NEW.chall_id)
-        WHERE teamid = NEW.teamid
-        AND NOT (solved @> ARRAY[NEW.chall_id]); -- Prevent duplicate challenge ID
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create the trigger on the sublogs table
-CREATE TRIGGER correct_submission_trigger
-AFTER INSERT ON sublogs
-FOR EACH ROW
-EXECUTE FUNCTION handle_correct_submission();
-
 -- Function to add entry to solves table on correct submission
 CREATE OR REPLACE FUNCTION add_solve_entry()
 RETURNS TRIGGER AS $$
