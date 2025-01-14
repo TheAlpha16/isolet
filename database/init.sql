@@ -332,3 +332,22 @@ BEGIN
     );
 END;
 $$ LANGUAGE plpgsql;
+
+-- Create a function to calculate score for a team
+CREATE OR REPLACE FUNCTION calculate_score(team_id bigint)
+RETURNS integer AS $$
+DECLARE
+    score integer := 0;
+BEGIN
+    SELECT INTO score COALESCE(SUM(ch.points), 0) - t.cost
+    FROM teams t
+    LEFT JOIN solves s
+        ON s.teamid = t.teamid
+    LEFT JOIN challenges ch
+        ON ch.chall_id = s.chall_id
+    WHERE t.teamid = team_id
+    GROUP BY t.teamid;
+
+    RETURN score;
+END;
+$$ LANGUAGE plpgsql;
