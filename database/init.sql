@@ -244,6 +244,10 @@ BEGIN
         UPDATE challenges
         SET solves = solves + 1
         WHERE chall_id = NEW.chall_id;
+
+        UPDATE teams
+        SET last_submission = EXTRACT(EPOCH FROM NOW())
+        WHERE teamid = NEW.teamid;
     END IF;
 
     RETURN NEW;
