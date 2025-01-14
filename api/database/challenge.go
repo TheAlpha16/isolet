@@ -34,66 +34,31 @@ func AddToChallenges(chall models.Challenge) error {
 	return nil
 }
 
-func ReadChallenges(c *fiber.Ctx, teamid int64) (map[string][]models.Challenge, error) {
+func ReadChallenges(c *fiber.Ctx, teamid int64) (map[string][]models.ChallengeData, error) {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
 	db := DB.WithContext(ctx)
 
-	var team models.Team
-	if err := db.Where("teamid = ?", teamid).First(&team).Error; err != nil {
-		return nil, err
-	}
-
-	var challenges []models.Challenge
-	if err := db.Preload("Category").
-		Preload("Hints", "visible = ?", true).
-		Where("visible = ?", true).
-		Find(&challenges).Error; err != nil {
+	var challenges []models.ChallengeData
+	if err := db.Raw("SELECT chall_id, chall_name, prompt, type, points, files, hints, solves, author, tags, links, category_name, deployment, port, subd, done FROM get_challenges(?)", teamid).Scan(&challenges).Error; err != nil {
 		return nil, err
 	}
 
 	// Post-fetch filtering and modifications
-	filteredChallenges := make(map[string][]models.Challenge)
+	filteredChallenges := make(map[string][]models.ChallengeData)
 
 	for _, challenge := range challenges {
-		requirementsMet := isRequirementMet(challenge.Requirements, team.Solved)
-		if !requirementsMet {
-			continue
-		}
-
-		for i, hint := range challenge.Hints {
-			hintUnlocked := isHintUnlocked(int64(hint.HID), team.UHints)
-			if hint.Cost > 0 && !hintUnlocked {
-				challenge.Hints[i].Hint = ""
-			}
-
-			if hint.Cost == 0 {
-				challenge.Hints[i].Unlocked = true
-				continue
-			}
-
-			challenge.Hints[i].Unlocked = hintUnlocked
-		}
-
 		if challenge.Type == "dynamic" {
-			imageMetaData := new(models.Image) 
-			
-			if err := db.Select("deployment, port, subd").Where("chall_id = ?", challenge.ChallID).First(imageMetaData).Error; err != nil {
-				return nil, err
-			}
-			
-			connLink := GenerateChallengeEndpoint(imageMetaData.Deployment, imageMetaData.Subd, config.INSTANCE_HOSTNAME, imageMetaData.Port)
+			connLink := GenerateChallengeEndpoint(challenge.Deployment, challenge.Subd, config.INSTANCE_HOSTNAME, challenge.Port)
 
 			challenge.Links = append(challenge.Links, connLink)
 		}
 
-		challenge.Done = isChallengeSolved(int64(challenge.ChallID), team.Solved)
-
-		if catChallenges, exists := filteredChallenges[challenge.Category.CategoryName]; exists {
-			filteredChallenges[challenge.Category.CategoryName] = append(catChallenges, challenge)
+		if catChallenges, exists := filteredChallenges[challenge.CategoryName]; exists {
+			filteredChallenges[challenge.CategoryName] = append(catChallenges, challenge)
 		} else {
-			filteredChallenges[challenge.Category.CategoryName] = []models.Challenge{challenge}
+			filteredChallenges[challenge.CategoryName] = []models.ChallengeData{challenge}
 		}
 	}
 
