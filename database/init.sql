@@ -366,7 +366,7 @@ BEGIN
         FROM uhints
         WHERE teamid = team_id AND hid = hint_id
     ) THEN
-        RAISE EXCEPTION 'hint already unlocked.';
+        RAISE EXCEPTION 'hint already unlocked';
     END IF;
 
     SELECT cost, hint, chall_id 
