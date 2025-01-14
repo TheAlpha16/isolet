@@ -38,10 +38,12 @@ func ReadScores(c *fiber.Ctx, page int) (models.ScoreBoard, error) {
 	err := db.Table("teams").
 		Select(`teams.teamid AS teamid, 
 				teams.teamname AS teamname, 
-				COALESCE(SUM(challenges.points), 0) - teams.cost AS score`).
-		Joins("LEFT JOIN challenges ON challenges.chall_id = ANY(teams.solved)").
-		Group("teams.teamid").
-		Order("score DESC, teams.last_submission ASC").
+				COALESCE(SUM(challenges.points), 0) - teams.cost AS score,
+				RANK() OVER (ORDER BY COALESCE(SUM(challenges.points), 0) - teams.cost DESC, teams.last_submission ASC) AS rank`).
+		Joins("LEFT JOIN solves ON solves.teamid = teams.teamid").
+		Joins("LEFT JOIN challenges ON challenges.chall_id = solves.chall_id").
+		Group("teams.teamid, teams.teamname, teams.cost, teams.last_submission").
+		Order("rank ASC").
 		Limit(perPage).
 		Offset(offset).
 		Scan(&scores).Error
@@ -49,10 +51,6 @@ func ReadScores(c *fiber.Ctx, page int) (models.ScoreBoard, error) {
 	if err != nil {
 		log.Println(err)
 		return models.ScoreBoard{}, err
-	}
-
-	for i := range scores {
-		scores[i].Rank = offset + i + 1
 	}
 
 	return models.ScoreBoard{
