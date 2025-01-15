@@ -121,8 +121,4 @@
     border-color: hsl(var(--ring)) !important;
   }
 
-  .toast-container .Toastify__toast {
-    background-color: hsl(var(--secondary));
-    color: hsl(var(--foreground));
-  }
 }
