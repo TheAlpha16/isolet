@@ -10,5 +10,6 @@ type Team struct {
 	Captain        int64         `gorm:"not null" json:"captain"`
 	Members        pq.Int64Array `gorm:"type:integer[]" json:"members"`
 	Password       string        `gorm:"not null" json:"password"`
+	Cost		   int64         `gorm:"not null" json:"cost"`
 	LastSubmission int64         `gorm:"column:last_submission" json:"last_submission"`
 }
