@@ -254,7 +254,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger to add entry to solves table on correct submission
-CREATE OR REPLACE add_solve_entry_trigger
+CREATE OR REPLACE TRIGGER add_solve_entry_trigger
 AFTER INSERT ON sublogs
 FOR EACH ROW
 EXECUTE FUNCTION add_solve_entry();
