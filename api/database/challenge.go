@@ -71,7 +71,7 @@ func ValidFlagEntry(ctx context.Context, chall_id int, teamid int64) (models.Cha
 	var err error
 
 	var challenge models.Challenge
-	if err := db.Raw("WITH solved_challenges AS(SELECT ARRAY_AGG(solves.chall_id) AS solved_array FROM solves WHERE teamid = ?)SELECT challenges.type, challenges.flag, challenges.chall_id = any(solved_array) AS done FROM challenges CROSS JOIN solved_challenges WHERE challenges.chall_id = ? AND challenges.visible = true AND (challenges.requirements = '{}' OR challenges.requirements <@ solved_array);", teamid, chall_id).Scan(&challenge).Error; err != nil {
+	if err := db.Raw("WITH solved_challenges AS (SELECT ARRAY_AGG(solves.chall_id) AS solved_array FROM solves WHERE teamid = ?) SELECT challenges.type, challenges.flag, challenges.chall_id = any(solved_array) AS done FROM challenges CROSS JOIN solved_challenges WHERE challenges.chall_id = ? AND challenges.visible = true AND (challenges.requirements = '{}' OR challenges.requirements <@ solved_array)", teamid, chall_id).Scan(&challenge).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return challenge, errors.New("challenge does not exist")
 		}
