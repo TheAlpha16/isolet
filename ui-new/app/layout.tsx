@@ -2,10 +2,8 @@
 
 import localFont from "next/font/local";
 import "@/styles/globals.css";
-import "@/styles/toast.css";
+import "@/styles/hint-toast.css";
 import "@/styles/notification.css";
-// import { ToastContainer } from "react-toastify";
-// import "react-toastify/ReactToastify.css";
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
 import NavBar from "@/components/NavBar";
