@@ -87,26 +87,17 @@ func ValidOnDemandChallenge(c *fiber.Ctx, chall_id int, teamid int64, challenge 
 	defer cancel()
 
 	db := DB.WithContext(ctx)
-	var team models.Team
 
-	if err := db.Select("type, flag, requirements").Where("chall_id = ? AND visible = ?", chall_id, true).First(challenge).Error; err != nil {
-		if err != gorm.ErrRecordNotFound {
-			log.Println(err)
+	if err := db.Raw("WITH solved_challenges AS (SELECT ARRAY_AGG(solves.chall_id) AS solved_array FROM solves WHERE teamid = ?) SELECT challenges.type, challenges.flag FROM challenges CROSS JOIN solved_challenges WHERE challenges.chall_id = ? AND challenges.visible = true AND (challenges.requirements = '{}' OR challenges.requirements <@ solved_array)", teamid, chall_id).First(&challenge).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return errors.New("challenge does not exist")
 		}
-		return errors.New("challenge does not exist")
+		log.Println(err)
+		return errors.New("error in fetching challenge data")
 	}
 	
 	if challenge.Type != "on-demand" {
 		return errors.New("challenge is not on-demand")
-	}
-
-	if err := db.Select("solved").Where("teamid = ?", teamid).First(&team).Error; err != nil {
-		log.Println(err)
-		return errors.New("error in fetching team data")
-	}
-
-	if !isRequirementMet(challenge.Requirements, team.Solved) {
-		return errors.New("challenge does not exist")
 	}
 
 	if err := db.Where("chall_id = ?", chall_id).First(image).Error; err != nil {

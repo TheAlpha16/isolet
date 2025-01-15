@@ -5,7 +5,11 @@ import { useAuthStore } from '@/store/authStore';
 import { redirect } from 'next/navigation';
 
 export default function RootLayout({ children, }: { children: React.ReactNode }) {
-	const { loggedIn, user } = useAuthStore();
+	const { loggedIn, user, fetching } = useAuthStore();
+
+	if (fetching) {
+		return <div>Loading...</div>
+	}
 
 	if (!loggedIn) {
 		return redirect('/login');

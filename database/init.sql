@@ -25,8 +25,6 @@ CREATE TABLE IF NOT EXISTS teams(
     captain bigint NOT NULL REFERENCES users(userid),
     members bigint[] NOT NULL DEFAULT '{}',
     password VARCHAR(100) NOT NULL,
-    solved int[] DEFAULT '{}',
-    uhints int[] DEFAULT '{}',
     cost int DEFAULT 0,
     last_submission bigint DEFAULT EXTRACT(EPOCH FROM NOW())
 );
@@ -45,25 +43,6 @@ CREATE TRIGGER add_captain_to_members_trigger
 BEFORE INSERT ON teams
 FOR EACH ROW
 EXECUTE FUNCTION add_captain_to_members();
-
--- Function to update last_submission on a solve
-CREATE OR REPLACE FUNCTION update_last_submission()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.solved IS DISTINCT FROM OLD.solved THEN
-        NEW.last_submission := EXTRACT(EPOCH FROM NOW());
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Trigger to update last_submission on solve
-CREATE TRIGGER update_last_submission_trigger
-BEFORE UPDATE OF solved
-ON teams
-FOR EACH ROW
-EXECUTE FUNCTION update_last_submission();
 
 -- Create toverify table
 CREATE TABLE IF NOT EXISTS toverify(
@@ -142,7 +121,7 @@ CREATE TABLE IF NOT EXISTS hints(
     visible boolean DEFAULT false
 );
 
--- Function to uppdate hints in challenges table
+-- Function to update hints in challenges table
 CREATE OR REPLACE FUNCTION update_hints() RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
@@ -157,25 +136,35 @@ CREATE TRIGGER update_hints_trigger
 AFTER INSERT ON hints
 FOR EACH ROW EXECUTE PROCEDURE update_hints();
 
+-- Create solves table
+CREATE TABLE IF NOT EXISTS solves(
+    chall_id integer NOT NULL REFERENCES challenges(chall_id),
+    teamid bigint NOT NULL REFERENCES teams(teamid),
+    timestamp timestamp NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (teamid, chall_id)
+);
+
+-- Create unlocked hints table
+CREATE TABLE IF NOT EXISTS uhints(
+    hid integer NOT NULL REFERENCES hints(hid),
+    teamid bigint NOT NULL REFERENCES teams(teamid),
+    timestamp timestamp NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (teamid, hid)
+);
+
 -- Function to update cost in teams when a new hint is unlocked
 CREATE OR REPLACE FUNCTION update_team_cost()
 RETURNS TRIGGER AS $$
 DECLARE
-    new_hint int;
     hint_cost int;
 BEGIN
-    FOR new_hint IN (
-        SELECT unnest(NEW.uhints)
-        EXCEPT
-        SELECT unnest(OLD.uhints)
-    )
-    LOOP
-        SELECT cost INTO hint_cost
-        FROM hints
-        WHERE hid = new_hint;
+    SELECT cost INTO hint_cost
+    FROM hints
+    WHERE hid = NEW.hid;
 
-        NEW.cost := NEW.cost + hint_cost;
-    END LOOP;
+    UPDATE teams
+    SET cost = cost + hint_cost
+    WHERE teamid = NEW.teamid;
 
     RETURN NEW;
 END;
@@ -183,8 +172,8 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger to initiate hint cost update function
 CREATE TRIGGER update_team_cost_trigger
-BEFORE UPDATE OF uhints
-ON teams
+AFTER INSERT
+ON uhints
 FOR EACH ROW
 EXECUTE FUNCTION update_team_cost();
 
@@ -243,27 +232,182 @@ CREATE OR REPLACE TRIGGER enforce_instance_count_trigger
 BEFORE INSERT ON running
 FOR EACH ROW EXECUTE PROCEDURE enforce_instance_count();
 
--- Create the function to update the teams and challenges
-CREATE OR REPLACE FUNCTION handle_correct_submission() 
+-- Function to add entry to solves table on correct submission
+CREATE OR REPLACE FUNCTION add_solve_entry()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.correct = TRUE THEN
-        UPDATE teams
-        SET solved = array_append(solved, NEW.chall_id)
-        WHERE teamid = NEW.teamid
-        AND NOT (solved @> ARRAY[NEW.chall_id]); -- Prevent duplicate challenge ID
+        INSERT INTO solves (chall_id, teamid, timestamp)
+        VALUES (NEW.chall_id, NEW.teamid, NOW());
 
         UPDATE challenges
         SET solves = solves + 1
         WHERE chall_id = NEW.chall_id;
+
+        UPDATE teams
+        SET last_submission = EXTRACT(EPOCH FROM NOW())
+        WHERE teamid = NEW.teamid;
     END IF;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Create the trigger on the sublogs table
-CREATE TRIGGER correct_submission_trigger
+-- Trigger to add entry to solves table on correct submission
+CREATE OR REPLACE TRIGGER add_solve_entry_trigger
 AFTER INSERT ON sublogs
 FOR EACH ROW
-EXECUTE FUNCTION handle_correct_submission();
+EXECUTE FUNCTION add_solve_entry();
+
+-- Create a GIN index on the requirements column
+CREATE INDEX IF NOT EXISTS idx_requirements_gin ON challenges USING gin (requirements);
+
+-- Create a function to retrieve the challenge data for a team
+CREATE OR REPLACE FUNCTION get_challenges(team_id bigint)
+RETURNS TABLE (
+    chall_id integer,
+    chall_name text,
+    prompt text,
+    type chall_type,
+    points integer,
+    files text[],
+    hints json,
+    solves integer,
+    author text,
+    tags text[],
+    links text[],
+    category_name text,
+    deployment deployment_type,
+    port integer,
+    subd text,
+    done boolean
+) AS $$
+BEGIN
+    RETURN QUERY 
+    WITH solved_challenges AS (
+        SELECT ARRAY_AGG(solves.chall_id) AS solved_array
+        FROM solves
+        WHERE teamid = team_id
+    )
+    SELECT 
+        ch.chall_id,
+        ch.chall_name,
+        ch.prompt,
+        ch.type,
+        ch.points,
+        ch.files,
+        COALESCE((
+            SELECT json_agg(
+                jsonb_build_object(
+                    'hid', h.hid,
+                    'hint', CASE WHEN uh.hid IS NOT NULL THEN h.hint ELSE '' END,
+                    'cost', h.cost,
+                    'unlocked', uh.hid IS NOT NULL
+                )
+            ) 
+            FROM hints h
+            LEFT JOIN uhints uh ON uh.teamid = team_id AND uh.hid = h.hid 
+            WHERE h.visible = true 
+            AND h.hid = any(ch.hints)
+        ), '[]'::json) AS hints,
+        ch.solves,
+        ch.author,
+        ch.tags,
+        ch.links,
+        cat.category_name,
+        COALESCE(img.deployment, 'http') AS deployment,
+        COALESCE(img.port, 0) AS port,
+        COALESCE(img.subd, '') AS subd,
+        ch.chall_id = any(solved_array) AS done
+    FROM challenges ch
+    JOIN categories cat 
+        ON ch.category_id = cat.category_id
+    LEFT JOIN images img 
+        ON img.chall_id = ch.chall_id
+    CROSS JOIN solved_challenges
+    WHERE ch.visible = true
+    AND (
+        ch.requirements = '{}' 
+        OR ch.requirements <@ solved_array
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create a function to calculate score for a team
+CREATE OR REPLACE FUNCTION calculate_score(team_id bigint)
+RETURNS integer AS $$
+DECLARE
+    score integer := 0;
+BEGIN
+    SELECT INTO score COALESCE(SUM(ch.points), 0) - t.cost
+    FROM teams t
+    LEFT JOIN solves s
+        ON s.teamid = t.teamid
+    LEFT JOIN challenges ch
+        ON ch.chall_id = s.chall_id
+    WHERE t.teamid = team_id
+    GROUP BY t.teamid;
+
+    RETURN score;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION unlock_hint(team_id bigint, hint_id integer)
+RETURNS text AS $$
+DECLARE
+    hint_cost integer;
+    hint_hint text;
+    challid integer;
+    challname text;
+    team_score integer;
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM uhints
+        WHERE teamid = team_id AND hid = hint_id
+    ) THEN
+        RAISE EXCEPTION 'hint already unlocked';
+    END IF;
+
+    SELECT cost, hint, chall_id 
+    INTO hint_cost, hint_hint, challid
+    FROM hints
+    WHERE hid = hint_id AND visible = true;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'hint does not exist';
+    END IF;
+
+    WITH solved_challenges AS (
+        SELECT ARRAY_AGG(solves.chall_id) AS solved_array
+        FROM solves
+        WHERE teamid = team_id
+    )
+
+    SELECT challenges.chall_name 
+    INTO challname
+    FROM challenges
+    CROSS JOIN solved_challenges
+    WHERE challenges.chall_id = challid
+    AND challenges.visible = true
+    AND (
+        challenges.requirements = '{}' 
+        OR challenges.requirements <@ solved_array
+    );
+
+    IF challname IS NULL THEN
+        RAISE EXCEPTION 'hint does not exist';
+    END IF;
+
+    SELECT calculate_score(team_id) INTO team_score;
+
+    IF team_score < hint_cost THEN
+        RAISE EXCEPTION 'insufficient points';
+    END IF;
+
+    INSERT INTO uhints (hid, teamid)
+    VALUES (hint_id, team_id);
+
+    RETURN hint_hint;
+END;
+$$ LANGUAGE plpgsql;

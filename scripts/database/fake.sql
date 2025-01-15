@@ -66,7 +66,8 @@ UPDATE challenges SET visible = true;
 INSERT INTO hints (hid, chall_id, hint, cost) VALUES
     (1, 4, 'At a time the only information you get is if a string is a part of the language you defined', 30),
     (2, 6, 'Can never do this before event ends lol', 50),
-    (3, 5, 'Lets see a free hint for you', 0);
+    (3, 5, 'Lets see a free hint for you', 0),
+    (4, 5, 'You can use ssh to connect to the machine', 10);
 
 UPDATE hints SET visible = true;
 
@@ -103,13 +104,14 @@ INSERT INTO sublogs
 (2, 6, 2, 'isolet-dev{He4p_1s_5ecur3_f0r_n0t3s??}', true, '123.21.67.38');
 
 -- Hints
-UPDATE teams SET uhints = '{1,2}' WHERE teamid = 1;
-UPDATE teams SET uhints = '{2}' WHERE teamid = 2;
+SELECT unlock_hint(1, 1);
+SELECT unlock_hint(1, 3);
+SELECT unlock_hint(2, 3);
 
 SELECT setval('categories_category_id_seq', 4);
 SELECT setval('challenges_chall_id_seq', 6);
-SELECT setval('hints_hid_seq', 3);
+SELECT setval('hints_hid_seq', 4);
 SELECT setval('images_iid_seq', 5);
 SELECT setval('users_userid_seq', 6);
 SELECT setval('teams_teamid_seq', 2);
-SELECT setval('sublogs_sid_seq', 2);
+SELECT setval('sublogs_sid_seq', 7);

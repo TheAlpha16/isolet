@@ -1,73 +1,76 @@
-"use client";
+"use client"
 
-import React, { useEffect, useState } from "react";
-import useLogin from "@/hooks/useLogin";
-import { useRouter } from "next/navigation";
-import FormButton from "@/components/extras/buttons";
-import Link from "next/link";
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Loader2 } from "lucide-react"
+import useLogin from "@/hooks/useLogin"
 
-function Login() {
+export default function Login() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const { loading, loginAPI } = useLogin();
 	const router = useRouter();
 
-	const handleSubmit = async () => {
+	async function onSubmit(event: React.SyntheticEvent) {
+		event.preventDefault();
 		let result = await loginAPI(email, password);
 		if (result) {
 			router.push("/");
 		}
-	};
-
-	let inputClass =
-		"px-4 py-2 w-72 border border-gray-600 rounded-md bg-background text-foreground";
+	}
 
 	return (
-		<div>
-			<form
-				onSubmit={(event) => {
-					event.preventDefault();
-					handleSubmit();
-				}}
-				className="flex flex-col gap-2 justify-center items-center"
-			>
-				<input
-					id="email"
-					type="text"
+		<div className="container flex flex-col items-center justify-center h-full">
+		<Card className="w-[350px]">
+			<CardHeader className="space-y-1">
+			<CardTitle className="text-2xl">Sign in</CardTitle>
+			<CardDescription>
+				Enter your email/username and password 
+			</CardDescription>
+			</CardHeader>
+			<CardContent className="grid gap-4">
+			<div className="grid gap-2">
+				<Label htmlFor="email">Email</Label>
+				<Input
+					id="email" 
+					type="email"
+					placeholder="titan@titancrew"
 					name="email"
-					placeholder="email/username"
-					value={email}
+					autoComplete="email"
 					onChange={(event) => {
 						setEmail(event.target.value);
 					}}
-					className={inputClass}
 					required
-				></input>
-				<input
-					id="password"
-					type="password"
-					name="password"
+				/>
+			</div>
+			<div className="grid gap-2">
+				<Label htmlFor="password">Password</Label>
+				<Input 
+					id="password" 
+					type="password" 
 					placeholder="password"
-					value={password}
+					name="password"
+					autoComplete="current-password"
 					onChange={(event) => {
 						setPassword(event.target.value);
 					}}
-					className={inputClass}
 					required
-				></input>
-				<div className="flex gap-2">
-					<FormButton type="submit">
-						{loading ? "Logging in..." : "Login"}
-					</FormButton>
-					<Link href="/register">
-						<FormButton type="button" variant="secondary">
-							Register
-						</FormButton>
-					</Link>
-				</div>
-			</form>
+				/>
+			</div>
+			</CardContent>
+			<CardFooter>
+			<Button className="w-full" onClick={onSubmit}>
+				{loading && (
+					<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+				)}
+				Sign In
+			</Button>
+			</CardFooter>
+		</Card>
 		</div>
-	);
+	)
 }
-
-export default Login;

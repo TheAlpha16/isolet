@@ -1,93 +1,99 @@
-"use client";
+"use client"
 
-import React, { useState } from "react";
-import useRegister from "@/hooks/useRegister";
-import FormButton from "@/components/extras/buttons";
-import Link from "next/link";
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Loader2 } from "lucide-react"
+import useRegister from "@/hooks/useRegister"
 
-function Register() {
-    const [username, setUsername] = useState("");
+export default function Register() {
+	const [username, setUsername] = useState("");
 	const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirm, setConfirm] = useState("");
-    const { loading, registerAPI } = useRegister();
+	const [password, setPassword] = useState("");
+	const [confirm, setConfirm] = useState("");
+	const { loading, registerAPI } = useRegister();
 
-    const handleSubmit = async () => {
-        await registerAPI(username, email, password, confirm);
-    };
-
-    let inputClass = "px-4 py-2 w-72 border border-gray-600 rounded-md bg-background text-foreground";
+	async function onSubmit(event: React.SyntheticEvent) {
+		event.preventDefault();
+		await registerAPI(username, email, password, confirm);
+	}
 
 	return (
-		<div>
-			<form
-				onSubmit={(event) => {
-					event.preventDefault();
-					handleSubmit();
-				}}
-				className="flex flex-col gap-2 justify-center items-center"
-			>
-				<input
-					id="username"
-					type="text"
-					name="username"
+		<div className="container flex flex-col items-center justify-center h-full">
+		<Card className="w-[350px]">
+			<CardHeader className="space-y-1">
+			<CardTitle className="text-2xl">Register</CardTitle>
+			<CardDescription>
+				Sign up for a new account 
+			</CardDescription>
+			</CardHeader>
+			<CardContent className="grid gap-4">
+			<div className="grid gap-2">
+				<Label htmlFor="username">Username</Label>
+				<Input
+					id="username" 
+					type="username"
 					placeholder="username"
-					value={username}
+					autoComplete="username"
 					onChange={(event) => {
 						setUsername(event.target.value);
 					}}
-					className={inputClass}
 					required
-				></input>
-				<input
-					id="email"
-					type="text"
-					name="email"
-					placeholder="email"
-					value={email}
+				/>
+			</div>
+			<div className="grid gap-2">
+				<Label htmlFor="email">Email</Label>
+				<Input
+					id="email" 
+					type="email"
+					placeholder="titan@titancrew"
+					autoComplete="email"
 					onChange={(event) => {
 						setEmail(event.target.value);
 					}}
-					className={inputClass}
 					required
-				></input>
-				<input
-					id="password"
-					type="password"
+				/>
+			</div>
+			<div className="grid gap-2">
+				<Label htmlFor="password">Password</Label>
+				<Input 
+					id="password" 
+					type="password" 
 					name="password"
 					placeholder="password"
-					value={password}
+					autoComplete="new-password"
 					onChange={(event) => {
 						setPassword(event.target.value);
 					}}
-					className={inputClass}
 					required
-				></input>
-				<input
-					id="confirm"
-					type="password"
-					name="confirm"
+				/>
+			</div>
+			<div className="grid gap-2">
+				<Label htmlFor="confirm-password">Confirm</Label>
+				<Input 
+					id="confirm-password" 
+					type="password" 
+					name="confirm-password"
 					placeholder="confirm password"
-					value={confirm}
+					autoComplete="on"
 					onChange={(event) => {
 						setConfirm(event.target.value);
 					}}
-					className={inputClass}
 					required
-				></input>
-				<div className="flex gap-2">
-					<FormButton type="submit" disabled={loading}>
-						{loading ? "Waiting..." : "Register"}
-					</FormButton>
-					<Link href="/login">
-						<FormButton type="button" variant="secondary">
-							Login
-						</FormButton>
-					</Link>
-				</div>
-			</form>
+				/>
+			</div>
+			</CardContent>
+			<CardFooter>
+			<Button className="w-full" onClick={onSubmit}>
+				{loading && (
+					<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+				)}
+				Register
+			</Button>
+			</CardFooter>
+		</Card>
 		</div>
-	);
+	)
 }
-
-export default Register;

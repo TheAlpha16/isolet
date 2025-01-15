@@ -7,6 +7,7 @@ import "react-toastify/ReactToastify.css";
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
 import NavBar from "@/components/NavBar";
+import { ThemeProvider } from "@/components/theme-provider"
 
 const geistSans = localFont({
 	src: "./fonts/GeistVF.woff",
@@ -34,16 +35,18 @@ export default function RootLayout({
 	}, [loggedIn, fetchUser]);
 
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
 			<body
-				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+				className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col h-screen`}
 			>
-				<ToastContainer />
-				<NavBar />
-				{children}
-				<div className={`${geistSans.variable} ${geistMono.variable} fixed bottom-5 end-5 text-slate-500`}>
-					powered by isolet
-				</div>
+				<ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+					<ToastContainer className="toast-container" />
+					<NavBar />
+					{children}
+					<div className={`${geistSans.variable} ${geistMono.variable} fixed bottom-5 end-5 text-slate-500`}>
+						powered by isolet
+					</div>
+		        </ThemeProvider>
 			</body>
 		</html>
 	);
