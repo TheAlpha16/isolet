@@ -11,16 +11,16 @@ export enum ToastStatus {
 function showToast(status: ToastStatus, message: string) {
     switch (status) {
         case ToastStatus.Success:
-            toast.success(message)
+            toast.success(message, { containerId: 'notification-toast' })
             break;
         case ToastStatus.Failure:
-            toast.error(message)
+            toast.error(message, { containerId: 'notification-toast' })
             break;
         case ToastStatus.Warning:
-            toast.warn(message)
+            toast.warn(message, { containerId: 'notification-toast' })
             break;
         default:
-            toast.warn(message)
+            toast.warn(message, { containerId: 'notification-toast' })
     }
 }
 
