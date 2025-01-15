@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"strings"
 	"crypto/rand"
 	"encoding/hex"
 
@@ -51,4 +52,15 @@ func GenerateChallengeEndpoint(method string, subdomain string, domain string, p
 	}
 	
 	return connString
+}
+
+func CleanSQLException(error_msg string) string {
+	error_msg = strings.TrimPrefix(error_msg, "ERROR: ")
+
+	prefixIndex := strings.Index(error_msg, " (SQLSTATE")
+	if prefixIndex != -1 {
+		error_msg = error_msg[:prefixIndex]
+	}
+
+	return error_msg
 }

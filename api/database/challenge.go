@@ -139,17 +139,9 @@ func UnlockHint(c *fiber.Ctx, hid int, teamid int64) (bool, string) {
 	db := DB.WithContext(ctx)
 
 	var hint string
-	var error_msg string
 	if err := db.Raw("SELECT unlock_hint(?, ?)", teamid, hid).Scan(&hint).Error; err != nil {
-		error_msg = err.Error()
-		if strings.Contains(error_msg, "hint ") || strings.Contains(error_msg, "insufficient") {
-			error_msg = strings.TrimPrefix(error_msg, "ERROR: ")
-			prefixIndex := strings.Index(error_msg, " (SQLSTATE")
-			if prefixIndex != -1 {
-				error_msg = error_msg[:prefixIndex]
-			}
-
-			return false, error_msg
+		if strings.Contains(err.Error(), "hint ") || strings.Contains(err.Error(), "insufficient") {
+			return false, CleanSQLException(err.Error())
 		}
 
 		log.Println(err)
