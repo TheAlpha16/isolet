@@ -23,7 +23,7 @@ type Challenge struct {
 	Visible      bool           `gorm:"default:false" json:"-"`
 	Tags         pq.StringArray `gorm:"type:text[]" json:"tags"`
 	Links        pq.StringArray `gorm:"type:text[]" json:"links"`
-	Done         bool           `gorm:"-" json:"done"`
+	Done         bool           `gorm:"column:done" json:"done"`
 }
 
 type ChallengeData struct {
