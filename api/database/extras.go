@@ -6,33 +6,12 @@ import (
 	"encoding/hex"
 
 	"github.com/TheAlpha16/isolet/api/config"
-	"github.com/lib/pq"
 )
 
 func GenerateRandom() string {
 	buffer := make([]byte, 32)
 	rand.Read(buffer)
 	return hex.EncodeToString(buffer)
-}
-
-func isChallengeSolved(challengeID int64, solvedChalls pq.Int64Array) bool {
-	for _, solved := range solvedChalls {
-		if solved == challengeID {
-			return true
-		}
-	}
-
-	return false
-}
-
-func isRequirementMet(requirements pq.Int64Array, solvedChalls pq.Int64Array) bool {
-	for _, requiredChall := range requirements {
-		if !isChallengeSolved(requiredChall, solvedChalls) {
-			return false
-		}
-	}
-
-	return true
 }
 
 func GenerateChallengeEndpoint(method string, subdomain string, domain string, port int, username ...string) string {
