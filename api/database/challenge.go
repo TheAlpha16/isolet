@@ -71,28 +71,15 @@ func ValidFlagEntry(ctx context.Context, chall_id int, teamid int64) (models.Cha
 	var err error
 
 	var challenge models.Challenge
-	if err := db.Select("chall_name, type, flag, points, requirements").Where("chall_id = ? AND visible = ?", chall_id, true).First(&challenge).Error; err != nil {
-		if err != gorm.ErrRecordNotFound {
-			log.Println(err)
-		}
-		return challenge, errors.New("challenge does not exist")
-	}
-
-	var team models.Team
-	if err := db.Select("solved").Where("teamid = ?", teamid).First(&team).Error; err != nil {
+	if err := db.Raw("WITH solved_challenges AS(SELECT ARRAY_AGG(solves.chall_id) AS solved_array FROM solves WHERE teamid = ?)SELECT challenges.type, challenges.flag, challenges.chall_id = any(solved_array) AS done FROM challenges CROSS JOIN solved_challenges WHERE challenges.chall_id = ? AND challenges.visible = true AND (challenges.requirements = '{}' OR challenges.requirements <@ solved_array);", teamid, chall_id).Scan(&challenge).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return challenge, errors.New("team does not exist")
+			return challenge, errors.New("challenge does not exist")
 		}
-
 		log.Println(err)
-		return challenge, errors.New("error in fetching team data")
+		return challenge, errors.New("error in fetching challenge data")
 	}
 
-	if !isRequirementMet(challenge.Requirements, team.Solved) {
-		return challenge, errors.New("challenge requirements not met")
-	}
-
-	if isChallengeSolved(int64(chall_id), team.Solved) {
+	if challenge.Done {
 		return challenge, errors.New("challenge already solved")
 	}
 
