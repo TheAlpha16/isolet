@@ -11,7 +11,7 @@ icon: React.ReactNode;
 }
 
 function NavBar() {
-	const { loggedIn, fetching, user, logout } = useAuthStore();
+	const { loggedIn, fetching, logout } = useAuthStore();
 
 	const routes: Route[] = [
 		{ path: "/teams", name: "Teams", icon: <Users2 size={18} /> },
@@ -29,16 +29,16 @@ function NavBar() {
 
 				{loggedIn &&
 					<nav className="flex items-center gap-2">
-					{routes.map(({ path, name, icon }) => (
-						<Link
-							key={path}
-							className="flex items-center gap-2 rounded-md p-2 transition-colors hover:bg-accent hover:text-accent-foreground"
-							href={path}
-						>
-							{icon}
-							<span>{name}</span>
-						</Link>
-					))}
+						{routes.map(({ path, name, icon }) => (
+							<Link
+								key={path}
+								className="flex items-center gap-2 rounded-md p-2 transition-colors hover:bg-accent hover:text-accent-foreground"
+								href={path}
+							>
+								{icon}
+								<span>{name}</span>
+							</Link>
+						))}
 					</nav>
 				}
 			</div>
