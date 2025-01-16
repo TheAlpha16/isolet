@@ -14,7 +14,6 @@ function NavBar() {
 	const { loggedIn, fetching, user, logout } = useAuthStore();
 
 	const routes: Route[] = [
-		{ path: "/users", name: "Users", icon: <Users size={18} /> },
 		{ path: "/teams", name: "Teams", icon: <Users2 size={18} /> },
 		{ path: "/scoreboard", name: "Scoreboard", icon: <Trophy size={18} /> },
 		{ path: "/challenges", name: "Challenges", icon: <Flag size={18} /> },
