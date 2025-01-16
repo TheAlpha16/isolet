@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import Hint from "@/components/Hint";
+import Hint from "@/components/hints/Hint";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Download, ExternalLink, ChevronDown, ChevronUp, Copy, Check, Users, Play, StopCircle } from 'lucide-react';
 
@@ -120,9 +120,9 @@ export function ChallengeModal({ challenge, onClose }: ChallengeModalProps) {
                     <div>
                         <h3 className="text-lg font-semibold mb-2">Hints</h3>
                         <div className="flex gap-2">
-                            {challenge.hints.map((hint: HintType) => (
-                                <Hint key={hint.hid} {...hint} />
-                            ))}
+							{challenge.hints.map((hint: HintType) => (
+								<Hint key={hint.hid} {...hint} chall_id={challenge.chall_id} />
+							))}
                         </div>
                     </div>
                 )}
