@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
 import NavBar from "@/components/NavBar";
 import { ThemeProvider } from "@/components/theme-provider"
-import { HintToastContainer } from "@/components/HintToastContainer";
+import { HintToastContainer } from "@/components/hints/HintToastContainer";
 import { NotificationContainer } from "@/components/NotificationContainer";
 
 const geistSans = localFont({

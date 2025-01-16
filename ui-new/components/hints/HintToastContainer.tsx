@@ -1,6 +1,7 @@
 import React from 'react';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Lightbulb } from 'lucide-react';
 
 export const HintToastContainer = () => {
 	return (
@@ -17,4 +18,12 @@ export const HintToastContainer = () => {
 			pauseOnHover
 		/>
 	);
+};
+
+export function showHint(hint: string) {
+	toast.info(hint, {
+		containerId: "hint-toast",
+		icon: <Lightbulb className="text-green-500" />,
+		className: 'hint-toast',
+	});
 };
