@@ -15,6 +15,7 @@ function NavBar() {
 
 	const routes: Route[] = [
 		{ path: "/teams", name: "Teams", icon: <Users2 size={18} /> },
+		{ path: "/profile", name: "Profile", icon: <CircleUserRound size={18} /> },
 		{ path: "/scoreboard", name: "Scoreboard", icon: <Trophy size={18} /> },
 		{ path: "/challenges", name: "Challenges", icon: <Flag size={18} /> },
 	];
@@ -45,12 +46,7 @@ function NavBar() {
 			<div className="flex items-center gap-4">
 				{!fetching && (
 					<>{loggedIn ? (<>
-						<Link href="/profile">
-							<Button variant="ghost" size="icon">
-								<CircleUserRound size={18} />
-								<span className="sr-only">Profile</span>
-							</Button>
-						</Link>
+						<ThemeToggle />
 						<Button variant="ghost" size="icon" onClick={logout}>
 							<LogOut size={18} />
 							<span className="sr-only">Logout</span>
@@ -63,10 +59,10 @@ function NavBar() {
 						<Link href="/login">
 							<Button>Login</Button>
 						</Link>
+						<ThemeToggle />
 					</>
 					)}</>
 				)}
-				<ThemeToggle />
 			</div>
 		</div>
 	);
