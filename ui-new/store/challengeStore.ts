@@ -1,6 +1,7 @@
 import showToast, { ToastStatus } from "@/utils/toastHelper";
 import { create } from "zustand";
 import fetchTimeout from "@/utils/fetchTimeOut";
+import { showHint } from "@/components/hints/HintToastContainer";
 
 export enum ChallType {
     Static,
@@ -40,7 +41,7 @@ interface ChallengeStore {
     loading: boolean;
     fetchChallenges: () => void;
     submitFlag: (chall_id: number, flag: string) => void;
-    // unlockHint: (chall_id: number, hint_id: number) => void;
+    unlockHint: (chall_id: number, hid: number) => void;
 };
 
 export const useChallengeStore = create<ChallengeStore>((set) => ({
@@ -58,14 +59,14 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
                 const rawChallenges = await res.json();
                 const processedChallenges: ChallengeData = {};
 
-                for (const category in rawChallenges) {                    
+                for (const category in rawChallenges) {
                     processedChallenges[category] = rawChallenges[category].map((chall: any) => ({
                         ...chall,
                         type: ChallType[chall.type.split("-").map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join("")]
                     }));
                 }
 
-                set({ challenges: processedChallenges }); 
+                set({ challenges: processedChallenges });
 
             } else if (res.status === 401) {
                 showToast(ToastStatus.Warning, "login to continue");
@@ -134,21 +135,51 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
         }
     },
 
-    // unlockHint: async (chall_id, hint_id) => {
-    //     const res = await fetch("/api/unlock", {
-    //         method: "POST",
-    //         body: JSON.stringify({ chall_id, hint_id }),
-    //     });
-    //     if (res.ok) {
-    //         set((state) => {
-    //             const challenge = state.challenges.find((c) => c.chall_id === chall_id);
-    //             if (challenge) {
-    //                 const hint = challenge.hints.find((h) => h.hid === hint_id);
-    //                 if (hint) {
-    //                     hint.unlocked = true;
-    //                 }
-    //             }
-    //         });
-    //     }
-    // },
+    unlockHint: async (chall_id, hid) => {
+        try {
+            let formData = new FormData();
+            formData.append("chall_id", chall_id.toString());
+            formData.append("hid", hid.toString());
+
+            const res = await fetchTimeout("/api/hint/unlock", 7000, new AbortController().signal, {
+                method: "POST",
+                body: formData,
+            });
+
+            if (res.ok) {
+                const response = await res.json();
+
+                set((state) => {
+                    const updatedChallenges = { ...state.challenges };
+                    for (const category in updatedChallenges) {
+                        const challenge = updatedChallenges[category].find((c) => c.chall_id === chall_id);
+                        if (challenge) {
+                            const hint = challenge.hints.find((h) => h.hid === hid);
+                            if (hint) {
+                                hint.hint = response.message;
+                                hint.unlocked = true;
+                            }
+                            break;
+                        }
+                    }
+
+                    return { challenges: updatedChallenges };
+                });
+
+                showHint(response.message);
+
+            } else if (res.status === 401) {
+                showToast(ToastStatus.Warning, "login to continue");
+            } else {
+                const response = await res.json();
+                showToast(ToastStatus.Failure, response.message);
+            };
+        } catch (error: any) {
+            if (error.name === "AbortError") {
+                showToast(ToastStatus.Failure, "request timed out!");
+            } else {
+                showToast(ToastStatus.Warning, "seems offline");
+            }
+        }
+    },
 }));
