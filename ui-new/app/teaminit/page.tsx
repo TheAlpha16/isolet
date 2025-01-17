@@ -7,11 +7,13 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Eye, EyeClosed } from "lucide-react"
 
 export default function TeamInit() {
 	const [teamname, setTeamName] = useState("");
 	const [password, setPassword] = useState("");
 	const { loading, teamJoin } = useJoinTeam();
+	const [showPasswd, setShowPasswd] = useState(false);
 
 	async function onSubmit(action: string) {
 		console.log(action);
@@ -44,9 +46,10 @@ export default function TeamInit() {
 			</div>
 			<div className="grid gap-2">
 				<Label htmlFor="password">Password</Label>
+				<div className="relative">
 				<Input 
 					id="password" 
-					type="password" 
+					type={ showPasswd ? "text": "password" } 
 					placeholder="password"
 					name="password"
 					autoComplete="current-password"
@@ -55,6 +58,10 @@ export default function TeamInit() {
 					}}
 					required
 				/>
+				<Button variant={"ghost"} size="icon" className="absolute inset-y-0 right-0" onClick={() => setShowPasswd(!showPasswd)}>
+					{showPasswd ? <Eye className="h-5 w-5" /> : <EyeClosed className="h-5 w-5" />}
+				</Button>
+				</div>
 			</div>
 			</CardContent>
 			<CardFooter>

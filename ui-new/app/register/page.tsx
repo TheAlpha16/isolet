@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
+import { Eye, EyeClosed } from "lucide-react"
 import useRegister from "@/hooks/useRegister"
 
 export default function Register() {
@@ -14,6 +15,8 @@ export default function Register() {
 	const [password, setPassword] = useState("");
 	const [confirm, setConfirm] = useState("");
 	const { loading, registerAPI } = useRegister();
+	const [showPasswd, setShowPasswd] = useState(false);
+	const [showConfirm, setShowConfirm] = useState(false);
 
 	async function onSubmit(event: React.SyntheticEvent) {
 		event.preventDefault();
@@ -58,9 +61,10 @@ export default function Register() {
 			</div>
 			<div className="grid gap-2">
 				<Label htmlFor="password">Password</Label>
+				<div className="relative">
 				<Input 
 					id="password" 
-					type="password" 
+					type={ showPasswd ? "text": "password" } 
 					name="password"
 					placeholder="password"
 					autoComplete="new-password"
@@ -69,12 +73,17 @@ export default function Register() {
 					}}
 					required
 				/>
+				<Button variant={"ghost"} size="icon" className="absolute inset-y-0 right-0" onClick={() => setShowPasswd(!showPasswd)}>
+					{showPasswd ? <Eye className="h-5 w-5" /> : <EyeClosed className="h-5 w-5" />}
+				</Button>
+				</div>
 			</div>
 			<div className="grid gap-2">
 				<Label htmlFor="confirm-password">Confirm</Label>
+				<div className="relative">
 				<Input 
 					id="confirm-password" 
-					type="password" 
+					type={ showConfirm ? "text": "password" } 
 					name="confirm-password"
 					placeholder="confirm password"
 					autoComplete="on"
@@ -83,6 +92,10 @@ export default function Register() {
 					}}
 					required
 				/>
+				<Button variant={"ghost"} size="icon" className="absolute inset-y-0 right-0" onClick={() => setShowConfirm(!showConfirm)}>
+					{showConfirm ? <Eye className="h-5 w-5" /> : <EyeClosed className="h-5 w-5" />}
+				</Button>
+				</div>
 			</div>
 			</CardContent>
 			<CardFooter>

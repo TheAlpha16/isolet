@@ -8,12 +8,14 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
 import useLogin from "@/hooks/useLogin"
+import { Eye, EyeClosed } from "lucide-react"
 
 export default function Login() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const { loading, loginAPI } = useLogin();
 	const router = useRouter();
+	const [showPasswd, setShowPasswd] = useState(false);
 
 	async function onSubmit(event: React.SyntheticEvent) {
 		event.preventDefault();
@@ -49,17 +51,22 @@ export default function Login() {
 			</div>
 			<div className="grid gap-2">
 				<Label htmlFor="password">Password</Label>
-				<Input 
-					id="password" 
-					type="password" 
-					placeholder="password"
-					name="password"
-					autoComplete="current-password"
-					onChange={(event) => {
-						setPassword(event.target.value);
-					}}
-					required
-				/>
+				<div className="relative">
+					<Input 
+						id="password" 
+						type={ showPasswd ? "text": "password"} 
+						placeholder="password"
+						name="password"
+						autoComplete="current-password"
+						onChange={(event) => {
+							setPassword(event.target.value);
+						}}
+						required
+					/>
+			<Button variant={"ghost"} size="icon" className="absolute inset-y-0 right-0" onClick={() => setShowPasswd(!showPasswd)}>
+				{showPasswd ? <Eye className="h-5 w-5" /> : <EyeClosed className="h-5 w-5" />}
+			</Button>
+				</div>
 			</div>
 			</CardContent>
 			<CardFooter>
