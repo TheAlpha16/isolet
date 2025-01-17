@@ -27,8 +27,8 @@ function Challenges() {
 	return (
 		<div className="container p-4 items-center justify-start h-full flex flex-col">
 			<h1 className="text-3xl font-bold mb-6">Challenges</h1>
-			<Tabs defaultValue={categories[0]} className="w-full">
-				<TabsList className="mb-4">
+			<Tabs defaultValue={categories[0]} className="flex flex-col w-full items-center sm:items-start">
+				<TabsList className="mb-4 flex flex-wrap max-w-fit">
 					{categories.map((category) => (
 						<TabsTrigger key={category} value={category}>
 							{category}
