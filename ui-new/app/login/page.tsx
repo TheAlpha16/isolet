@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Loader2 } from "lucide-react"
 import useLogin from "@/hooks/useLogin"
 import { Eye, EyeClosed } from "lucide-react"
+import Link from "next/link"
 
 export default function Login() {
 	const [email, setEmail] = useState("");
@@ -68,6 +69,11 @@ export default function Login() {
 			</Button>
 				</div>
 			</div>
+			<div className="text-sm text-right">
+				<Link href="/forgot-password" className="text-primary hover:underline">
+					Forgot password?
+				</Link>
+            </div>
 			</CardContent>
 			<CardFooter>
 			<Button className="w-full" onClick={onSubmit}>
