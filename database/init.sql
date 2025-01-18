@@ -68,6 +68,28 @@ CREATE OR REPLACE TRIGGER toverify_delete_old_rows_trigger
 BEFORE INSERT ON toverify
 EXECUTE PROCEDURE toverify_delete_old_rows();
 
+CREATE TABLE IF NOT EXISTS tokens (
+    tid SERIAL PRIMARY KEY,
+    token UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+    userid BIGINT NOT NULL REFERENCES users(userid) ON DELETE CASCADE,
+    timestamp TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Function to delete old tokens
+CREATE OR REPLACE FUNCTION tokens_delete_old_rows() RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    DELETE FROM tokens WHERE timestamp < NOW() - INTERVAL '30 minutes';
+    RETURN NEW;
+END;
+$$;
+
+-- Trigger to delete old tokens
+CREATE OR REPLACE TRIGGER tokens_delete_old_rows_trigger
+BEFORE INSERT ON tokens
+EXECUTE PROCEDURE tokens_delete_old_rows();
+
 -- Create challenges table
 CREATE TABLE IF NOT EXISTS challenges(
     chall_id serial PRIMARY KEY,
