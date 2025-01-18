@@ -51,7 +51,48 @@ function useLogin() {
         return false;
     };
 
-    return { loading, loginAPI };
+    const forgotPasswordAPI = async (email: string) => {
+        setLoading(true);
+
+        email = email.trim();
+
+        if (!email) {
+            showToast(ToastStatus.Failure, 'email is required');
+            setLoading(false);
+            return false;
+        }
+
+        let formData = new FormData();
+        formData.append('email', email);
+
+        try {
+            const res = await fetchTimeout('/auth/forgot-password', 5000, new AbortController().signal, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (res.ok) {
+                const resJSON = await res.json();
+                showToast(ToastStatus.Success, resJSON.message);
+                return true;
+            } else {
+                const resJSON = await res.json();
+                showToast(ToastStatus.Failure, resJSON.message);
+            }
+        } catch (error: any) {
+            if (error.name === 'AbortError') {
+                showToast(ToastStatus.Failure, 'verification timed out, reload!');
+            } else {
+                showToast(ToastStatus.Warning, 'server seems offline');
+            }
+        } finally {
+            setLoading(false);
+        }
+
+        return false;
+    }
+
+    return { loading, loginAPI, forgotPasswordAPI };
 }
 
 export default useLogin;
