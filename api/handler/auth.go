@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -59,11 +60,11 @@ func Login(c *fiber.Ctx) error {
 	c.Cookie(cookie)
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"userid": user.UserID,
-		"email": user.Email,
+		"userid":   user.UserID,
+		"email":    user.Email,
 		"username": user.Username,
-		"rank": user.Rank,
-		"teamid": user.TeamID,
+		"rank":     user.Rank,
+		"teamid":   user.TeamID,
 		"teamname": teamname,
 	})
 }
@@ -134,4 +135,57 @@ func Verify(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).SendString("user verified successfully! proceed to login")
+}
+
+func ForgotPassword(c *fiber.Ctx) error {
+	if c.Method() == "GET" {
+		password := c.FormValue("password")
+		confirm := c.FormValue("confirm")
+
+		if password == "" || confirm == "" {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "password and confirm password required"})
+		}
+
+		token := c.Query("token")
+		if token == "" {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "token required"})
+		}
+
+		password = strings.TrimSpace(password)
+		confirm = strings.TrimSpace(confirm)
+
+		if len(password) < 8 || len(password) > config.PASS_LEN {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": fmt.Sprintf("password should be of 8-%d characters", config.PASS_LEN)})
+		}
+
+		if password != confirm {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "password and confirm password do not match"})
+		}
+
+		password = utils.Hash(password)
+
+		if err := database.ResetForgetPassword(c, token, password); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": err.Error()})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "password reset successfully"})
+	}
+
+	email := c.FormValue("email")
+	if email == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "email required"})
+	}
+
+	email = strings.TrimSpace(email)
+	email = strings.ToLower(email)
+
+	var user models.User
+	user.Email = email
+
+	token, err := database.GeneratePasswordResetToken(c, &user)
+	if err == nil {
+		utils.SendResetPasswordMail(&user, token)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "reset link is sent to your mail if registered"})
 }
