@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"net/smtp"
 	"text/template"
 	"time"
@@ -66,6 +67,42 @@ func SendVerificationMail(regInput *models.ToVerify) error {
 
 	err = smtp.SendMail(config.SMTP_HOST+":"+config.SMTP_PORT, auth, from, to, body.Bytes())
 	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func SendResetPasswordMail(user *models.User, token *models.Token) error {
+	var err error
+
+	from := config.EMAIL_ID
+	secret := config.EMAIL_AUTH
+
+	to := []string{
+		user.Email,
+	}
+
+	auth := smtp.PlainAuth("", from, secret, config.SMTP_HOST)
+
+	t, _ := template.ParseFiles("templates/reset.html")
+
+	var body bytes.Buffer
+
+	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	body.Write([]byte(fmt.Sprintf("Subject: %s password reset \n%s\n\n", config.CTF_NAME, mimeHeaders)))
+
+	t.Execute(&body, struct {
+		Link    string
+		Username string
+	}{
+		Username: user.Username,
+		Link:     fmt.Sprintf("http://%s/forgot-password?token=%s", config.PUBLIC_URL, token.Token),
+	})
+
+	err = smtp.SendMail(config.SMTP_HOST+":"+config.SMTP_PORT, auth, from, to, body.Bytes())
+	if err != nil {
+		log.Println(err)
 		return err
 	}
 
