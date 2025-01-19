@@ -97,7 +97,7 @@ func SendResetPasswordMail(user *models.User, token *models.Token) error {
 		Username string
 	}{
 		Username: user.Username,
-		Link:     fmt.Sprintf("http://%s/forgot-password?token=%s", config.PUBLIC_URL, token.Token),
+		Link:     fmt.Sprintf("http://%s/reset-password?token=%s", config.PUBLIC_URL, token.Token),
 	})
 
 	err = smtp.SendMail(config.SMTP_HOST+":"+config.SMTP_PORT, auth, from, to, body.Bytes())
