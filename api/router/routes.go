@@ -16,7 +16,7 @@ func SetupRoutes(app *fiber.App) {
 	auth.Post("/register", handler.Register)
 	auth.Get("/verify", handler.Verify)
 	auth.Post("/forgot-password", handler.ForgotPassword)
-	auth.Get("/forgot-password", handler.ForgotPassword)
+	auth.Post("/reset-password", handler.ResetPassword)
 
 	onboard := app.Group("/onboard", middleware.CheckOnBoardToken())
 	onboard.Post("/team/create", handler.CreateTeam)
