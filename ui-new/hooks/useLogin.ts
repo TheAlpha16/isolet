@@ -90,9 +90,67 @@ function useLogin() {
         }
 
         return false;
-    }
+    };
 
-    return { loading, loginAPI, forgotPasswordAPI };
+    const resetPasswordAPI = async (password: string, confirm: string, token: string) => {
+        setLoading(true);
+
+        password = password.trim();
+        confirm = confirm.trim();
+        token = token.trim();
+
+        if (!token) {
+            showToast(ToastStatus.Failure, 'invalid token');
+            setLoading(false);
+            return false;
+        }
+
+        if (!password || !confirm) {
+            showToast(ToastStatus.Failure, 'all fields are required');
+            setLoading(false);
+            return false;
+        }
+
+        if (password !== confirm) {
+            showToast(ToastStatus.Failure, 'passwords do not match');
+            setLoading(false);
+            return false;
+        }
+
+        let formData = new FormData();
+        formData.append('password', password);
+        formData.append('confirm', confirm);
+        formData.append('token', token);
+
+        try {
+            const res = await fetchTimeout('/auth/reset-password', 5000, new AbortController().signal, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (res.ok) {
+                const resJSON = await res.json();
+                showToast(ToastStatus.Success, resJSON.message);
+                return true;
+            } else {
+                const resJSON = await res.json();
+                showToast(ToastStatus.Failure, resJSON.message);
+            }
+        } catch (error: any) {
+            if (error.name === 'AbortError') {
+                showToast(ToastStatus.Failure, 'verification timed out, reload!');
+            } else {
+                console.log(error);
+                showToast(ToastStatus.Warning, 'server seems offline');
+            }
+        } finally {
+            setLoading(false);
+        }
+
+        return false;
+    };
+
+    return { loading, loginAPI, forgotPasswordAPI, resetPasswordAPI };
 }
 
 export default useLogin;
