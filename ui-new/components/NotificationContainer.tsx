@@ -8,6 +8,7 @@ export const NotificationContainer = () => {
 			containerId="notification-toast"
 			position="top-right"
 			toastClassName="notification-toast"
+			hideProgressBar={true}
 		/>
 	);
 };
