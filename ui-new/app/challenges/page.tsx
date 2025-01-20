@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { ChallengeType, useChallengeStore } from "@/store/challengeStore";
+import { useInstanceStore } from "@/store/instanceStore";
 import { ChallengeCard } from "@/components/challenges/ChallengeCard";
 import { ChallengeModal } from "@/components/challenges/ChallengeModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 function Challenges() {
 	const [currentChallenge, setCurrentChallenge] = useState<ChallengeType | null>(null);
 	const { challenges, fetchChallenges, loading } = useChallengeStore();
+	const { instances } = useInstanceStore();
 	const categories = Object.keys(challenges);
 
 	useEffect(() => {
@@ -52,6 +54,7 @@ function Challenges() {
 			{currentChallenge && (
 				<ChallengeModal
 					challenge={currentChallenge}
+					instance={instances[currentChallenge.chall_id] || null}
 					onClose={() => setCurrentChallenge(null)}
 				/>
 			)}
