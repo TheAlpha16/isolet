@@ -6,18 +6,19 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import Hint from "@/components/hints/Hint";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Download, ExternalLink, ChevronDown, ChevronUp, Copy, Check, Users, Play, StopCircle } from 'lucide-react';
+import { Download, ExternalLink, Copy, Check, Users, Play, StopCircle } from 'lucide-react';
+import { InstanceType } from "@/store/instanceStore";
+import { InstanceCard } from "./InstanceCard";
 
 interface ChallengeModalProps {
 	challenge: ChallengeType;
+	instance: InstanceType | null;
 	onClose: () => void;
 }
 
-export function ChallengeModal({ challenge, onClose }: ChallengeModalProps) {
+export function ChallengeModal({ challenge, instance, onClose }: ChallengeModalProps) {
 	const [flag, setFlag] = useState('');
-	const [hintsOpen, setHintsOpen] = useState(false);
 	const [copiedLink, setCopiedLink] = useState<string | null>(null);
-	const [containerRunning, setContainerRunning] = useState(false);
 	const { submitFlag } = useChallengeStore();
 
 	const flagSubmit = async () => {
@@ -33,15 +34,6 @@ export function ChallengeModal({ challenge, onClose }: ChallengeModalProps) {
 		navigator.clipboard.writeText(text);
 		setCopiedLink(text);
 		setTimeout(() => setCopiedLink(null), 2000);
-	};
-
-	const handleContainerAction = () => {
-		if (containerRunning) {
-			console.log('Stopping container for challenge:', challenge.chall_id);
-		} else {
-			console.log('Starting container for challenge:', challenge.chall_id);
-		}
-		setContainerRunning(!containerRunning);
 	};
 
 	return (
@@ -92,7 +84,7 @@ export function ChallengeModal({ challenge, onClose }: ChallengeModalProps) {
 						<div className="space-y-2">
 							{challenge.links.map((link) => (
 							<div key={link} className="flex items-center space-x-2">
-								<Input value={link} readOnly className="flex-grow" />
+								<Input value={link} readOnly className="flex-grow font-mono" />
 								<TooltipProvider>
 									<Tooltip>
 										<TooltipTrigger asChild>
@@ -127,31 +119,8 @@ export function ChallengeModal({ challenge, onClose }: ChallengeModalProps) {
                     </div>
                 )}
 				
-				{challenge.type === ChallType.OnDemand && (
-					<div className="mt-4">
-						<Button 
-							onClick={handleContainerAction}
-							className="w-full"
-							variant={containerRunning ? "destructive" : "default"}
-						>
-							{containerRunning ? (
-							<>
-								<StopCircle className="mr-2 h-4 w-4" />
-								Stop Container
-							</>
-							) : (
-							<>
-								<Play className="mr-2 h-4 w-4" />
-								Launch Container
-							</>
-							)}
-						</Button>
-						{containerRunning && (
-							<p className="mt-2 text-sm text-muted-foreground">
-								Container is running. You can now access the challenge environment.
-							</p>
-						)}
-					</div>
+				{challenge.type === ChallType.OnDemand && instance && (
+					<InstanceCard instance={instance} />
 				)}
 			
 				<form onSubmit={handleSubmit} className="flex gap-2">
