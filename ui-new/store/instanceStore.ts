@@ -7,7 +7,7 @@ export interface InstanceType {
     password: string;
     port: number;
     hostname: string;
-    deadline: string;
+    deadline: number;
     deployment: string;
     connString: string;
     active: boolean;
