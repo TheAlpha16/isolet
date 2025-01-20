@@ -2,6 +2,7 @@ import showToast, { ToastStatus } from "@/utils/toastHelper";
 import { create } from "zustand";
 import fetchTimeout from "@/utils/fetchTimeOut";
 import { showHint } from "@/components/hints/HintToastContainer";
+import { useInstanceStore } from "./instanceStore";
 
 export enum ChallType {
     Static,
@@ -67,6 +68,25 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
                 }
 
                 set({ challenges: processedChallenges });
+
+                Object.values(processedChallenges).flat().forEach((challenge: ChallengeType) => {
+                    if (challenge.type === ChallType.OnDemand) {
+                        useInstanceStore.getState().updateInstance(challenge.chall_id, {
+                            chall_id: challenge.chall_id,
+                            password: "",
+                            port: 0,
+                            hostname: "",
+                            deadline: "",
+                            deployment: "",
+                            connString: "",
+                            active: false,
+                        });
+                    }
+                });
+
+                console.log(useInstanceStore.getState().instances);
+
+                useInstanceStore.getState().fetchInstances();
 
             } else if (res.status === 401) {
                 showToast(ToastStatus.Warning, "login to continue");
