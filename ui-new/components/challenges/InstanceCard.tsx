@@ -72,7 +72,7 @@ export function InstanceCard({ instance }: InstanceCardProps) {
 
 
 	const copyToClipboard = (text: string) => {
-		navigator.clipboard.writeText(text);
+		// navigator.clipboard.writeText(text);
 		setCopiedLink(text);
 		setTimeout(() => setCopiedLink(null), 2000);
 	};
@@ -81,34 +81,31 @@ export function InstanceCard({ instance }: InstanceCardProps) {
 		<div className="flex flex-col bg-card p-4 rounded-lg shadow-sm border space-y-2">
 			<div className="flex items-center space-x-4 justify-between">
 				<div className="flex space-x-2 items-center">
-					<div className="flex items-center justify-center border rounded-full">
-						<Button
-							onClick={handleContainerAction}
-							disabled={isLoading || containerStatus === "starting" || containerStatus === "stopping"}
-							variant="ghost"
-							size="sm"
-							className={`w-12 h-12 rounded-full ${containerStatus === "running" ? "text-red-500" : containerStatus === "stopped" ? "text-green-500" : "text-yellow-500"}`}
-						>
-							{isLoading ? (
-								<Loader2 className="h-6 w-6 animate-spin" />
-							) : containerStatus === "running" ? (
-								<StopCircle className="h-6 w-6" />
-							) : (
-								<Play className="h-6 w-6" />
-							)}
-							<span className="sr-only">{containerStatus === "running" ? "Stop" : "Start"} container</span>
-						</Button>
-					</div>
 					<Button
-						size="sm"
-						variant="outline"
+						onClick={handleContainerAction}
+						disabled={isLoading || containerStatus === "starting" || containerStatus === "stopping"}
+						variant={"outline"}
+						size={"sm"}
+					>
+						{isLoading ? (
+							<Loader2 className="animate-spin text-yellow-500" />
+						) : containerStatus === "running" ? (
+							<StopCircle className="text-red-500" />
+						) : (
+							<Play className="text-green-500" />
+						)}
+					</Button>
+
+					<Button
+						size={"sm"}
+						variant={"outline"}
 						onClick={handleExtend}
 						disabled={containerStatus !== "running" || isLoading}
 					>
 						<RefreshCw className="h-4 w-4 mr-2" />
 						Extend
 					</Button>
-					{containerStatus === "running" && <span className="text-sm font-mono">{formatTime(timeLeft)}</span>}
+					{containerStatus === "running" && <span className="text-sm font-mono border h-9 p-2 rounded-lg">{formatTime(timeLeft)}</span>}
 				</div>
 				<Badge variant="outline" className={`${getStatusColor()}`}>
 					{containerStatus.charAt(0).toUpperCase() + containerStatus.slice(1)}
