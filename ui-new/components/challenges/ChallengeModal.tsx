@@ -84,7 +84,7 @@ export function ChallengeModal({ challenge, instance, onClose }: ChallengeModalP
 						<div className="space-y-2">
 							{challenge.links.map((link) => (
 							<div key={link} className="flex items-center space-x-2">
-								<Input value={link} readOnly className="flex-grow font-mono" />
+									<Input value={link} readOnly className="flex-grow font-mono focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
 								<TooltipProvider>
 									<Tooltip>
 										<TooltipTrigger asChild>

@@ -78,7 +78,7 @@ export function InstanceCard({ instance }: InstanceCardProps) {
 	};
 
 	return (
-		<div className="flex flex-col bg-card p-4 rounded-lg shadow-sm border space-y-2">
+		<div className="flex flex-col bg-card p-3 rounded-lg shadow-sm border space-y-2">
 			<div className="flex items-center space-x-4 justify-between">
 				<div className="flex space-x-2 items-center">
 					<Button
@@ -113,7 +113,7 @@ export function InstanceCard({ instance }: InstanceCardProps) {
 			</div>
 			{containerStatus === "running" && (
 				<div className="flex items-center space-x-2">
-					<Input value={"ssh hacker@ctf.infosec.org.in"} readOnly className="flex-grow truncate font-mono" />
+					<Input value={"ssh hacker@ctf.infosec.org.in"} readOnly className="flex-grow truncate font-mono focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
 					<TooltipProvider>
 						<Tooltip>
 							<TooltipTrigger asChild>
