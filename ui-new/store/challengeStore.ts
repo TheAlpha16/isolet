@@ -76,7 +76,7 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
                             password: "",
                             port: 0,
                             hostname: "",
-                            deadline: 0 ,
+                            deadline: 0,
                             deployment: "",
                             connString: "",
                             active: false,
