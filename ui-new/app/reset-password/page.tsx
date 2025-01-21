@@ -21,10 +21,10 @@ export default function Register() {
 	const router = useRouter();
 
 	const searchParams = useSearchParams();
-	const token = isClient ? searchParams.get("token"): null;
+	const token = isClient ? searchParams.get("token") : null;
 
 	useEffect(() => {
-		setIsClient(true); 
+		setIsClient(true);
 	}, []);
 
 	useEffect(() => {
@@ -50,62 +50,64 @@ export default function Register() {
 
 	return (
 		<div className="container flex flex-col items-center justify-center h-full">
-		<Card className="w-[350px]">
-			<CardHeader className="space-y-1">
-			<CardTitle className="text-2xl">Reset Password</CardTitle>
-			<CardDescription>
-				Enter your new password
-			</CardDescription>
-			</CardHeader>
-			<CardContent className="grid gap-4">
-			<div className="grid gap-2">
-				<Label htmlFor="password">Password</Label>
-				<div className="relative">
-				<Input 
-					id="password" 
-					type={ showPasswd ? "text": "password" } 
-					name="password"
-					placeholder="password"
-					autoComplete="new-password"
-					onChange={(event) => {
-						setPassword(event.target.value);
-					}}
-					required
-				/>
-				<Button variant={"ghost"} size="icon" className="absolute inset-y-0 right-0" onClick={() => setShowPasswd(!showPasswd)}>
-					{showPasswd ? <Eye className="h-5 w-5" /> : <EyeClosed className="h-5 w-5" />}
-				</Button>
-				</div>
-			</div>
-			<div className="grid gap-2">
-				<Label htmlFor="confirm-password">Confirm</Label>
-				<div className="relative">
-				<Input 
-					id="confirm-password" 
-					type={ showConfirm ? "text": "password" } 
-					name="confirm-password"
-					placeholder="confirm password"
-					autoComplete="on"
-					onChange={(event) => {
-						setConfirm(event.target.value);
-					}}
-					required
-				/>
-				<Button variant={"ghost"} size="icon" className="absolute inset-y-0 right-0" onClick={() => setShowConfirm(!showConfirm)}>
-					{showConfirm ? <Eye className="h-5 w-5" /> : <EyeClosed className="h-5 w-5" />}
-				</Button>
-				</div>
-			</div>
-			</CardContent>
-			<CardFooter>
-			<Button className="w-full" onClick={onSubmit}>
-				{loading && (
-					<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-				)}
-				Reset 
-			</Button>
-			</CardFooter>
-		</Card>
+			<Card className="w-[350px]">
+				<CardHeader className="space-y-1">
+					<CardTitle className="text-2xl">Reset Password</CardTitle>
+					<CardDescription>
+						Enter your new password
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="grid gap-4">
+					<div className="grid gap-2">
+						<Label htmlFor="password">Password</Label>
+						<div className="relative">
+							<Input
+								id="password"
+								type={showPasswd ? "text" : "password"}
+								name="password"
+								placeholder="password"
+								autoComplete="new-password"
+								onChange={(event) => {
+									setPassword(event.target.value);
+								}}
+								className="pr-10"
+								required
+							/>
+							<Button variant={"ghost"} size="icon" className="absolute inset-y-0 right-0" onClick={() => setShowPasswd(!showPasswd)}>
+								{showPasswd ? <Eye className="h-5 w-5" /> : <EyeClosed className="h-5 w-5" />}
+							</Button>
+						</div>
+					</div>
+					<div className="grid gap-2">
+						<Label htmlFor="confirm-password">Confirm</Label>
+						<div className="relative">
+							<Input
+								id="confirm-password"
+								type={showConfirm ? "text" : "password"}
+								name="confirm-password"
+								placeholder="confirm password"
+								autoComplete="on"
+								onChange={(event) => {
+									setConfirm(event.target.value);
+								}}
+								className="pr-10"
+								required
+							/>
+							<Button variant={"ghost"} size="icon" className="absolute inset-y-0 right-0" onClick={() => setShowConfirm(!showConfirm)}>
+								{showConfirm ? <Eye className="h-5 w-5" /> : <EyeClosed className="h-5 w-5" />}
+							</Button>
+						</div>
+					</div>
+				</CardContent>
+				<CardFooter>
+					<Button className="w-full" onClick={onSubmit}>
+						{loading && (
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+						)}
+						Reset
+					</Button>
+				</CardFooter>
+			</Card>
 		</div>
 	)
 }
