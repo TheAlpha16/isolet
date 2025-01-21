@@ -25,11 +25,16 @@ interface InstanceStore {
     stopInstance: (chall_id: number) => void;
     extendInstance: (chall_id: number) => void;
     updateInstance: (chall_id: number, instance: Partial<InstanceType>) => void;
+    setLoading: (valueToSet: boolean) => void;
 };
 
 export const useInstanceStore = create<InstanceStore>((set) => ({
     instances: {},
     loading: false,
+
+    setLoading: (valueToSet: boolean) => {
+        set({ loading: valueToSet });
+    },
 
     fetchInstances: async () => {},
 
