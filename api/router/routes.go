@@ -28,6 +28,7 @@ func SetupRoutes(app *fiber.App) {
 	api.Post("/hint/unlock", handler.UnlockHint)
 
 	api.Get("/scoreboard", handler.ShowScoreBoard)
+	api.Get("/top-scores", handler.GetScoreGraph)
 	api.Get("/identify", handler.Identify)
 	api.Get("/logout", handler.Logout)
 

@@ -61,3 +61,18 @@ func GetTeamScore(teamid int64) (int, error) {
 
 	return score, nil
 }
+
+func GetScoreGraph(c *fiber.Ctx) ([]models.ScoreGraph, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+
+	var scoreGraph []models.ScoreGraph
+	if err := db.Raw("SELECT * FROM get_top_teams_submissions()").Scan(&scoreGraph).Error; err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return scoreGraph, nil
+}
