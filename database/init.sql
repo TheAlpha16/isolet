@@ -485,7 +485,6 @@ BEGIN
             t.teamname,
             t.rank,
             jsonb_build_object(
-                'type', 'submission',
                 'points', c.points,
                 'timestamp', s.timestamp
             ) AS event
@@ -500,7 +499,6 @@ BEGIN
             t.teamname,
             t.rank,
             jsonb_build_object(
-                'type', 'hint',
                 'points', -h.cost,
                 'timestamp', uh.timestamp
             ) AS event
