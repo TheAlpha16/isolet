@@ -33,3 +33,15 @@ type Solve struct {
 	TeamID    int64     `gorm:"column:teamid" json:"teamid"`
 	Timestamp time.Time `gorm:"column:timestamp" json:"timestamp"`
 }
+
+type PointData struct {
+	Points    int    `gorm:"column:points" json:"points"`
+	Timestamp string `gorm:"column:timestamp" json:"timestamp"`
+}
+
+type ScoreGraph struct {
+	TeamName    string      `gorm:"column:teamname" json:"teamname"`
+	TeamID      int64       `gorm:"column:teamid" json:"teamid"`
+	Rank        int         `gorm:"column:rank" json:"rank"`
+	Submissions []PointData `gorm:"column:submissions;serializer:json" json:"submissions"`
+}
