@@ -84,8 +84,6 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
                     }
                 });
 
-                console.log(useInstanceStore.getState().instances);
-
                 useInstanceStore.getState().fetchInstances();
 
             } else if (res.status === 401) {
