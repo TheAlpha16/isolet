@@ -12,11 +12,10 @@ import { InstanceCard } from "./InstanceCard";
 
 interface ChallengeModalProps {
 	challenge: ChallengeType;
-	instance: InstanceType | null;
 	onClose: () => void;
 }
 
-export function ChallengeModal({ challenge, instance, onClose }: ChallengeModalProps) {
+export function ChallengeModal({ challenge, onClose }: ChallengeModalProps) {
 	const [flag, setFlag] = useState('');
 	const [copiedLink, setCopiedLink] = useState<string | null>(null);
 	const { submitFlag } = useChallengeStore();
@@ -119,8 +118,8 @@ export function ChallengeModal({ challenge, instance, onClose }: ChallengeModalP
                     </div>
                 )}
 				
-				{challenge.type === ChallType.OnDemand && instance && (
-					<InstanceCard instance={instance} />
+				{challenge.type === ChallType.OnDemand && (
+					<InstanceCard chall_id={challenge.chall_id} />
 				)}
 			
 				<form onSubmit={handleSubmit} className="flex gap-2">

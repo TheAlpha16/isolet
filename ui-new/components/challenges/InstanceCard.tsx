@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface InstanceCardProps {
-	instance: InstanceType
+	chall_id: number
 }
 
-export function InstanceCard({ instance }: InstanceCardProps) {
+export function InstanceCard({ chall_id }: InstanceCardProps) {
 	const [containerStatus, setContainerStatus] = useState<"stopped" | "starting" | "running" | "stopping">("stopped")
 	const [isLoading, setIsLoading] = useState(false)
 	const [timeLeft, setTimeLeft] = useState(3600)
@@ -47,7 +47,7 @@ export function InstanceCard({ instance }: InstanceCardProps) {
 	const handleExtend = async () => {
 		setIsLoading(true)
 		await new Promise((resolve) => setTimeout(resolve, 1000))
-		setTimeLeft((prev) => prev + 1800) // Extend by 30 minutes
+		setTimeLeft((prev) => prev + 1800)
 		setIsLoading(false)
 		showToast(ToastStatus.Success, "Time extended by 30 minutes")
 	}
@@ -70,9 +70,8 @@ export function InstanceCard({ instance }: InstanceCardProps) {
 		return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
 	}
 
-
 	const copyToClipboard = (text: string) => {
-		// navigator.clipboard.writeText(text);
+		navigator.clipboard.writeText(text);
 		setCopiedLink(text);
 		setTimeout(() => setCopiedLink(null), 2000);
 	};
