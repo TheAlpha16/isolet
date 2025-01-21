@@ -1,9 +1,9 @@
 package database
 
 import (
+	"context"
 	"log"
 	"time"
-	"context"
 
 	"github.com/TheAlpha16/isolet/api/models"
 
@@ -16,11 +16,11 @@ func ReadScores(c *fiber.Ctx, page int) (models.ScoreBoard, error) {
 
 	db := DB.WithContext(ctx)
 
-	perPage := 10 
+	perPage := 50
 	offset := (page - 1) * perPage
 	scores := make([]models.Score, 0)
 	var totalTeams int64
-	
+
 	if err := db.Model(&models.Team{}).Count(&totalTeams).Error; err != nil {
 		log.Println(err)
 		return models.ScoreBoard{}, err
@@ -35,20 +35,7 @@ func ReadScores(c *fiber.Ctx, page int) (models.ScoreBoard, error) {
 		}, nil
 	}
 
-	err := db.Table("teams").
-		Select(`teams.teamid AS teamid, 
-				teams.teamname AS teamname, 
-				COALESCE(SUM(challenges.points), 0) - teams.cost AS score,
-				RANK() OVER (ORDER BY COALESCE(SUM(challenges.points), 0) - teams.cost DESC, teams.last_submission ASC) AS rank`).
-		Joins("LEFT JOIN solves ON solves.teamid = teams.teamid").
-		Joins("LEFT JOIN challenges ON challenges.chall_id = solves.chall_id").
-		Group("teams.teamid, teams.teamname, teams.cost, teams.last_submission").
-		Order("rank ASC").
-		Limit(perPage).
-		Offset(offset).
-		Scan(&scores).Error
-
-	if err != nil {
+	if err := db.Raw("SELECT * FROM get_scoreboard(?, ?)", perPage, offset).Scan(&scores).Error; err != nil {
 		log.Println(err)
 		return models.ScoreBoard{}, err
 	}

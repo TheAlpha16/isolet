@@ -374,6 +374,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Create a function to unlock a hint for a team
 CREATE OR REPLACE FUNCTION unlock_hint(team_id bigint, hint_id integer)
 RETURNS text AS $$
 DECLARE
@@ -431,5 +432,32 @@ BEGIN
     VALUES (hint_id, team_id);
 
     RETURN hint_hint;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create a function to retrieve scoreboard data
+CREATE OR REPLACE FUNCTION get_scoreboard(perPage integer, pageOffset integer)
+RETURNS TABLE (
+    teamid bigint,
+    teamname text,
+    rank bigint,
+    score bigint
+) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        teams.teamid AS teamid,
+        teams.teamname AS teamname,
+        RANK() OVER (ORDER BY COALESCE(SUM(challenges.points), 0) - teams.cost DESC, teams.last_submission ASC) AS rank,
+        COALESCE(SUM(challenges.points), 0) - teams.cost AS score
+    FROM teams
+    LEFT JOIN solves
+        ON solves.teamid = teams.teamid
+    LEFT JOIN challenges
+        ON challenges.chall_id = solves.chall_id
+    GROUP BY teams.teamid, teams.teamname, teams.cost, teams.last_submission
+    ORDER BY rank ASC
+    LIMIT perPage
+    OFFSET pageOffset;
 END;
 $$ LANGUAGE plpgsql;
