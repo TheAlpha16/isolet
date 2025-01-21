@@ -1,7 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
+
+::-webkit-scrollbar {
+  width: 0px;
+}
+
 @layer base {
   :root {
     --background: 240 10% 3.9%;
@@ -66,7 +70,7 @@
 
     --ring: 240 10% 3.9%;
   }
- 
+
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 213 31% 91%;
@@ -98,7 +102,7 @@
     --ring: 240 3.7% 15.9%;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
