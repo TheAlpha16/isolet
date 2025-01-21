@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react"
-import { generateFakeData, getPagedTeams, searchTeams, type Team, type ScoreHistory } from "../../utils/fakeData"
+import { generateFakeData, type Team, type ScoreHistory } from "../../utils/fakeData"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -10,31 +10,26 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Trophy, ChevronLeft, ChevronRight } from "lucide-react"
 import { format, isSameDay } from "date-fns"
 import { Button } from "@/components/ui/button";
-
-const PAGE_SIZE = 10
+import { useScoreboardStore, TeamType } from "@/store/scoreboardStore";
 
 export default function Scoreboard() {
     const [teams, setTeams] = useState<Team[]>([])
     const [scoreHistory, setScoreHistory] = useState<ScoreHistory[]>([])
     const [currentPage, setCurrentPage] = useState(1)
     const [searchQuery, setSearchQuery] = useState("")
-    const [filteredTeams, setFilteredTeams] = useState<Team[]>([])
+
+    const { scores, totalPages, loading, fetchPage } = useScoreboardStore()
 
     useEffect(() => {
         const { teams, scoreHistory } = generateFakeData(50, 3)
         setTeams(teams)
         setScoreHistory(scoreHistory)
-        setFilteredTeams(teams)
+        fetchPage(currentPage)
     }, [])
 
     useEffect(() => {
-        const filtered = searchTeams(teams, searchQuery)
-        setFilteredTeams(filtered)
         setCurrentPage(1)
     }, [searchQuery, teams])
-
-    const pageCount = Math.ceil(filteredTeams.length / PAGE_SIZE)
-    const pagedTeams = getPagedTeams(filteredTeams, currentPage, PAGE_SIZE)
 
     const top10Teams = teams.slice(0, 10)
     const graphData = scoreHistory.map((entry) => {
@@ -72,8 +67,9 @@ export default function Scoreboard() {
         return null
     }
 
-    const handlePageChange = (newPage: number) => {
-        setCurrentPage(Math.max(1, Math.min(newPage, pageCount)))
+    const handlePageChange = async (newPage: number) => {
+        if (newPage < 1 || newPage > totalPages) return
+        await fetchPage(newPage)
     }
 
     const PageNavigation = () => (
@@ -87,11 +83,11 @@ export default function Scoreboard() {
                 <ChevronLeft className="w-6 h-6" />
             </Button>
             <span className="text-sm text-gray-500">
-                Page {currentPage} of {pageCount}
+                Page {currentPage} of {totalPages}
             </span>
             <Button
                 onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === pageCount}
+                disabled={currentPage === totalPages}
                 className="p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                 variant={"ghost"}
             >
@@ -149,8 +145,8 @@ export default function Scoreboard() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {pagedTeams.map((team) => (
-                                <TableRow key={team.id}>
+                            {scores.map((team: TeamType) => (
+                                <TableRow key={team.teamid}>
                                     <TableCell className="text-center">
                                         <div className="flex justify-center items-center">
                                             {team.rank <= 3 ? (
@@ -166,7 +162,7 @@ export default function Scoreboard() {
                                         </div>
                                     </TableCell>
                                     <TableCell className="font-medium text-center">
-                                        <span className="truncate block max-w-xs mx-auto">{team.name}</span>
+                                        <span className="truncate block max-w-xs mx-auto">{team.teamname}</span>
                                     </TableCell>
                                     <TableCell className="text-center">{team.score}</TableCell>
                                 </TableRow>
