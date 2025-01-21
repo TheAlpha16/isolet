@@ -2,7 +2,7 @@ import showToast, { ToastStatus } from "@/utils/toastHelper";
 import { create } from "zustand";
 import fetchTimeout from "@/utils/fetchTimeOut";
 
-interface TeamType {
+export interface TeamType {
 	teamid: number;
 	teamname: string;
 	score: number;
@@ -55,7 +55,7 @@ export const useScoreboardStore = create<ScoreboardStore>((set) => ({
 			if (res.ok) {
 				const data = await res.json();
 
-				set((state) => {
+				await set((state) => {
 					const newPages = {
 						...state.pages,
 						[page]: {
@@ -78,6 +78,10 @@ export const useScoreboardStore = create<ScoreboardStore>((set) => ({
 				const response = await res.json();
 				showToast(ToastStatus.Failure, response.message);
 			}
+
+			useScoreboardStore.getState().prefetchPage(page + 1);
+			useScoreboardStore.getState().prefetchPage(page - 1);
+
 		} catch (error: any) {
 			if (error.name === "AbortError") {
 				showToast(ToastStatus.Failure, "request timed out!");
