@@ -34,6 +34,8 @@ export const useInstanceStore = create<InstanceStore>((set) => ({
     fetchInstances: async () => {},
 
     startInstance: async (chall_id: number) => {
+        set({ loading: true });
+        
         let formData = new FormData();
         formData.append("chall_id", chall_id.toString());
 
