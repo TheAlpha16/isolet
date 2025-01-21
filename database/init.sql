@@ -461,3 +461,60 @@ BEGIN
     OFFSET pageOffset;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Create a function to retrieve top teams submissions
+CREATE OR REPLACE FUNCTION get_top_teams_submissions()
+RETURNS TABLE (
+    teamid bigint,
+    teamname text,
+    rank bigint,
+    submissions json
+) AS $$
+BEGIN
+    RETURN QUERY
+    WITH top_teams AS (
+        SELECT 
+            get_scoreboard.teamid,
+            get_scoreboard.teamname,
+            get_scoreboard.rank
+        FROM get_scoreboard(10, 0)
+    ),
+    combined_events AS (
+        SELECT 
+            t.teamid,
+            t.teamname,
+            t.rank,
+            jsonb_build_object(
+                'type', 'submission',
+                'points', c.points,
+                'timestamp', s.timestamp
+            ) AS event
+        FROM top_teams t
+        LEFT JOIN solves s ON s.teamid = t.teamid
+        LEFT JOIN challenges c ON c.chall_id = s.chall_id
+
+        UNION ALL
+
+        SELECT 
+            t.teamid,
+            t.teamname,
+            t.rank,
+            jsonb_build_object(
+                'type', 'hint',
+                'points', -h.cost,
+                'timestamp', uh.timestamp
+            ) AS event
+        FROM top_teams t
+        LEFT JOIN uhints uh ON uh.teamid = t.teamid
+        LEFT JOIN hints h ON h.hid = uh.hid
+    )
+    SELECT 
+        combined_events.teamid,
+        combined_events.teamname,
+        combined_events.rank,
+        COALESCE(json_agg(event), '[]'::json) AS submissions
+    FROM combined_events
+    GROUP BY combined_events.teamid, combined_events.teamname, combined_events.rank
+    ORDER BY combined_events.rank ASC;
+END;
+$$ LANGUAGE plpgsql;
