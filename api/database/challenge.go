@@ -1,11 +1,11 @@
 package database
 
 import (
-	"log"
-	"time"
-	"errors"
 	"context"
+	"errors"
+	"log"
 	"strings"
+	"time"
 
 	"github.com/TheAlpha16/isolet/api/config"
 	"github.com/TheAlpha16/isolet/api/models"
@@ -109,7 +109,7 @@ func VerifyFlag(c *fiber.Ctx, chall_id int, userid int64, teamid int64, flag str
 		TeamID:  teamid,
 		Flag:    flag,
 		Correct: flag == challenge.Flag,
-		IP: c.Locals("clientIP").(string),
+		IP:      c.Locals("clientIP").(string),
 	}
 
 	if config.POST_EVENT != "false" {
@@ -153,7 +153,7 @@ func UnlockHint(c *fiber.Ctx, hid int, teamid int64) (bool, string) {
 
 // Admin functions
 func EditChallengeData(c *fiber.Ctx, challengeData *models.ChallengeData) error {
-	ctx, cancel := context.WithTimeout(c.Context(), 15 * time.Second)
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
 	db := DB.WithContext(ctx)
@@ -168,18 +168,55 @@ func EditChallengeData(c *fiber.Ctx, challengeData *models.ChallengeData) error 
 		return errors.New("database error")
 	}
 
-
 	updates := map[string]interface{}{
-		"chall_name":   challengeData.Name,
-		"prompt":       challengeData.Prompt,
-		"category_name":  challengeData.CategoryName,
-		"type":         challengeData.Type,
-		"points":       challengeData.Points,
-		"files":        challengeData.Files,
-		"author":       challengeData.Author,
-		"tags":         challengeData.Tags,
-		"links":        challengeData.Links,
+		"chall_name":    challengeData.Name,
+		"prompt":        challengeData.Prompt,
+		"category_name": challengeData.CategoryName,
+		"type":          challengeData.Type,
+		"points":        challengeData.Points,
+		"files":         challengeData.Files,
+		"author":        challengeData.Author,
+		"port":          challengeData.Port,
+		"tags":          challengeData.Tags,
+		"links":         challengeData.Links,
 	}
 
+	tx := db.Begin()
+	if tx.Error != nil {
+		log.Println(tx.Error)
+		return errors.New("error in starting a transaction")
+	}
+
+	if err := tx.Model(&existingChallData).Updates(updates).Error; err != nil {
+		tx.Rollback()
+		log.Println(err)
+		return errors.New("failed to update challenge")
+	}
+
+	// updating hints separately
+	if len(challengeData.Hints) > 0 {
+		// deleting existing hints
+		if err := tx.Where("chall_id = ?", challengeData.ChallID).Model(&models.Hint{}).Error; err != nil {
+			tx.Rollback()
+			log.Println(err)
+			return errors.New("failed to update hints")
+		}
+
+		// inserting new hints
+		for _, hint := range challengeData.Hints {
+			hint.ChallID = challengeData.ChallID
+			if err := tx.Create(&hint).Error; err != nil {
+				tx.Rollback()
+				log.Println(err)
+				return errors.New("failed to create new hints")
+			}
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		log.Println(err)
+		return errors.New("failed to commit changes")
+	}
 	return nil
 }
