@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react"
-import { generateFakeData, type Team, type ScoreHistory } from "../../utils/fakeData"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -11,51 +10,56 @@ import { Trophy, ChevronLeft, ChevronRight } from "lucide-react"
 import { format, isSameDay } from "date-fns"
 import { Button } from "@/components/ui/button";
 import { useScoreboardStore, TeamType } from "@/store/scoreboardStore";
+import { processTopScores } from "@/utils/processTopScores";
 
 export default function Scoreboard() {
-    const [teams, setTeams] = useState<Team[]>([])
-    const [scoreHistory, setScoreHistory] = useState<ScoreHistory[]>([])
-    const [currentPage, setCurrentPage] = useState(1)
     const [searchQuery, setSearchQuery] = useState("")
+    const [graphData, setGraphData] = useState<{
+        timestamp: string;
+        [key: string]: number | string;
+    }[]>([])
 
-    const { scores, totalPages, loading, fetchPage } = useScoreboardStore()
+    const { scores, totalPages, currentPage, loading, fetchPage, graphLoading, topScores, startTime, fetchTopScores } = useScoreboardStore()
 
     useEffect(() => {
-        const { teams, scoreHistory } = generateFakeData(50, 3)
-        setTeams(teams)
-        setScoreHistory(scoreHistory)
         fetchPage(currentPage)
+        fetchTopScores()
+
+        return () => { }
     }, [])
 
     useEffect(() => {
-        setCurrentPage(1)
-    }, [searchQuery, teams])
-
-    const top10Teams = teams.slice(0, 10)
-    const graphData = scoreHistory.map((entry) => {
-        const graphEntry: { [key: string]: any } = { timestamp: entry.timestamp }
-        top10Teams.forEach((team) => {
-            graphEntry[team.name] = entry[team.name]
-        })
-        return graphEntry
-    })
+        const respon = processTopScores(topScores, startTime);
+        setGraphData(respon);
+    }, [topScores, startTime])
 
     const formatXAxis = (tickItem: string, index: number) => {
-        const date = new Date(tickItem)
-        const prevDate = index > 0 ? new Date(graphData[index - 1].timestamp) : null
-        const time = format(date, "HH:mm")
+        try {
+            const date = new Date(tickItem)
+            const prevDate = index > 0 ? new Date(graphData[index - 1].timestamp) : null
+            const time = format(date, "HH:mm")
 
-        if (!prevDate || !isSameDay(date, prevDate)) {
-            return `${format(date, "MMM d")}`
+            if (!prevDate || !isSameDay(date, prevDate)) {
+                return `${format(date, "MMM d")}`
+            }
+
+            return time
+        } catch (e) {
+            return ""
         }
-        return time
     }
 
     const CustomTooltip = ({ active, payload, label }: any) => {
         if (active && payload && payload.length) {
             return (
                 <div className="bg-background p-4 border rounded shadow">
-                    <p className="font-bold">{format(new Date(label), "MMM d, HH:mm")}</p>
+                    <p className="font-bold">{(() => {
+                        try {
+                            return format(new Date(label), "MMM d, HH:mm")
+                        } catch (e) {
+                            return ""
+                        }
+                    })()}</p>
                     {payload.map((entry: any, index: number) => (
                         <p key={index} style={{ color: entry.color }}>
                             {entry.name}: {entry.value}
@@ -101,25 +105,27 @@ export default function Scoreboard() {
             <h1 className="text-3xl font-bold mb-6">Scoreboard</h1>
             <Card>
                 <CardContent className="pt-6">
-                    <ResponsiveContainer width="100%" height={400}>
-                        <LineChart data={graphData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="timestamp" tickFormatter={formatXAxis} height={60} tick={{ fontSize: 12 }} />
-                            <YAxis tick={{ fontSize: 12 }} width={40} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend />
-                            {top10Teams.map((team, index) => (
-                                <Line
-                                    key={team.id}
-                                    type="monotone"
-                                    dataKey={team.name}
-                                    stroke={`hsl(${index * 36}, 70%, 50%)`}
-                                    strokeWidth={2}
-                                    dot={false}
-                                />
-                            ))}
-                        </LineChart>
-                    </ResponsiveContainer>
+                    {!graphLoading && topScores.length && (
+                        <ResponsiveContainer width="100%" height={400}>
+                            <LineChart data={graphData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="timestamp" tickFormatter={formatXAxis} height={60} tick={{ fontSize: 12 }} />
+                                <YAxis tick={{ fontSize: 12 }} width={40} />
+                                <Tooltip content={<CustomTooltip />} />
+                                <Legend />
+                                {topScores.map((team, index) => (
+                                    <Line
+                                        key={team.teamname}
+                                        type="monotone"
+                                        dataKey={team.teamname}
+                                        stroke={`hsl(${index * 36}, 70%, 50%)`}
+                                        strokeWidth={2}
+                                        dot={false}
+                                        connectNulls={true}
+                                    />
+                                ))}
+                            </LineChart>
+                        </ResponsiveContainer>)}
                 </CardContent>
             </Card>
 
