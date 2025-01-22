@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/TheAlpha16/isolet/api/config"
 	"github.com/TheAlpha16/isolet/api/database"
 	"github.com/TheAlpha16/isolet/api/models"
 
@@ -78,5 +79,10 @@ func GetScoreGraph(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(graph)
+	startTime, _ := strconv.ParseInt(config.EVENT_START, 10, 64)
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"start_time":  time.Unix(startTime, 0),
+		"scores": graph,
+	})
 }
