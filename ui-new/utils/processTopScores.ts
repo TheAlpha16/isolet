@@ -1,51 +1,51 @@
 import { TopScore } from "@/store/scoreboardStore";
 
-export function processTopScores(data: TopScore[], startTime: string) {
-	let scoresTillNow = Object.fromEntries(
-		data.map((team) => [team.teamname, 0])
+interface Submission {
+	rank: number;
+	teamname: string;
+	timestamp: string;
+	points: number;
+}
+
+interface TeamPlot {
+	timestamp: string;
+	[key: string]: number | string;
+}
+
+function prepareSubmissions(data: TopScore[]) {
+	return data.flatMap((team) =>
+		team.submissions.map((sub) => ({
+			rank: team.rank,
+			teamname: team.teamname,
+			timestamp: sub.timestamp,
+			points: sub.points,
+		}))
 	);
-	let preparedData: {
-		rank: number;
-		teamname: string;
-		timestamp: string;
-		points: number;
-	}[] = [];
-	let finalData: {
-		timestamp: string;
-		[key: string]: number | string;
-	}[] = [];
+}
 
-	for (let i = 0; i < data.length; i++) {
-		let team = data[i];
+function buildGraphData(
+	preparedData: Submission[],
+	startTime: string
+): TeamPlot[] {
+	const scoresTillNow: { [teamname: string]: number } = {};
+	preparedData.forEach(({ teamname }) => (scoresTillNow[teamname] = 0));
 
-		for (let submission of team.submissions) {
-			preparedData.push({
-				rank: team.rank,
-				teamname: team.teamname,
-				timestamp: submission.timestamp,
-				points: submission.points,
-			});
-		}
-	}
+	const finalData = [{ timestamp: startTime, ...scoresTillNow }];
+	preparedData.forEach((submission) => {
+		scoresTillNow[submission.teamname] += submission.points;
+		finalData.push({ timestamp: submission.timestamp, ...scoresTillNow });
+	});
+
+	return finalData;
+}
+
+export function processTopScores(data: TopScore[], startTime: string) {
+	const preparedData = prepareSubmissions(data);
 
 	preparedData.sort(
 		(a, b) =>
 			new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
 	);
 
-	finalData.push({
-		timestamp: startTime,
-		...scoresTillNow,
-	});
-
-	for (let i = 0; i < preparedData.length; i++) {
-		let submission = preparedData[i];
-		scoresTillNow[submission.teamname] += submission.points;
-		finalData.push({
-			timestamp: submission.timestamp,
-			...scoresTillNow,
-		});
-	}
-
-	return finalData;
+	return buildGraphData(preparedData, startTime);
 }
