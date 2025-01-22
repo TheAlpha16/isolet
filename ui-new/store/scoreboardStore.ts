@@ -14,22 +14,41 @@ interface CachedPage {
 	timestamp: number;
 }
 
+export interface TopSubmission {
+	points: number;
+	timestamp: string;
+}
+
+export interface TopScore {
+	teamid: number;
+	teamname: string;
+	rank: number;
+	submissions: TopSubmission[];
+}
+
 interface ScoreboardStore {
-	scores: TeamType[];
-	pages: Record<number, CachedPage>;
+	loading: boolean;
+	graphLoading: boolean;
 	currentPage: number;
 	totalPages: number;
-	loading: boolean;
+	startTime: string;
+	scores: TeamType[];
+	topScores: TopScore[];
+	pages: Record<number, CachedPage>;
 	fetchPage: (page: number) => void;
 	prefetchPage: (page: number) => void;
+	fetchTopScores: () => void;
 }
 
 export const useScoreboardStore = create<ScoreboardStore>((set) => ({
-	scores: [],
-	pages: {},
+	loading: false,
+	graphLoading: true,
 	currentPage: 1,
 	totalPages: 1,
-	loading: false,
+	startTime: "",
+	scores: [],
+	topScores: [],
+	pages: {},
 
 	fetchPage: async (page: number) => {
 		set({ loading: true });
@@ -81,7 +100,6 @@ export const useScoreboardStore = create<ScoreboardStore>((set) => ({
 
 			useScoreboardStore.getState().prefetchPage(page + 1);
 			useScoreboardStore.getState().prefetchPage(page - 1);
-
 		} catch (error: any) {
 			if (error.name === "AbortError") {
 				showToast(ToastStatus.Failure, "request timed out!");
@@ -96,32 +114,71 @@ export const useScoreboardStore = create<ScoreboardStore>((set) => ({
 	prefetchPage: async (page: number) => {
 		const { pages, totalPages } = useScoreboardStore.getState();
 
-        if (page < 1 || page > totalPages || pages[page]) return;
-        
-        try {
-            const res = await fetchTimeout(`/api/scoreboard?page=${page}`, 10000, new AbortController().signal, {
-                method: "GET",
-            });
+		if (page < 1 || page > totalPages || pages[page]) return;
 
-            if (res.ok) {
-                const data = await res.json();
+		try {
+			const res = await fetchTimeout(
+				`/api/scoreboard?page=${page}`,
+				10000,
+				new AbortController().signal,
+				{
+					method: "GET",
+				}
+			);
 
-                set((state) => {
-                    const newPages = {
-                        ...state.pages,
-                        [page]: {
-                            data: data.scores,
-                            timestamp: Date.now(),
-                        },
-                    };
+			if (res.ok) {
+				const data = await res.json();
 
-                    return {
-                        pages: newPages,
-                    };
-                });
-            }
-        } finally {
-            // do nothing
-        }
+				set((state) => {
+					const newPages = {
+						...state.pages,
+						[page]: {
+							data: data.scores,
+							timestamp: Date.now(),
+						},
+					};
+
+					return {
+						pages: newPages,
+					};
+				});
+			}
+		} finally {
+			// do nothing
+		}
+	},
+
+	fetchTopScores: async () => {
+		set({ graphLoading: true });
+
+		try {
+			const res = await fetchTimeout(
+				"/api/scoreboard/top",
+				10000,
+				new AbortController().signal,
+				{
+					method: "GET",
+				}
+			);
+
+			if (res.ok) {
+				const response = await res.json();
+				set({
+					topScores: response.scores,
+					startTime: response.start_time,
+				});
+			} else {
+				const response = await res.json();
+				showToast(ToastStatus.Failure, response.message);
+			}
+		} catch (error: any) {
+			if (error.name === "AbortError") {
+				showToast(ToastStatus.Failure, "request timed out!");
+			} else {
+				showToast(ToastStatus.Warning, "seems offline");
+			}
+		} finally {
+			set({ graphLoading: false });
+		}
 	},
 }));
