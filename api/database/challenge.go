@@ -150,3 +150,36 @@ func UnlockHint(c *fiber.Ctx, hid int, teamid int64) (bool, string) {
 
 	return true, hint
 }
+
+// Admin functions
+func EditChallengeData(c *fiber.Ctx, challengeData *models.ChallengeData) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 15 * time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+
+	var existingChallData models.ChallengeData
+	if err := db.Where("chall_id = ?", challengeData.ChallID).First(&existingChallData).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			log.Println(err)
+			return errors.New("this challenge does not exist")
+		}
+		log.Println(err)
+		return errors.New("database error")
+	}
+
+
+	updates := map[string]interface{}{
+		"chall_name":   challengeData.Name,
+		"prompt":       challengeData.Prompt,
+		"category_name":  challengeData.CategoryName,
+		"type":         challengeData.Type,
+		"points":       challengeData.Points,
+		"files":        challengeData.Files,
+		"author":       challengeData.Author,
+		"tags":         challengeData.Tags,
+		"links":        challengeData.Links,
+	}
+
+	return nil
+}
