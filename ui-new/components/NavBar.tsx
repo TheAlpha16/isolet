@@ -12,7 +12,7 @@ interface Route {
 }
 
 function NavBar() {
-	const { loggedIn, fetching, logout } = useAuthStore();
+	const { user, fetching, logout } = useAuthStore();
 	const [menuOpen, setMenuOpen] = useState(false);
 
 	const routes: Route[] = [
@@ -29,7 +29,7 @@ function NavBar() {
 						<div className="text-foreground text-2xl font-bold">isolet</div>
 					</Link>
 
-					{loggedIn &&
+					{user.userid !== -1 &&
 						<nav className="sm:flex items-center gap-2 hidden">
 							{routes.map(({ path, name, icon }) => (
 								<Link
@@ -47,7 +47,7 @@ function NavBar() {
 
 				<div className="items-center gap-4 hidden sm:flex">
 					{!fetching && (
-						<>{loggedIn ? (<>
+						<>{user.userid !== -1 ? (<>
 							<ThemeToggle />
 							<Button variant="ghost" size="icon" onClick={logout}>
 								<LogOut size={18} />
@@ -80,7 +80,7 @@ function NavBar() {
 
 			{menuOpen && (
 				<div className={`bg-transparent font-mono border-b sm:hidden transition-all duration-300 ease-in-out `}>
-					{loggedIn && (
+					{user.userid !== -1 && (
 						<nav className="flex flex-col gap-2 p-4">
 							{routes.map(({ path, name, icon }) => (
 								<Link
@@ -101,7 +101,7 @@ function NavBar() {
 								<span>Logout</span>
 							</Link>
 						</nav>)}
-					{!loggedIn && (
+					{user.userid === -1 && (
 						<nav className="flex flex-col gap-2 p-4">
 							<Link
 								className="flex items-center gap-2 rounded-md p-2 transition-colors hover:bg-accent hover:text-accent-foreground"

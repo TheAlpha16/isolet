@@ -28,13 +28,13 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 
-	const { loggedIn, fetchUser } = useAuthStore();
+	const { user, fetchUser } = useAuthStore();
 
 	useEffect(() => {
-		if (!loggedIn) {
+		if (user.userid === -1) {
 			fetchUser();
 		}
-	}, [loggedIn, fetchUser]);
+	}, [user, fetchUser]);
 
 	return (
 		<html lang="en" suppressHydrationWarning>
@@ -49,7 +49,7 @@ export default function RootLayout({
 					<div className={`${geistSans.variable} ${geistMono.variable} fixed bottom-5 end-5 text-slate-500`}>
 						powered by isolet
 					</div>
-		        </ThemeProvider>
+				</ThemeProvider>
 			</body>
 		</html>
 	);
