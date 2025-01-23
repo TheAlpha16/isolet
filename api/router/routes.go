@@ -36,4 +36,7 @@ func SetupRoutes(app *fiber.App) {
 	api.Post("/stop", handler.StopInstance)
 	api.Get("/status", handler.GetStatus)
 	api.Post("/extend", handler.ExtendTime)
+
+	profile := api.Group("/profile")
+	profile.Get("/info", handler.GetProfile)
 }
