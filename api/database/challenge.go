@@ -120,7 +120,7 @@ func VerifyFlag(c *fiber.Ctx, chall_id int, userid int64, teamid int64, flag str
 		}
 	}
 
-	if err := db.Create(&sublog).Error; err != nil {
+	if err := db.Omit("Points", "Timestamp").Create(&sublog).Error; err != nil {
 		log.Println(err)
 		return false, "error in verification, please contact admin"
 	}

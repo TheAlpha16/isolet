@@ -49,7 +49,7 @@ func CreateTeam(c *fiber.Ctx, team *models.Team) error {
 
 	db := DB.WithContext(ctx)
 
-	if err := db.Create(team).Error; err != nil {
+	if err := db.Omit("Score", "Rank", "Submissions", "LastSubmission", "Members").Create(team).Error; err != nil {
 		return err
 	}
 
