@@ -104,9 +104,10 @@ export default function Scoreboard() {
     return (
         <div className="container mx-auto p-4 space-y-4">
             <h1 className="text-3xl font-bold mb-6">Scoreboard</h1>
-            <Card>
-                <CardContent className="pt-6">
-                    {!graphLoading && topScores.length && (
+            {!graphLoading && topScores.length !== 0 && (
+                <Card>
+                    <CardContent className="pt-6">
+
                         <ResponsiveContainer width="100%" height={400}>
                             <LineChart data={graphData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -126,9 +127,9 @@ export default function Scoreboard() {
                                     />
                                 ))}
                             </LineChart>
-                        </ResponsiveContainer>)}
-                </CardContent>
-            </Card>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>)}
 
             <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
                 <Input
