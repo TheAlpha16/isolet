@@ -18,7 +18,7 @@ func ReadScores(c *fiber.Ctx, page int) (models.ScoreBoard, error) {
 
 	perPage := 50
 	offset := (page - 1) * perPage
-	scores := make([]models.Score, 0)
+	var scores []models.Team
 	var totalTeams int64
 
 	if err := db.Model(&models.Team{}).Count(&totalTeams).Error; err != nil {
@@ -35,7 +35,7 @@ func ReadScores(c *fiber.Ctx, page int) (models.ScoreBoard, error) {
 		}, nil
 	}
 
-	if err := db.Raw("SELECT * FROM get_scoreboard(?, ?)", perPage, offset).Scan(&scores).Error; err != nil {
+	if err := db.Model(&models.Team{}).Select("teamid, teamname, rank, score").Raw("SELECT teamid, teamname, rank, score FROM get_scoreboard(?, ?)", perPage, offset).Scan(&scores).Error; err != nil {
 		log.Println(err)
 		return models.ScoreBoard{}, err
 	}
@@ -62,14 +62,14 @@ func GetTeamScore(teamid int64) (int, error) {
 	return score, nil
 }
 
-func GetScoreGraph(c *fiber.Ctx) ([]models.ScoreGraph, error) {
+func GetScoreGraph(c *fiber.Ctx) ([]models.Team, error) {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
 	db := DB.WithContext(ctx)
 
-	var scoreGraph []models.ScoreGraph
-	if err := db.Raw("SELECT * FROM get_top_teams_submissions()").Scan(&scoreGraph).Error; err != nil {
+	var scoreGraph []models.Team
+	if err := db.Raw("SELECT teamid, teamname, rank, submissions FROM get_top_teams_submissions()").Scan(&scoreGraph).Error; err != nil {
 		log.Println(err)
 		return nil, err
 	}
