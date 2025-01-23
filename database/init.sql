@@ -515,3 +515,23 @@ BEGIN
     ORDER BY combined_events.rank ASC;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Create a function to join a team
+CREATE OR REPLACE FUNCTION join_team(team_id bigint, user_id bigint, user_limit integer)
+RETURNS void AS $$
+DECLARE
+    user_count integer;
+BEGIN
+    SELECT INTO user_count COUNT(*)
+    FROM users
+    WHERE teamid = team_id;
+
+    IF user_count >= user_limit THEN
+        RAISE EXCEPTION 'team is full';
+    END IF;
+
+    UPDATE users
+    SET teamid = team_id
+    WHERE userid = user_id;
+END;
+$$ LANGUAGE plpgsql;
