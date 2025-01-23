@@ -490,6 +490,7 @@ BEGIN
         FROM top_teams t
         LEFT JOIN solves s ON s.teamid = t.teamid
         LEFT JOIN challenges c ON c.chall_id = s.chall_id
+        WHERE c.points IS NOT NULL AND s.timestamp IS NOT NULL
 
         UNION ALL
 
@@ -504,6 +505,7 @@ BEGIN
         FROM top_teams t
         LEFT JOIN uhints uh ON uh.teamid = t.teamid
         LEFT JOIN hints h ON h.hid = uh.hid
+        WHERE h.cost IS NOT NULL AND uh.timestamp IS NOT NULL
     )
     SELECT 
         combined_events.teamid,
