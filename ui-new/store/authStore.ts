@@ -1,12 +1,12 @@
 import { create } from "zustand";
 import fetchTimeout from "@/utils/fetchTimeOut";
 import showToast, { ToastStatus } from "@/utils/toastHelper";
-import { User } from "@/store/profileStore";
+import { UserType } from "@/utils/types";
 
 interface AuthState {
     loggedIn: boolean;
     fetching: boolean;
-    user: User | null;
+    user: UserType | null;
     setUser: (user: AuthState["user"]) => void;
     logout: () => void;
     fetchUser: () => void;

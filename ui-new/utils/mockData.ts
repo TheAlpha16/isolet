@@ -1,53 +1,65 @@
-import type { User, Team, Submission, CategoryProgress } from "./types";
+import type {
+	UserType,
+	TeamType,
+	SubmissionType,
+	CategoryProgress,
+} from "./types";
 import { subDays, format } from "date-fns";
 
-export const generateMockUser = (id: string): User => ({
-	id,
-	username: `user${id}`,
-	email: `user${id}@example.com`,
-	avatarUrl: `/placeholder.svg?height=100&width=100`,
-	totalPoints: Math.floor(Math.random() * 1000),
+// Generate a mock user
+export const generateMockUser = (userid: number, teamid: number, rank: number): UserType => ({
+	userid: userid,
+	username: `user${userid}`,
+	email: `user${userid}@example.com`,
+	rank: rank,
+	teamid: teamid,
+	teamname: `Team ${teamid}`,
+	score: Math.floor(Math.random() * 1000),
 });
 
-export const generateMockTeam = (id: string, captainId: string): Team => {
-	const members = [
-		{ ...generateMockUser(captainId), role: "captain" as const },
-		{
-			...generateMockUser(`${Number.parseInt(id) + 1}`),
-			role: "member" as const,
-		},
-		{
-			...generateMockUser(`${Number.parseInt(id) + 2}`),
-			role: "member" as const,
-		},
+// Generate a mock team
+export const generateMockTeam = (
+	teamid: number,
+	captainId: number
+): TeamType => {
+	const members: UserType[] = [
+		generateMockUser(captainId, teamid, 2), // Captain
+		// generate random number of team members
+		...Array.from({ length: Math.floor(Math.random() * 3) }, (_, i) =>
+			generateMockUser(i + 2, teamid, 3)
+		),
 	];
 	return {
-		id,
-		name: `Team ${id}`,
+		teamid: teamid,
+		teamname: `Team ${teamid}`,
 		members,
-		rank: Math.floor(Math.random() * 100) + 1,
-		totalPoints: members.reduce(
-			(sum, member) => sum + member.totalPoints,
-			0
+		captain: captainId,
+		rank: Math.floor(Math.random() * 500) + 1,
+		score: members.reduce((sum, member) => sum + member.score, 0),
+		submissions: generateMockSubmissions(
+			Math.floor(Math.random() * 10) + 5
 		),
 	};
 };
 
-export const generateMockSubmissions = (count: number): Submission[] => {
-	const categories = ["Web", "Crypto", "Pwn", "Reverse", "Forensics"];
+// Generate mock submissions
+export const generateMockSubmissions = (count: number): SubmissionType[] => {
 	return Array.from({ length: count }, (_, i) => ({
-		id: i + 1,
-		challengeName: `Challenge ${i + 1}`,
-		category: categories[Math.floor(Math.random() * categories.length)],
-		points: Math.floor(Math.random() * 500) + 100,
+		sid: i + 1,
+		chall_name: `Challenge ${i + 1}`,
+		chall_id: Math.floor(Math.random() * 100) + 1,
+		userid: Math.floor(Math.random() * 100) + 1,
+		teamid: Math.floor(Math.random() * 10) + 1,
+		correct: Math.random() > 0.3,
 		timestamp: format(
 			subDays(new Date(), Math.floor(Math.random() * 7)),
 			"yyyy-MM-dd'T'HH:mm:ss'Z'"
 		),
-		isCorrect: Math.random() > 0.3,
+		points: Math.floor(Math.random() * 500) + 100,
 	}));
 };
 
+// Generate mock category progress
 export const generateMockCategoryProgress = (): CategoryProgress[] => {
 	const categories = ["Web", "Crypto", "Pwn", "Reverse", "Forensics"];
 	return categories.map((category) => ({

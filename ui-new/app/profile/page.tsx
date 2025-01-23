@@ -8,7 +8,6 @@ import { TeamManagement } from "@/components/profile/TeamManagement"
 import { Submissions } from "@/components/profile/Submissions"
 import { CategoryProgress } from "@/components/profile/CategoryProgress"
 import {
-    generateMockUser,
     generateMockTeam,
     generateMockSubmissions,
     generateMockCategoryProgress,
@@ -20,13 +19,11 @@ export default function ProfilePage() {
     const { user } = useAuthStore()
 
     // Generate mock data
-    const team = generateMockTeam("1", "1")
+    const team = generateMockTeam(user?.teamid || 1, user?.userid || 1)
     const userSubmissions = generateMockSubmissions(20)
     const teamSubmissions = generateMockSubmissions(50)
     const userCategoryProgress = generateMockCategoryProgress()
     const teamCategoryProgress = generateMockCategoryProgress()
-
-    const isUserCaptain = false;
 
     return (
         <div className="container mx-auto p-4 space-y-8">
@@ -36,7 +33,7 @@ export default function ProfilePage() {
                     <TabsTrigger value="team">Team</TabsTrigger>
                 </TabsList>
                 <TabsContent value="user" className="space-y-4">
-                    {user && (<UserProfile user={user} points={100} />)}
+                    {user && (<UserProfile user={user} score={100} />)}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Submissions submissions={userSubmissions} title="User Submissions" />
                         <CategoryProgress categories={userCategoryProgress} title="User Category Progress" />
@@ -44,7 +41,7 @@ export default function ProfilePage() {
                 </TabsContent>
                 <TabsContent value="team" className="space-y-4">
                     <TeamProfile team={team} />
-                    <TeamManagement team={team} isUserCaptain={isUserCaptain} />
+                    {user && (<TeamManagement team={team} user={user} />)}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Submissions submissions={teamSubmissions} title="Team Submissions" />
                         <CategoryProgress categories={teamCategoryProgress} title="Team Category Progress" />

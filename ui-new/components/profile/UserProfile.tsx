@@ -1,17 +1,17 @@
 import React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import type { User } from "@/store/profileStore"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Flag, UsersRound } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import type { UserType } from "@/utils/types"
 
 interface UserProfileProps {
-    user: User
-    points: number
+    user: UserType
+    score: number
 }
 
-export function UserProfile({ user, points }: UserProfileProps) {
+export function UserProfile({ user, score }: UserProfileProps) {
     return (
         <Card className="flex flex-wrap flex-row justify-between">
             <CardHeader className="flex flex-row items-center gap-4">
@@ -32,12 +32,12 @@ export function UserProfile({ user, points }: UserProfileProps) {
                             <TooltipTrigger asChild>
                                 <Badge variant="default" className="px-3 py-1 text-lg gap-1">
                                     <Flag size={20} />
-                                    {points}
+                                    {score}
                                 </Badge>
                             </TooltipTrigger>
                             <TooltipContent>
                                 <p>
-                                    {`Points: ${points}`}
+                                    {`Score: ${score}`}
                                 </p>
                             </TooltipContent>
                         </Tooltip>

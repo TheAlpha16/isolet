@@ -1,29 +1,11 @@
 import showToast, { ToastStatus } from "@/utils/toastHelper";
 import { create } from "zustand";
 import fetchTimeout from "@/utils/fetchTimeOut";
-
-export interface TeamType {
-	teamid: number;
-	teamname: string;
-	score: number;
-	rank: number;
-}
+import { TeamType } from "@/utils/types";
 
 interface CachedPage {
 	data: TeamType[];
 	timestamp: number;
-}
-
-export interface TopSubmission {
-	points: number;
-	timestamp: string;
-}
-
-export interface TopScore {
-	teamid: number;
-	teamname: string;
-	rank: number;
-	submissions: TopSubmission[];
 }
 
 interface ScoreboardStore {
@@ -33,7 +15,7 @@ interface ScoreboardStore {
 	totalPages: number;
 	startTime: string;
 	scores: TeamType[];
-	topScores: TopScore[];
+	topScores: TeamType[];
 	pages: Record<number, CachedPage>;
 	fetchPage: (page: number) => void;
 	prefetchPage: (page: number) => void;

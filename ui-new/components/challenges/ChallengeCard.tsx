@@ -1,5 +1,5 @@
 import React from "react";
-import { ChallengeType } from "@/store/challengeStore";
+import type { ChallengeType } from "@/utils/types";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

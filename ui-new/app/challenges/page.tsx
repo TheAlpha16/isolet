@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ChallengeType, useChallengeStore } from "@/store/challengeStore";
+import { useChallengeStore } from "@/store/challengeStore";
 import { ChallengeCard } from "@/components/challenges/ChallengeCard";
 import { ChallengeModal } from "@/components/challenges/ChallengeModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { ChallengeType } from "@/utils/types";
 
 function Challenges() {
 	const [currentChallenge, setCurrentChallenge] = useState<ChallengeType | null>(null);

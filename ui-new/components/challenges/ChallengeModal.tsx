@@ -1,14 +1,15 @@
 import React, { useState } from "react";
-import { ChallengeType, ChallType, HintType, useChallengeStore } from "@/store/challengeStore";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useChallengeStore } from "@/store/challengeStore";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import Hint from "@/components/hints/Hint";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Download, ExternalLink, Copy, Check, Users, Play, StopCircle } from 'lucide-react';
-import { InstanceType } from "@/store/instanceStore";
-import { InstanceCard } from "./InstanceCard";
+import { Download, ExternalLink, Copy, Check, Users } from "lucide-react";
+import type { ChallengeType, HintType } from "@/utils/types";
+import { ChallType } from "@/utils/types";
+import { InstanceCard } from "@/components/challenges/InstanceCard";
 
 interface ChallengeModalProps {
 	challenge: ChallengeType;

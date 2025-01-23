@@ -2,12 +2,12 @@ import React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import type { Team } from "@/utils/types"
+import type { TeamType } from "@/utils/types"
 import { Flag, Trophy, UsersRound } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface TeamProfileProps {
-    team: Team
+    team: TeamType;
 }
 
 export function TeamProfile({ team }: TeamProfileProps) {
@@ -20,7 +20,7 @@ export function TeamProfile({ team }: TeamProfileProps) {
                     </AvatarFallback>
                 </Avatar>
                 <div style={{ marginTop: "0px" }}>
-                    <CardTitle className="text-2xl">{team.name}</CardTitle>
+                    <CardTitle className="text-2xl">{team.teamname}</CardTitle>
                     <p className="text-sm text-muted-foreground">{team.members.length} members</p>
                 </div>
             </CardHeader>
@@ -44,12 +44,12 @@ export function TeamProfile({ team }: TeamProfileProps) {
                             <TooltipTrigger asChild>
                                 <Badge variant="default" className="text-lg px-3 py-1 gap-1">
                                     <Flag size={20} />
-                                    {team.totalPoints}
+                                    {team.score}
                                 </Badge>
                             </TooltipTrigger>
                             <TooltipContent>
                                 <p>
-                                    {`Points: ${team.totalPoints}`}
+                                    {`Score: ${team.score}`}
                                 </p>
                             </TooltipContent>
                         </Tooltip>

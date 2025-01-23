@@ -3,37 +3,9 @@ import { create } from "zustand";
 import fetchTimeout from "@/utils/fetchTimeOut";
 import { showHint } from "@/components/hints/HintToastContainer";
 import { useInstanceStore } from "./instanceStore";
+import { ChallType, ChallengeType } from "@/utils/types";
 
-export enum ChallType {
-    Static,
-    Dynamic,
-    OnDemand
-};
-
-export interface HintType {
-    hid: number;
-    chall_id: number;
-    hint: string;
-    cost: number;
-    unlocked: boolean;
-};
-
-export interface ChallengeType {
-    chall_id: number;
-    name: string;
-    prompt: string;
-    type: ChallType;
-    points: number;
-    files: string[];
-    hints: HintType[];
-    solves: number;
-    author: string;
-    tags: string[];
-    links: string[];
-    done: boolean;
-};
-
-export interface ChallengeData {
+interface ChallengeData {
     [category: string]: ChallengeType[];
 }
 

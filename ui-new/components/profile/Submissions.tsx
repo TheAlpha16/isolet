@@ -1,16 +1,16 @@
 import React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
-import type { Submission } from "@/utils/types"
+import type { SubmissionType } from "@/utils/types"
 import { format } from "date-fns"
 
 interface SubmissionsProps {
-    submissions: Submission[]
+    submissions: SubmissionType[]
     title: string
 }
 
 export function Submissions({ submissions, title }: SubmissionsProps) {
-    const correctSubmissions = submissions.filter((s) => s.isCorrect).length
+    const correctSubmissions = submissions.filter((s) => s.correct).length
     const incorrectSubmissions = submissions.length - correctSubmissions
 
     const pieData = [
@@ -41,8 +41,8 @@ export function Submissions({ submissions, title }: SubmissionsProps) {
                 <h3 className="text-lg font-semibold mt-4 mb-2">Recent Submissions</h3>
                 <ul className="space-y-2">
                     {submissions.slice(0, 5).map((submission) => (
-                        <li key={submission.id} className="flex justify-between items-center">
-                            <span>{submission.challengeName}</span>
+                        <li key={submission.sid} className="flex justify-between items-center">
+                            <span>{submission.chall_name}</span>
                             <span>{format(new Date(submission.timestamp), "MMM dd, HH:mm")}</span>
                         </li>
                     ))}

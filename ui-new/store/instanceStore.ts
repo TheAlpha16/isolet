@@ -1,19 +1,9 @@
 import showToast, { ToastStatus } from "@/utils/toastHelper";
 import { create } from "zustand";
 import fetchTimeout from "@/utils/fetchTimeOut";
+import { InstanceType } from "@/utils/types";
 
-export interface InstanceType {
-    chall_id: number;
-    password: string;
-    port: number;
-    hostname: string;
-    deadline: number;
-    deployment: string;
-    connString: string;
-    active: boolean;
-};
-
-export interface InstanceData {
+interface InstanceData {
     [chall_id: number]: InstanceType;
 };
 

@@ -9,8 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Trophy, ChevronLeft, ChevronRight } from "lucide-react"
 import { format, isSameDay } from "date-fns"
 import { Button } from "@/components/ui/button";
-import { useScoreboardStore, TeamType } from "@/store/scoreboardStore";
+import { useScoreboardStore } from "@/store/scoreboardStore";
 import { processTopScores } from "@/utils/processTopScores";
+import type { TeamType } from "@/utils/types"
 
 export default function Scoreboard() {
     const [searchQuery, setSearchQuery] = useState("")

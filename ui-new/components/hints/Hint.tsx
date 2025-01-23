@@ -1,4 +1,4 @@
-import { HintType } from "@/store/challengeStore";
+import type { HintType } from "@/utils/types";
 import { Button } from "@/components/ui/button";
 import { Lightbulb, Lock } from "lucide-react";
 import { useChallengeStore } from "@/store/challengeStore";
