@@ -38,7 +38,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create trigger to update captain's rank
-CREATE TRIGGER rank_up_captain_trigger
+CREATE OR REPLACE TRIGGER rank_up_captain_trigger
 BEFORE INSERT ON teams
 FOR EACH ROW
 EXECUTE FUNCTION rank_up_captain();
@@ -153,7 +153,7 @@ END;
 $$;
 
 -- Trigger to update hints in challenges table
-CREATE TRIGGER update_hints_trigger
+CREATE OR REPLACE TRIGGER update_hints_trigger
 AFTER INSERT ON hints
 FOR EACH ROW EXECUTE PROCEDURE update_hints();
 
@@ -192,7 +192,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger to initiate hint cost update function
-CREATE TRIGGER update_team_cost_trigger
+CREATE OR REPLACE TRIGGER update_team_cost_trigger
 AFTER INSERT
 ON uhints
 FOR EACH ROW
