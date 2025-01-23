@@ -13,7 +13,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm/logger"
 
-	"github.com/TheAlpha16/isolet/api/config"
+	"github.com/TheAlpha16/isolet/admin/config"
 	"github.com/TheAlpha16/isolet/admin/models"
 
 	// _ "github.com/lib/pq"

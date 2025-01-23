@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/TheAlpha16/isolet/api/config"
+	"github.com/TheAlpha16/isolet/admin/config"
 )
 
 func CreateTables() error {

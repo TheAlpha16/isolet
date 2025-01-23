@@ -7,7 +7,7 @@ import (
 	"strings"
 	"net/mail"
 
-	"github.com/TheAlpha16/isolet/api/config"
+	"github.com/TheAlpha16/isolet/admin/config"
 	"github.com/TheAlpha16/isolet/admin/database"
 	"github.com/TheAlpha16/isolet/admin/models"
 )

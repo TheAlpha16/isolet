@@ -56,7 +56,7 @@ func main() {
 	}
 
 	// Setup access logs
-	accessLogFile, err := os.OpenFile("./access.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	accessLogFile, err := os.OpenFile("./admin_access.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}

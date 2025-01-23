@@ -6,8 +6,8 @@ import (
 	"time"
 	"log"
 
-	"github.com/TheAlpha16/isolet/api/models"
-	"github.com/TheAlpha16/isolet/api/config"
+	"github.com/TheAlpha16/isolet/admin/models"
+	"github.com/TheAlpha16/isolet/admin/config"
 
 	"github.com/gofiber/fiber/v2"
 

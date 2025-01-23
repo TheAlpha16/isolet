@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TheAlpha16/isolet/api/config"
+	"github.com/TheAlpha16/isolet/admin/config"
 	"github.com/TheAlpha16/isolet/admin/database"
 	"github.com/TheAlpha16/isolet/admin/middleware"
 	"github.com/TheAlpha16/isolet/admin/models"

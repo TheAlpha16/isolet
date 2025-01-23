@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/TheAlpha16/isolet/api/config"
-	"github.com/TheAlpha16/isolet/api/database"
+	"github.com/TheAlpha16/isolet/admin/config"
+	"github.com/TheAlpha16/isolet/admin/database"
 	"github.com/TheAlpha16/isolet/admin/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"

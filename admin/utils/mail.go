@@ -7,7 +7,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/TheAlpha16/isolet/api/config"
+	"github.com/TheAlpha16/isolet/admin/config"
 	"github.com/TheAlpha16/isolet/admin/models"
 
 	"github.com/golang-jwt/jwt/v5"
