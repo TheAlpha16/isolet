@@ -23,26 +23,25 @@ CREATE TABLE IF NOT EXISTS teams(
     teamid bigserial PRIMARY KEY,
     teamname text NOT NULL UNIQUE,
     captain bigint NOT NULL REFERENCES users(userid),
-    members bigint[] NOT NULL DEFAULT '{}',
     password VARCHAR(100) NOT NULL,
     cost int DEFAULT 0,
     last_submission bigint DEFAULT EXTRACT(EPOCH FROM NOW())
 );
 
--- Create trigger function to add captain to members array
-CREATE OR REPLACE FUNCTION add_captain_to_members()
+-- Create trigger function to rank up captains
+CREATE OR REPLACE FUNCTION rank_up_captain()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.members := array_append(NEW.members, NEW.captain);
+    UPDATE users SET rank = 2 WHERE userid = NEW.captain;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Create trigger to call add_captain_to_members function before insert
-CREATE TRIGGER add_captain_to_members_trigger
+-- Create trigger to update captain's rank
+CREATE TRIGGER rank_up_captain_trigger
 BEFORE INSERT ON teams
 FOR EACH ROW
-EXECUTE FUNCTION add_captain_to_members();
+EXECUTE FUNCTION rank_up_captain();
 
 -- Create toverify table
 CREATE TABLE IF NOT EXISTS toverify(
