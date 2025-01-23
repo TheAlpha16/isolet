@@ -108,10 +108,6 @@ func JoinTeam(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing teamname or password in request"})
 	}
 
-	if !database.TeamNameExists(team.TeamName) {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "failure", "message": "team does not exist"})
-	}
-
 	team.Password = utils.Hash(team.Password)
 
 	if err := database.AuthenticateTeam(c, team); err != nil {
