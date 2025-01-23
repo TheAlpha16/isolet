@@ -48,7 +48,8 @@ function useJoinTeam() {
                         userid: user?.userid ?? -1, 
                         email: user?.email ?? "",
                         username: user?.username ?? "",
-                        rank: action === "create" ? 2 : 3
+                        rank: action === "create" ? 2 : 3,
+                        score: 0
                     };
                     setUser(userCopy);
                     showToast(ToastStatus.Success, `${action}${action == "create" ? "": "e"}d ${teamname}`);
