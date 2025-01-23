@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS sublogs(
     flag text NOT NULL,
     correct boolean NOT NULL,
     ip inet NOT NULL,
-    subtime timestamp NOT NULL DEFAULT NOW()
+    timestamp timestamp NOT NULL DEFAULT NOW()
 );
 
 -- Hints table
