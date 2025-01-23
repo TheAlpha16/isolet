@@ -8,7 +8,4 @@ type Team struct {
 	Password       string   `gorm:"not null" json:"-"`
 	Cost           int64    `gorm:"not null" json:"cost"`
 	LastSubmission int64    `gorm:"column:last_submission" json:"last_submission"`
-	Score          int64    `gorm:"column:score" json:"score"`
-	Rank           int64    `gorm:"column:rank" json:"rank"`
-	Submissions    []Sublog `gorm:"column:submissions;serializer:json" json:"submissions"`
 }

@@ -13,7 +13,26 @@ type Sublog struct {
 }
 
 type ScoreBoard struct {
-	PageCount int    `json:"page_count"`
-	Page      int    `json:"page"`
-	Scores    []Team `json:"scores"`
+	PageCount int              `json:"page_count"`
+	Page      int              `json:"page"`
+	Scores    []ScoreBoardTeam `json:"scores"`
 }
+
+type ScoreBoardTeam struct {
+	TeamID      int64   `gorm:"column:teamid" json:"teamid"`
+	TeamName    string  `gorm:"column:teamname" json:"teamname"`
+	Rank        int64   `gorm:"column:rank" json:"rank"`
+	Score       int64   `gorm:"column:score" json:"score"`
+	Submissions []Solve `gorm:"column:submissions;serializer:json" json:"submissions"`
+}
+
+type Solve struct {
+	Timestamp string `gorm:"column:timestamp" json:"timestamp"`
+	Points    int    `gorm:"column:points" json:"points"`
+}
+
+// type TopScore struct {
+// 	TeamID   int64  `gorm:"column:teamid" json:"teamid"`
+// 	TeamName string `gorm:"column:teamname" json:"teamname"`
+// 	Rank     int64  `gorm:"column:rank" json:"rank"`
+// }
