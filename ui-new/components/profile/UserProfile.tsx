@@ -1,47 +1,50 @@
-import React from "react"
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Flag, UsersRound } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import type { UserType } from "@/utils/types"
+import { Trophy, UsersRound, Stars } from "lucide-react"
+import type { TeamType, UserType } from "@/utils/types"
 
 interface UserProfileProps {
     user: UserType
-    score: number
+    team: TeamType
 }
 
-export function UserProfile({ user, score }: UserProfileProps) {
+export function UserProfile({ user, team }: UserProfileProps) {
     return (
-        <Card className="flex flex-wrap flex-row justify-between">
+        <Card className="flex flex-col">
             <CardHeader className="flex flex-row items-center gap-4">
-                <Avatar className="w-16 h-16">
-                    <AvatarFallback>
-                        <UsersRound size={30} />
-                    </AvatarFallback>
+                <Avatar className="h-12 w-12">
+                    <AvatarFallback className="text-lg">{user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
-                <div style={{ marginTop: "0px" }}>
-                    <CardTitle className="text-2xl">{user.username}</CardTitle>
-                    <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                <div>
+                    <CardTitle>{user.username}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
             </CardHeader>
-            <CardContent className="sm:pt-6 sm:flex">
-                <div className="flex items-center">
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Badge variant="default" className="px-3 py-1 text-lg gap-1">
-                                    <Flag size={20} />
-                                    {score}
-                                </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>
-                                    {`Score: ${score}`}
-                                </p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+            <CardContent className="sm:flex w-full">
+                <div className="flex flex-wrap justify-between items-center w-full gap-4">
+                    <div className="flex items-center gap-2">
+                        <UsersRound className="h-6 w-6 text-green-500" />
+                        <div>
+                            <p className="text-sm font-medium">Team</p>
+                            <p className="text-3xl font-bold">{team.teamname}</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Stars className="h-6 w-6 text-blue-500" />
+                        <div>
+                            <p className="text-sm font-medium">Score</p>
+                            <p className="text-3xl font-bold">{user.score}</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Trophy className="h-6 w-6 text-yellow-500" />
+                        <div>
+                            <p className="text-sm font-medium">Rank</p>
+                            <p className="text-3xl font-bold">{team.rank}</p>
+                        </div>
+                    </div>
                 </div>
             </CardContent>
         </Card>
