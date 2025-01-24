@@ -5,14 +5,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { UserProfile } from "@/components/profile/UserProfile"
 import { TeamProfile } from "@/components/profile/TeamProfile"
 import { TeamManagement } from "@/components/profile/TeamManagement"
-import { Submissions } from "@/components/profile/Submissions"
-import { CategoryProgress } from "@/components/profile/CategoryProgress"
+import { CategoryProgress } from "@/components/charts/CategoryProgress"
 import {
     generateMockTeam,
     generateMockSubmissions,
     generateMockCategoryProgress,
 } from "@/utils/mockData"
 import { useAuthStore } from "@/store/authStore"
+import { CorrectVIncorrect } from "@/components/charts/CorrectVIncorrect"
 
 export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState("user")
@@ -33,17 +33,17 @@ export default function ProfilePage() {
                     <TabsTrigger value="team">Team</TabsTrigger>
                 </TabsList>
                 <TabsContent value="user" className="space-y-4">
-                    <UserProfile user={user} score={100} />
+                    <UserProfile user={user} team={team} />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Submissions submissions={userSubmissions} title="User Submissions" />
-                        <CategoryProgress categories={userCategoryProgress} title="User Category Progress" />
+                        <CorrectVIncorrect correct={userSubmissions.filter((sub) => sub.correct == true).length} incorrect={userSubmissions.filter((sub) => sub.correct == false).length} />
+                        <CategoryProgress categories={userCategoryProgress} title="Challenges" />
                     </div>
                 </TabsContent>
                 <TabsContent value="team" className="space-y-4">
                     <TeamProfile team={team} />
                     <TeamManagement team={team} user={user} />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Submissions submissions={teamSubmissions} title="Team Submissions" />
+                        <CorrectVIncorrect correct={teamSubmissions.filter((sub) => sub.correct == true).length} incorrect={teamSubmissions.filter((sub) => sub.correct == false).length} />
                         <CategoryProgress categories={teamCategoryProgress} title="Team Category Progress" />
                     </div>
                 </TabsContent>
