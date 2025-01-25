@@ -1,14 +1,13 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"regexp"
 	"strings"
-	"net/mail"
 
 	"github.com/TheAlpha16/isolet/admin/config"
-	"github.com/TheAlpha16/isolet/admin/database"
 	"github.com/TheAlpha16/isolet/admin/models"
 )
 
@@ -61,47 +60,44 @@ func ValidateLoginInput(user *models.User) (bool, string) {
 	return true, ""
 }
 
-func ValidateRegisterInput(regInput *models.ToVerify) (bool, string) {
-	if len(regInput.Password) > config.PASS_LEN || len(regInput.Password) < 8 {
-		return false, fmt.Sprintf("password should be of 8-%d characters", config.PASS_LEN)
+func ValidateChallengeFields(challenge *models.Challenge) error {
+	if challenge.ChallID <= 0 {
+		return errors.New("challenge ID is required")
 	}
 
-	if regInput.Password != regInput.Confirm {
-		return false, "passwords don't match"
+	if challenge.Name == "" {
+		return errors.New("challenge name cannot be empty")
 	}
 
-	if len(regInput.Email) > config.EMAIL_LEN {
-		return false, fmt.Sprintf("email length exceeded %d characters", config.EMAIL_LEN)
+	if challenge.Prompt == "" {
+		return errors.New("challenge prompt cannot be empty")
 	}
 
-	if _, err := mail.ParseAddress(regInput.Email); err != nil {
-		return false, "not a valid email address"
+	if challenge.CategoryID <= 0 {
+		return errors.New("invalid category ID")
 	}
 
-	// if validDomain := CheckDomain(regInput.Email); !validDomain {
-	// 	return false, "Domain is not allowed, please use your iitism.ac.in mail"
-	// }
-
-	if database.EmailExists(regInput.Email) {
-		return false, "email already exists"
+	if challenge.Flag == "" {
+		return errors.New("challenge flag cannot be empty")
 	}
 
-	if len(regInput.Username) > config.USERNAME_LEN {
-		return false, fmt.Sprintf("username exceeded %d characters", config.USERNAME_LEN)
+	if challenge.Type != "" {
+		validTypes := map[string]bool{
+			"static":    true,
+			"dynamic":   true,
+			"on-demand": true,
+		}
+		if !validTypes[challenge.Type] {
+			return errors.New("invalid challenge type")
+		}
 	}
 
-	if len(regInput.Username) < 4 {
-		return false, "username should be of atleast 4 characters"
+	if challenge.Points <= 0 {
+		return errors.New("challenge points must be greater than 0")
 	}
 
-	if database.UsernameRegistered(regInput.Username, regInput.Email) {
-		return false, "username already exists"
-	}
-
-	// if !PassValid(regInput.Password) {
-	// 	return false, "Not a strong password"
-	// }
-
-	return true, ""
+	return nil
 }
+
+
 
