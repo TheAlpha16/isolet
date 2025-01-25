@@ -9,7 +9,7 @@ import (
 )
 
 func UpdateHints(tx *gorm.DB, challID int, newHints []models.Hint) error {
-	
+
 	// Get existing hints
 	var existingHints []models.Hint
 	if err := tx.Where("chall_id = ?", challID).Find(&existingHints).Error; err != nil {
@@ -40,6 +40,7 @@ func UpdateHints(tx *gorm.DB, challID int, newHints []models.Hint) error {
 		newHint.ChallID = challID
 
 		if existingHint, exists := existingHintMap[newHint.HID]; exists {
+			
 			// preserve unlocked hints
 			if unlockedHintMap[newHint.HID] {
 				continue
