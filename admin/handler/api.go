@@ -23,7 +23,7 @@ func EditChallengeMetaData(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := database.EditChallengeData(c, &challenge); err != nil {
+	if err := database.EditChallengeMetaData(c, &challenge); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "failure",
 			"message": err.Error(),

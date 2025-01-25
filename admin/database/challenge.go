@@ -34,7 +34,7 @@ func AddToChallenges(chall models.Challenge) error {
 }
 
 // Admin functions
-func EditChallengeData(c *fiber.Ctx, updatedChall *models.Challenge) error {
+func EditChallengeMetaData(c *fiber.Ctx, updatedChall *models.Challenge) error {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
