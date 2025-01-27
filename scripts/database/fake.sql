@@ -88,9 +88,9 @@ INSERT INTO users (userid, email, username, password, teamid) VALUES
 (6, 'infoseccl@gmail.com', 'cyberlabs', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 2);
 
 -- Teams
-INSERT INTO teams (teamid, teamname, captain, members, password) VALUES
-(1, 'TitanCrew', 1, '{3,4}', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4'),
-(2, 'BIT CRIMINALS', 2, '{5,6}', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4');
+INSERT INTO teams (teamid, teamname, captain, password) VALUES
+(1, 'TitanCrew', 1, 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4'),
+(2, 'BIT CRIMINALS', 2, 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4');
 
 -- Sublogs
 INSERT INTO sublogs 
