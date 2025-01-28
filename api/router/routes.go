@@ -38,5 +38,5 @@ func SetupRoutes(app *fiber.App) {
 	api.Post("/extend", handler.ExtendTime)
 
 	profile := api.Group("/profile")
-	profile.Get("/info", handler.GetProfile)
+	profile.Get("/team/self", handler.GetSelfTeam)
 }
