@@ -6,6 +6,7 @@ import "@/styles/hint-toast.css";
 import "@/styles/notification.css";
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
+import { useChallengeStore } from "@/store/challengeStore";
 import NavBar from "@/components/NavBar";
 import { ThemeProvider } from "@/components/theme-provider"
 import { HintToastContainer } from "@/components/hints/HintToastContainer";
@@ -29,8 +30,13 @@ export default function RootLayout({
 }>) {
 
 	const { user, fetchUser } = useAuthStore();
+	const { fetchChallenges } = useChallengeStore();
 
 	useEffect(() => {
+		if (user.userid !== -1) {
+			fetchChallenges();
+		}
+
 		if (user.userid === -1) {
 			fetchUser();
 		}
