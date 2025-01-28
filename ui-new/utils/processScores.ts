@@ -1,4 +1,5 @@
-import type { ScoreGraphEntryType, ScoreGraphInputType } from "@/utils/types";
+import { useChallengeStore } from "@/store/challengeStore";
+import type { ScoreGraphEntryType, ScoreGraphInputType, SubmissionType, CategoryProgress } from "@/utils/types";
 
 interface Submission {
 	label: string;
@@ -41,4 +42,28 @@ export function processScores(data: ScoreGraphInputType[], startTime: string): S
 	);
 
 	return buildGraphData(preparedData, startTime);
+}
+
+export function processCategoryData(submissions: SubmissionType[]): CategoryProgress[] {
+	const categories = Object.keys(useChallengeStore.getState().challenges);
+	const categoryProgress: CategoryProgress[] = [];
+
+	categories.forEach((category) => {
+		const total = useChallengeStore
+			.getState()
+			.challenges[category].length;
+		const solved = submissions.filter(
+			(sub) =>
+				sub.correct &&
+				useChallengeStore
+					.getState()
+					.challenges[category]
+					.map((chall) => chall.chall_id)
+					.includes(sub.chall_id)
+		).length;
+
+		categoryProgress.push({ category, solved, total });
+	});
+
+	return categoryProgress;
 }
