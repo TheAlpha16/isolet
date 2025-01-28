@@ -3,11 +3,11 @@ package database
 import (
 	"context"
 	"errors"
-	"time"
 	"log"
+	"time"
 
-	"github.com/TheAlpha16/isolet/api/models"
 	"github.com/TheAlpha16/isolet/api/config"
+	"github.com/TheAlpha16/isolet/api/models"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -90,3 +90,34 @@ func JoinTeam(c *fiber.Ctx, user *models.User, team *models.Team) error {
 	return nil
 }
 
+func ReadTeam(c *fiber.Ctx, teamid int64) (models.Team, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+
+	var team models.Team
+	if err := db.Preload("Members", "teamid = ?",
+		teamid,
+	).Select("teamid, teamname, captain").Where("teamid = ?", teamid).First(&team).Error; err != nil {
+		log.Println(err)
+		return team, err
+	}
+
+	return team, nil
+}
+
+func GetSubmissions(c *fiber.Ctx, teamid int64) ([]models.Sublog, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+
+	var submissions []models.Sublog
+	if err := db.Select("sublogs.sid, sublogs.chall_id, sublogs.userid, sublogs.teamid, sublogs.correct, sublogs.timestamp, challenges.points AS points").Joins("JOIN challenges ON challenges.chall_id = sublogs.chall_id").Where("teamid = ?", teamid).Find(&submissions).Error; err != nil {
+		log.Println(err)
+		return submissions, err
+	}
+
+	return submissions, nil
+}
