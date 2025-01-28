@@ -1,22 +1,15 @@
-import { TopScore } from "@/store/scoreboardStore";
+import type { ScoreGraphEntryType, ScoreGraphInputType } from "@/utils/types";
 
 interface Submission {
-	rank: number;
-	teamname: string;
+	label: string;
 	timestamp: string;
 	points: number;
 }
 
-interface TeamPlot {
-	timestamp: string;
-	[key: string]: number | string;
-}
-
-function prepareSubmissions(data: TopScore[]) {
-	return data.flatMap((team) =>
-		team.submissions.map((sub) => ({
-			rank: team.rank,
-			teamname: team.teamname,
+function prepareSubmissions(data: ScoreGraphInputType[]): Submission[] {
+	return data.flatMap((plot) =>
+		plot.scores.map((sub) => ({
+			label: plot.label,
 			timestamp: sub.timestamp,
 			points: sub.points,
 		}))
@@ -26,20 +19,20 @@ function prepareSubmissions(data: TopScore[]) {
 function buildGraphData(
 	preparedData: Submission[],
 	startTime: string
-): TeamPlot[] {
-	const scoresTillNow: { [teamname: string]: number } = {};
-	preparedData.forEach(({ teamname }) => (scoresTillNow[teamname] = 0));
+): ScoreGraphEntryType[] {
+	const scoresTillNow: { [label: string]: number } = {};
+	preparedData.forEach(({ label }) => (scoresTillNow[label] = 0));
 
 	const finalData = [{ timestamp: startTime, ...scoresTillNow }];
 	preparedData.forEach((submission) => {
-		scoresTillNow[submission.teamname] += submission.points;
+		scoresTillNow[submission.label] += submission.points;
 		finalData.push({ timestamp: submission.timestamp, ...scoresTillNow });
 	});
 
 	return finalData;
 }
 
-export function processTopScores(data: TopScore[], startTime: string) {
+export function processScores(data: ScoreGraphInputType[], startTime: string): ScoreGraphEntryType[] {
 	const preparedData = prepareSubmissions(data);
 
 	preparedData.sort(
