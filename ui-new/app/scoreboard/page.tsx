@@ -1,24 +1,20 @@
 "use client";
 
 import React, { useState, useEffect } from "react"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Trophy, ChevronLeft, ChevronRight } from "lucide-react"
-import { format, isSameDay } from "date-fns"
 import { Button } from "@/components/ui/button";
+import { Trophy, ChevronLeft, ChevronRight } from "lucide-react";
 import { useScoreboardStore } from "@/store/scoreboardStore";
-import { processTopScores } from "@/utils/processTopScores";
-import type { TeamType } from "@/utils/types"
+import { processScores } from "@/utils/processScores";
+import type { TeamType, ScoreGraphEntryType } from "@/utils/types"
+import { ScoreGraph } from "@/components/charts/ScoreGraph";
 
 export default function Scoreboard() {
     const [searchQuery, setSearchQuery] = useState("")
-    const [graphData, setGraphData] = useState<{
-        timestamp: string;
-        [key: string]: number | string;
-    }[]>([])
+    const [graphData, setGraphData] = useState<ScoreGraphEntryType[]>([])
 
     const { scores, totalPages, currentPage, loading, fetchPage, graphLoading, topScores, startTime, fetchTopScores } = useScoreboardStore()
 
@@ -30,47 +26,17 @@ export default function Scoreboard() {
     }, [])
 
     useEffect(() => {
-        const respon = processTopScores(topScores, startTime);
+        const toProcess = topScores.map((team) => ({
+            label: team.teamname,
+            scores: team.submissions.map((sub) => ({
+                timestamp: sub.timestamp,
+                points: sub.points,
+            })),
+        }));
+
+        const respon = processScores(toProcess, startTime);
         setGraphData(respon);
     }, [topScores, startTime])
-
-    const formatXAxis = (tickItem: string, index: number) => {
-        try {
-            const date = new Date(tickItem)
-            const prevDate = index > 0 ? new Date(graphData[index - 1].timestamp) : null
-            const time = format(date, "HH:mm")
-
-            if (!prevDate || !isSameDay(date, prevDate)) {
-                return `${format(date, "MMM d")}`
-            }
-
-            return time
-        } catch (e) {
-            return ""
-        }
-    }
-
-    const CustomTooltip = ({ active, payload, label }: any) => {
-        if (active && payload && payload.length) {
-            return (
-                <div className="bg-background p-4 border rounded shadow">
-                    <p className="font-bold">{(() => {
-                        try {
-                            return format(new Date(label), "MMM d, HH:mm")
-                        } catch (e) {
-                            return ""
-                        }
-                    })()}</p>
-                    {payload.map((entry: any, index: number) => (
-                        <p key={index} style={{ color: entry.color }}>
-                            {entry.name}: {entry.value}
-                        </p>
-                    ))}
-                </div>
-            )
-        }
-        return null
-    }
 
     const handlePageChange = async (newPage: number) => {
         if (newPage < 1 || newPage > totalPages) return
@@ -105,31 +71,8 @@ export default function Scoreboard() {
         <div className="container mx-auto p-4 space-y-4">
             <h1 className="text-3xl font-bold mb-6">Scoreboard</h1>
             {!graphLoading && topScores.length !== 0 && (
-                <Card>
-                    <CardContent className="pt-6">
-
-                        <ResponsiveContainer width="100%" height={400}>
-                            <LineChart data={graphData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="timestamp" tickFormatter={formatXAxis} height={60} tick={{ fontSize: 12 }} />
-                                <YAxis tick={{ fontSize: 12 }} width={40} />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Legend />
-                                {topScores.map((team, index) => (
-                                    <Line
-                                        key={team.teamname}
-                                        type="monotone"
-                                        dataKey={team.teamname}
-                                        stroke={`hsl(${index * 36}, 70%, 50%)`}
-                                        strokeWidth={2}
-                                        dot={false}
-                                        connectNulls={true}
-                                    />
-                                ))}
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </CardContent>
-                </Card>)}
+                <ScoreGraph plots={graphData} />
+            )}
 
             <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
                 <Input
