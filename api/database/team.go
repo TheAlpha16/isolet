@@ -121,3 +121,25 @@ func GetSubmissions(c *fiber.Ctx, teamid int64) ([]models.Sublog, error) {
 
 	return submissions, nil
 }
+
+func GetTeamRank(c *fiber.Ctx, teamid int64) (int64, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+
+	var totalTeams int64
+	var rank int64
+
+	if err := db.Model(&models.Team{}).Count(&totalTeams).Error; err != nil {
+		log.Println(err)
+		return rank, err
+	}
+
+	if err := db.Model(&models.Team{}).Select("rank").Raw("SELECT rank FROM get_scoreboard(?, ?) WHERE teamid = ?", totalTeams, 0, teamid).Scan(&rank).Error; err != nil {
+		log.Println(err)
+		return rank, err
+	}
+
+	return rank, nil
+}
