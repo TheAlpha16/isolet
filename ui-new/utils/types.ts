@@ -6,7 +6,7 @@ export interface UserType {
 	teamid: number;
 	teamname: string;
 	score: number;
-}
+};
 
 export interface TeamType {
 	teamid: number;
@@ -16,7 +16,7 @@ export interface TeamType {
 	rank: number;
 	score: number;
 	submissions: SubmissionType[];
-}
+};
 
 export enum ChallType {
 	Static,
@@ -48,14 +48,14 @@ export interface ChallengeType {
 };
 
 export interface InstanceType {
-    chall_id: number;
-    password: string;
-    port: number;
-    hostname: string;
-    deadline: number;
-    deployment: string;
-    connString: string;
-    active: boolean;
+	chall_id: number;
+	password: string;
+	port: number;
+	hostname: string;
+	deadline: number;
+	deployment: string;
+	connString: string;
+	active: boolean;
 };
 
 export interface SubmissionType {
@@ -73,4 +73,19 @@ export interface CategoryProgress {
 	category: string;
 	solved: number;
 	total: number;
+}
+
+export interface ScoreGraphPointType {
+	timestamp: string;
+	points: number;
+}
+
+export interface ScoreGraphInputType {
+	label: string;
+	scores: ScoreGraphPointType[];
+}
+
+export interface ScoreGraphEntryType {
+	timestamp: string;
+	[key: string]: number | string;
 }
