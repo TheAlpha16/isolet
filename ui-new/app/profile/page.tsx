@@ -6,41 +6,22 @@ import { UserProfile } from "@/components/profile/UserProfile"
 import { TeamProfile } from "@/components/profile/TeamProfile"
 import { TeamManagement } from "@/components/profile/TeamManagement"
 import { CategoryProgress } from "@/components/charts/CategoryProgress"
-import {
-    generateMockTeam,
-    generateMockSubmissions,
-    generateMockCategoryProgress,
-} from "@/utils/mockData"
 import { useAuthStore } from "@/store/authStore"
 import { CorrectVIncorrect } from "@/components/charts/CorrectVIncorrect"
 import { ScoreGraph } from "@/components/charts/ScoreGraph"
-import { processScores } from "@/utils/processScores";
-import { ScoreGraphEntryType } from "@/utils/types"
-
-const userSubmissions = generateMockSubmissions(20)
-const teamSubmissions = generateMockSubmissions(50)
-const userCategoryProgress = generateMockCategoryProgress()
-const teamCategoryProgress = generateMockCategoryProgress()
+import { useProfileStore } from "@/store/profileStore"
 
 export default function ProfilePage() {
-    const [activeTab, setActiveTab] = useState("team")
+    const [activeTab, setActiveTab] = useState("user")
     const { user } = useAuthStore()
-    const [plots, setPlots] = useState<ScoreGraphEntryType[]>([{ timestamp: "", value: 0 }])
-
-    // Generate mock data
-    const team = generateMockTeam(user.teamid || 1, user.userid || 1)
+    const { team, teamGraph, teamLoading, userCategoryProgress, teamCategoryProgress, userSubmissionsProgress, teamSubmissionsProgress, fetchSelfTeam } = useProfileStore()
 
     useEffect(() => {
-        const teamData = {
-            label: team.teamname,
-            scores: teamSubmissions.filter((sub) => sub.correct === true).map((sub) => ({
-                timestamp: sub.timestamp,
-                points: sub.points
-            }))
-        }
+        fetchSelfTeam()
 
-        setPlots(processScores([teamData], "2021-08-01T00:00:00.000Z"))
-    }, [teamSubmissions])
+        return () => { }
+    }
+    , [])
 
     return (
         <div className="container mx-auto p-4 space-y-8">
@@ -52,17 +33,17 @@ export default function ProfilePage() {
                 <TabsContent value="user" className="space-y-4">
                     <UserProfile user={user} team={team} />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <CorrectVIncorrect correct={userSubmissions.filter((sub) => sub.correct == true).length} incorrect={userSubmissions.filter((sub) => sub.correct == false).length} />
-                        <CategoryProgress categories={userCategoryProgress} title="Challenges" />
+                        <CorrectVIncorrect correct={userSubmissionsProgress.correct} incorrect={userSubmissionsProgress.incorrect} />
+                        <CategoryProgress categories={userCategoryProgress} title="Progress" />
                     </div>
                 </TabsContent>
                 <TabsContent value="team" className="space-y-4">
                     <TeamProfile team={team} />
                     <TeamManagement team={team} user={user} />
-                    <ScoreGraph plots={plots} />
+                    <ScoreGraph plots={teamGraph} />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <CorrectVIncorrect correct={teamSubmissions.filter((sub) => sub.correct == true).length} incorrect={teamSubmissions.filter((sub) => sub.correct == false).length} />
-                        <CategoryProgress categories={teamCategoryProgress} title="Team Category Progress" />
+                        <CorrectVIncorrect correct={teamSubmissionsProgress.correct} incorrect={teamSubmissionsProgress.incorrect} />
+                        <CategoryProgress categories={teamCategoryProgress} title="Progress" />
                     </div>
                 </TabsContent>
             </Tabs>
