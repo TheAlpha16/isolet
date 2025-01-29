@@ -6,6 +6,7 @@ import { ChallengeCard } from "@/components/challenges/ChallengeCard";
 import { ChallengeModal } from "@/components/challenges/ChallengeModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ChallengeType } from "@/utils/types";
+import ChallengeSkeleton from "@/app/challenges/skeleton"
 
 function Challenges() {
 	const [currentChallenge, setCurrentChallenge] = useState<ChallengeType | null>(null);
@@ -17,17 +18,11 @@ function Challenges() {
 	}, [fetchChallenges]);
 
 	if (loading) {
-		return (
-		<div className="container mx-auto p-4">
-			<h1 className="text-3xl font-bold mb-6">Challenges</h1>
-			<p className="text-center text-lg">Loading challenges...</p>
-		</div>
-    );
-}
+		return <ChallengeSkeleton />;
+	}
 
 	return (
-		<div className="container p-4 items-center justify-start h-full flex flex-col">
-			<h1 className="text-3xl font-bold mb-6">Challenges</h1>
+		<div className="container p-4 justify-start h-full flex flex-col">
 			<Tabs defaultValue={categories[0]} className="flex flex-col w-full items-center sm:items-start">
 				<TabsList className="mb-4 flex flex-wrap max-w-fit">
 					{categories.map((category) => (
