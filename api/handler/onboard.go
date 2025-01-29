@@ -2,24 +2,22 @@ package handler
 
 import (
 	"log"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/TheAlpha16/isolet/api/database"
-	"github.com/TheAlpha16/isolet/api/utils"
 	"github.com/TheAlpha16/isolet/api/middleware"
 	"github.com/TheAlpha16/isolet/api/models"
+	"github.com/TheAlpha16/isolet/api/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-
 func CreateTeam(c *fiber.Ctx) error {
 	var userid int64
 	var teamid int
 	var email string
-	var rank int
 	team := new(models.Team)
 	user := new(models.User)
 
@@ -27,7 +25,6 @@ func CreateTeam(c *fiber.Ctx) error {
 	userid = int64(claims["userid"].(float64))
 	email = claims["email"].(string)
 	teamid = int(claims["teamid"].(float64))
-	rank = int(claims["rank"].(float64))
 
 	if teamid != -1 || database.UserInTeam(c, userid) {
 		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"status": "failure", "message": "user already in a team"})
@@ -62,7 +59,7 @@ func CreateTeam(c *fiber.Ctx) error {
 
 	user.UserID = int64(userid)
 	user.Email = email
-	user.Rank = rank
+	user.Rank = 2
 	user.TeamID = team.TeamID
 
 	token, err := middleware.GenerateToken(user)
