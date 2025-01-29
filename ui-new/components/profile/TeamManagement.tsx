@@ -20,16 +20,6 @@ export function TeamManagement({ team, user }: TeamManagementProps) {
         setInviteToken(token)
     }
 
-    const copyInviteLink = () => {
-        navigator.clipboard.writeText(`https://yourctfplatform.com/join-team?token=${inviteToken}`)
-        // You might want to show a toast notification here
-    }
-
-    const removeMember = (memberId: number) => {
-        // Implement member removal logic here
-        console.log(`Removing member with ID: ${memberId}`)
-    }
-
     const getRandomPastelColor = (index: number, total: number) => {
         const hue = Math.floor(Math.random() * 360)
         return `hsl(${360 / total * index}, 50%, 60%)`
@@ -79,26 +69,26 @@ export function TeamManagement({ team, user }: TeamManagementProps) {
                                             <p className="text-sm text-muted-foreground">{member.email}</p>
                                         </div>
                                         <div className="flex items-center">
-                                            {member.rank === 2 ? (
+                                            {member.rank === 2 && (
                                                 <span className="bg-yellow-500/20 dark:bg-yellow-600/30 text-yellow-700 dark:text-yellow-300 text-xs font-medium px-2.5 py-0.5 rounded-full flex items-center gap-1">
                                                     <Crown size={12} className="" />
                                                     <div className="hidden sm:block">Captain</div>
                                                 </span>
-                                            ) : (
-                                                user.rank === 2 && (
-                                                    <TooltipProvider>
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <Button variant="ghost" size="sm" onClick={() => removeMember(member.userid)}>
-                                                                    <UserMinus2 size={16} />
-                                                                </Button>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>Remove member</p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    </TooltipProvider>
-                                                )
+                                                // ) : (
+                                                // user.rank === 2 && (
+                                                //     <TooltipProvider>
+                                                //         <Tooltip>
+                                                //             <TooltipTrigger asChild>
+                                                //                 <Button variant="ghost" size="sm" onClick={() => removeMember(member.userid)}>
+                                                //                     <UserMinus2 size={16} />
+                                                //                 </Button>
+                                                //             </TooltipTrigger>
+                                                //             <TooltipContent>
+                                                //                 <p>Remove member</p>
+                                                //             </TooltipContent>
+                                                //         </Tooltip>
+                                                //     </TooltipProvider>
+                                                // )
                                             )}
                                         </div>
                                     </div>
@@ -112,7 +102,6 @@ export function TeamManagement({ team, user }: TeamManagementProps) {
                 isOpen={showInvite}
                 onClose={() => setShowInvite(false)}
                 onGenerate={generateInviteToken}
-                onCopy={copyInviteLink}
                 token={inviteToken}
             />
         </>
