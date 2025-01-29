@@ -16,7 +16,6 @@ export default function TeamInit() {
 	const [showPasswd, setShowPasswd] = useState(false);
 
 	async function onSubmit(action: string) {
-		console.log(action);
 		await teamJoin(teamname, password, action);
 	}
 

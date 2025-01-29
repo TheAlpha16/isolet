@@ -172,7 +172,6 @@ function useLogin() {
 					"verification timed out, reload!"
 				);
 			} else {
-				console.log(error);
 				showToast(ToastStatus.Warning, "server seems offline");
 			}
 		} finally {
