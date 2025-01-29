@@ -35,9 +35,11 @@ const chartConfig = {
 export function CorrectVIncorrect({ correct, incorrect }: { correct: number; incorrect: number }) {
     const totalSubmissions = correct + incorrect
 
-    const submissionData = [
+    const submissionData = totalSubmissions > 0 ? [
         { subType: "correct", subCount: correct, fill: "var(--color-correct)" },
         { subType: "incorrect", subCount: incorrect, fill: "var(--color-incorrect)" },
+    ] : [
+        { subType: "", subCount: 1, fill: "hsl(var(--muted))" },
     ]
 
     return (
@@ -97,11 +99,12 @@ export function CorrectVIncorrect({ correct, incorrect }: { correct: number; inc
                 </ChartContainer>
             </CardContent>
             <CardFooter className="flex-col gap-2 text-sm">
-                <div className="flex items-center gap-2 font-medium leading-none">
-                    Wow! {correct * 100 / totalSubmissions}% correct submissions
-                </div>
+                {totalSubmissions > 0 && (
+                    <div className="flex items-center gap-2 font-medium leading-none">
+                        Wow! {correct * 100 / totalSubmissions}% correct submissions
+                    </div>)}
                 <div className="leading-none text-muted-foreground">
-                    Showing total submissions till now
+                    {totalSubmissions > 0 ? "Showing total submissions till now" : "No submissions yet"}
                 </div>
             </CardFooter>
         </Card>
