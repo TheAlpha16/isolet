@@ -20,7 +20,7 @@ export default function Login() {
 
 	async function onSubmit(event: React.SyntheticEvent) {
 		event.preventDefault();
-		let result = await loginAPI(email, password);
+		const result = await loginAPI(email, password);
 		if (result) {
 			router.push("/");
 		}
