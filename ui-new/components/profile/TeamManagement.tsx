@@ -23,7 +23,6 @@ export function TeamManagement({ team, user }: TeamManagementProps) {
     }
 
     const getRandomPastelColor = (index: number) => {
-        const hue = Math.floor(Math.random() * 360)
         return `hsl(${360 / teamLen * index}, 50%, 60%)`
     }
 
