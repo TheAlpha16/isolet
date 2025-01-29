@@ -71,7 +71,6 @@ export default function Scoreboard() {
 
     return (
         <div className="container mx-auto p-4 space-y-4">
-            <h1 className="text-3xl font-bold mb-6">Scoreboard</h1>
             {!graphLoading && topScores.length !== 0 && (
                 <ScoreGraph plots={graphData} />
             )}
