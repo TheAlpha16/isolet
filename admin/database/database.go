@@ -1,22 +1,14 @@
 package database
 
 import (
-	// "context"
-	// "database/sql"
-	"encoding/json"
 	"fmt"
-	"io"
-	"os"
-	// "time"
 
 	"gorm.io/gorm"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm/logger"
 
 	"github.com/TheAlpha16/isolet/admin/config"
-	"github.com/TheAlpha16/isolet/admin/models"
 
-	// _ "github.com/lib/pq"
 )
 
 var DB *gorm.DB
@@ -45,22 +37,3 @@ func Connect() error {
 	// return sqlDB.PingContext(ctx)
 }
 
-func PopulateChalls() error {
-	var challenges []models.Challenge
-
-	file, err := os.Open("challenges/challs.json")
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	rawData, _ := io.ReadAll(file)
-	json.Unmarshal(rawData, &challenges)
-
-	for i := 0; i < len(challenges); i++ {
-		if err = AddToChallenges(challenges[i]); err != nil {
-			return err
-		}
-	}
-	return nil
-}

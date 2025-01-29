@@ -3,9 +3,6 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"log"
-	"regexp"
-	"strings"
 
 	"github.com/TheAlpha16/isolet/admin/config"
 	"github.com/TheAlpha16/isolet/admin/models"
@@ -21,28 +18,6 @@ import (
 // 	}
 // 	return true
 // }
-
-func CheckDomain(email string) bool {
-	domains := config.ALLOWED_DOMAINS
-	if domains == "" {
-		return true
-	}
-
-	allowedDomains := strings.Split(domains, ",")
-
-	for i := 0; i < len(allowedDomains); i++ {
-		domain := allowedDomains[i]
-		reg, err := regexp.Compile("^[A-Za-z0-9._%+-]+@" + domain + "$")
-		if err != nil {
-			log.Println(err)
-			return false
-		}
-		if reg.MatchString(email) {
-			return true
-		}
-	}
-	return false
-}
 
 func ValidateLoginInput(user *models.User) (bool, string) {
 	if len(user.Email) > config.EMAIL_LEN {
@@ -65,20 +40,12 @@ func ValidateChallengeFields(challenge *models.Challenge) error {
 		return errors.New("challenge ID is required")
 	}
 
-	if challenge.Name == "" {
-		return errors.New("challenge name cannot be empty")
-	}
-
-	if challenge.Prompt == "" {
-		return errors.New("challenge prompt cannot be empty")
-	}
-
-	if challenge.CategoryID <= 0 {
-		return errors.New("invalid category ID")
-	}
-
 	if challenge.Flag == "" {
 		return errors.New("challenge flag cannot be empty")
+	}
+
+	if challenge.CategoryID <= 0 || challenge.CategoryID > config.CATEGORY_SIZE {
+		return errors.New("category id out of bounds")
 	}
 
 	if challenge.Type != "" {

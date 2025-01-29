@@ -6,10 +6,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/TheAlpha16/isolet/api/config"
+	"github.com/TheAlpha16/isolet/admin/config"
 	"github.com/TheAlpha16/isolet/admin/database"
 	"github.com/TheAlpha16/isolet/admin/logs"
-	"github.com/TheAlpha16/isolet/api/router"
+	router "github.com/TheAlpha16/isolet/admin/router"
 	"github.com/TheAlpha16/isolet/admin/utils"
 
 	"github.com/gofiber/fiber/v2"

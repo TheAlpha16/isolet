@@ -11,64 +11,78 @@ import (
 	"github.com/gofiber/fiber/v2"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
-func AddToChallenges(chall models.Challenge) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+func UpdateChallenges(c *fiber.Ctx, existingChallenge *models.Challenge, challengeMetaData *models.Challenge) *models.Challenge {
+
+	if challengeMetaData.Name != "" {
+		existingChallenge.Name = challengeMetaData.Name
+	}
+
+	if challengeMetaData.Points > 0 {
+		existingChallenge.Points = challengeMetaData.Points
+	}
+
+	if challengeMetaData.CategoryID > 0 {
+		existingChallenge.CategoryID = challengeMetaData.CategoryID
+	}
+	
+	if challengeMetaData.Flag != "" {
+		existingChallenge.Flag = challengeMetaData.Flag
+	} 
+
+	if challengeMetaData.Prompt != "" {
+		existingChallenge.Prompt = challengeMetaData.Prompt
+	}
+	
+	if challengeMetaData.Type != "" {
+		existingChallenge.Type = challengeMetaData.Type
+	} 
+
+	if challengeMetaData.Author != "" {
+		existingChallenge.Author = challengeMetaData.Author
+	} 
+
+	return existingChallenge
+}
+
+func FetchChallenge(c *fiber.Ctx, challid int) (models.Challenge, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
 	db := DB.WithContext(ctx)
-
-	// Use GORM's Upsert equivalent for "ON CONFLICT DO UPDATE"
-	err := db.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "level"}},
-		DoUpdates: clause.AssignmentColumns([]string{"chall_name", "prompt", "tags"}),
-	}).Create(&chall).Error
-
-	if err != nil {
-		return err
+	
+	if err := doesChallengeExist(db, challid); err != nil {
+		log.Println(err)
+		return models.Challenge{}, err
 	}
 
-	return nil
+	var existingChallenge models.Challenge
+	if err := db.Where("chall_id = ?", challid).First(&existingChallenge).Error; err != nil {
+		log.Println(err)
+		return models.Challenge{}, errors.New("failed to fetch challenge")
+	}
+
+	return existingChallenge, nil
 }
 
-// Admin functions
-func EditChallengeMetaData(c *fiber.Ctx, updatedChall *models.Challenge) error {
+
+func SaveChallengeMetaData(c *fiber.Ctx, updatedChall *models.Challenge) error {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
 	db := DB.WithContext(ctx)
 
-	var existingChall models.Challenge
-	if err := doesChallengeExist(db, updatedChall.ChallID, existingChall); err != nil {
+	if err := db.Save(updatedChall).Where("chall_id = ?", updatedChall.ChallID).Error; err != nil {
 		log.Println(err)
-		return err
+		return errors.New("failed to save updated challenge")
 	}
 
-	updates := map[string]interface{}{
-		"chall_name":    updatedChall.Name,
-		"prompt":        updatedChall.Prompt,
-		"category_name": updatedChall.Category.CategoryName,
-		"type":          updatedChall.Type,
-		"points":        updatedChall.Points,
-		"flag":          updatedChall.Flag,
-		"author":        updatedChall.Author,
-		"tags":          updatedChall.Tags,
-		"visible":       updatedChall.Visible,
-		"links":         updatedChall.Links,
-	}
-
-	if err := performChallengeTransaction(db, existingChall, updates); err != nil {
-		log.Println(err)
-		return err
-	}
-	
 	return nil
 }
 
-func doesChallengeExist(db *gorm.DB, challID int, challenge models.Challenge) error {
-	if err := db.Where("chall_id = ?", challID).First(&challenge).Error; err != nil {
+func doesChallengeExist(db *gorm.DB, challID int) error {
+	if err := db.Where("chall_id = ?", challID).First(&models.Challenge{}).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return errors.New("this challenge does not exist")
 		}
@@ -78,22 +92,3 @@ func doesChallengeExist(db *gorm.DB, challID int, challenge models.Challenge) er
 	return nil
 }
 
-func performChallengeTransaction(db *gorm.DB, existingChallenge models.Challenge, updates map[string]interface{}) error {
-
-	tx := db.Begin()
-	if tx.Error != nil {
-		return errors.New("error in starting a transaction")
-	}
-
-	if err := tx.Model(&existingChallenge).Updates(updates).Error; err != nil {
-		tx.Rollback()
-		return errors.New("failed to update challenge")
-	}
-
-	if err := tx.Commit().Error; err != nil {
-		tx.Rollback()
-		return errors.New("failed to commit changes")
-	}
-
-	return nil
-}

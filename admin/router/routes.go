@@ -14,10 +14,11 @@ func SetupRoutes(app *fiber.App) {
 	auth := app.Group("/auth")
 	auth.Post("/login", handler.Login)
 
-	admin := app.Group("/admin", middleware.CheckTime(), middleware.CheckAdminToken())
-	admin.Post("/login", handler.Login)
-	admin.Post("/edit/challenges/data", handler.EditChallengeMetaData)
-	admin.Post("/edit/challenges/requirements", handler.EditChallengeFiles)
-	admin.Post("/edit/challenges/")
+	admin := app.Group("/admin")
+
+	challenge := admin.Group("/edit/challenges")
+	challenge.Post("/data", handler.EditChallengeMetaData)
+	challenge.Post("/files", handler.EditChallengeFiles)
+	challenge.Post("/hints", handler.EditChallengeHints)
 	// admin.Post("/edit/teams", adminHandler.EditTeams)
 }

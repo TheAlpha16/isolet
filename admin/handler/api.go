@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+
 	"github.com/TheAlpha16/isolet/admin/database"
 	"github.com/TheAlpha16/isolet/admin/models"
 	"github.com/TheAlpha16/isolet/admin/utils"
@@ -8,22 +10,37 @@ import (
 )
 
 func EditChallengeMetaData(c *fiber.Ctx) error {
-	var challenge models.Challenge
-	if err := c.BodyParser(&challenge); err != nil {
+	var challengeMetadata models.Challenge
+	if err := c.BodyParser(&challengeMetadata); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "failure",
 			"message": "invalid request body",
 		})
 	}
 
-	if err := utils.ValidateChallengeFields(&challenge); err != nil {
+	if err := utils.ValidateChallengeFields(&challengeMetadata); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "failure",
 			"message": err.Error(),
 		})
 	}
 
-	if err := database.EditChallengeMetaData(c, &challenge); err != nil {
+	// fetch existing challenge
+	existingChallenge, err := database.FetchChallenge(c, challengeMetadata.ChallID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "failure",
+			"message": err.Error(),
+		})
+	}
+
+	fmt.Printf("existing challenge: %v\n", existingChallenge)
+
+	// update challenge field properties
+	updatedChallenge:= database.UpdateChallenges(c, &existingChallenge, &challengeMetadata)
+
+	// save challenge
+	if err := database.SaveChallengeMetaData(c, updatedChallenge); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "failure",
 			"message": err.Error(),
@@ -36,7 +53,7 @@ func EditChallengeMetaData(c *fiber.Ctx) error {
 	})
 }
 
-func EditChallengesHints(c *fiber.Ctx) error {
+func EditChallengeHints(c *fiber.Ctx) error {
 
 	return c.SendStatus(fiber.StatusOK)
 }
