@@ -20,7 +20,7 @@ export default function RootLayout({ children, }: { children: React.ReactNode })
 	}
 
 	if (user.teamid !== -1) {
-		return redirect('/');
+		return redirect('/challenges');
 	}
 
 	return children
