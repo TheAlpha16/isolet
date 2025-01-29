@@ -32,7 +32,7 @@ export default function Register() {
 			showToast(ToastStatus.Failure, "missing token");
 			router.push("/");
 		}
-	}, [token, isClient]);
+	}, [token, isClient, router]);
 
 	async function onSubmit(event: React.SyntheticEvent) {
 		if (!token) {
