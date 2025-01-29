@@ -14,7 +14,7 @@ function Challenges() {
 
 	useEffect(() => {
 		fetchChallenges();
-	}, []);
+	}, [fetchChallenges]);
 
 	if (loading) {
 		return (
