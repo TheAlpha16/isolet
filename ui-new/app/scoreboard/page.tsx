@@ -11,12 +11,14 @@ import { useScoreboardStore } from "@/store/scoreboardStore";
 import { processScores } from "@/utils/processScores";
 import type { TeamType, ScoreGraphEntryType } from "@/utils/types"
 import { ScoreGraph } from "@/components/charts/ScoreGraph";
+import { useMetadataStore } from "@/store/metadataStore";
 
 export default function Scoreboard() {
     const [searchQuery, setSearchQuery] = useState("")
     const [graphData, setGraphData] = useState<ScoreGraphEntryType[]>([])
 
-    const { scores, totalPages, currentPage, loading, fetchPage, graphLoading, topScores, startTime, fetchTopScores } = useScoreboardStore()
+    const { scores, totalPages, currentPage, loading, fetchPage, graphLoading, topScores, fetchTopScores } = useScoreboardStore()
+    const { eventStart } = useMetadataStore()
 
     useEffect(() => {
         fetchPage(currentPage)
@@ -34,9 +36,9 @@ export default function Scoreboard() {
             })),
         }));
 
-        const respon = processScores(toProcess, startTime);
+        const respon = processScores(toProcess, eventStart);
         setGraphData(respon);
-    }, [topScores, startTime])
+    }, [topScores, eventStart])
 
     const handlePageChange = async (newPage: number) => {
         if (newPage < 1 || newPage > totalPages) return

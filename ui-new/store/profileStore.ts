@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import type { TeamType, ScoreGraphEntryType, CategoryProgress, SubmissionType } from "@/utils/types";
 import showToast, { ToastStatus } from "@/utils/toastHelper";
-import { useScoreboardStore } from "./scoreboardStore";
+import { useMetadataStore } from "@/store/metadataStore";
 import { processScores, processCategoryData } from "@/utils/processScores";
-import { useAuthStore } from "./authStore";
+import { useAuthStore } from "@/store/authStore";
 
 interface CorrectVIncorrect {
 	correct: number;
@@ -64,7 +64,7 @@ export const useProfileStore = create<ProfileStore>((set) => ({
 					})),
 				};
 
-				const teamGraph = processScores([teamData], useScoreboardStore.getState().startTime);
+				const teamGraph = processScores([teamData], useMetadataStore.getState().eventStart);
 				const userSubmissions = submissions.filter((sub: SubmissionType) => sub.userid === useAuthStore.getState().user.userid);
 
 				var userCorrect = userSubmissions.filter((sub: SubmissionType) => sub.correct === true).length;

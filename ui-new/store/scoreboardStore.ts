@@ -13,7 +13,6 @@ interface ScoreboardStore {
 	graphLoading: boolean;
 	currentPage: number;
 	totalPages: number;
-	startTime: string;
 	scores: TeamType[];
 	topScores: TeamType[];
 	pages: Record<number, CachedPage>;
@@ -27,7 +26,6 @@ export const useScoreboardStore = create<ScoreboardStore>((set) => ({
 	graphLoading: true,
 	currentPage: 1,
 	totalPages: 1,
-	startTime: "",
 	scores: [],
 	topScores: [],
 	pages: {},
@@ -147,7 +145,6 @@ export const useScoreboardStore = create<ScoreboardStore>((set) => ({
 				const response = await res.json();
 				set({
 					topScores: response.scores,
-					startTime: response.start_time,
 				});
 			} else {
 				const response = await res.json();
