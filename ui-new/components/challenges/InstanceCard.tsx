@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Play, StopCircle, Copy, RefreshCw, Check, KeyRound, Terminal } from "lucide-react";
+import { Loader2, Play, StopCircle, RefreshCw, KeyRound, Terminal } from "lucide-react";
 import showToast, { ToastStatus } from "@/utils/toastHelper";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useInstanceStore } from "@/store/instanceStore";
+import { CopyButton } from "@/components/utils/copy-button";
 
 interface InstanceCardProps {
 	chall_id: number;
@@ -104,7 +105,7 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 		try {
 			navigator.clipboard.writeText(text);
 			setCopiedLink(text);
-			setTimeout(() => setCopiedLink(null), 2000);
+			setTimeout(() => setCopiedLink(null), 4000);
 		} catch (error) {
 			showToast(ToastStatus.Failure, "Failed to copy to clipboard");
 		}
@@ -182,28 +183,7 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 							className="pl-8 truncate font-mono focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
 						/>
 					</div>
-					<TooltipProvider>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<Button
-									variant="outline"
-									size="icon"
-									onClick={() => copyToClipboard(instance.connString)}
-								>
-									{copiedLink === instance.connString ? (
-										<Check className="h-4 w-4 text-green-500" />
-									) : (
-										<Copy className="h-4 w-4" />
-									)}
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>
-								<p>
-									{copiedLink === instance.connString ? "Copied!" : "Copy to clipboard"}
-								</p>
-							</TooltipContent>
-						</Tooltip>
-					</TooltipProvider>
+					<CopyButton copiedLink={copiedLink} content={instance.connString} copyToClipboard={copyToClipboard} />
 				</div>)}
 			{instance?.active && instance?.password && (
 				<div className="flex items-center space-x-2">
@@ -215,28 +195,7 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 							className="pl-8 truncate font-mono focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
 						/>
 					</div>
-					<TooltipProvider>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<Button
-									variant="outline"
-									size="icon"
-									onClick={() => copyToClipboard(instance.password)}
-								>
-									{copiedLink === instance.connString ? (
-										<Check className="h-4 w-4 text-green-500" />
-									) : (
-										<Copy className="h-4 w-4" />
-									)}
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>
-								<p>
-									{copiedLink === instance.password ? "Copied!" : "Copy to clipboard"}
-								</p>
-							</TooltipContent>
-						</Tooltip>
-					</TooltipProvider>
+					<CopyButton copiedLink={copiedLink} content={instance.password} copyToClipboard={copyToClipboard} />
 				</div>
 			)}
 		</div>
