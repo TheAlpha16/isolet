@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import type { CategoryProgress as CategoryProgressType } from "@/utils/types"
@@ -10,22 +10,21 @@ interface CategoryProgressProps {
     title: string
 }
 
-const categoryColors = {
-    Web: "bg-blue-500",
-    Crypto: "bg-green-500",
-    Pwn: "bg-red-500",
-    Reverse: "bg-purple-500",
-    Forensics: "bg-yellow-500",
+const generateColors = (count: number) => {
+    const hueStep = 360 / count
+    return Array.from({ length: count }, (_, i) => `hsl(${i * hueStep}, 70%, 50%)`)
 }
 
 export function CategoryProgress({ categories, title }: CategoryProgressProps) {
+    const colors = useMemo(() => generateColors(categories.length), [categories.length])
+
     return (
         <Card>
             <CardHeader>
                 <CardTitle>{title}</CardTitle>
             </CardHeader>
             <CardContent>
-                {categories.map((category) => (
+                {categories.map((category, index) => (
                     <div key={category.category} className="mb-4">
                         <div className="flex justify-between items-center mb-1">
                             <span className="font-medium">{category.category}</span>
@@ -35,7 +34,11 @@ export function CategoryProgress({ categories, title }: CategoryProgressProps) {
                         </div>
                         <Progress
                             value={(category.solved / category.total) * 100}
-                            className={`${categoryColors[category.category as keyof typeof categoryColors] || "bg-gray-500"}`}
+                            style={
+                                {
+                                    "--progress-background": colors[index],
+                                } as React.CSSProperties
+                            }
                         />
                     </div>
                 ))}
