@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import Hint from "@/components/hints/Hint";
-import { Download, ExternalLink, Copy, Check, Users } from "lucide-react";
+import { Download, ExternalLink, Check, Users } from "lucide-react";
 import type { ChallengeType, HintType } from "@/utils/types";
 import { ChallType } from "@/utils/types";
 import { InstanceCard } from "@/components/challenges/InstanceCard";
@@ -36,7 +36,7 @@ export function ChallengeModal({ challenge, onClose }: ChallengeModalProps) {
 			navigator.clipboard.writeText(text);
 			setCopiedLink(text);
 			setTimeout(() => setCopiedLink(null), 4000);
-		} catch (error) {
+		} catch {
 			showToast(ToastStatus.Failure, 'Failed to copy to clipboard');
 		}
 	};
