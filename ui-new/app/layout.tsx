@@ -42,7 +42,7 @@ export default function RootLayout({
 		if (user.userid === -1) {
 			fetchUser();
 		}
-	}, [user, fetchUser]);
+	}, [user, fetchUser, fetchChallenges]);
 
 	useEffect(() => {
 		if (!metadataLoaded) {
