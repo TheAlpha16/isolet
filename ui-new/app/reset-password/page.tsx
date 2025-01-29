@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Loader2 } from "lucide-react"
 import { Eye, EyeClosed } from "lucide-react"
 import useLogin from "@/hooks/useLogin"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import showToast, { ToastStatus } from "@/utils/toastHelper"
 
 export default function Register() {
@@ -17,35 +17,16 @@ export default function Register() {
 	const { loading, resetPasswordAPI } = useLogin();
 	const [showPasswd, setShowPasswd] = useState(false);
 	const [showConfirm, setShowConfirm] = useState(false);
-	const [isClient, setIsClient] = useState(false);
-	const router = useRouter();
-
 	const searchParams = useSearchParams();
-	const token = isClient ? searchParams.get("token") : null;
+	const token = searchParams.get("token");
 
-	useEffect(() => {
-		setIsClient(true);
-	}, []);
-
-	useEffect(() => {
-		if (isClient && !token) {
-			showToast(ToastStatus.Failure, "missing token");
-			router.push("/");
-		}
-	}, [token, isClient, router]);
-
-	async function onSubmit(event: React.SyntheticEvent) {
+	async function onSubmit() {
 		if (!token) {
 			showToast(ToastStatus.Failure, "missing token");
 			return;
 		}
 
-		event.preventDefault();
 		await resetPasswordAPI(password, confirm, token);
-	}
-
-	if (!isClient) {
-		return null;
 	}
 
 	return (
