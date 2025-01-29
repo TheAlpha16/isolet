@@ -5,6 +5,7 @@ import type { TeamType, UserType } from "@/utils/types"
 import { UserPlus2, UserMinus2, Crown } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { TeamInvite } from "@/components/profile/TeamInvite"
+import { useMetadataStore } from "@/store/metadataStore"
 
 interface TeamManagementProps {
     user: UserType
@@ -12,6 +13,7 @@ interface TeamManagementProps {
 }
 
 export function TeamManagement({ team, user }: TeamManagementProps) {
+    const { teamLen } = useMetadataStore()
     const [inviteToken, setInviteToken] = useState("")
     const [showInvite, setShowInvite] = useState(false)
 
@@ -20,9 +22,9 @@ export function TeamManagement({ team, user }: TeamManagementProps) {
         setInviteToken(token)
     }
 
-    const getRandomPastelColor = (index: number, total: number) => {
+    const getRandomPastelColor = (index: number) => {
         const hue = Math.floor(Math.random() * 360)
-        return `hsl(${360 / total * index}, 50%, 60%)`
+        return `hsl(${360 / teamLen * index}, 50%, 60%)`
     }
 
     return (
@@ -60,7 +62,7 @@ export function TeamManagement({ team, user }: TeamManagementProps) {
                                     <div className="flex items-center space-x-4">
                                         <div
                                             className="min-w-10 h-10 rounded-full flex items-center justify-center text-lg font-semibold"
-                                            style={{ backgroundColor: getRandomPastelColor(index, team.members.length) }}
+                                            style={{ backgroundColor: getRandomPastelColor(index) }}
                                         >
                                             {member.username.charAt(0).toUpperCase()}
                                         </div>
