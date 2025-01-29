@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS teams(
 CREATE OR REPLACE FUNCTION rank_up_captain()
 RETURNS TRIGGER AS $$
 BEGIN
-    UPDATE users SET rank = 2 WHERE userid = NEW.captain;
+    UPDATE users SET rank = 2, teamid = NEW.teamid WHERE userid = NEW.captain;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

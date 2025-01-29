@@ -53,10 +53,6 @@ func CreateTeam(c *fiber.Ctx, team *models.Team) error {
 		return err
 	}
 
-	if err := UpdateUserTeam(c, team.Captain, team.TeamID); err != nil {
-		return err
-	}
-
 	return nil
 }
 
