@@ -17,9 +17,9 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 	const {
 		instances,
 		loading,
-		startInstance,
-		stopInstance,
-		extendInstance,
+		// startInstance,
+		// stopInstance,
+		// extendInstance,
 
 		// DEBUG
 		updateInstance,
@@ -106,7 +106,7 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 			navigator.clipboard.writeText(text);
 			setCopiedLink(text);
 			setTimeout(() => setCopiedLink(null), 4000);
-		} catch (error) {
+		} catch {
 			showToast(ToastStatus.Failure, "Failed to copy to clipboard");
 		}
 	};
