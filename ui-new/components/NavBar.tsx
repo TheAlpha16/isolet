@@ -1,4 +1,7 @@
+"use client"
+
 import { useAuthStore } from "@/store/authStore";
+import { useMetadataStore } from "@/store/metadataStore";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -13,6 +16,7 @@ interface Route {
 
 function NavBar() {
 	const { user, fetching, logout } = useAuthStore();
+	const { ctfName } = useMetadataStore();
 	const [menuOpen, setMenuOpen] = useState(false);
 
 	const routes: Route[] = [
@@ -26,7 +30,7 @@ function NavBar() {
 			<div className="flex items-center justify-between bg-background p-4 font-mono border-b sm:sticky sm:top-0 z-10">
 				<div className="flex items-center gap-4">
 					<Link href="/">
-						<div className="text-foreground text-2xl font-bold">isolet</div>
+						<div className="text-foreground text-2xl font-bold">{ctfName}</div>
 					</Link>
 
 					{user.userid !== -1 &&
