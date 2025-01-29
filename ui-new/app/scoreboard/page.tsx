@@ -17,7 +17,7 @@ export default function Scoreboard() {
     const [searchQuery, setSearchQuery] = useState("")
     const [graphData, setGraphData] = useState<ScoreGraphEntryType[]>([])
 
-    const { scores, totalPages, currentPage, loading, fetchPage, graphLoading, topScores, fetchTopScores } = useScoreboardStore()
+    const { scores, totalPages, currentPage, fetchPage, graphLoading, topScores, fetchTopScores } = useScoreboardStore()
     const { eventStart } = useMetadataStore()
 
     useEffect(() => {
