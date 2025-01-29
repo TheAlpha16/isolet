@@ -23,7 +23,7 @@ func GetSelfTeam(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in reading team"})
 	}
 
-	rank, err := database.GetTeamRank(c, teamid)
+	rank, score, err := database.GetTeamRank(c, teamid)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in reading team"})
 	}
@@ -33,5 +33,6 @@ func GetSelfTeam(c *fiber.Ctx) error {
 		"team":        team,
 		"submissions": submissions,
 		"rank":        rank,
+		"score":       score,
 	})
 }

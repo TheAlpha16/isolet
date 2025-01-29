@@ -118,24 +118,28 @@ func GetSubmissions(c *fiber.Ctx, teamid int64) ([]models.Sublog, error) {
 	return submissions, nil
 }
 
-func GetTeamRank(c *fiber.Ctx, teamid int64) (int64, error) {
+func GetTeamRank(c *fiber.Ctx, teamid int64) (int64, int64, error) {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
 	db := DB.WithContext(ctx)
 
 	var totalTeams int64
-	var rank int64
+
+	var result struct {
+		Rank  int64
+		Score int64
+	}
 
 	if err := db.Model(&models.Team{}).Count(&totalTeams).Error; err != nil {
 		log.Println(err)
-		return rank, err
+		return result.Rank, result.Score, err
 	}
 
-	if err := db.Model(&models.Team{}).Select("rank").Raw("SELECT rank FROM get_scoreboard(?, ?) WHERE teamid = ?", totalTeams, 0, teamid).Scan(&rank).Error; err != nil {
+	if err := db.Model(&models.Team{}).Select("rank, score").Raw("SELECT rank, score FROM get_scoreboard(?, ?) WHERE teamid = ?", totalTeams, 0, teamid).Scan(&result).Error; err != nil {
 		log.Println(err)
-		return rank, err
+		return result.Rank, result.Score, err
 	}
 
-	return rank, nil
+	return result.Rank, result.Score, nil
 }

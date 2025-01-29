@@ -55,6 +55,7 @@ export const useProfileStore = create<ProfileStore>((set) => ({
 				const team = response.team;
 				const submissions = response.submissions;
 				const rank = response.rank;
+				const score = response.score;
 
 				const teamData = {
 					label: team.teamname,
@@ -71,10 +72,9 @@ export const useProfileStore = create<ProfileStore>((set) => ({
 				var userScore = userSubmissions.filter((sub: SubmissionType) => sub.correct === true && sub.userid === useAuthStore.getState().user.userid).reduce((acc: number, sub: SubmissionType) => acc + sub.points, 0);
 
 				var teamCorrect = submissions.filter((sub: SubmissionType) => sub.correct === true).length;
-				var teamScore = submissions.filter((sub: SubmissionType) => sub.correct === true).reduce((acc: number, sub: SubmissionType) => acc + sub.points, 0);
 
 				useAuthStore.getState().user.score = userScore;
-				team.score = teamScore;
+				team.score = score;
 				team.rank = rank;
 
 				const userCategoryProgress = processCategoryData(userSubmissions);
