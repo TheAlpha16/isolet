@@ -29,7 +29,7 @@ export function TeamInvite({ isOpen, onClose, onGenerate, token }: TeamInvitePro
 			navigator.clipboard.writeText(text);
 			setCopiedLink(text);
 			setTimeout(() => setCopiedLink(null), 4000);
-		} catch (error) {
+		} catch {
 			showToast(ToastStatus.Failure, "Failed to copy to clipboard");
 		}
 	};
