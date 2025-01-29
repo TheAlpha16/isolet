@@ -39,7 +39,7 @@ $$ LANGUAGE plpgsql;
 
 -- Create trigger to update captain's rank
 CREATE OR REPLACE TRIGGER rank_up_captain_trigger
-BEFORE INSERT ON teams
+AFTER INSERT ON teams
 FOR EACH ROW
 EXECUTE FUNCTION rank_up_captain();
 
