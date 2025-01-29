@@ -1,9 +1,7 @@
-"use client"
-
 import { Skeleton } from "@/components/ui/skeleton";
 import React from "react";
 
-export default function ChallengeSkeleton() {
+export function ChallengeSkeleton() {
     return (
         <div className="container p-4 justify-start h-full flex flex-col">
 
@@ -18,5 +16,5 @@ export default function ChallengeSkeleton() {
                 <Skeleton className="h-[200px] w-80 rounded-lg" />
             </div>
         </div>
-    );
+    )
 }
