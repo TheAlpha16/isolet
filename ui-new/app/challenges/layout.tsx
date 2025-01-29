@@ -3,7 +3,7 @@
 import React from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { redirect } from 'next/navigation';
-import ChallengeSkeleton from '@/app/challenges/skeleton';
+import ChallengeSkeleton from '@/components/skeletons/challenge';
 
 export default function RootLayout({ children, }: { children: React.ReactNode }) {
 	const { user, fetching } = useAuthStore();

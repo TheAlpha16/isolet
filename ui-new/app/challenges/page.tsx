@@ -6,7 +6,7 @@ import { ChallengeCard } from "@/components/challenges/ChallengeCard";
 import { ChallengeModal } from "@/components/challenges/ChallengeModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ChallengeType } from "@/utils/types";
-import ChallengeSkeleton from "@/app/challenges/skeleton"
+import ChallengeSkeleton from "@/components/skeletons/challenge"
 
 function Challenges() {
 	const [currentChallenge, setCurrentChallenge] = useState<ChallengeType | null>(null);
