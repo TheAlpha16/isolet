@@ -1,6 +1,11 @@
 /challenges/.venv
 /challenges/__pycache__
 
+admin/.env
+admin/admin_access.log
+admin/error.log
+admin/admin
+
 api/.env
 api/access.log
 api/error.log
