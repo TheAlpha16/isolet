@@ -25,9 +25,11 @@ type ScoreGraphProps = {
 };
 
 export function ScoreGraph({ plots }: ScoreGraphProps) {
-    const labels = plots.length > 0
-        ? Object.keys(plots[0]).filter((key) => key !== "timestamp")
-        : [];
+    const labels = React.useMemo(() => {
+        return plots.length > 0
+            ? Object.keys(plots[0]).filter((key) => key !== "timestamp")
+            : [];
+    }, [plots]);
 
     const chartConfig = React.useMemo(
         () =>
