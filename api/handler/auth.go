@@ -130,8 +130,7 @@ func Verify(c *fiber.Ctx) error {
 	}
 
 	if message, err := database.AddToUsers(c, claims.Email); err != nil {
-		log.Println(err)
-		return c.Status(fiber.StatusInternalServerError).SendString(message)
+		return c.Status(fiber.StatusBadRequest).SendString(message)
 	}
 
 	return c.Status(fiber.StatusCreated).SendString("user verified successfully! proceed to login")

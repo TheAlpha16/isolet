@@ -91,7 +91,7 @@ func AddToUsers(c *fiber.Ctx, email string) (string, error) {
 	userData.Password = toVerifyData.Password
 
 	if err := db.Create(userData).Error; err != nil {
-		log.Println(err.Error())
+		log.Println(err)
 		return "error in creating user, please contact admin", err
 	}
 
