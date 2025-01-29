@@ -101,7 +101,7 @@ export function CorrectVIncorrect({ correct, incorrect }: { correct: number; inc
             <CardFooter className="flex-col gap-2 text-sm">
                 {totalSubmissions > 0 && (
                     <div className="flex items-center gap-2 font-medium leading-none">
-                        Wow! {correct * 100 / totalSubmissions}% correct submissions
+                        Wow! {(correct * 100 / totalSubmissions).toPrecision(2)}% correct submissions
                     </div>)}
                 <div className="leading-none text-muted-foreground">
                     {totalSubmissions > 0 ? "Showing total submissions till now" : "No submissions yet"}
