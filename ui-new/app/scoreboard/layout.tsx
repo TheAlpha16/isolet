@@ -3,12 +3,13 @@
 import React from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { redirect } from 'next/navigation';
+import { ScoreboardSkeleton } from '@/components/skeletons/scoreboard';
 
 export default function RootLayout({ children, }: { children: React.ReactNode }) {
 	const { user, fetching } = useAuthStore();
 
 	if (fetching) {
-		return <div>Loading...</div>
+		return <ScoreboardSkeleton />;
 	}
 
 	if (user.userid === -1) {

@@ -12,6 +12,7 @@ import { processScores } from "@/utils/processScores";
 import type { TeamType, ScoreGraphEntryType } from "@/utils/types"
 import { ScoreGraph } from "@/components/charts/ScoreGraph";
 import { useMetadataStore } from "@/store/metadataStore";
+import { ScoreGraphSkeleton } from "@/components/skeletons/scoreboard";
 
 export default function Scoreboard() {
     const [searchQuery, setSearchQuery] = useState("")
@@ -71,9 +72,9 @@ export default function Scoreboard() {
 
     return (
         <div className="container mx-auto p-4 space-y-4">
-            {!graphLoading && topScores.length !== 0 && (
-                <ScoreGraph plots={graphData} />
-            )}
+            {graphLoading ?
+                (<ScoreGraphSkeleton />) :
+                topScores.length !== 0 && (<ScoreGraph plots={graphData} />)}
 
             <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
                 <Input
