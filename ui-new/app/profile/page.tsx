@@ -14,14 +14,13 @@ import { useProfileStore } from "@/store/profileStore"
 export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState("user")
     const { user } = useAuthStore()
-    const { team, teamGraph, teamLoading, userCategoryProgress, teamCategoryProgress, userSubmissionsProgress, teamSubmissionsProgress, fetchSelfTeam } = useProfileStore()
+    const { team, teamGraph, userCategoryProgress, teamCategoryProgress, userSubmissionsProgress, teamSubmissionsProgress, fetchSelfTeam } = useProfileStore()
 
     useEffect(() => {
         fetchSelfTeam()
 
         return () => { }
-    }
-    , [])
+    }, [fetchSelfTeam])
 
     return (
         <div className="container mx-auto p-4 space-y-8">
