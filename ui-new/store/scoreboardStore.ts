@@ -31,8 +31,6 @@ export const useScoreboardStore = create<ScoreboardStore>((set) => ({
 	pages: {},
 
 	fetchPage: async (page: number) => {
-		set({ loading: true });
-
 		const { pages } = useScoreboardStore.getState();
 		const cacheTimeOut = 1000 * 60;
 		const cachedPage = pages[page];
@@ -40,6 +38,8 @@ export const useScoreboardStore = create<ScoreboardStore>((set) => ({
 		if (cachedPage && Date.now() - cachedPage.timestamp < cacheTimeOut) {
 			set({ scores: cachedPage.data, currentPage: page, loading: false });
 		}
+
+		set({ loading: true });
 
 		try {
 			const res = await fetchTimeout(
