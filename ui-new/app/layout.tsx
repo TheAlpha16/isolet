@@ -35,7 +35,7 @@ export default function RootLayout({
 	const { metadataLoaded, fetchMetadata } = useMetadataStore();
 
 	useEffect(() => {
-		if (user.userid !== -1) {
+		if (user.userid !== -1 && user.teamid !== -1) {
 			fetchChallenges();
 		}
 
