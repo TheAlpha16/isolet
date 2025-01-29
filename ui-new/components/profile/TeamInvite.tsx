@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
 	Dialog,
 	DialogContent,
@@ -10,17 +10,30 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Copy, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
+import showToast, { ToastStatus } from '@/utils/toastHelper';
+import { CopyButton } from '@/components/utils/copy-button';
 
 interface TeamInviteProps {
 	isOpen: boolean;
 	onClose: () => void;
 	onGenerate: () => void;
-	onCopy: () => void;
 	token: string;
 }
 
-export function TeamInvite({ isOpen, onClose, onGenerate, onCopy, token }: TeamInviteProps) {
+export function TeamInvite({ isOpen, onClose, onGenerate, token }: TeamInviteProps) {
+	const [copiedLink, setCopiedLink] = useState<string | null>(null);
+
+	const copyToClipboard = (text: string) => {
+		try {
+			navigator.clipboard.writeText(text);
+			setCopiedLink(text);
+			setTimeout(() => setCopiedLink(null), 4000);
+		} catch (error) {
+			showToast(ToastStatus.Failure, "Failed to copy to clipboard");
+		}
+	};
+
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
 			<DialogContent className="sm:max-w-[425px]">
@@ -30,24 +43,22 @@ export function TeamInvite({ isOpen, onClose, onGenerate, onCopy, token }: TeamI
 				<DialogDescription>
 					Share this token with others to invite.
 				</DialogDescription>
-				<div className="flex flex-row  space-x-2 w-full max-h-fit">
-					<Button onClick={onGenerate} 
-					variant="outline">
-						<RefreshCw size={20} />
+				<div className="flex items-center space-x-2">
+					<Button
+						onClick={onGenerate}
+						variant="outline"
+						size={"icon"}
+					>
+						<RefreshCw className="h-4 w-4" />
 					</Button>
-					<div className="relative flex-grow">
-						<Input
-							value={token}
-							className="pr-10"
-							readOnly
-						/>
-						<Button variant={"ghost"} size="icon" className="absolute inset-y-0 right-0" onClick={onCopy}>
-							<Copy size={20} />
-						</Button>
-					</div>
+					<Input
+						value={token}
+						className="truncate font-mono focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+						readOnly
+					/>
+					<CopyButton copiedLink={copiedLink} content={token} copyToClipboard={copyToClipboard} />
 				</div>
 			</DialogContent>
 		</Dialog>
 	);
 }
-
