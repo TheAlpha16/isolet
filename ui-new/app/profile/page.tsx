@@ -10,11 +10,12 @@ import { useAuthStore } from "@/store/authStore"
 import { CorrectVIncorrect } from "@/components/charts/CorrectVIncorrect"
 import { ScoreGraph } from "@/components/charts/ScoreGraph"
 import { useProfileStore } from "@/store/profileStore"
+import { ChartSkeleton } from "@/components/skeletons/profile"
 
 export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState("user")
     const { user } = useAuthStore()
-    const { team, teamGraph, userCategoryProgress, teamCategoryProgress, userSubmissionsProgress, teamSubmissionsProgress, fetchSelfTeam } = useProfileStore()
+    const { team, teamGraph, userCategoryProgress, teamCategoryProgress, userSubmissionsProgress, teamSubmissionsProgress, teamLoading, fetchSelfTeam } = useProfileStore()
 
     useEffect(() => {
         fetchSelfTeam()
@@ -32,17 +33,22 @@ export default function ProfilePage() {
                 <TabsContent value="user" className="space-y-4">
                     <UserProfile user={user} team={team} />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <CorrectVIncorrect correct={userSubmissionsProgress.correct} incorrect={userSubmissionsProgress.incorrect} />
-                        <CategoryProgress categories={userCategoryProgress} title="Progress" />
+                        {teamLoading ? <ChartSkeleton /> :
+                            <CorrectVIncorrect correct={userSubmissionsProgress.correct} incorrect={userSubmissionsProgress.incorrect} />}
+                        {teamLoading ? <ChartSkeleton /> :
+                            <CategoryProgress categories={userCategoryProgress} title="Progress" />}
                     </div>
                 </TabsContent>
                 <TabsContent value="team" className="space-y-4">
                     <TeamProfile team={team} />
                     <TeamManagement team={team} user={user} />
-                    <ScoreGraph plots={teamGraph} />
+                    {teamLoading ? <ChartSkeleton /> :
+                        <ScoreGraph plots={teamGraph} />}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <CorrectVIncorrect correct={teamSubmissionsProgress.correct} incorrect={teamSubmissionsProgress.incorrect} />
-                        <CategoryProgress categories={teamCategoryProgress} title="Progress" />
+                        {teamLoading ? <ChartSkeleton /> :
+                            <CorrectVIncorrect correct={teamSubmissionsProgress.correct} incorrect={teamSubmissionsProgress.incorrect} />}
+                        {teamLoading ? <ChartSkeleton /> :
+                            <CategoryProgress categories={teamCategoryProgress} title="Progress" />}
                     </div>
                 </TabsContent>
             </Tabs>
