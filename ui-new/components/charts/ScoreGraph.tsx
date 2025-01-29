@@ -61,7 +61,7 @@ export function ScoreGraph({ plots }: ScoreGraphProps) {
                 minute: "numeric",
             });
 
-        } catch (e) {
+        } catch {
             return ""
         }
     }
