@@ -7,6 +7,7 @@ import "@/styles/notification.css";
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useChallengeStore } from "@/store/challengeStore";
+import { useMetadataStore } from "@/store/metadataStore";
 import NavBar from "@/components/NavBar";
 import { ThemeProvider } from "@/components/theme-provider"
 import { HintToastContainer } from "@/components/hints/HintToastContainer";
@@ -31,6 +32,7 @@ export default function RootLayout({
 
 	const { user, fetchUser } = useAuthStore();
 	const { fetchChallenges } = useChallengeStore();
+	const { metadataLoaded, fetchMetadata } = useMetadataStore();
 
 	useEffect(() => {
 		if (user.userid !== -1) {
@@ -41,6 +43,14 @@ export default function RootLayout({
 			fetchUser();
 		}
 	}, [user, fetchUser]);
+
+	useEffect(() => {
+		if (!metadataLoaded) {
+			fetchMetadata();
+		}
+
+		return () => { };
+	}, [metadataLoaded, fetchMetadata]);
 
 	return (
 		<html lang="en" suppressHydrationWarning>
