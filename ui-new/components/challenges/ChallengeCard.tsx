@@ -12,7 +12,7 @@ interface ChallengeCardProps {
 
 export function ChallengeCard({ challenge, onClick }: ChallengeCardProps) {
 	return (
-		<Card className={`hover:shadow-lg dark:hover:shadow-zinc-900 transition-shadow w-80`}>
+		<Card className={`hover:shadow-lg dark:hover:shadow-zinc-900 transition-shadow w-[300px]`}>
 			<CardHeader>
 				<CardTitle className="flex justify-between items-center">
 					<span className="truncate">{challenge.name}</span>
