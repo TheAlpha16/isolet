@@ -3,16 +3,13 @@
 import React from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { redirect } from 'next/navigation';
+import { FormSkeleton } from '@/components/skeletons/form';
 
 export default function RootLayout({ children, }: { children: React.ReactNode }) {
 	const { fetching, user } = useAuthStore();
 
 	if (fetching) {
-		return (
-			<div className='flex justify-center w-screen animate-bounce text-2xl'>
-				Loading...
-			</div>
-		)
+		return <FormSkeleton />
 	}
 
 	if (user.userid === -1) {
