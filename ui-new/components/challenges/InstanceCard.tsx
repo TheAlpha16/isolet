@@ -17,14 +17,10 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 	const {
 		instances,
 		loading,
-		// startInstance,
-		// stopInstance,
-		// extendInstance,
-
-		// DEBUG
-		updateInstance,
+		startInstance,
+		stopInstance,
+		extendInstance,
 		setLoading,
-
 	} = useInstanceStore();
 	const instance = instances[chall_id];
 	const [copiedLink, setCopiedLink] = useState<string | null>(null);
@@ -35,7 +31,7 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 		}
 
 		let interval: NodeJS.Timeout | undefined;
-		if (instance?.active) {
+		if (instance.active) {
 			interval = setInterval(() => {
 				setTimeLeft((prev) => Math.max(0, prev - 1));
 			}, 1000);
@@ -49,17 +45,7 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 	const handleStart = async () => {
 		setLoading(true);
 		try {
-
-			// DEBUG
-			await new Promise((resolve) => setTimeout(resolve, 2000));
-			updateInstance(chall_id, {
-				active: true,
-				deadline: Date.now() + 60 * 60 * 1000,
-				connString: "ssh hacker@ctf.infosec.org.in",
-				password: "ab390b1e003f027ca48d926fa16"
-			});
-
-			// await startInstance(chall_id);
+			await startInstance(chall_id);
 		} finally {
 			setLoading(false);
 		}
@@ -68,12 +54,7 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 	const handleStop = async () => {
 		setLoading(true);
 		try {
-
-			// DEBUG
-			await new Promise((resolve) => setTimeout(resolve, 2000));
-			updateInstance(chall_id, { active: false, deadline: 0 });
-
-			// await stopInstance(chall_id);
+			await stopInstance(chall_id);
 		}
 		finally {
 			setLoading(false);
@@ -83,13 +64,7 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 	const handleExtend = async () => {
 		setLoading(true);
 		try {
-
-			// DEBUG
-			await new Promise((resolve) => setTimeout(resolve, 2000));
-			updateInstance(chall_id, { deadline: instance.deadline + 60 * 60 * 1000 });
-
-			// await extendInstance(chall_id);
-
+			await extendInstance(chall_id);
 		} finally {
 			setLoading(false);
 		}
@@ -122,21 +97,21 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 			<div className="flex items-center space-x-4 justify-between">
 				<div className="flex space-x-2 items-center">
 					<Button
-						onClick={instance?.active ? handleStop : handleStart}
+						onClick={instance.active ? handleStop : handleStart}
 						disabled={loading}
 						variant="outline"
 						size="sm"
 					>
 						{loading ? (
 							<Loader2 className="animate-spin text-yellow-500" />
-						) : instance?.active ? (
+						) : instance.active ? (
 							<StopCircle className="text-red-500" />
 						) : (
 							<Play className="text-green-500" />
 						)}
 					</Button>
 
-					{instance?.active && (
+					{instance.active && (
 						<Button
 							size="sm"
 							variant="outline"
@@ -148,7 +123,7 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 						</Button>
 					)}
 
-					{instance?.active && (
+					{instance.active && (
 						<span className="text-sm font-mono border h-9 p-2 rounded-lg">
 							{formatTime(timeLeft)}
 						</span>
@@ -159,12 +134,12 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 					<Tooltip>
 						<TooltipTrigger asChild>
 							<Badge variant="outline" className={getStatusColor()}>
-								{instance?.active ? "Running" : "Stopped"}
+								{instance.active ? "Running" : "Stopped"}
 							</Badge>
 						</TooltipTrigger>
 						<TooltipContent>
 							<p>
-								{instance?.active
+								{instance.active
 									? "Access the instance using the details below"
 									: "Start the instance to access it"}
 							</p>
@@ -173,7 +148,7 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 				</TooltipProvider>
 			</div>
 
-			{instance?.active && (
+			{instance.active && (
 				<div className="flex items-center space-x-2">
 					<div className="relative flex-grow">
 						<Terminal className="h-5 w-5 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
@@ -185,7 +160,7 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 					</div>
 					<CopyButton copiedLink={copiedLink} content={instance.connString} copyToClipboard={copyToClipboard} />
 				</div>)}
-			{instance?.active && instance?.password && (
+			{instance.active && instance.password && (
 				<div className="flex items-center space-x-2">
 					<div className="relative flex-grow">
 						<KeyRound className="h-5 w-5 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
