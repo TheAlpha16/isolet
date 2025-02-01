@@ -26,7 +26,7 @@ export const useInstanceStore = create<InstanceStore>((set) => ({
         set({ loading: valueToSet });
     },
 
-    fetchInstances: async () => {},
+    fetchInstances: async () => { },
 
     startInstance: async (chall_id: number) => {
         set({ loading: true });
@@ -43,14 +43,14 @@ export const useInstanceStore = create<InstanceStore>((set) => ({
             if (res.ok) {
                 const instanceJSON = await res.json();
 
-                set((state) => {
-                    const instance = instanceJSON as InstanceType;
+                useInstanceStore.getState().updateInstance(chall_id, {
+                    password: instanceJSON.message.password,
+                    deadline: instanceJSON.message.deadline,
+                    connString: instanceJSON.message.connstring,
+                    active: true,
+                });
 
-                    return {
-                        instances: { ...state.instances, [chall_id]: instance }
-                    };
-                })
-
+                showToast(ToastStatus.Success, "instance started successfully");
             } else if (res.status === 401) {
                 showToast(ToastStatus.Warning, "login to continue");
             } else {
@@ -82,13 +82,7 @@ export const useInstanceStore = create<InstanceStore>((set) => ({
 
             if (res.ok) {
                 const response = await res.json();
-                set((state) => {
-                    const updatedInstances = { ...state.instances };
-                    
-                    updatedInstances[chall_id].active = false;
-
-                    return { instances: updatedInstances };
-                });
+                useInstanceStore.getState().updateInstance(chall_id, { active: false });
 
                 showToast(ToastStatus.Success, response.message);
             } else if (res.status === 401) {
@@ -122,15 +116,10 @@ export const useInstanceStore = create<InstanceStore>((set) => ({
 
             if (res.ok) {
                 const response = await res.json();
-                set((state) => {
-                    const updatedInstances = { ...state.instances };
 
-                    updatedInstances[chall_id].deadline = response.deadline;
+                useInstanceStore.getState().updateInstance(chall_id, { deadline: response.message.deadline });
 
-                    return { instances: updatedInstances };
-                });
-
-                showToast(ToastStatus.Success, response.message);
+                showToast(ToastStatus.Success, "instance extended successfully");
             } else if (res.status === 401) {
                 showToast(ToastStatus.Warning, "login to continue");
             } else {
