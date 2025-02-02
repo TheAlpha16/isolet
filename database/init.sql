@@ -1,6 +1,7 @@
 -- Create types
 CREATE TYPE chall_type AS ENUM ('static', 'dynamic', 'on-demand');
 CREATE TYPE deployment_type AS ENUM ('ssh', 'nc', 'http');
+CREATE TYPE token_type AS ENUM ('password_reset', 'invite_token');
 
 -- Create categories table
 CREATE TABLE IF NOT EXISTS categories(
@@ -70,8 +71,9 @@ EXECUTE PROCEDURE toverify_delete_old_rows();
 CREATE TABLE IF NOT EXISTS tokens (
     tid SERIAL PRIMARY KEY,
     token UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+    type token_type NOT NULL,
     userid BIGINT NOT NULL REFERENCES users(userid) ON DELETE CASCADE,
-    timestamp TIMESTAMP NOT NULL DEFAULT NOW()
+    expiry TIMESTAMP NOT NULL DEFAULT (NOW() + INTERVAL '30 minutes')
 );
 
 -- Function to delete old tokens
@@ -79,7 +81,7 @@ CREATE OR REPLACE FUNCTION tokens_delete_old_rows() RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    DELETE FROM tokens WHERE timestamp < NOW() - INTERVAL '30 minutes';
+    DELETE FROM tokens WHERE expiry < NOW();
     RETURN NEW;
 END;
 $$;
