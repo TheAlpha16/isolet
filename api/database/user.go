@@ -160,6 +160,8 @@ func GeneratePasswordResetToken(c *fiber.Ctx, user *models.User) (*models.Token,
 	}
 
 	token.UserID = user.UserID
+	token.Type = "password_reset"
+	token.Expiry = time.Now().Add(30 * time.Minute)
 
 	if err := db.Create(&token).Error; err != nil {
 		log.Println(err)
@@ -184,7 +186,11 @@ func VerifyToken(c *fiber.Ctx, token string) (*models.User, error) {
 		return &tokenData.User, errors.New("invalid token")
 	}
 
-	if tokenData.Timestamp.Add(30 * time.Minute).Before(time.Now()) {
+	if tokenData.Type != "password_reset" {
+		return &tokenData.User, errors.New("invalid token")
+	}
+
+	if tokenData.Expiry.Before(time.Now()) {
 		return &tokenData.User, errors.New("token expired")
 	}
 
