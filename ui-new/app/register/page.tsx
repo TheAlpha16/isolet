@@ -101,7 +101,7 @@ export default function Register() {
 					</div>
 				</CardContent>
 				<CardFooter>
-					<Button className="w-full" onClick={onSubmit}>
+					<Button className="w-full" onClick={onSubmit} disabled={loading}>
 						{loading && (
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 						)}

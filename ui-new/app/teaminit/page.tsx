@@ -69,7 +69,7 @@ export default function TeamInit() {
 						<Button className="w-full" onClick={(event) => {
 							event.preventDefault();
 							onSubmit("join")
-						}}>
+						}} disabled={loading}>
 							{loading && (
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 							)}
@@ -78,7 +78,7 @@ export default function TeamInit() {
 						<Button className="w-full" variant={"secondary"} onClick={(event) => {
 							event.preventDefault();
 							onSubmit("create")
-						}}>
+						}} disabled={loading}>
 							{loading && (
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 							)}

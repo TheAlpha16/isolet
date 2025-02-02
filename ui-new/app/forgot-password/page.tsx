@@ -38,7 +38,7 @@ export default function ForgotPassword() {
 			</div>
 			</CardContent>
 			<CardFooter>
-			<Button className="w-full" onClick={() => forgotPasswordAPI(email)}>
+			<Button className="w-full" onClick={() => forgotPasswordAPI(email)} disabled={loading}>
 				{loading && (
 					<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 				)}
