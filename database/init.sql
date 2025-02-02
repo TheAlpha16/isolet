@@ -68,6 +68,7 @@ CREATE OR REPLACE TRIGGER toverify_delete_old_rows_trigger
 BEFORE INSERT ON toverify
 EXECUTE PROCEDURE toverify_delete_old_rows();
 
+-- Create a table for tokens
 CREATE TABLE IF NOT EXISTS tokens (
     tid SERIAL PRIMARY KEY,
     token UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
