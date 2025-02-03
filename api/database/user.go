@@ -230,3 +230,21 @@ func ResetForgetPassword(c *fiber.Ctx, token string, password string) error {
 
 	return nil
 }
+
+func ReadUser(c *fiber.Ctx, userid int64) (*models.User, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+	user := new(models.User)
+
+	if err := db.Where("userid = ?", userid).First(user).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return user, errors.New("user not found")
+		}
+		log.Println(err)
+		return user, err
+	}
+
+	return user, nil
+}
