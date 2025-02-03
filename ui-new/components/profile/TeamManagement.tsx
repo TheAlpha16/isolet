@@ -14,13 +14,7 @@ interface TeamManagementProps {
 
 export function TeamManagement({ team, user }: TeamManagementProps) {
     const { teamLen } = useMetadataStore()
-    const [inviteToken, setInviteToken] = useState("")
     const [showInvite, setShowInvite] = useState(false)
-
-    const generateInviteToken = () => {
-        const token = Math.random().toString(36).substring(2, 15)
-        setInviteToken(token)
-    }
 
     const getRandomPastelColor = (index: number) => {
         return `hsl(${360 / teamLen * index}, 50%, 60%)`
@@ -102,8 +96,6 @@ export function TeamManagement({ team, user }: TeamManagementProps) {
             <TeamInvite
                 isOpen={showInvite}
                 onClose={() => setShowInvite(false)}
-                onGenerate={generateInviteToken}
-                token={inviteToken}
             />
         </>
     )
