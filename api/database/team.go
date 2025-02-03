@@ -79,8 +79,24 @@ func JoinTeam(c *fiber.Ctx, user *models.User, team *models.Team) error {
 
 	db := DB.WithContext(ctx)
 
-	if err := db.Raw("SELECT join_team(?, ?, ?)", team.TeamID, user.UserID, config.TEAM_LEN).Error; err != nil {
+	err := db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Exec("SELECT join_team(?, ?, ?)", team.TeamID, user.UserID, config.TEAM_LEN).Error; err != nil {
+			return errors.New(CleanSQLException(err.Error()))
+		}
+		return nil
+	})
+
+	if err != nil {
 		return errors.New(CleanSQLException(err.Error()))
+	}
+
+	if checkUser, err := ReadUser(c, user.UserID); err == nil {
+		if checkUser.TeamID != team.TeamID {
+			return errors.New("error in joining team")
+		}
+	} else {
+		log.Println(err)
+		return errors.New("error in joining team")
 	}
 
 	return nil
@@ -142,4 +158,59 @@ func GetTeamRank(c *fiber.Ctx, teamid int64) (int64, int64, error) {
 	}
 
 	return result.Rank, result.Score, nil
+}
+
+func VerifyInviteToken(c *fiber.Ctx, token string) (*models.Team, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+
+	var team models.Team
+	var tokenData models.Token
+
+	if err := db.Where("token = ?", token).First(&tokenData).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.New("invalid token")
+		}
+		log.Println(err)
+		return nil, errors.New("error in token verification")
+	}
+
+	if tokenData.Type != "invite_token" {
+		return nil, errors.New("invalid token")
+	}
+
+	if tokenData.Expiry.Before(time.Now()) {
+		return nil, errors.New("token expired")
+	}
+
+	if err := db.Joins("JOIN users ON users.userid = ?", tokenData.UserID).Where("teams.teamid = users.teamid").First(&team).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.New("invalid token")
+		}
+		log.Println(err)
+		return nil, errors.New("error in token verification")
+	}
+
+	return &team, nil
+}
+
+func GenerateInviteToken(c *fiber.Ctx, userid int64) (string, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+
+	var token models.Token
+	token.UserID = userid
+	token.Type = "invite_token"
+	token.Expiry = time.Now().Add(30 * time.Minute)
+
+	if err := db.Create(&token).Error; err != nil {
+		log.Println(err)
+		return "", errors.New("error in token generation")
+	}
+
+	return token.Token.String(), nil
 }

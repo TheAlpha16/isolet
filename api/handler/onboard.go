@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/TheAlpha16/isolet/api/config"
 	"github.com/TheAlpha16/isolet/api/database"
 	"github.com/TheAlpha16/isolet/api/middleware"
 	"github.com/TheAlpha16/isolet/api/models"
@@ -72,7 +73,8 @@ func CreateTeam(c *fiber.Ctx) error {
 	cookie.Name = "token"
 	cookie.Value = token
 	cookie.SameSite = fiber.CookieSameSiteStrictMode
-	cookie.Expires = time.Now().Add(72 * time.Hour)
+	cookie.HTTPOnly = true
+	cookie.Expires = time.Now().Add(time.Duration(config.SESSION_EXP) * time.Hour)
 	c.Cookie(cookie)
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -111,6 +113,8 @@ func JoinTeam(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "failure", "message": "invalid team credentials"})
 	}
 
+	user.UserID = userid
+
 	if err := database.JoinTeam(c, user, team); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": err.Error()})
 	}
@@ -130,10 +134,61 @@ func JoinTeam(c *fiber.Ctx) error {
 	cookie.Name = "token"
 	cookie.Value = token
 	cookie.SameSite = fiber.CookieSameSiteStrictMode
-	cookie.Expires = time.Now().Add(72 * time.Hour)
+	cookie.HTTPOnly = true
+	cookie.Expires = time.Now().Add(time.Duration(config.SESSION_EXP) * time.Hour)
 	c.Cookie(cookie)
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"teamid": team.TeamID,
 	})
+}
+
+func JoinWithInvite(c *fiber.Ctx) error {
+	var userid int64
+	var teamid int64
+
+	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+	userid = int64(claims["userid"].(float64))
+	teamid = int64(claims["teamid"].(float64))
+	inviteToken := c.Query("token")
+
+	if inviteToken == "" {
+		c.Status(fiber.StatusBadRequest).SendString("missing token!")
+	}
+
+	if teamid != -1 || database.UserInTeam(c, userid) {
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"status": "failure", "message": "user already in a team"})
+	}
+
+	team, err := database.VerifyInviteToken(c, inviteToken)
+	if err != nil {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "failure", "message": err.Error()})
+	}
+
+	user, err := database.ReadUser(c, userid)
+	if err != nil {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "failure", "message": "user not found"})
+	}
+
+	if err := database.JoinTeam(c, user, team); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": err.Error()})
+	}
+
+	user.TeamID = team.TeamID
+
+	token, err := middleware.GenerateToken(user)
+	if err != nil {
+		log.Println(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in token generation. contact admin"})
+	}
+
+	cookie := new(fiber.Cookie)
+	cookie.Name = "token"
+	cookie.Value = token
+	cookie.SameSite = fiber.CookieSameSiteStrictMode
+	cookie.HTTPOnly = true
+	cookie.Expires = time.Now().Add(time.Duration(config.SESSION_EXP) * time.Hour)
+	c.Cookie(cookie)
+
+	return c.Redirect("/")
 }

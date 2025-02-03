@@ -24,6 +24,7 @@ func SetupRoutes(app *fiber.App) {
 	onboard := app.Group("/onboard", middleware.CheckOnBoardToken())
 	onboard.Post("/team/create", handler.CreateTeam)
 	onboard.Post("/team/join", handler.JoinTeam)
+	onboard.Get("/team/invite", handler.JoinWithInvite)
 
 	api := app.Group("/api", middleware.CheckTime(), middleware.CheckToken())
 	api.Get("/challs", handler.GetChalls)
@@ -42,4 +43,5 @@ func SetupRoutes(app *fiber.App) {
 
 	profile := api.Group("/profile")
 	profile.Get("/team/self", handler.GetSelfTeam)
+	profile.Get("/team/invite", handler.GetInviteToken)
 }
