@@ -59,7 +59,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 			expiry = "";
 		}
 
-		if (storedData && expiry) {
+		if (storedData && expiry && JSON.parse(storedData).teamid !== -1) {
 			const userData = JSON.parse(storedData);
 			set({ user: userData, fetching: false });
 			return;
