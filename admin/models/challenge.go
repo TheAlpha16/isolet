@@ -16,7 +16,7 @@ type Challenge struct {
 	Type         string         `gorm:"type:chall_type;default:static" json:"type"`
 	Points       int            `gorm:"not null;default:100" json:"points"`
 	Files        pq.StringArray `gorm:"type:text[]" json:"files"`
-	Requirements pq.Int64Array  `gorm:"type:integer[]" json:"-"`
+	Requirements pq.Int64Array  `gorm:"type:integer[]" json:"-" form:"requirements"`
 	Hints        []Hint         `gorm:"foreignKey:ChallID" json:"hints"`
 	Solves       int            `gorm:"default:0" json:"solves"`
 	Author       string         `gorm:"default:anonymous" json:"author"`
@@ -35,7 +35,7 @@ type ChallengeData struct {
 	Hints        []Hint         `gorm:"serializer:json" json:"hints"`
 	Solves       int            `gorm:"column:solves" json:"solves"`
 	Author       string         `gorm:"column:author" json:"author"`
-	Tags         pq.StringArray `gorm:"column:tags;type:text[]" json:"tags"`
+	Tags         []string       `gorm:"column:tags;type:text[]" json:"tags"`
 	Links        pq.StringArray `gorm:"column:links;type:text[]" json:"links"`
 	CategoryName string         `gorm:"column:category_name" json:"-"`
 	Deployment   string         `gorm:"type:deployment_type" json:"-"`

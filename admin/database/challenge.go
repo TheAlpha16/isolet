@@ -13,39 +13,6 @@ import (
 	"gorm.io/gorm"
 )
 
-func UpdateChallenges(c *fiber.Ctx, existingChallenge *models.Challenge, challengeMetaData *models.Challenge) *models.Challenge {
-
-	if challengeMetaData.Name != "" {
-		existingChallenge.Name = challengeMetaData.Name
-	}
-
-	if challengeMetaData.Points > 0 {
-		existingChallenge.Points = challengeMetaData.Points
-	}
-
-	if challengeMetaData.CategoryID > 0 {
-		existingChallenge.CategoryID = challengeMetaData.CategoryID
-	}
-	
-	if challengeMetaData.Flag != "" {
-		existingChallenge.Flag = challengeMetaData.Flag
-	} 
-
-	if challengeMetaData.Prompt != "" {
-		existingChallenge.Prompt = challengeMetaData.Prompt
-	}
-	
-	if challengeMetaData.Type != "" {
-		existingChallenge.Type = challengeMetaData.Type
-	} 
-
-	if challengeMetaData.Author != "" {
-		existingChallenge.Author = challengeMetaData.Author
-	} 
-
-	return existingChallenge
-}
-
 func FetchChallenge(c *fiber.Ctx, challid int) (models.Challenge, error) {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
@@ -86,6 +53,7 @@ func doesChallengeExist(db *gorm.DB, challID int) error {
 		if err == gorm.ErrRecordNotFound {
 			return errors.New("this challenge does not exist")
 		}
+		log.Println(err)
 		return errors.New("database error")
 	}
 

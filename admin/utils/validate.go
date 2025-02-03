@@ -3,30 +3,16 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/TheAlpha16/isolet/admin/config"
 	"github.com/TheAlpha16/isolet/admin/models"
 )
 
-// func PassValid(password string) bool {
-// 	tests := []string{".{9,}", "[a-z]", "[A-Z]", "[0-9]", "[$#@%&*.!]"}
-// 	for _, test := range tests {
-// 		t, _ := regexp.MatchString(test, password)
-// 		if !t {
-// 			return false
-// 		}
-// 	}
-// 	return true
-// }
-
 func ValidateLoginInput(user *models.User) (bool, string) {
 	if len(user.Email) > config.EMAIL_LEN {
 		return false, fmt.Sprintf("email/username length exceeded %d characters", config.EMAIL_LEN)
 	}
-
-	// if _, err := mail.ParseAddress(user.Email); err != nil {
-	// 	return false, "not a valid email address"
-	// }
 
 	if len(user.Password) > config.PASS_LEN {
 		return false, "password length exceeded 32 characters"
@@ -36,15 +22,11 @@ func ValidateLoginInput(user *models.User) (bool, string) {
 }
 
 func ValidateChallengeFields(challenge *models.Challenge) error {
-	if challenge.ChallID <= 0 {
+	if challenge.ChallID <= 0 && reflect.TypeOf(challenge.ChallID).Kind() == reflect.Int{
 		return errors.New("challenge ID is required")
 	}
 
-	if challenge.Flag == "" {
-		return errors.New("challenge flag cannot be empty")
-	}
-
-	if challenge.CategoryID <= 0 || challenge.CategoryID > config.CATEGORY_SIZE {
+	if (challenge.CategoryID <= 0 || challenge.CategoryID > config.CATEGORY_SIZE) && reflect.TypeOf(challenge.CategoryID).Kind() == reflect.Int{
 		return errors.New("category id out of bounds")
 	}
 
@@ -59,12 +41,9 @@ func ValidateChallengeFields(challenge *models.Challenge) error {
 		}
 	}
 
-	if challenge.Points <= 0 {
+	if challenge.Points <= 0 && reflect.TypeOf(challenge.Points).Kind() == reflect.Int{
 		return errors.New("challenge points must be greater than 0")
 	}
 
 	return nil
 }
-
-
-

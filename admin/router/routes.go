@@ -20,5 +20,4 @@ func SetupRoutes(app *fiber.App) {
 	challenge.Post("/data", handler.EditChallengeMetaData)
 	challenge.Post("/files", handler.EditChallengeFiles)
 	challenge.Post("/hints", handler.EditChallengeHints)
-	// admin.Post("/edit/teams", adminHandler.EditTeams)
 }
