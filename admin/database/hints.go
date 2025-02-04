@@ -25,7 +25,7 @@ func FetchHint(c *fiber.Ctx, hid int) (models.Hint, error) {
 	var existingHint models.Hint
 	if err := db.Where("hid = ?", hid).First(&existingHint).Error; err != nil {
 		log.Println(err)
-		return models.Hint{}, errors.New("failed to fetch challenge")
+		return models.Hint{}, errors.New("failed to fetch hint")
 	}
 
 	return existingHint, nil
