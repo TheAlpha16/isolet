@@ -50,7 +50,6 @@ type Hint struct {
 	Hint     string `gorm:"not null" json:"hint"`
 	Cost     int    `gorm:"not null;default:0" json:"cost"`
 	Visible  bool   `gorm:"default:false" json:"-"`
-	Unlocked bool   `gorm:"-" json:"unlocked"`
 }
 
 type Category struct {

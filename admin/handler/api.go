@@ -33,7 +33,7 @@ func EditChallengeMetaData(c *fiber.Ctx) error {
 	}
 
 	// update challenge field properties
-	updatedChallenge:= utils.UpdateChallenges(&existingChallenge, &challengeMetadata)
+	updatedChallenge:= utils.UpdateChallenge(&existingChallenge, &challengeMetadata)
 
 	// save challenge
 	if err := database.SaveChallengeMetaData(c, updatedChallenge); err != nil {
@@ -92,6 +92,40 @@ func EditChallengeFiles(c *fiber.Ctx) error {
 }
 
 func EditChallengeHints(c *fiber.Ctx) error {
+	var hintData models.Hint
+	if err := c.BodyParser(&hintData); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status": "failure",
+			"message": "invalid request body",
+		})
+	}
+
+	if err := utils.ValidateHintFields(&hintData); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status": "failure",
+			"message": err.Error(),
+		})
+	}
+
+	// fetch existing hints
+	existingHint, err := database.FetchHint(c, hintData.HID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "failure",
+			"message": err.Error(),
+		})
+	}
+
+	// update hints data
+	updatedHint := utils.UpdateHint(&existingHint, &hintData)
+	
+	// save hints
+	if err := database.SaveHintData(c, updatedHint); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "failure",
+			"message": err.Error(),
+		})
+	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "success",

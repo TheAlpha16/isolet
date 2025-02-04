@@ -47,3 +47,15 @@ func ValidateChallengeFields(challenge *models.Challenge) error {
 
 	return nil
 }
+
+func ValidateHintFields (hint *models.Hint) error {
+	if hint.HID <= 0 && reflect.TypeOf(hint.HID).Kind() == reflect.Int{
+		return errors.New("HID is required")
+	}
+
+	if hint.Cost < 0 {
+		return errors.New("hint cost cannot be less than 0")
+	}
+
+	return nil
+}

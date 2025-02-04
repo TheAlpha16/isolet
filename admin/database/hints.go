@@ -1,77 +1,57 @@
 package database
 
 import (
+	"context"
 	"errors"
 	"log"
+	"time"
 
 	"github.com/TheAlpha16/isolet/admin/models"
+	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
-func UpdateHints(tx *gorm.DB, challID int, newHints []models.Hint) error {
+func FetchHint(c *fiber.Ctx, hid int) (models.Hint, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15 * time.Second)
+	defer cancel()
 
-	// Get existing hints
-	var existingHints []models.Hint
-	if err := tx.Where("chall_id = ?", challID).Find(&existingHints).Error; err != nil {
-		tx.Rollback()
+	db := DB.WithContext(ctx)
+
+	if err := doesHintExist(db, hid); err != nil {
 		log.Println(err)
-		return errors.New("failed to fetch existing hints")
+		return models.Hint{}, err
 	}
 
-	existingHintMap := make(map[int]models.Hint)
-	for _, hint := range existingHints {
-		existingHintMap[hint.HID] = hint
-	}
-
-	// Checking if any of the hints are already unlocked
-	var unlockedHints []models.UHint
-	if err := tx.Where("hid IN ?", getHIDs(existingHints)).Find(&unlockedHints).Error; err != nil {
+	var existingHint models.Hint
+	if err := db.Where("hid = ?", hid).First(&existingHint).Error; err != nil {
 		log.Println(err)
-		return errors.New("failed to get unlocked hints")
+		return models.Hint{}, errors.New("failed to fetch challenge")
 	}
 
-	unlockedHintMap := make(map[int]bool)
-	for _, uHint := range unlockedHints {
-		unlockedHintMap[uHint.HID] = true
-	}
+	return existingHint, nil
+}
 
-	// Update hints
-	for _, newHint := range newHints {
-		newHint.ChallID = challID
+func SaveHintData(c *fiber.Ctx, hintData *models.Hint) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 15 * time.Second)
+	defer cancel()
 
-		if existingHint, exists := existingHintMap[newHint.HID]; exists {
-			
-			// preserve unlocked hints
-			if unlockedHintMap[newHint.HID] {
-				continue
-			}
+	db := DB.WithContext(ctx)
 
-			// update locked hints
-			updates := map[string]interface{} {
-				"hint": newHint.Hint,
-				"cost": newHint.Cost,
-				"visible": newHint.Visible,
-			}
-
-			if err := tx.Model(&existingHint).Updates(updates).Error; err != nil {
-				log.Println(err)
-				return errors.New("failed to update hint")
-			}
-		} else {
-			if err := tx.Create(&newHint).Error; err != nil {
-				log.Println(err)
-				return errors.New("failed to create new hint")
-			}
-		}
+	if err := db.Save(hintData).Where("hid = ?", hintData.HID).Error; err != nil {
+		log.Println(err)
+		return err
 	}
 
 	return nil
 }
 
-func getHIDs(hints []models.Hint) []int {
-	hids := make([]int, len(hints))
-    for i, hint := range hints {
-        hids[i] = hint.HID
-    }
-    return hids
+func doesHintExist(db *gorm.DB, hid int) error {
+	if err := db.Where("hid = ?", hid).First(&models.Hint{}).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return errors.New("this hint does not exist")
+		}
+		log.Println(err)
+		return errors.New("database error")
+	}
+	return nil
 }

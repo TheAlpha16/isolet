@@ -9,7 +9,7 @@ import (
 )
 
 
-func UpdateChallenges(existingChallenge *models.Challenge, challengeMetaData *models.Challenge) *models.Challenge {
+func UpdateChallenge(existingChallenge *models.Challenge, challengeMetaData *models.Challenge) *models.Challenge {
 	if challengeMetaData.Name != "" {
 		existingChallenge.Name = challengeMetaData.Name
 	}
@@ -68,6 +68,22 @@ func UpdateFiles (existingChallenge *models.Challenge, challengeMetaData *models
 	}
 
 	return existingChallenge
+}
+
+func UpdateHint (existingHint *models.Hint, hintData *models.Hint) *models.Hint {
+	if hintData.Cost > 0 {
+		existingHint.Cost = hintData.Cost
+	}
+
+	if hintData.Hint != "" {
+		existingHint.Hint = hintData.Hint
+	}
+	
+	if reflect.TypeOf(existingHint.Visible).Kind() == reflect.Bool {
+		existingHint.Visible = hintData.Visible
+	}
+	
+	return existingHint
 }
 
 func parseJsonStringArrays(arr []string) []string {
