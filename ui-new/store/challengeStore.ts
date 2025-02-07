@@ -41,19 +41,21 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
 
                 set({ challenges: processedChallenges });
 
-                Object.values(processedChallenges).flat().forEach((challenge: ChallengeType) => {
-                    if (challenge.type === ChallType.OnDemand) {
-                        useInstanceStore.getState().updateInstance(challenge.chall_id, {
-                            chall_id: challenge.chall_id,
-                            password: "",
-                            port: 0,
-                            hostname: "",
-                            deadline: 0,
-                            deployment: "",
-                            active: false,
-                        });
-                    }
-                });
+                if (!useInstanceStore.getState().instancesSet) {
+                    Object.values(processedChallenges).flat().forEach((challenge: ChallengeType) => {
+                        if (challenge.type === ChallType.OnDemand) {
+                            useInstanceStore.getState().updateInstance(challenge.chall_id, {
+                                chall_id: challenge.chall_id,
+                                password: "",
+                                port: 0,
+                                hostname: "",
+                                deadline: 0,
+                                deployment: "",
+                                active: false,
+                            });
+                        }
+                    });
+                }
 
                 useInstanceStore.getState().fetchInstances();
 

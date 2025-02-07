@@ -12,6 +12,7 @@ interface InstanceStore {
     instances: InstanceData;
     socket: Socket | null;
     loading: boolean;
+    instancesSet: boolean;
     fetchInstances: () => void;
     startInstance: (chall_id: number) => void;
     stopInstance: (chall_id: number) => void;
@@ -23,6 +24,7 @@ interface InstanceStore {
 export const useInstanceStore = create<InstanceStore>((set) => ({
     instances: {},
     loading: false,
+    instancesSet: false,
     socket: null,
 
     setLoading: (valueToSet: boolean) => {
@@ -30,12 +32,18 @@ export const useInstanceStore = create<InstanceStore>((set) => ({
     },
 
     fetchInstances: async () => {
-        if (useInstanceStore.getState().socket !== null) {
+        if (useInstanceStore.getState().socket?.connected) {
+            console.log("socket already connected");
+            console.log(useInstanceStore.getState().socket?.connected);
             return;
-        };
+        }
 
         const socket = io("/", {
             path: "/ws",
+        });
+
+        socket.on("disconnect", () => {
+            showToast(ToastStatus.Failure, "socket disconnected");
         });
 
         socket.on("instanceUpdate", (payload) => {
@@ -64,6 +72,8 @@ export const useInstanceStore = create<InstanceStore>((set) => ({
                     active: true,
                 });
             });
+
+            set({ instancesSet: true });
         });
 
         set({ socket });
