@@ -54,7 +54,6 @@ export const useInstanceStore = create<InstanceStore>((set) => ({
         });
 
         socket.on("instances", (instances) => {
-            console.log("🚀 Fetched instances:", instances);
             instances.forEach((instance: InstanceType) => {
                 useInstanceStore.getState().updateInstance(instance.chall_id, {
                     password: instance.password,
