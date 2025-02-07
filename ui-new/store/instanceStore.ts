@@ -34,36 +34,11 @@ export const useInstanceStore = create<InstanceStore>((set) => ({
             return;
         };
 
-        console.log("fetching instances");
         const socket = io("/", {
             path: "/ws",
         });
 
-        console.log("socket-id", socket.id);
-
-        // Listen for connection
-        socket.on("connect", () => {
-            console.log("✅ Connected to socket", socket.id);
-        });
-
-        socket.on("connect_error", (err) => {
-            console.warn("❌ Connection error:", err);
-        });
-
-        socket.on("connect_timeout", () => {
-            console.warn("❌ Connection timed out");
-        });
-
-        socket.on("reconnect_attempt", () => {
-            console.warn("⚠️ Reconnecting...");
-        });
-
-        socket.on("disconnect", (reason) => {
-            console.warn("🔌 Disconnected from socket:", reason);
-        });
-
         socket.on("instanceUpdate", (payload) => {
-
             useInstanceStore.getState().updateInstance(payload.chall_id, {
                 password: payload.password,
                 port: payload.port,
