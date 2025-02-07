@@ -540,3 +540,57 @@ BEGIN
     WHERE userid = user_id;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Create a function to send instance update notifications
+CREATE OR REPLACE FUNCTION notify_instance_update()
+RETURNS TRIGGER AS $$
+DECLARE
+    payload TEXT;
+    deployment deployment_type;
+BEGIN
+    SELECT INTO deployment images.deployment
+    FROM images
+    WHERE images.chall_id = NEW.chall_id;
+
+    payload := json_build_object(
+        'teamid', NEW.teamid,
+        'chall_id', NEW.chall_id,
+        'password', NEW.password,
+        'port', NEW.port,
+        'hostname', NEW.hostname,
+        'deadline', NEW.deadline,
+        'deployment', deployment
+    )::TEXT;
+
+    PERFORM pg_notify('notify_instance_update', payload);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Attach trigger for start updates
+CREATE OR REPLACE TRIGGER notify_instance_update_trigger
+AFTER INSERT OR UPDATE ON flags
+FOR EACH ROW EXECUTE FUNCTION
+notify_instance_update();
+
+-- Create a function to send instance stop notifications
+CREATE OR REPLACE FUNCTION notify_instance_stop()
+RETURNS TRIGGER AS $$
+DECLARE
+    payload TEXT;
+BEGIN
+    payload := json_build_object(
+        'teamid', OLD.teamid,
+        'chall_id', OLD.chall_id
+    )::TEXT;
+
+    PERFORM pg_notify('notify_instance_stop', payload);
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Attach trigger for stop updates
+CREATE OR REPLACE TRIGGER notify_instance_stop_trigger
+BEFORE DELETE ON flags
+FOR EACH ROW EXECUTE FUNCTION
+notify_instance_stop();
