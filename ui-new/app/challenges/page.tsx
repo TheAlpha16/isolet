@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useChallengeStore } from "@/store/challengeStore";
+import { useInstanceStore } from "@/store/instanceStore";
 import { ChallengeCard } from "@/components/challenges/ChallengeCard";
 import { ChallengeModal } from "@/components/challenges/ChallengeModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,11 +12,13 @@ import { ChallengeSkeleton } from "@/components/skeletons/challenge"
 function Challenges() {
 	const [currentChallenge, setCurrentChallenge] = useState<ChallengeType | null>(null);
 	const { challenges, fetchChallenges, loading } = useChallengeStore();
+	const { fetchInstances } = useInstanceStore();
 	const categories = Object.keys(challenges);
 
 	useEffect(() => {
 		fetchChallenges();
-	}, [fetchChallenges]);
+		fetchInstances();
+	}, [fetchChallenges, fetchInstances]);
 
 	if (loading) {
 		return <ChallengeSkeleton />;
