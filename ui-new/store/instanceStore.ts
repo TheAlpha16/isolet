@@ -2,6 +2,7 @@ import showToast, { ToastStatus } from "@/utils/toastHelper";
 import { create } from "zustand";
 import fetchTimeout from "@/utils/fetchTimeOut";
 import { InstanceType } from "@/utils/types";
+import { io, Socket } from "socket.io-client";
 
 interface InstanceData {
     [chall_id: number]: InstanceType;
@@ -9,6 +10,7 @@ interface InstanceData {
 
 interface InstanceStore {
     instances: InstanceData;
+    socket: Socket | null;
     loading: boolean;
     fetchInstances: () => void;
     startInstance: (chall_id: number) => void;
@@ -21,12 +23,77 @@ interface InstanceStore {
 export const useInstanceStore = create<InstanceStore>((set) => ({
     instances: {},
     loading: false,
+    socket: null,
 
     setLoading: (valueToSet: boolean) => {
         set({ loading: valueToSet });
     },
 
-    fetchInstances: async () => { },
+    fetchInstances: async () => {
+        if (useInstanceStore.getState().socket !== null) {
+            return;
+        };
+
+        console.log("fetching instances");
+        const socket = io("/", {
+            path: "/ws",
+        });
+
+        console.log("socket-id", socket.id);
+
+        // Listen for connection
+        socket.on("connect", () => {
+            console.log("✅ Connected to socket", socket.id);
+        });
+
+        socket.on("connect_error", (err) => {
+            console.warn("❌ Connection error:", err);
+        });
+
+        socket.on("connect_timeout", () => {
+            console.warn("❌ Connection timed out");
+        });
+
+        socket.on("reconnect_attempt", () => {
+            console.warn("⚠️ Reconnecting...");
+        });
+
+        socket.on("disconnect", (reason) => {
+            console.warn("🔌 Disconnected from socket:", reason);
+        });
+
+        socket.on("instanceUpdate", (payload) => {
+
+            useInstanceStore.getState().updateInstance(payload.chall_id, {
+                password: payload.password,
+                port: payload.port,
+                hostname: payload.hostname,
+                deadline: payload.deadline,
+                deployment: payload.deployment,
+                active: true,
+            });
+        });
+
+        socket.on("instanceStop", (payload) => {
+            useInstanceStore.getState().updateInstance(payload.chall_id, { active: false });
+        });
+
+        socket.on("instances", (instances) => {
+            console.log("🚀 Fetched instances:", instances);
+            instances.forEach((instance: InstanceType) => {
+                useInstanceStore.getState().updateInstance(instance.chall_id, {
+                    password: instance.password,
+                    port: instance.port,
+                    hostname: instance.hostname,
+                    deadline: instance.deadline,
+                    deployment: instance.deployment,
+                    active: true,
+                });
+            });
+        });
+
+        set({ socket });
+    },
 
     startInstance: async (chall_id: number) => {
         set({ loading: true });
@@ -45,8 +112,10 @@ export const useInstanceStore = create<InstanceStore>((set) => ({
 
                 useInstanceStore.getState().updateInstance(chall_id, {
                     password: instanceJSON.message.password,
+                    port: instanceJSON.message.port,
+                    hostname: instanceJSON.message.hostname,
                     deadline: instanceJSON.message.deadline,
-                    connString: instanceJSON.message.connstring,
+                    deployment: instanceJSON.message.deployment,
                     active: true,
                 });
 
