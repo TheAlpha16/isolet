@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Play, StopCircle, RefreshCw, KeyRound, Terminal } from "lucide-react";
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useInstanceStore } from "@/store/instanceStore";
 import { CopyButton } from "@/components/utils/copy-button";
+import { GenerateChallengeEndpoint } from "@/utils/parser";
 
 interface InstanceCardProps {
 	chall_id: number;
@@ -24,6 +25,11 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 	} = useInstanceStore();
 	const instance = instances[chall_id];
 	const [copiedLink, setCopiedLink] = useState<string | null>(null);
+
+	const connectionLink = useMemo(() => {
+		if (!instance) return "";
+		return GenerateChallengeEndpoint(instance.deployment, instance.hostname, instance.port);
+	}, [instance]);
 
 	useEffect(() => {
 		if (instance && instance.deadline) {
@@ -153,12 +159,12 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 					<div className="relative flex-grow">
 						<Terminal className="h-5 w-5 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
 						<Input
-							value={instance.connString}
+							value={connectionLink}
 							readOnly
 							className="pl-8 truncate font-mono focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
 						/>
 					</div>
-					<CopyButton copiedLink={copiedLink} content={instance.connString} copyToClipboard={copyToClipboard} />
+					<CopyButton copiedLink={copiedLink} content={connectionLink} copyToClipboard={copyToClipboard} />
 				</div>)}
 			{instance.active && instance.password && (
 				<div className="flex items-center space-x-2">

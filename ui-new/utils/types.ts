@@ -54,7 +54,6 @@ export interface InstanceType {
 	hostname: string;
 	deadline: number;
 	deployment: string;
-	connString: string;
 	active: boolean;
 };
 
