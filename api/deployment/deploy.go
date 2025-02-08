@@ -93,6 +93,7 @@ func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64) (*models.Flag, err
 	kubeclient, err := GetKubeClient()
 	if err != nil {
 		log.Println(err)
+		_ = database.DeleteRunning(c, chall_id, teamid)
 		return nil, errors.New("error in deployment, please contact admin")
 	}
 
