@@ -1,6 +1,6 @@
-import pg, { PoolClient } from "pg";
-import { logger } from "@/config/logger";
-import { dbCreds } from "@/config/db";
+import pg from "pg";
+import { logger } from "../config/logger";
+import { dbCreds } from "../config/db";
 
 const { Pool } = pg;
 

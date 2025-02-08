@@ -1,5 +1,5 @@
-import { pool } from "@/database";
-import { logger } from "@/config/logger";
+import { pool } from "../../database";
+import { logger } from "../../config/logger";
 import { Server } from "socket.io";
 
 export const updateInstance = async (io: Server) => {

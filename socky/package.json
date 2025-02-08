@@ -2,11 +2,10 @@
   "name": "socky",
   "version": "1.0.0",
   "description": "a relay service to handle socket connections",
-  "type": "module",
   "scripts": {
     "dev": "nodemon --ext ts --exec tsx src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "NODE_ENV=production node dist/"
   },
   "author": "",
   "license": "ISC",

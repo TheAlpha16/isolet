@@ -1,9 +1,9 @@
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
-import cookie from "cookie";
-import { logger } from "@/config/logger";
-import { secrets } from "@/config/general";
-import { fetchInstances } from "@/database";
+import * as cookie from "cookie";
+import { logger } from "../config/logger";
+import { secrets } from "../config/general";
+import { fetchInstances } from "../database";
 
 export const socketInit = (server: any) => {
     const io = new Server(server, {

@@ -1,9 +1,9 @@
 import { createServer } from "http";
-import { socketInit } from "@/socket";
-import { logger } from "@/config/logger";
-import { dbConnect } from "@/database";
-import { updateInstance } from "@/services/instances/update";
-import { stopInstance } from "@/services/instances/stop";
+import { socketInit } from "./socket";
+import { logger } from "./config/logger";
+import { dbConnect } from "./database";
+import { updateInstance } from "./services/instances/update";
+import { stopInstance } from "./services/instances/stop";
 
 async function startServer() {
     try {
