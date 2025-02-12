@@ -145,14 +145,6 @@ func GetInstances(c *fiber.Ctx, teamid int64) ([]models.Instance, error) {
 		return instances, errors.New("error in fetching instances, please contact admin")
 	}
 
-	for i := range instances {
-		if instances[i].Deployment == "ssh" {
-			instances[i].ConnString = GenerateChallengeEndpoint(instances[i].Deployment, "", instances[i].Hostname, instances[i].Port, config.DEFAULT_USERNAME)
-		} else {
-			instances[i].ConnString = GenerateChallengeEndpoint(instances[i].Deployment, "", instances[i].Hostname, instances[i].Port)
-		}
-	}
-
 	return instances, nil
 }
 
