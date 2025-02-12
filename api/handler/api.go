@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"time"
 	"strconv"
+	"time"
 
 	"github.com/TheAlpha16/isolet/api/database"
 	"github.com/TheAlpha16/isolet/api/models"
@@ -26,7 +26,7 @@ func ShowScoreBoard(c *fiber.Ctx) error {
 	board, err := database.ReadScores(c, page)
 	if err != nil {
 		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
-			"status": "failure", 
+			"status":  "failure",
 			"message": "cannot retrieve scoreboard at the moment",
 		})
 	}
@@ -50,21 +50,35 @@ func Identify(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"userid": userid,
-			"email": email,
-			"username": username,
-			"rank": rank,
-			"teamid": teamid,
-			"teamname": teamname,
-		})
+		"userid":   userid,
+		"email":    email,
+		"username": username,
+		"rank":     rank,
+		"teamid":   teamid,
+		"teamname": teamname,
+	})
 }
 
 func Logout(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
-		Name:     "token",
-		Value:    "",
-		Expires:  time.Now().Add(-time.Hour),
+		Name:    "token",
+		Value:   "",
+		Expires: time.Now().Add(-time.Hour),
 	})
-	
+
 	return c.SendStatus(fiber.StatusOK)
+}
+
+func GetScoreGraph(c *fiber.Ctx) error {
+	graph, err := database.GetScoreGraph(c)
+	if err != nil {
+		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
+			"status":  "failure",
+			"message": "cannot retrieve graph at the moment",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"scores": graph,
+	})
 }

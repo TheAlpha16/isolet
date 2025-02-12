@@ -1,44 +1,57 @@
-"use client";
+'use client'
 
-import Link from "next/link";
+import Image from "next/image";
+import { useAuthStore } from "@/store/authStore";
 
 export default function Home() {
-  return (
-    <div className="flex flex-col h-5/6 w-full p-4">
-      <div className="flex flex-col h-5/6 w-3/4 justify-center self-center gap-3">
-        <div className="text-6xl font-extrabold text-center">
-          Deploy your linux wargames easily
-        </div>
-        <div className="antialiased font-Roboto w-3/4 self-center hidden sm:flex text-center">
-          Isolet: A framework packed with features like Isolated instances,
-          Dynamic Pod Generation - Shape Your Wargames with Ease.
-        </div>
-        <Link href={`/howtoplay`} className="self-center">
-          <button className="p-3 text-black bg-palette-500 rounded-md font-mono">
-            Learn more
-          </button>
-        </Link>
-      </div>
-      <div className="flex self-center gap-2 w-3/5 justify-around font-mono">
-        <Link
-          href="https://cyberlabs.club"
-          className="flex flex-col items-center gap-2"
-        >
-          <img
-            src={`/static/assets/cyberlabs.png`}
-            alt="CL logo"
-            width={96}
-          ></img>
-          <div className="hidden sm:flex">CyberLabs</div>
-        </Link>
-        <Link
-          href="https://github.com/TheAlpha16/isolet"
-          className="flex flex-col items-center gap-2"
-        >
-          <img src={`/static/assets/github-mark-white.svg`} alt="CL logo"></img>
-          <div>SourceCode</div>
-        </Link>
-      </div>
-    </div>
-  );
+
+	const { user } = useAuthStore();
+
+	return (
+		<div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+			<main className="flex flex-col gap-3 row-start-2 items-center sm:items-start">
+				<div className="font-mono font-bold text-2xl">isolet v2</div>
+				<p>version 2 is currently under development. </p>
+				<p>If you have any thoughts, I would be happy to take suggestions</p>
+				<p>Feel free to open an issue on the GitHub repository.</p>
+				{user.userid === -1 ? (
+					<div className="mt-2"> You can login with sample creds
+						<code className="flex gap-1 items-center">
+							username:
+							<pre className="flex gap-1 bg-secondary py-1 px-1 rounded-md max-w-fit justify-center">
+								{`glimpse`}
+							</pre>
+						</code>
+						<code className="flex gap-1 items-center">
+							password:
+							<pre className="bg-secondary py-1 px-1 rounded-md max-w-fit">
+								{`Strongpasswd123.`}
+							</pre>
+						</code>
+					</div>
+				) : (
+					<div>
+						Welcome back, {user.username}!
+					</div>
+				)}
+			</main>
+			<footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
+				<a
+					className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+					href="https://github.com/TheAlpha16/isolet"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					<Image
+						aria-hidden
+						src="/window.svg"
+						alt="Window icon"
+						width={16}
+						height={16}
+					/>
+					Source code
+				</a>
+			</footer>
+		</div>
+	);
 }

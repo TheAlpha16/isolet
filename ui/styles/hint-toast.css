@@ -1,0 +1,46 @@
+.hint-toast {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    padding: 1rem;
+}
+
+.hint-toast .Toastify__toast-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
+}
+
+.hint-toast .Toastify__close-button {
+    color: hsl(var(--muted-foreground));
+    opacity: 0.7;
+}
+
+.hint-toast .Toastify__close-button:hover {
+    color: hsl(var(--foreground));
+    opacity: 1;
+}
+
+.hint-toast .Toastify__progress-bar {
+    background-color: hsl(var(--primary));
+}
+
+.dark .hint-toast {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
+}
+
+.dark .hint-toast .Toastify__close-button {
+    color: hsl(var(--muted-foreground));
+}
+
+.dark .hint-toast .Toastify__close-button:hover {
+    color: hsl(var(--foreground));
+}
+
+.dark .hint-toast .Toastify__progress-bar {
+    background-color: hsl(var(--primary));
+}

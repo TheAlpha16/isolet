@@ -1,15 +1,14 @@
 package deployment
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log"
-	"time"
-	"errors"
+	"path/filepath"
 	"strconv"
 	"strings"
-	"context"
-	"path/filepath"
-
+	"time"
 
 	"github.com/TheAlpha16/isolet/api/config"
 	"github.com/TheAlpha16/isolet/api/database"
@@ -60,26 +59,26 @@ func GetKubeClient() (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
-func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64, connDetails *models.Instance) error {
+func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64) (*models.Flag, error) {
 	challenge := new(models.Challenge)
 	image := new(models.Image)
 
 	if err := database.ValidOnDemandChallenge(c, chall_id, teamid, challenge, image); err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := database.CanStartInstance(c, chall_id, teamid); err != nil {
-		return err
+		return nil, err
 	}
 
 	instance_name := utils.GetInstanceName(chall_id, teamid)
 
 	flagObject := models.Flag{
-		TeamID: teamid,
-		ChallID: chall_id,
-		Flag: "",
+		TeamID:   teamid,
+		ChallID:  chall_id,
+		Flag:     "",
 		Password: database.GenerateRandom()[0:32],
-		Port: image.Port,
+		Port:     image.Port,
 		Hostname: utils.GetHostName(chall_id, teamid),
 		Deadline: 1893456000000,
 	}
@@ -94,7 +93,8 @@ func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64, connDetails *model
 	kubeclient, err := GetKubeClient()
 	if err != nil {
 		log.Println(err)
-		return errors.New("error in deployment, please contact admin")
+		_ = database.DeleteRunning(c, chall_id, teamid)
+		return nil, errors.New("error in deployment, please contact admin")
 	}
 
 	pod := getPodObject(instance_name, flagObject, image)
@@ -103,7 +103,7 @@ func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64, connDetails *model
 		if !strings.Contains(err.Error(), "already exists") {
 			_ = database.DeleteRunning(c, chall_id, teamid)
 			log.Println(err)
-			return errors.New("error in deployment, please contact admin")
+			return nil, errors.New("error in deployment, please contact admin")
 		}
 	}
 
@@ -112,7 +112,7 @@ func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64, connDetails *model
 		if err != nil {
 			_ = database.DeleteRunning(c, chall_id, teamid)
 			log.Println(err)
-			return errors.New("error in deployment, please contact admin")
+			return nil, errors.New("error in deployment, please contact admin")
 		}
 
 		if len(createdPod.Status.ContainerStatuses) > 0 {
@@ -120,7 +120,7 @@ func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64, connDetails *model
 				kubeclient.CoreV1().Pods(pod.Namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{})
 				log.Printf("Error in launch: chall_id-%d reason: %s", chall_id, createdPod.Status.ContainerStatuses[0].State.Waiting.Reason)
 				_ = database.DeleteRunning(c, chall_id, teamid)
-				return errors.New("error in deployment, please contact admin")
+				return nil, errors.New("error in deployment, please contact admin")
 			}
 		}
 
@@ -134,7 +134,7 @@ func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64, connDetails *model
 	if err != nil {
 		_ = DeleteInstance(c, chall_id, teamid)
 		log.Println(err)
-		return errors.New("error in deployment, please contact admin")
+		return nil, errors.New("error in deployment, please contact admin")
 	}
 
 	svcConfig := getServiceObject(instance_name, flagObject)
@@ -142,14 +142,14 @@ func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64, connDetails *model
 	if err != nil {
 		log.Println(err)
 		if !strings.Contains(err.Error(), "already exists") {
-			return errors.New("error in deployment, please contact admin")
+			return nil, errors.New("error in deployment, please contact admin")
 		}
 	}
 
 	createdService, err := kubeclient.CoreV1().Services(svcConfig.Namespace).Get(context.TODO(), svcConfig.Name, metav1.GetOptions{})
 	if err != nil {
 		log.Println(err)
-		return errors.New("error in deployment, please contact admin")
+		return nil, errors.New("error in deployment, please contact admin")
 	}
 
 	port := createdService.Spec.Ports[0].NodePort
@@ -158,7 +158,7 @@ func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64, connDetails *model
 	nodes, err := kubeclient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		log.Println(err)
-		return errors.New("error in deployment, please contact admin")
+		return nil, errors.New("error in deployment, please contact admin")
 	}
 
 	nodeip := nodes.Items[0].Status.Addresses
@@ -171,24 +171,13 @@ func DeployInstance(c *fiber.Ctx, chall_id int, teamid int64, connDetails *model
 
 	flagObject.Port = int(port)
 	flagObject.Hostname = hostname
+	flagObject.Deployment = image.Deployment
 
 	if err := database.NewFlag(c, &flagObject); err != nil {
-		return err
+		return nil, err
 	}
 
-	var connString string
-	if image.Deployment == "ssh" {
-		connString = database.GenerateChallengeEndpoint(image.Deployment, "", flagObject.Hostname, flagObject.Port, config.DEFAULT_USERNAME)
-	} else {
-		connString = database.GenerateChallengeEndpoint(image.Deployment, "", flagObject.Hostname, flagObject.Port)
-	}
-
-	connDetails.ChallID = chall_id
-	connDetails.Password = flagObject.Password
-	connDetails.ConnString = connString
-	connDetails.Deadline = flagObject.Deadline
-
-	return nil
+	return &flagObject, nil
 }
 
 func DeleteInstance(c *fiber.Ctx, chall_id int, teamid int64) error {
@@ -312,12 +301,7 @@ func getPodObject(instance_name string, flagObject models.Flag, image *models.Im
 	var cpu string
 	var memory string
 
-	if image.Registry != "" {
-		imagePath = image.Registry
-	} else {
-		imagePath = config.IMAGE_REGISTRY
-	}
-
+	imagePath = config.IMAGE_REGISTRY
 	imagePath = strings.TrimSuffix(imagePath, "/")
 	imagePath = fmt.Sprintf("%s/%s", imagePath, image.Image)
 
@@ -338,9 +322,9 @@ func getPodObject(instance_name string, flagObject models.Flag, image *models.Im
 			Name:      instance_name,
 			Namespace: config.INSTANCE_NAMESPACE,
 			Labels: map[string]string{
-				"chall_id":  fmt.Sprintf("%d", flagObject.ChallID),
-				"teamid": fmt.Sprintf("%d", flagObject.TeamID),
-				"app":    "instance",
+				"chall_id": fmt.Sprintf("%d", flagObject.ChallID),
+				"teamid":   fmt.Sprintf("%d", flagObject.TeamID),
+				"app":      "instance",
 			},
 		},
 		Spec: core.PodSpec{
@@ -375,7 +359,7 @@ func getPodObject(instance_name string, flagObject models.Flag, image *models.Im
 							Value: config.CTF_NAME,
 						},
 						{
-							Name: "USERNAME",
+							Name:  "USERNAME",
 							Value: config.DEFAULT_USERNAME,
 						},
 						{
@@ -399,8 +383,8 @@ func getServiceObject(instance_name string, flagObject models.Flag) *core.Servic
 			Name:      fmt.Sprintf("svc-%s", instance_name),
 			Namespace: config.INSTANCE_NAMESPACE,
 			Labels: map[string]string{
-				"chall_id":  fmt.Sprintf("%d", flagObject.ChallID),
-				"teamid": fmt.Sprintf("%d", flagObject.TeamID),
+				"chall_id": fmt.Sprintf("%d", flagObject.ChallID),
+				"teamid":   fmt.Sprintf("%d", flagObject.TeamID),
 			},
 		},
 		Spec: core.ServiceSpec{
@@ -411,9 +395,9 @@ func getServiceObject(instance_name string, flagObject models.Flag) *core.Servic
 				},
 			},
 			Selector: map[string]string{
-				"chall_id":  fmt.Sprintf("%d", flagObject.ChallID),
-				"teamid": fmt.Sprintf("%d", flagObject.TeamID),
-				"app":    "instance",
+				"chall_id": fmt.Sprintf("%d", flagObject.ChallID),
+				"teamid":   fmt.Sprintf("%d", flagObject.TeamID),
+				"app":      "instance",
 			},
 		},
 	}

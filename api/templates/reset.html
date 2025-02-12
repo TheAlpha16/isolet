@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <h3>
+            Reset your password
+        </h3>
+        <p>
+            Hi {{ .Username }}!
+            <br>
+        </p>
+        <br>
+        <p>Click on the link below to reset your password. It is valid for 30 minutes</p>
+        <a href="{{ .Link }}">
+          {{ .Link }}  
+        </a>
+    </body>
+</html>

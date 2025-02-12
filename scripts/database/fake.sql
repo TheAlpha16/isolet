@@ -71,12 +71,12 @@ INSERT INTO hints (hid, chall_id, hint, cost) VALUES
 
 UPDATE hints SET visible = true;
 
-INSERT INTO images (chall_id, registry, image, deployment, port, subd, cpu, mem) VALUES 
-(2, '', 'babyheap', 'nc', 31000, 'babyheap', 30, 32),
-(3, '', 'flag-finder', 'nc', 31001, 'flag-finder', 30, 32),
-(4, '', 'dfa', 'nc', 5000, 'dfa', 50, 128),
-(5, 'docker.io/infoseccl', 'unixit-level0', 'ssh', 22, 'unixit', 5, 10),
-(6, 'public.ecr.aws/nginx/', 'nginx:alpine-slim', 'http', 80, 'nginx', 5, 10);
+INSERT INTO images (chall_id, image, deployment, port, subd, cpu, mem) VALUES 
+(2, 'babyheap', 'nc', 31000, 'babyheap', 30, 32),
+(3, 'flag-finder', 'nc', 31001, 'flag-finder', 30, 32),
+(4, 'dfa', 'nc', 5000, 'dfa', 50, 128),
+(5, 'unixit-level0', 'ssh', 22, 'unixit', 5, 10),
+(6, 'nginx:alpine-slim', 'http', 80, 'nginx', 5, 10);
 
 -- Users
 INSERT INTO users (userid, email, username, password, teamid) VALUES 
@@ -88,9 +88,9 @@ INSERT INTO users (userid, email, username, password, teamid) VALUES
 (6, 'infoseccl@gmail.com', 'cyberlabs', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 2);
 
 -- Teams
-INSERT INTO teams (teamid, teamname, captain, members, password) VALUES
-(1, 'TitanCrew', 1, '{3,4}', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4'),
-(2, 'BIT CRIMINALS', 2, '{5,6}', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4');
+INSERT INTO teams (teamid, teamname, captain, password) VALUES
+(1, 'TitanCrew', 1, 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4'),
+(2, 'BIT CRIMINALS', 2, 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4');
 
 -- Sublogs
 INSERT INTO sublogs 

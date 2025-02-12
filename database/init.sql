@@ -1,6 +1,7 @@
 -- Create types
 CREATE TYPE chall_type AS ENUM ('static', 'dynamic', 'on-demand');
 CREATE TYPE deployment_type AS ENUM ('ssh', 'nc', 'http');
+CREATE TYPE token_type AS ENUM ('password_reset', 'invite_token');
 
 -- Create categories table
 CREATE TABLE IF NOT EXISTS categories(
@@ -23,26 +24,25 @@ CREATE TABLE IF NOT EXISTS teams(
     teamid bigserial PRIMARY KEY,
     teamname text NOT NULL UNIQUE,
     captain bigint NOT NULL REFERENCES users(userid),
-    members bigint[] NOT NULL DEFAULT '{}',
     password VARCHAR(100) NOT NULL,
     cost int DEFAULT 0,
     last_submission bigint DEFAULT EXTRACT(EPOCH FROM NOW())
 );
 
--- Create trigger function to add captain to members array
-CREATE OR REPLACE FUNCTION add_captain_to_members()
+-- Create trigger function to rank up captains
+CREATE OR REPLACE FUNCTION rank_up_captain()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.members := array_append(NEW.members, NEW.captain);
+    UPDATE users SET rank = 2, teamid = NEW.teamid WHERE userid = NEW.captain;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Create trigger to call add_captain_to_members function before insert
-CREATE TRIGGER add_captain_to_members_trigger
-BEFORE INSERT ON teams
+-- Create trigger to update captain's rank
+CREATE OR REPLACE TRIGGER rank_up_captain_trigger
+AFTER INSERT ON teams
 FOR EACH ROW
-EXECUTE FUNCTION add_captain_to_members();
+EXECUTE FUNCTION rank_up_captain();
 
 -- Create toverify table
 CREATE TABLE IF NOT EXISTS toverify(
@@ -67,6 +67,30 @@ $$;
 CREATE OR REPLACE TRIGGER toverify_delete_old_rows_trigger
 BEFORE INSERT ON toverify
 EXECUTE PROCEDURE toverify_delete_old_rows();
+
+-- Create a table for tokens
+CREATE TABLE IF NOT EXISTS tokens (
+    tid SERIAL PRIMARY KEY,
+    token UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+    type token_type NOT NULL,
+    userid BIGINT NOT NULL REFERENCES users(userid) ON DELETE CASCADE,
+    expiry TIMESTAMP NOT NULL DEFAULT (NOW() + INTERVAL '30 minutes')
+);
+
+-- Function to delete old tokens
+CREATE OR REPLACE FUNCTION tokens_delete_old_rows() RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    DELETE FROM tokens WHERE expiry < NOW();
+    RETURN NEW;
+END;
+$$;
+
+-- Trigger to delete old tokens
+CREATE OR REPLACE TRIGGER tokens_delete_old_rows_trigger
+BEFORE INSERT ON tokens
+EXECUTE PROCEDURE tokens_delete_old_rows();
 
 -- Create challenges table
 CREATE TABLE IF NOT EXISTS challenges(
@@ -109,7 +133,7 @@ CREATE TABLE IF NOT EXISTS sublogs(
     flag text NOT NULL,
     correct boolean NOT NULL,
     ip inet NOT NULL,
-    subtime timestamp NOT NULL DEFAULT NOW()
+    timestamp timestamp NOT NULL DEFAULT NOW()
 );
 
 -- Hints table
@@ -132,7 +156,7 @@ END;
 $$;
 
 -- Trigger to update hints in challenges table
-CREATE TRIGGER update_hints_trigger
+CREATE OR REPLACE TRIGGER update_hints_trigger
 AFTER INSERT ON hints
 FOR EACH ROW EXECUTE PROCEDURE update_hints();
 
@@ -171,7 +195,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger to initiate hint cost update function
-CREATE TRIGGER update_team_cost_trigger
+CREATE OR REPLACE TRIGGER update_team_cost_trigger
 AFTER INSERT
 ON uhints
 FOR EACH ROW
@@ -181,7 +205,6 @@ EXECUTE FUNCTION update_team_cost();
 CREATE TABLE IF NOT EXISTS images(
     iid serial PRIMARY KEY,
     chall_id integer NOT NULL REFERENCES challenges(chall_id),
-    registry text DEFAULT '',
     image text NOT NULL,
     deployment deployment_type NOT NULL DEFAULT 'http',
     port integer DEFAULT 80,
@@ -352,6 +375,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Create a function to unlock a hint for a team
 CREATE OR REPLACE FUNCTION unlock_hint(team_id bigint, hint_id integer)
 RETURNS text AS $$
 DECLARE
@@ -411,3 +435,161 @@ BEGIN
     RETURN hint_hint;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Create a function to retrieve scoreboard data
+CREATE OR REPLACE FUNCTION get_scoreboard(perPage integer, pageOffset integer)
+RETURNS TABLE (
+    teamid bigint,
+    teamname text,
+    rank bigint,
+    score bigint
+) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        teams.teamid AS teamid,
+        teams.teamname AS teamname,
+        RANK() OVER (ORDER BY COALESCE(SUM(challenges.points), 0) - teams.cost DESC, teams.last_submission ASC) AS rank,
+        COALESCE(SUM(challenges.points), 0) - teams.cost AS score
+    FROM teams
+    LEFT JOIN solves
+        ON solves.teamid = teams.teamid
+    LEFT JOIN challenges
+        ON challenges.chall_id = solves.chall_id
+    GROUP BY teams.teamid, teams.teamname, teams.cost, teams.last_submission
+    ORDER BY rank ASC
+    LIMIT perPage
+    OFFSET pageOffset;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create a function to retrieve top teams submissions
+CREATE OR REPLACE FUNCTION get_top_teams_submissions()
+RETURNS TABLE (
+    teamid bigint,
+    teamname text,
+    rank bigint,
+    submissions json
+) AS $$
+BEGIN
+    RETURN QUERY
+    WITH top_teams AS (
+        SELECT 
+            get_scoreboard.teamid,
+            get_scoreboard.teamname,
+            get_scoreboard.rank
+        FROM get_scoreboard(10, 0)
+    ),
+    combined_events AS (
+        SELECT 
+            t.teamid,
+            t.teamname,
+            t.rank,
+            jsonb_build_object(
+                'points', c.points,
+                'timestamp', s.timestamp
+            ) AS event
+        FROM top_teams t
+        LEFT JOIN solves s ON s.teamid = t.teamid
+        LEFT JOIN challenges c ON c.chall_id = s.chall_id
+        WHERE c.points IS NOT NULL AND s.timestamp IS NOT NULL
+
+        UNION ALL
+
+        SELECT 
+            t.teamid,
+            t.teamname,
+            t.rank,
+            jsonb_build_object(
+                'points', -h.cost,
+                'timestamp', uh.timestamp
+            ) AS event
+        FROM top_teams t
+        LEFT JOIN uhints uh ON uh.teamid = t.teamid
+        LEFT JOIN hints h ON h.hid = uh.hid
+        WHERE h.cost IS NOT NULL AND uh.timestamp IS NOT NULL
+    )
+    SELECT 
+        combined_events.teamid,
+        combined_events.teamname,
+        combined_events.rank,
+        COALESCE(json_agg(event), '[]'::json) AS submissions
+    FROM combined_events
+    GROUP BY combined_events.teamid, combined_events.teamname, combined_events.rank
+    ORDER BY combined_events.rank ASC;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create a function to join a team
+CREATE OR REPLACE FUNCTION join_team(team_id bigint, user_id bigint, user_limit integer)
+RETURNS void AS $$
+DECLARE
+    user_count integer;
+BEGIN
+    SELECT INTO user_count COUNT(*)
+    FROM users
+    WHERE teamid = team_id;
+
+    IF user_count >= user_limit THEN
+        RAISE EXCEPTION 'team is full';
+    END IF;
+
+    UPDATE users
+    SET teamid = team_id
+    WHERE userid = user_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create a function to send instance update notifications
+CREATE OR REPLACE FUNCTION notify_instance_update()
+RETURNS TRIGGER AS $$
+DECLARE
+    payload TEXT;
+    deployment deployment_type;
+BEGIN
+    SELECT INTO deployment images.deployment
+    FROM images
+    WHERE images.chall_id = NEW.chall_id;
+
+    payload := json_build_object(
+        'teamid', NEW.teamid,
+        'chall_id', NEW.chall_id,
+        'password', NEW.password,
+        'port', NEW.port,
+        'hostname', NEW.hostname,
+        'deadline', NEW.deadline,
+        'deployment', deployment
+    )::TEXT;
+
+    PERFORM pg_notify('notify_instance_update', payload);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Attach trigger for start updates
+CREATE OR REPLACE TRIGGER notify_instance_update_trigger
+AFTER INSERT OR UPDATE ON flags
+FOR EACH ROW EXECUTE FUNCTION
+notify_instance_update();
+
+-- Create a function to send instance stop notifications
+CREATE OR REPLACE FUNCTION notify_instance_stop()
+RETURNS TRIGGER AS $$
+DECLARE
+    payload TEXT;
+BEGIN
+    payload := json_build_object(
+        'teamid', OLD.teamid,
+        'chall_id', OLD.chall_id
+    )::TEXT;
+
+    PERFORM pg_notify('notify_instance_stop', payload);
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Attach trigger for stop updates
+CREATE OR REPLACE TRIGGER notify_instance_stop_trigger
+BEFORE DELETE ON flags
+FOR EACH ROW EXECUTE FUNCTION
+notify_instance_stop();

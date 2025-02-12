@@ -18,11 +18,9 @@ import (
 )
 
 func main() {
-	// Initialize error logging
 	logs.InitLogger()
-
 	log.Println("API version: v2.0.0")
-	// Connect to database
+
 	for {
 		if err := database.Connect(); err != nil {
 			log.Println(err)
@@ -33,17 +31,7 @@ func main() {
 		break
 	}
 
-	// Create tables
-	// if err := database.CreateTables(); err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// Initialize challenges
-	// if err := database.PopulateChalls(); err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// Generate new secrets
+	// Generate new secrets if don't exist
 	if err := utils.UpdateKey("SESSION_SECRET"); err != nil {
 		log.Fatal(err)
 	}
@@ -61,24 +49,15 @@ func main() {
 	}
 	defer accessLogFile.Close()
 	aw := io.MultiWriter(os.Stdout, accessLogFile)
-	loggerConfig := logger.Config{Output: aw}
+	loggerConfig := logger.Config{
+		Output: aw,
+		Format: "${time} | ${status} | ${latency} | ${locals:clientIP} | ${method} | ${path} | ${error}\n",
+	}
 
-	// Initialize *fiber.App
 	app := fiber.New()
-	app.Use(logger.New(loggerConfig)) // Add Logger middleware with config
-	app.Use(recover.New())            // Prevent process exit due to Fatal()
-	router.SetupRoutes(app)           // Setup routing
+	app.Use(logger.New(loggerConfig))
+	app.Use(recover.New())
+	router.SetupRoutes(app)
 
 	log.Fatal(app.Listen(config.APP_PORT))
 }
-
-// TO-DO:
-// 1. Use helm
-// 2.
-// 3. add resource contraints to pods
-// 4.
-// 5.
-// 6.
-
-// 99. Remove client access from inside cluster for pods
-// 100. change app.Listen to app.ListenTLS

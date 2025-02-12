@@ -1,69 +1,72 @@
-"use client";
+'use client'
 
-import NavBar from "@/components/Navigation";
-import { useState, useEffect } from "react"
-import Cookies from "js-cookie"
-import { ToastContainer } from "react-toastify"
-import React from "react"
-import { Context } from "@/components/User"
+import localFont from "next/font/local";
+import "@/styles/globals.css";
+import "@/styles/hint-toast.css";
+import "@/styles/notification.css";
+import { useEffect } from "react";
+import { useAuthStore } from "@/store/authStore";
+import { useChallengeStore } from "@/store/challengeStore";
+import { useMetadataStore } from "@/store/metadataStore";
+import NavBar from "@/components/NavBar";
+import { ThemeProvider } from "@/components/theme-provider"
+import { HintToastContainer } from "@/components/hints/HintToastContainer";
+import { NotificationContainer } from "@/components/NotificationContainer";
 
-import "../public/static/css/globals.css";
-import 'react-toastify/ReactToastify.css'
+const geistSans = localFont({
+	src: "./fonts/GeistVF.woff",
+	variable: "--font-geist-sans",
+	weight: "100 900",
+});
+const geistMono = localFont({
+	src: "./fonts/GeistMonoVF.woff",
+	variable: "--font-geist-mono",
+	weight: "100 900",
+});
 
 export default function RootLayout({
-  	children,
-}: {
-  	children: React.ReactNode;
-}) {
-	const [loggedin, setLoggedin] = useState(false);
-	const [respHook, setRespHook] = useState(false);
+	children,
+}: Readonly<{
+	children: React.ReactNode;
+}>) {
+
+	const { user, fetchUser } = useAuthStore();
+	const { fetchChallenges } = useChallengeStore();
+	const { metadataLoaded, fetchMetadata } = useMetadataStore();
 
 	useEffect(() => {
-		const verify = async () => {
-			const data = await fetch("/api/status", {
-				headers: {
-					Authorization: `Bearer ${Cookies.get("token")}`,
-				},
-			})
-			const statusCode = await data.status;
-			if (statusCode == 200) {
-				setLoggedin(true)
-			}
-			setRespHook(true)
+		if (user.userid !== -1 && user.teamid !== -1) {
+			fetchChallenges();
 		}
-		verify()
-		return
-	}, [])
+
+		if (user.userid === -1) {
+			fetchUser();
+		}
+	}, [user, fetchUser, fetchChallenges]);
+
+	useEffect(() => {
+		if (!metadataLoaded) {
+			fetchMetadata();
+		}
+
+		return () => { };
+	}, [metadataLoaded, fetchMetadata]);
 
 	return (
-		<>
-			<html lang="en">
-				<head>
-					<meta charSet="utf-8"/>
-					<meta name="viewport" content="width=device-width, initial-scale=1"/>
-					<meta
-						name="description"
-						content="framework to deploy linux wargames"
-					/>
-					<link rel="icon" href="/static/assets/favicon.svg"/>
-					<link rel="mask-icon" href="/static/assets/mask-icon.svg" color="#060b07"/>
-					<link rel="apple-touch-icon" href="/static/assets/apple-touch-icon.png"/>
-					<link rel="manifest" href="/manifest.json"/>
-					<title>
-						isolet
-					</title>
-				</head>
-				<body className="flex flex-col bg-palette-200 text-palette-100 h-screen">
-					<NavBar loggedin={loggedin} />
-					<ToastContainer></ToastContainer>
-					<Context.Provider value={{ loggedin, setLoggedin, respHook }}>
-						{ children }
-					</Context.Provider>
-					<div className="z-40 fixed bottom-5 end-5 text-slate-500">
-						made by titans@titancrew 👀
+		<html lang="en" suppressHydrationWarning>
+			<body
+				className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col h-screen`}
+			>
+				<ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+					<NotificationContainer />
+					<HintToastContainer />
+					<NavBar />
+					{children}
+					<div className={`${geistSans.variable} ${geistMono.variable} fixed bottom-5 end-5 text-slate-500`}>
+						powered by isolet
 					</div>
-				</body>
-			</html>
-		</>
-	)
+				</ThemeProvider>
+			</body>
+		</html>
+	);
 }

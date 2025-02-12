@@ -1,147 +1,90 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import LoginStatus from "@/components/User";
-import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
-import Link from "next/link";
-import { ShowPassword } from "@/components/Utils";
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Loader2 } from "lucide-react"
+import useLogin from "@/hooks/useLogin"
+import { Eye, EyeClosed } from "lucide-react"
+import Link from "next/link"
 
-function Login() {
+export default function Login() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const user = LoginStatus();
+	const { loading, loginAPI } = useLogin();
 	const router = useRouter();
+	const [showPasswd, setShowPasswd] = useState(false);
 
-	useEffect(() => {
-		if (user.respHook) {
-			if (user.loggedin) {
-				router.push("/");
-			}
+	async function onSubmit(event: React.SyntheticEvent) {
+		event.preventDefault();
+		const result = await loginAPI(email, password);
+		if (result) {
+			router.push("/");
 		}
-	}, [user.respHook]);
+	}
 
-	const show = (status: string, message: string) => {
-		switch (status) {
-			case "success":
-				toast.success(message, {
-					position: toast.POSITION.TOP_RIGHT,
-				});
-				break;
-			case "failure":
-				toast.error(message, {
-					position: toast.POSITION.TOP_RIGHT,
-				});
-				break;
-			default:
-				toast.warn(message, {
-					position: toast.POSITION.TOP_RIGHT,
-				});
-		}
-	};
-
-	const fetchTimeout = (
-		url: string,
-		ms: number,
-		signal: AbortSignal,
-		options = {}
-	) => {
-		const controller = new AbortController();
-		const promise = fetch(url, { signal: controller.signal, ...options });
-		if (signal) signal.addEventListener("abort", () => controller.abort());
-		const timeout = setTimeout(() => controller.abort(), ms);
-		return promise.finally(() => clearTimeout(timeout));
-	};
-
-	const handleSubmit = async () => {
-		const email = (document.getElementById("email") as HTMLInputElement)
-			.value;
-		const password = (
-			document.getElementById("password") as HTMLInputElement
-		).value;
-		const controller = new AbortController();
-		const { signal } = controller;
-
-		if (email === "" || password === "") {
-			show("failure", "All fields are required!");
-			return;
-		}
-
-		let formData = new FormData();
-		formData.append("email", email);
-		formData.append("password", password);
-
-		try {
-			const resp = await fetchTimeout("/auth/login", 5000, signal, {
-				method: "POST",
-				body: formData,
-			});
-			const jsonResp = await resp.json();
-			if (jsonResp.status == "failure") {
-				show(jsonResp.status, jsonResp.message);
-			} else {
-				user.setLoggedin(true);
-				router.push("/");
-			}
-		} catch (error: any) {
-			if (error.name === "AbortError") {
-				show("failure", "Request timed out! please reload");
-			} else {
-				show("failure", "Server not responding, contact admin");
-			}
-		}
-	};
-
-	const inputClass =
-		"px-4 py-2 w-72 bg-transparent border border-gray-400 rounded-md outline-palette-500 text-black bg-white";
 	return (
-		<>
-			<div className="flex flex-col gap-1 px-6 pt-6 pb-4 mt-6 font-mono justify-center self-center border-2 border-palette-600 text-palette-100 rounded-md">
-				<div className="grid grid-cols-1 gap-y-4 justify-items-center">
-					<label>Creds please!</label>
-					<input
-						id="email"
-						name="email"
-						placeholder="Email"
-						type="text"
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-						className={inputClass}
-					></input>
-					<div className="relative w-full">
-						<input
-							id="password"
-							name="password"
-							placeholder="Password"
-							type="password"
-							value={password}
-							onChange={(e) => setPassword(e.target.value)}
-							onKeyDown={(e) => {
-								if (e.key == "Enter") {
-									handleSubmit();
-								}
+		<div className="container flex flex-col items-center justify-center h-full">
+			<Card className="w-[350px]">
+				<CardHeader className="space-y-1">
+					<CardTitle className="text-2xl">Sign in</CardTitle>
+					<CardDescription>
+						Enter your email/username and password
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="grid gap-4">
+					<div className="grid gap-2">
+						<Label htmlFor="email">Email</Label>
+						<Input
+							id="email"
+							type="email"
+							placeholder="titan@titancrew"
+							name="email"
+							autoComplete="email"
+							onChange={(event) => {
+								setEmail(event.target.value);
 							}}
-							className={`${inputClass} w-full`}
-						></input>
-						<ShowPassword />
+							required
+						/>
 					</div>
-					<button
-						type="submit"
-						className="px-5 py-2 relative duration-300 ease-in bg-palette-500 text-black rounded-md hover:bg-palette-400"
-						onClick={handleSubmit}
-					>
-						Login
-					</button>
-				</div>
-
-				<Link href={"/register"}>
-					<div className="text-blue-400 text-sm text-center underline">
-						Sign up
+					<div className="grid gap-2">
+						<Label htmlFor="password">Password</Label>
+						<div className="relative">
+							<Input
+								id="password"
+								type={showPasswd ? "text" : "password"}
+								placeholder="password"
+								name="password"
+								autoComplete="current-password"
+								onChange={(event) => {
+									setPassword(event.target.value);
+								}}
+								className="pr-10"
+								required
+							/>
+							<Button variant={"ghost"} size="icon" className="absolute inset-y-0 right-0" onClick={() => setShowPasswd(!showPasswd)}>
+								{showPasswd ? <Eye className="h-5 w-5" /> : <EyeClosed className="h-5 w-5" />}
+							</Button>
+						</div>
 					</div>
-				</Link>
-			</div>
-		</>
-	);
+					<div className="text-sm text-right">
+						<Link href="/forgot-password" className="text-primary hover:underline">
+							Forgot password?
+						</Link>
+					</div>
+				</CardContent>
+				<CardFooter>
+					<Button className="w-full" onClick={onSubmit} disabled={loading}>
+						{loading && (
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+						)}
+						Sign In
+					</Button>
+				</CardFooter>
+			</Card>
+		</div>
+	)
 }
-
-export default Login;

@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"errors"
+
 	// "fmt"
 	"log"
 	"time"
@@ -39,7 +40,7 @@ func UsernameRegistered(username string, email string) bool {
 
 	if err1 != nil || err2 != nil {
 		log.Println(err1, err2)
-		return false 
+		return false
 	}
 
 	return userCount > 0 || toVerifyCount > 0
@@ -90,7 +91,7 @@ func AddToUsers(c *fiber.Ctx, email string) (string, error) {
 	userData.Password = toVerifyData.Password
 
 	if err := db.Create(userData).Error; err != nil {
-		log.Println(err.Error())
+		log.Println(err)
 		return "error in creating user, please contact admin", err
 	}
 
@@ -125,7 +126,7 @@ func UserInTeam(c *fiber.Ctx, userid int64) bool {
 
 	var user models.User
 	if err := db.Select("teamid").Where("userid = ?", userid).First(&user).Error; err != nil {
-		return err == gorm.ErrRecordNotFound 
+		return err == gorm.ErrRecordNotFound
 	}
 
 	return user.TeamID != -1
@@ -140,6 +141,110 @@ func UpdateUserTeam(c *fiber.Ctx, userid int64, teamid int64) error {
 	if err := db.Model(&models.User{}).Where("userid = ?", userid).Update("teamid", teamid).Error; err != nil {
 		return err
 	}
-	
+
 	return nil
+}
+
+func GeneratePasswordResetToken(c *fiber.Ctx, user *models.User) (*models.Token, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+	var token models.Token
+
+	if err := db.Where("email = ?", user.Email).First(&user).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			log.Println(err)
+		}
+		return &token, err
+	}
+
+	token.UserID = user.UserID
+	token.Type = "password_reset"
+	token.Expiry = time.Now().Add(30 * time.Minute)
+
+	if err := db.Create(&token).Error; err != nil {
+		log.Println(err)
+		return &token, err
+	}
+
+	return &token, nil
+}
+
+func VerifyToken(c *fiber.Ctx, token string) (*models.User, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+
+	var tokenData models.Token
+
+	if err := db.Preload("User").Where("token = ?", token).First(&tokenData).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			log.Println(err)
+		}
+		return &tokenData.User, errors.New("invalid token")
+	}
+
+	if tokenData.Type != "password_reset" {
+		return &tokenData.User, errors.New("invalid token")
+	}
+
+	if tokenData.Expiry.Before(time.Now()) {
+		return &tokenData.User, errors.New("token expired")
+	}
+
+	if err := db.Delete(&tokenData).Error; err != nil {
+		log.Println(err)
+		return &tokenData.User, errors.New("invalid token")
+	}
+
+	return &tokenData.User, nil
+}
+
+func ResetPassword(c *fiber.Ctx, user *models.User) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+
+	if err := db.Model(&models.User{}).Where("email = ?", user.Email).Update("password", user.Password).Error; err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func ResetForgetPassword(c *fiber.Ctx, token string, password string) error {
+	user, err := VerifyToken(c, token)
+	if err != nil {
+		return err
+	}
+
+	user.Password = password
+
+	if err := ResetPassword(c, user); err != nil {
+		return errors.New("error in resetting password")
+	}
+
+	return nil
+}
+
+func ReadUser(c *fiber.Ctx, userid int64) (*models.User, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+	user := new(models.User)
+
+	if err := db.Where("userid = ?", userid).First(user).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return user, errors.New("user not found")
+		}
+		log.Println(err)
+		return user, err
+	}
+
+	return user, nil
 }

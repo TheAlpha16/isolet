@@ -29,9 +29,8 @@ func StartInstance(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid challenge id"})
 	}
 
-	instance := new(models.Instance)
-
-	if err := deployment.DeployInstance(c, chall_id, teamid, instance); err != nil {
+	instance, err := deployment.DeployInstance(c, chall_id, teamid)
+	if err != nil {
 		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": err.Error()})
 	}
 
