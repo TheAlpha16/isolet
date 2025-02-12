@@ -1,106 +1,132 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from "react"
-import Cookies from "js-cookie"
-import { useRouter } from "next/navigation"
-import LoginStatus from "@/components/User"
-import { toast } from "react-toastify"
+import React, { useState, useEffect } from "react"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button";
+import { Trophy, ChevronLeft, ChevronRight } from "lucide-react";
+import { useScoreboardStore } from "@/store/scoreboardStore";
+import { processScores } from "@/utils/processScores";
+import type { TeamType, ScoreGraphEntryType } from "@/utils/types"
+import { ScoreGraph } from "@/components/charts/ScoreGraph";
+import { useMetadataStore } from "@/store/metadataStore";
+import { ScoreGraphSkeleton } from "@/components/skeletons/scoreboard";
 
-function Scoreboard() {
-	const { loggedin, respHook } = LoginStatus()
-	const router = useRouter()
-	const [ scores, setScores ] = useState([{"username": "", "score": 0}])
+export default function Scoreboard() {
+    const [searchQuery, setSearchQuery] = useState("")
+    const [graphData, setGraphData] = useState<ScoreGraphEntryType[]>([])
 
-	const show = (status: string, message: string) => {
-		switch (status) {
-			case "success":
-				toast.success(message, {
-					position: toast.POSITION.TOP_RIGHT,
-				})
-				break
-			case "failure":
-				toast.error(message, {
-					position: toast.POSITION.TOP_RIGHT,
-				})
-				break
-			default:
-				toast.warn(message, {
-					position: toast.POSITION.TOP_RIGHT,
-				})
-		}
-	}
+    const { scores, totalPages, currentPage, fetchPage, graphLoading, topScores, fetchTopScores } = useScoreboardStore()
+    const { eventStart } = useMetadataStore()
 
-	const getScores = async () => {
-		const fetchTimeout = (url: string, ms: number, signal: AbortSignal, options = {}) => {
-			const controller = new AbortController();
-			const promise = fetch(url, { signal: controller.signal, ...options });
-			if (signal) signal.addEventListener("abort", () => controller.abort());
-			const timeout = setTimeout(() => controller.abort(), ms);
-			return promise.finally(() => clearTimeout(timeout));
-		}
+    useEffect(() => {
+        fetchPage(currentPage)
+        fetchTopScores()
 
-		const controller = new AbortController()
-		const { signal } = controller
+        return () => { }
+    }, [])
 
-		try {			
-			const request = await fetchTimeout("/api/scoreboard", 7000, signal, { 
-				headers: {
-					"Authorization": `Bearer ${Cookies.get("token")}`
-				}
-			})
-	
-			const scoreJSON = await request.json()
-			setScores(scoreJSON)
-		} catch (error: any) {
-			if (error.name === "AbortError") {
-				show("failure", "Request timed out! please reload")
+    useEffect(() => {
+        const toProcess = topScores.map((team) => ({
+            label: team.teamname,
+            scores: team.submissions.map((sub) => ({
+                timestamp: sub.timestamp,
+                points: sub.points,
+            })),
+        }));
 
-			} else {
-				show("failure", "Scoreboard not available at the moment")
-			}
-		}
-	}
+        const respon = processScores(toProcess, eventStart);
+        setGraphData(respon);
+    }, [topScores, eventStart])
 
-	useEffect(() => {
-		if (!respHook) {
-			router.push("/")
-		} else if (respHook && !loggedin) {
-			router.push("/login")
-		} else {
-			getScores()
-		}
-	}, [respHook])
+    const handlePageChange = async (newPage: number) => {
+        if (newPage < 1 || newPage > totalPages) return
+        await fetchPage(newPage)
+    }
 
-	return (
-		<div className="flex flex-col w-full items-center p-2 pt-5">
-			<div className="flex p-3 border-b w-11/12 sm:w-1/2 bg-palette-600 text-2xl justify-between font-medium">
-				<div>
-					Rank
-				</div>
-				<div>
-					Player
-				</div>
-				<div>
-					Score
-				</div>
-			</div>
-			{   
-				scores.map((item, index) =>
-					<div key={ index } className="flex p-3 border-b w-11/12 sm:w-1/2 bg-palette-600 text-xl justify-between font-Roboto">
-						<div>
-							#{ index + 1 }
-						</div>
-						<div>
-							{ item.username }
-						</div>
-						<div>
-							{ item.score }
-						</div>
-					</div>
-				)
-			}
-		</div>
-	)
+    const PageNavigation = () => (
+        <div className="flex items-center justify-center gap-1">
+            <Button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+                variant={"ghost"}
+            >
+                <ChevronLeft className="w-6 h-6" />
+            </Button>
+            <span className="text-sm text-gray-500">
+                Page {currentPage} of {totalPages}
+            </span>
+            <Button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+                variant={"ghost"}
+            >
+                <ChevronRight className="w-6 h-6" />
+            </Button>
+        </div>
+    )
+
+    return (
+        <div className="container mx-auto p-4 space-y-4">
+            {graphLoading ?
+                (<ScoreGraphSkeleton />) :
+                topScores.length !== 0 && (<ScoreGraph plots={graphData} />)}
+
+            <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+                <Input
+                    type="text"
+                    placeholder="Search teams..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="max-w-sm"
+                />
+                <PageNavigation />
+            </div>
+
+            <Card>
+                <CardContent className="p-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-24 text-center">Rank</TableHead>
+                                <TableHead className="text-center">Team Name</TableHead>
+                                <TableHead className="w-24 text-center">Score</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {scores.map((team: TeamType) => (
+                                <TableRow key={team.teamid}>
+                                    <TableCell className="text-center">
+                                        <div className="flex justify-center items-center">
+                                            {team.rank <= 3 ? (
+                                                <Trophy
+                                                    className={`w-6 h-6 ${team.rank === 1 ? "text-yellow-500" : team.rank === 2 ? "text-gray-400" : "text-orange-500"
+                                                        }`}
+                                                />
+                                            ) : (
+                                                <Badge variant="secondary" className="w-8 flex justify-center">
+                                                    #{team.rank}
+                                                </Badge>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="font-medium text-center">
+                                        <span className="truncate block max-w-xs mx-auto">{team.teamname}</span>
+                                    </TableCell>
+                                    <TableCell className="text-center">{team.score}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+
+            <PageNavigation />
+        </div>
+    )
 }
 
-export default Scoreboard;
