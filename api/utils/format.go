@@ -2,7 +2,9 @@ package utils
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/TheAlpha16/isolet/api/config"
 )
@@ -13,6 +15,21 @@ func GetInstanceName(chall_id int, teamid int64) string {
 
 func GetHostName(chall_id int, teamid int64) string {
 	return config.INSTANCE_HOSTNAME
+}
+
+func GetChallengeSubdomain(input string) string {
+	subdomain := strings.ToLower(input)
+
+	re := regexp.MustCompile(`[^a-z0-9-]`)
+	subdomain = re.ReplaceAllString(subdomain, "-")
+
+	subdomain = strings.Trim(subdomain, "-")
+
+	if len(subdomain) > 63 {
+		subdomain = subdomain[:63]
+	}
+
+	return subdomain
 }
 
 func BoolAddr(b bool) *bool {
