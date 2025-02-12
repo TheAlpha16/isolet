@@ -205,7 +205,6 @@ EXECUTE FUNCTION update_team_cost();
 CREATE TABLE IF NOT EXISTS images(
     iid serial PRIMARY KEY,
     chall_id integer NOT NULL REFERENCES challenges(chall_id),
-    registry text DEFAULT '',
     image text NOT NULL,
     deployment deployment_type NOT NULL DEFAULT 'http',
     port integer DEFAULT 80,

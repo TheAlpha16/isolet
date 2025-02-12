@@ -301,12 +301,7 @@ func getPodObject(instance_name string, flagObject models.Flag, image *models.Im
 	var cpu string
 	var memory string
 
-	if image.Registry != "" {
-		imagePath = image.Registry
-	} else {
-		imagePath = config.IMAGE_REGISTRY
-	}
-
+	imagePath = config.IMAGE_REGISTRY
 	imagePath = strings.TrimSuffix(imagePath, "/")
 	imagePath = fmt.Sprintf("%s/%s", imagePath, image.Image)
 

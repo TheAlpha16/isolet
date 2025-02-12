@@ -71,12 +71,12 @@ INSERT INTO hints (hid, chall_id, hint, cost) VALUES
 
 UPDATE hints SET visible = true;
 
-INSERT INTO images (chall_id, registry, image, deployment, port, subd, cpu, mem) VALUES 
-(2, '', 'babyheap', 'nc', 31000, 'babyheap', 30, 32),
-(3, '', 'flag-finder', 'nc', 31001, 'flag-finder', 30, 32),
-(4, '', 'dfa', 'nc', 5000, 'dfa', 50, 128),
-(5, 'docker.io/infoseccl', 'unixit-level0', 'ssh', 22, 'unixit', 5, 10),
-(6, 'public.ecr.aws/nginx/', 'nginx:alpine-slim', 'http', 80, 'nginx', 5, 10);
+INSERT INTO images (chall_id, image, deployment, port, subd, cpu, mem) VALUES 
+(2, 'babyheap', 'nc', 31000, 'babyheap', 30, 32),
+(3, 'flag-finder', 'nc', 31001, 'flag-finder', 30, 32),
+(4, 'dfa', 'nc', 5000, 'dfa', 50, 128),
+(5, 'unixit-level0', 'ssh', 22, 'unixit', 5, 10),
+(6, 'nginx:alpine-slim', 'http', 80, 'nginx', 5, 10);
 
 -- Users
 INSERT INTO users (userid, email, username, password, teamid) VALUES 
