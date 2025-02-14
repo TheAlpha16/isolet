@@ -18,3 +18,7 @@ type Running struct {
 	TeamID  int64 `gorm:"not null;column:teamid" json:"teamid"`
 	ChallID int   `gorm:"not null;column:chall_id" json:"chall_id"`
 }
+
+func (Running) TableName() string {
+	return "running"
+}
