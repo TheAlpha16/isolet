@@ -29,7 +29,6 @@ func getToken(user *models.User) (string, error) {
 }
 
 func SendVerificationMail(regInput *models.ToVerify) error {
-
 	user := &models.User{
 		Email: regInput.Email,
 	}
@@ -48,14 +47,18 @@ func SendVerificationMail(regInput *models.ToVerify) error {
 
 	auth := smtp.PlainAuth("", from, secret, config.SMTP_HOST)
 
-	t, _ := template.ParseFiles("templates/mail.html")
+	t, err := template.ParseFiles("templates/mail.html")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 
 	var body bytes.Buffer
 
 	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 	body.Write([]byte(fmt.Sprintf("Subject: %s account verification \n%s\n\n", config.CTF_NAME, mimeHeaders)))
 
-	t.Execute(&body, struct {
+	err = t.Execute(&body, struct {
 		Username string
 		Link     string
 		Wargame  string
@@ -64,6 +67,10 @@ func SendVerificationMail(regInput *models.ToVerify) error {
 		Link:     config.AUTH_URL + token,
 		Wargame:  config.CTF_NAME,
 	})
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 
 	err = smtp.SendMail(config.SMTP_HOST+":"+config.SMTP_PORT, auth, from, to, body.Bytes())
 	if err != nil {
@@ -85,20 +92,28 @@ func SendResetPasswordMail(user *models.User, token *models.Token) error {
 
 	auth := smtp.PlainAuth("", from, secret, config.SMTP_HOST)
 
-	t, _ := template.ParseFiles("templates/reset.html")
+	t, err := template.ParseFiles("templates/reset.html")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 
 	var body bytes.Buffer
 
 	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 	body.Write([]byte(fmt.Sprintf("Subject: %s password reset \n%s\n\n", config.CTF_NAME, mimeHeaders)))
 
-	t.Execute(&body, struct {
+	err = t.Execute(&body, struct {
 		Link    string
 		Username string
 	}{
 		Username: user.Username,
 		Link:     fmt.Sprintf("http://%s/reset-password?token=%s", config.PUBLIC_URL, token.Token),
 	})
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 
 	err = smtp.SendMail(config.SMTP_HOST+":"+config.SMTP_PORT, auth, from, to, body.Bytes())
 	if err != nil {
