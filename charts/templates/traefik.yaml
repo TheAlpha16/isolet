@@ -1,0 +1,169 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: traefik-config
+  namespace: traefik
+  labels:
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: traefik
+    {{- include "charts.labels" . | nindent 4 }}
+data:
+  traefik.yaml: |
+    api:
+      insecure: true
+    providers:
+      kubernetesCRD:
+        namespaces:
+          - {{ .Values.dynamic.namespace }}
+          - {{ .Values.isolet.namespace }}
+    entryPoints:
+      web:
+        address: ":80"
+      websecure:
+        address: ":443"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traefik-deployment
+  namespace: traefik
+  labels:
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: traefik
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: deployment
+      app.kubernetes.io/part-of: traefik
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: deployment
+        app.kubernetes.io/part-of: traefik
+    spec:
+      serviceAccountName: traefik-service-account
+      containers:
+        - name: traefik
+          image: traefik:v2.10
+          volumeMounts:
+          - name: config-volume
+            mountPath: /etc/traefik
+      volumes:
+        - name: config-volume
+          configMap:
+            name: traefik-config
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: traefik-role
+  labels:
+    {{- include "charts.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - secrets
+      - nodes
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses
+      - ingressclasses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses/status
+    verbs:
+      - update
+  - apiGroups:
+      - traefik.io
+    resources:
+      - middlewares
+      - middlewaretcps
+      - ingressroutes
+      - traefikservices
+      - ingressroutetcps
+      - ingressrouteudps
+      - tlsoptions
+      - tlsstores
+      - serverstransports
+      - serverstransporttcps
+    verbs:
+      - get
+      - list
+      - watch
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: traefik-service-account
+  namespace: traefik
+  labels:
+    app.kubernetes.io/component: service-account
+    app.kubernetes.io/part-of: traefik
+    {{- include "charts.labels" . | nindent 4 }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: traefik-role-binding
+  labels:
+    {{- include "charts.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: traefik-role
+subjects:
+  - kind: ServiceAccount
+    name: traefik-service-account
+    namespace: traefik
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-svc
+  namespace: traefik
+  labels:
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: traefik
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  type: LoadBalancer
+  ports:
+    - name: web
+      port: 80
+      targetPort: 80
+      protocol: TCP
+    - name: websecure
+      port: 443
+      targetPort: 443
+      protocol: TCP
+  selector: 
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: traefik
