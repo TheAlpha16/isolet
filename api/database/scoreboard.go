@@ -74,5 +74,9 @@ func GetScoreGraph(c *fiber.Ctx) ([]models.ScoreBoardTeam, error) {
 		return nil, err
 	}
 
+	if scoreGraph == nil {
+		scoreGraph = []models.ScoreBoardTeam{}
+	}
+
 	return scoreGraph, nil
 }

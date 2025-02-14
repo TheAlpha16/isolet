@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 type Sublog struct {
 	SID       int64  `gorm:"primaryKey;autoIncrement;column:sid" json:"-"`
 	ChallID   int    `gorm:"not null;column:chall_id" json:"chall_id"`
@@ -29,6 +31,14 @@ type ScoreBoardTeam struct {
 type Solve struct {
 	Timestamp string `gorm:"column:timestamp" json:"timestamp"`
 	Points    int    `gorm:"column:points" json:"points"`
+}
+
+func (s ScoreBoardTeam) MarshalJSON() ([]byte, error) {
+	type Alias ScoreBoardTeam
+	if s.Submissions == nil {
+		s.Submissions = []Solve{}
+	}
+	return json.Marshal((Alias)(s))
 }
 
 // type TopScore struct {
