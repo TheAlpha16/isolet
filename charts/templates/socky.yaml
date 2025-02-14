@@ -1,0 +1,87 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: socky-deployment
+  namespace: {{ .Values.platform.namespace }}
+  labels: 
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: socky
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: deployment
+      app.kubernetes.io/part-of: socky
+  template:
+    metadata:
+      name: socky-deployment
+      labels:
+        app.kubernetes.io/component: deployment
+        app.kubernetes.io/part-of: socky
+    spec:
+      {{- if eq .Values.registry.type "private" }}
+      imagePullSecrets:
+      - name: build-registry-secret
+      {{- end }}
+      containers:
+        - name: socky
+          image: "{{ .Values.registry.url }}/{{ .Values.platform.socky.image }}:{{ .Values.platform.socky.tag | default "latest" }}"
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "1Gi"
+              cpu: "300m"
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+          ports:
+            - containerPort: 8888
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: POSTGRES_PASSWORD
+
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: POSTGRES_USER
+
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: POSTGRES_HOST
+
+            - name: POSTGRES_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: POSTGRES_DATABASE
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: SESSION_SECRET
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: socky-svc
+  namespace: {{ .Values.platform.namespace }}
+  labels:
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: socky
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 80
+      targetPort: 8888
+  selector:
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: socky
