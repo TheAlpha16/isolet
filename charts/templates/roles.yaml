@@ -11,9 +11,38 @@ metadata:
 rules:
   - apiGroups: 
       - ""
+      - apps
     resources: 
       - pods
       - services
+      - deployments
+    verbs: 
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: dynamic-manager
+  namespace: {{ .Values.dynamic.namespace }}
+  labels:
+    app.kubernetes.io/component: role
+    app.kubernetes.io/part-of: dynamic
+    {{- include "charts.labels" . | nindent 4 }}
+rules:
+  - apiGroups: 
+      - ""
+      - apps
+    resources: 
+      - pods
+      - services
+      - deployments
     verbs: 
       - get
       - list
@@ -39,3 +68,53 @@ rules:
       - get
       - list
       - watch 
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: traefik-routes-manager
+  labels:
+    {{- include "charts.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - traefik.io
+    resources: 
+      - ingressroutetcps
+      - ingressroutes
+    verbs: 
+      - get
+      - list
+      - watch
+      - update
+      - patch
+      - create
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: automation-manager
+  namespace: {{ .Values.automation.namespace }}
+  labels:
+    app.kubernetes.io/component: role
+    app.kubernetes.io/part-of: automation
+    {{- include "charts.labels" . | nindent 4 }}
+rules:
+  - apiGroups: 
+      - ""
+      - apps
+    resources: 
+      - pods
+      - services
+      - deployments
+      - configmaps
+      - secrets
+    verbs: 
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
