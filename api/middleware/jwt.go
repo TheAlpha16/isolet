@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"log"
 	"strconv"
 	"time"
 
@@ -132,6 +133,7 @@ func GenerateToken(user *models.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte(config.SESSION_SECRET))
 	if err != nil {
+		log.Println(err)
 		return "", err
 	}
 	return t, nil

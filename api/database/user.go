@@ -61,10 +61,12 @@ func AddToVerify(c *fiber.Ctx, toverify *models.ToVerify) error {
 	db := DB.WithContext(ctx)
 
 	if err := db.Where("email = ?", toverify.Email).Delete(&models.ToVerify{}).Error; err != nil {
+		log.Println(err)
 		return err
 	}
 
 	if err := db.Create(&toverify).Error; err != nil {
+		log.Println(err)
 		return err
 	}
 	return nil

@@ -3,7 +3,6 @@ package handler
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -44,7 +43,6 @@ func Login(c *fiber.Ctx) error {
 
 	token, err := middleware.GenerateToken(user)
 	if err != nil {
-		log.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in token generation. contact admin"})
 	}
 
@@ -92,14 +90,12 @@ func Register(c *fiber.Ctx) error {
 	}
 
 	if err := utils.SendVerificationMail(regForm); err != nil {
-		log.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in sending verification mail"})
 	}
 
 	regForm.Password = utils.Hash(regForm.Password)
 
 	if err := database.AddToVerify(c, regForm); err != nil {
-		log.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "please contact admin"})
 	}
 
