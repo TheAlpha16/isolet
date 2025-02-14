@@ -37,12 +37,14 @@ spec:
               memory: "128Mi"
               cpu: "100m"
           ports:
-            - containerPort: 80
+            - containerPort: 3000
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: ui-svc
+  namespace: {{ .Values.platform.namespace }}
   labels:
     app.kubernetes.io/component: service
     app.kubernetes.io/part-of: ui
@@ -50,6 +52,7 @@ metadata:
 spec:
   ports:
     - port: 80
+      targetPort: 3000
   selector:
     app.kubernetes.io/component: deployment
     app.kubernetes.io/part-of: ui
