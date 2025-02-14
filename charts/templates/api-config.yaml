@@ -4,8 +4,8 @@ metadata:
   name: api-config
   namespace: {{ .Values.platform.namespace }}
   labels: 
-    app.kubernetes.io/component: api
-    app.kubernetes.io/part-of: config
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: api
     {{- include "charts.labels" . | nindent 4 }}
 data:
   INSTANCE_NAMESPACE: {{ .Values.isolet.namespace }}
