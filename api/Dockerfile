@@ -14,5 +14,6 @@ ENV GIN_MODE=release
 ENV TZ=UTC
 
 COPY --from=build /api /
+COPY --from=build /usr/src/app/templates /templates
 
 CMD ["/api"]
