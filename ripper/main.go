@@ -54,11 +54,11 @@ func GetKubeClient() (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
-func DeleteInstance(userid int, level int) error {
-	instance_name := utils.GetInstanceName(userid, level)
+func DeleteInstance(teamid int64, chall_id int) error {
+	instance_name := utils.GetInstanceName(chall_id, teamid)
 	kubeclient, err := GetKubeClient()
 	if err != nil {
-		log.Printf("ERROR: userid=%d, level=%d %s\n", userid, level, err.Error())
+		log.Printf("ERROR: teamid=%d, chall_id=%d %s\n", teamid, chall_id, err.Error())
 		return err
 	}
 
@@ -66,25 +66,25 @@ func DeleteInstance(userid int, level int) error {
 	if err != nil {
 
 		if !strings.Contains(err.Error(), "not found") {
-			log.Printf("ERROR: userid=%d, level=%d %s\n", userid, level, err.Error())
+			log.Printf("ERROR: teamid=%d, chall_id=%d %s\n", teamid, chall_id, err.Error())
 			return err
 		}
 
 		err = kubeclient.CoreV1().Services(config.INSTANCE_NAMESPACE).Delete(context.TODO(), fmt.Sprintf("svc-%s", instance_name), metav1.DeleteOptions{})
 		if err != nil {
 			if !strings.Contains(err.Error(), "not found") {
-				log.Printf("ERROR: userid=%d, level=%d %s\n", userid, level, err.Error())
+				log.Printf("ERROR: teamid=%d, chall_id=%d %s\n", teamid, chall_id, err.Error())
 				return err
 			}
 		}
 
-		if err := database.DeleteFlag(userid, level); err != nil {
-			log.Printf("ERROR: userid=%d, level=%d %s\n", userid, level, err.Error())
+		if err := database.DeleteFlag(teamid, chall_id); err != nil {
+			log.Printf("ERROR: teamid=%d, chall_id=%d %s\n", teamid, chall_id, err.Error())
 			return err
 		}
 
-		if err := database.DeleteRunning(userid, level); err != nil {
-			log.Printf("ERROR: userid=%d, level=%d %s\n", userid, level, err.Error())
+		if err := database.DeleteRunning(teamid, chall_id); err != nil {
+			log.Printf("ERROR: teamid=%d, chall_id=%d %s\n", teamid, chall_id, err.Error())
 			return err
 		}
 
@@ -101,18 +101,18 @@ func DeleteInstance(userid int, level int) error {
 	err = kubeclient.CoreV1().Services(config.INSTANCE_NAMESPACE).Delete(context.TODO(), fmt.Sprintf("svc-%s", instance_name), metav1.DeleteOptions{})
 	if err != nil {
 		if !strings.Contains(err.Error(), "not found") {
-			log.Printf("ERROR: userid=%d, level=%d %s\n", userid, level, err.Error())
+			log.Printf("ERROR: teamid=%d, chall_id=%d %s\n", teamid, chall_id, err.Error())
 			return err
 		}
 	}
 
-	if err := database.DeleteFlag(userid, level); err != nil {
-		log.Printf("ERROR: userid=%d, level=%d %s\n", userid, level, err.Error())
+	if err := database.DeleteFlag(teamid, chall_id); err != nil {
+		log.Printf("ERROR: teamid=%d, chall_id=%d %s\n", teamid, chall_id, err.Error())
 		return err
 	}
 
-	if err := database.DeleteRunning(userid, level); err != nil {
-		log.Printf("ERROR: userid=%d, level=%d %s\n", userid, level, err.Error())
+	if err := database.DeleteRunning(teamid, chall_id); err != nil {
+		log.Printf("ERROR: teamid=%d, chall_id=%d %s\n", teamid, chall_id, err.Error())
 		return err
 	}
 
@@ -133,8 +133,9 @@ func EvictPods() error {
 	}
 
 	for _, pod := range pods.Items {
-		userid, _ := strconv.Atoi(pod.Labels["userid"])
-		level, _ := strconv.Atoi(pod.Labels["level"])
+		teamid_int, _ := strconv.Atoi(pod.Labels["teamid"])
+		teamid := int64(teamid_int)
+		chall_id, _ := strconv.Atoi(pod.Labels["chall_id"])
 
 		if pod.Status.Phase == core.PodPending {
 			continue
@@ -154,8 +155,8 @@ func EvictPods() error {
 		endTime := time.UnixMilli(deadline)
 
 		if !time.Now().Before(endTime) {
-			log.Printf("DELETE: userid=%d, level=%d", userid, level)
-			_ = DeleteInstance(userid, level)
+			log.Printf("DELETE: teamid=%d, chall_id=%d", teamid, chall_id)
+			_ = DeleteInstance(teamid, chall_id)
 		}
 	}
 

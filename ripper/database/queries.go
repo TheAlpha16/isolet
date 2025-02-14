@@ -2,25 +2,36 @@ package database
 
 import (
 	"context"
+	"log"
 	"time"
+
+	"github.com/TheAlpha16/isolet/ripper/models"
 )
 
-func DeleteFlag(userid int, level int) error {
+func DeleteFlag(teamid int64, chall_id int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	if _, err := DB.QueryContext(ctx, `DELETE FROM flags WHERE userid = $1 AND level = $2`, userid, level); err != nil {
+	db := DB.WithContext(ctx)
+
+	if err := db.Where("teamid = ? AND chall_id = ?", teamid, chall_id).Delete(&models.Flag{}).Error; err != nil {
+		log.Println(err)
 		return err
 	}
+
 	return nil
 }
 
-func DeleteRunning(userid int, level int) error {
+func DeleteRunning(teamid int64, chall_id int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	if _, err := DB.QueryContext(ctx, `DELETE FROM running WHERE userid = $1 AND level = $2`, userid, level); err != nil {
+	db := DB.WithContext(ctx)
+
+	if err := db.Where("teamid = ? AND chall_id = ?", teamid, chall_id).Delete(&models.Running{}).Error; err != nil {
+		log.Println(err)
 		return err
 	}
+
 	return nil
 }
