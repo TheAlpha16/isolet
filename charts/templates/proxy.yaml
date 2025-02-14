@@ -1,0 +1,72 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proxy-deployment
+  namespace: {{ .Values.platform.namespace }}
+  labels: 
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: proxy
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: deployment
+      app.kubernetes.io/part-of: proxy
+  template:
+    metadata:
+      name: proxy-deployment
+      labels:
+        app.kubernetes.io/component: deployment
+        app.kubernetes.io/part-of: proxy
+    spec:
+      {{- if eq .Values.registry.type "private" }}
+      imagePullSecrets:
+      - name: build-registry-secret
+      {{- end }}
+      containers:
+        - name: proxy
+          image: "{{ .Values.registry.url }}/{{ .Values.platform.proxy.image }}:{{ .Values.platform.proxy.tag | default "latest" }}"
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "300m"
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+          ports:
+            - containerPort: 80
+          env:
+            - name: PROXY_SERVER_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: api-config
+                  key: PUBLIC_URL
+            - name: UI_URL
+              value: ui-svc
+            - name: API_URL
+              value: api-svc
+            - name: SOCKY_URL
+              value: socky-svc
+            - name: PHOROS_URL
+              value: fileserver-svc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxy-svc
+  namespace: {{ .Values.platform.namespace }}
+  labels: 
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: proxy
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+  selector:
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: proxy
