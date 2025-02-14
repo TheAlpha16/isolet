@@ -74,12 +74,17 @@ export function ChallengeModal({ challenge, onClose }: ChallengeModalProps) {
 						<div>
 							<h3 className="text-lg font-semibold mb-2">Files</h3>
 							<div className="flex flex-wrap gap-2">
-								{challenge.files.map((file) => (
-									<Button key={file} variant="outline" size="sm">
-										<Download className="mr-2 h-4 w-4" />
-										{file}
-									</Button>
-								))}
+								{challenge.files.map((file) => {
+									const fileName = file.split('/').pop();
+									return (
+										<a key={file} href={file}>
+											<Button variant="outline" size="sm">
+												<Download className="mr-2 h-4 w-4" />
+												{fileName}
+											</Button>
+										</a>
+									)
+								})}
 							</div>
 						</div>
 					)}
