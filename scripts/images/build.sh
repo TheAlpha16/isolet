@@ -25,10 +25,16 @@ case $1 in
     "ripper")
         resource="ripper"
     ;;
+    "socky")
+        resource="socky"
+    ;;
+    "proxy")
+        resource="proxy"
+    ;;
     *)
         echo ""
         echo "[-] invalid resource"
-        echo "[#] valid options: api, ui, ripper"
+        echo "[#] valid options: api, ui, ripper, socky"
         echo ""
         echo "[#] usage: build.sh [-y] <resource> <version>"
         echo "[-] exiting"
