@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: automation-config
+  namespace: {{ .Values.automation.namespace }}
+  labels: 
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: automation
+    {{- include "charts.labels" . | nindent 4 }}
+data:
+  DYNAMIC_IMAGE_REGISTRY: {{ .Values.dynamic.registry.url }}
+  DYNAMIC_REGISTRY_PRIVATE: "{{- if eq .Values.dynamic.registry.type "private" }}true{{- else }}false{{- end }}"
+  ISOLET_IMAGE_REGISTRY: {{ .Values.isolet.registry.url }}
+  ISOLET_REGISTRY_PRIVATE: "{{- if eq .Values.isolet.registry.type "private" }}true{{- else }}false{{- end }}"
+  CTF_NAME: {{ .Values.event.name }}
+  PUBLIC_URL: {{ .Values.event.url }}
+  EVENT_START: {{ .Values.event.startTime | quote }}
+  EVENT_END: {{ .Values.event.endTime | quote }}
+  POST_EVENT: {{ .Values.event.postEvent | quote }}
