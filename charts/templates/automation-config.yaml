@@ -8,10 +8,8 @@ metadata:
     app.kubernetes.io/part-of: automation
     {{- include "charts.labels" . | nindent 4 }}
 data:
-  DYNAMIC_IMAGE_REGISTRY: {{ .Values.dynamic.registry.url }}
-  DYNAMIC_REGISTRY_PRIVATE: "{{- if eq .Values.dynamic.registry.type "private" }}true{{- else }}false{{- end }}"
-  ISOLET_IMAGE_REGISTRY: {{ .Values.isolet.registry.url }}
-  ISOLET_REGISTRY_PRIVATE: "{{- if eq .Values.isolet.registry.type "private" }}true{{- else }}false{{- end }}"
+  CHALLENGE_REGISTRY: {{ .Values.challenges.registry.url }}
+  CHALLENGE_REGISTRY_PRIVATE: "{{- if eq .Values.challenges.registry.type "private" }}true{{- else }}false{{- end }}"
   CTF_NAME: {{ .Values.event.name }}
   PUBLIC_URL: {{ .Values.event.url }}
   EVENT_START: {{ .Values.event.startTime | quote }}
