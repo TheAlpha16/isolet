@@ -110,7 +110,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: deployment-service-account
-    namespace: store
+    namespace: {{ .Values.automation.namespace }}
   - kind: ServiceAccount
     name: api-service-account
     namespace: {{ .Values.platform.namespace }}
