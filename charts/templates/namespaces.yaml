@@ -44,3 +44,10 @@ kind: Namespace
 metadata:
   name: traefik
   labels: {{- include "charts.labels" . | nindent 4 }}
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: store
+  labels: {{- include "charts.labels" . | nindent 4 }}
