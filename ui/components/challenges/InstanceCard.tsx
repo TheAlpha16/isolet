@@ -32,23 +32,19 @@ export function InstanceCard({ chall_id }: InstanceCardProps) {
 	}, [instance]);
 
 	useEffect(() => {
-		if (!instance || !instance.deadline) return;
-
-		setTimeLeft(Math.max(0, Math.floor((instance.deadline - Date.now()) / 1000)));
-		let timeout: NodeJS.Timeout | undefined;
-
-		const tick = () => {
+		if (instance && instance.deadline) {
 			setTimeLeft(Math.max(0, Math.floor((instance.deadline - Date.now()) / 1000)));
+		}
 
-			if (instance.active && timeLeft > 0) {
-				timeout = setTimeout(tick, 1000);
-			}
-		};
-
-		tick();
+		let interval: NodeJS.Timeout | undefined;
+		if (instance.active) {
+			interval = setInterval(() => {
+				setTimeLeft(Math.max(0, Math.floor((instance.deadline - Date.now()) / 1000)));
+			}, 1000);
+		}
 
 		return () => {
-			if (timeout) clearTimeout(timeout);
+			if (interval) clearInterval(interval);
 		};
 	}, [instance]);
 
