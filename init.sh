@@ -1,20 +1,19 @@
-set +x
+#!/bin/bash
 
-cd ./kubernetes/init
-kubectl apply -f instance-namespace.yml
-kubectl apply -f db-volume.yml
-kubectl apply -f network-policy.yml
-kubectl apply -f roles.yml
+set -e
 
-# initialize secrets and configs
-cd ../configuration
-kubectl apply -f app-secrets.yml
-kubectl apply -f app-config.yml
+echo "[#] installing cert-manager..."
+helm repo add jetstack https://charts.jetstack.io --force-update
 
-# initialize applications
-cd ../definition
-kubectl apply -f db-main.yml
-kubectl apply -f ui-main.yml
-kubectl apply -f api-main.yml
-kubectl apply -f proxy-main.yml
-kubectl apply -f ripper-main.yml
+helm install \
+  cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.17.0 \
+  --set crds.enabled=true
+
+echo "[+] cert-manager installed"
+
+echo "[#] installing isolet..."
+helm install isolet $(dirname $0)/charts
+echo "[+] isolet installed"

@@ -1,4 +1,11 @@
-echo "Deleting Kubernetes objects"
-echo "1. api (deployment)"
-echo "2. database (deployment) DANGER"
-echo "3. db persistent volume DANGER"
+#!/bin/bash
+
+set -e
+
+echo "[#] uninstalling isolet..."
+helm uninstall isolet
+echo "[+] isolet uninstalled"
+
+echo "[#] uninstalling cert-manager..."
+helm uninstall cert-manager -n cert-manager
+echo "[+] cert-manager uninstalled"
