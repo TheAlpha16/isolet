@@ -1,4 +1,4 @@
-import { createServer } from "http";
+import { createServer, IncomingMessage, ServerResponse } from "http";
 import { socketInit } from "./socket";
 import { logger } from "./config/logger";
 import { dbConnect } from "./database";
@@ -10,7 +10,13 @@ async function startServer() {
         await dbConnect();
         logger.info("Connected to database!");
 
-        const server = createServer();
+        const server = createServer((req: IncomingMessage, res: ServerResponse) => {
+            if (req.method === "GET" && req.url === "/ping") {
+                res.writeHead(200, { "Content-Type": "text/plain" });
+                res.end("pong");
+            }
+        });
+
         const io = socketInit(server);
 
         server.listen(8888, () => {
