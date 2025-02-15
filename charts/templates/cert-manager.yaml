@@ -1,0 +1,35 @@
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: dns-token
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/component: secrets
+    app.kubernetes.io/part-of: cert-manager
+    {{- include "charts.labels" . | nindent 4 }}
+data:
+  token: {{ .Values.secrets.dns.token }}
+
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt
+  labels:
+    app.kubernetes.io/component: cert-manager
+    app.kubernetes.io/part-of: letsencrypt
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  acme:
+    email: {{ .Values.certManager.email }}
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-private-key
+    solvers:
+      - dns01:
+          cloudflare:
+            apiTokenSecretRef:
+              name: dns-token
+              key: token
