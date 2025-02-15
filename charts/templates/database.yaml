@@ -638,7 +638,7 @@ spec:
               cpu: "500m"
             requests:
               memory: "64Mi"
-              cpu: "100m"
+              cpu: "50m"
           env:
             - name: POSTGRES_PASSWORD
               valueFrom:
@@ -650,6 +650,11 @@ spec:
                 secretKeyRef:
                   name: api-secrets
                   key: POSTGRES_USER
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: POSTGRES_DATABASE
           ports:
             - name: db-container
               containerPort: 5432
@@ -663,6 +668,26 @@ spec:
             preStop:
               exec:
                 command: ["/bin/sh", "-c", "pg_ctl -D /var/lib/postgresql/data -w -t 60 -m fast stop"]
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U {{ .Values.secrets.database.dbUser | b64dec }} -d {{ .Values.secrets.database.dbName | b64dec }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U {{ .Values.secrets.database.dbUser | b64dec }} -d {{ .Values.secrets.database.dbName | b64dec }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
       volumes:
         - name: db-pv
           persistentVolumeClaim:
