@@ -26,7 +26,7 @@ function Challenges() {
 
 	return (
 		<div className="container p-4 justify-start h-full flex flex-col">
-			<Tabs defaultValue={categories[0]} className="flex flex-col w-full items-center sm:items-start">
+			{Object.keys(challenges).length !== 0 ? (<Tabs defaultValue={categories[0]} className="flex flex-col w-full items-center sm:items-start">
 				<TabsList className="mb-4 flex flex-wrap max-w-fit">
 					{categories.map((category) => (
 						<TabsTrigger key={category} value={category}>
@@ -47,7 +47,11 @@ function Challenges() {
 						</div>
 					</TabsContent>
 				))}
-			</Tabs>
+			</Tabs>) : (
+				<div className="flex justify-center items-center h-full">
+					<p className="text-2xl text-gray-500">No challenges available</p>
+				</div>
+			)}
 			{currentChallenge && (
 				<ChallengeModal
 					challenge={currentChallenge}
