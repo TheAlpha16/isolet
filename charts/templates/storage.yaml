@@ -36,3 +36,25 @@ spec:
       storage: {{ .Values.platform.fileserver.capacity }}
 
 {{ end }}
+
+{{ if eq .Values.challenges.registry.default true }}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: registry-pv-claim
+  namespace: {{ .Values.platform.namespace }}
+  labels:
+    app.kubernetes.io/component: persistent-storage
+    app.kubernetes.io/part-of: registry
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  storageClassName: {{ .Values.challenges.registry.storageClass }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.challenges.registry.capacity }}
+
+{{ end }}

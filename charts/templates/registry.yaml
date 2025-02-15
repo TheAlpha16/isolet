@@ -1,0 +1,64 @@
+{{ if eq .Values.challenges.registry.default true }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: challenge-registry-deployment
+  namespace: {{ .Values.platform.namespace }}
+  labels: 
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: registry
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: deployment
+      app.kubernetes.io/part-of: registry
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: deployment
+        app.kubernetes.io/part-of: registry
+    spec:
+      containers:
+        - name: challenge-registry
+          image: "registry:2"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 30m
+              memory: 128Mi
+          volumeMounts:
+            - name: registry-storage
+              mountPath: /var/lib/registry
+              subPath: registry
+      volumes:
+        - name: registry-storage
+          persistentVolumeClaim:
+            claimName: registry-pv-claim
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: challenge-registry-svc
+  namespace: {{ .Values.platform.namespace }}
+  labels: 
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: registry
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 80
+      targetPort: 5000
+  selector:
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: registry
+{{ end }}
