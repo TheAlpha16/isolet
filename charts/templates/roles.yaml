@@ -90,6 +90,32 @@ rules:
       - patch
       - create
 
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: traefik-manager
+  namespace: traefik
+  labels:
+    app.kubernetes.io/component: role
+    app.kubernetes.io/part-of: traefik
+    {{- include "charts.labels" . | nindent 4 }}
+rules:
+  - apiGroups: 
+      - ""
+      - apps
+    resources: 
+      - configmaps
+      - deployments
+      - services
+    verbs: 
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
