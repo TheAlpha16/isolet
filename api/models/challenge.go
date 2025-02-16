@@ -8,28 +8,11 @@ import (
 
 type Challenge struct {
 	ChallID      int            `gorm:"primaryKey;column:chall_id" json:"chall_id"`
-	Name         string         `gorm:"not null;unique;column:chall_name" json:"name"`
-	Prompt       string         `gorm:"type:text" json:"prompt"`
-	Category     Category       `gorm:"foreignKey:CategoryID;references:CategoryID" json:"-"`
-	CategoryID   int            `gorm:"not null;column:category_id" json:"-"`
-	Flag         string         `gorm:"type:text" json:"-"`
-	Type         string         `gorm:"type:chall_type;default:static" json:"type"`
-	Points       int            `gorm:"not null;default:100" json:"points"`
-	Files        pq.StringArray `gorm:"type:text[]" json:"files"`
-	Requirements pq.Int64Array  `gorm:"type:integer[]" json:"-"`
-	Hints        []Hint         `gorm:"foreignKey:ChallID" json:"hints"`
-	Solves       int            `gorm:"default:0" json:"solves"`
-	Author       string         `gorm:"default:anonymous" json:"author"`
-	Visible      bool           `gorm:"default:false" json:"-"`
-	Tags         pq.StringArray `gorm:"type:text[]" json:"tags"`
-	Links        pq.StringArray `gorm:"type:text[]" json:"links"`
-	Done         bool           `gorm:"column:done" json:"done"`
-}
-
-type ChallengeData struct {
-	ChallID      int            `gorm:"column:chall_id" json:"chall_id"`
 	Name         string         `gorm:"column:chall_name" json:"name"`
 	Prompt       string         `gorm:"type:text" json:"prompt"`
+	Category     Category       `gorm:"foreignKey:CategoryID;references:CategoryID" json:"-"`
+	CategoryID   int            `gorm:"column:category_id" json:"-"`
+	Flag         string         `gorm:"type:text" json:"-"`
 	Type         string         `gorm:"type:chall_type" json:"type"`
 	Points       int            `gorm:"column:points" json:"points"`
 	Files        pq.StringArray `gorm:"column:files;type:text[]" json:"files"`
@@ -43,6 +26,8 @@ type ChallengeData struct {
 	Port         int            `gorm:"column:port" json:"-"`
 	Subd         string         `gorm:"column:subd" json:"-"`
 	Done         bool           `gorm:"column:done" json:"done"`
+	Visible      bool           `gorm:"column:visible" json:"-"`
+	Attempts     int            `gorm:"column:attempts" json:"attempts"`
 }
 
 type Hint struct {
@@ -67,8 +52,4 @@ type UHint struct {
 
 func (UHint) TableName() string {
 	return "uhints"
-}
-
-func (ChallengeData) TableName() string {
-	return "get_challenges"
 }

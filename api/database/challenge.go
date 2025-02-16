@@ -15,19 +15,19 @@ import (
 	"gorm.io/gorm"
 )
 
-func ReadChallenges(c *fiber.Ctx, teamid int64) (map[string][]models.ChallengeData, error) {
+func ReadChallenges(c *fiber.Ctx, teamid int64) (map[string][]models.Challenge, error) {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
 	db := DB.WithContext(ctx)
 
-	var challenges []models.ChallengeData
+	var challenges []models.Challenge
 	if err := db.Raw("SELECT chall_id, chall_name, prompt, type, points, files, hints, solves, author, tags, links, category_name, deployment, port, subd, done FROM get_challenges(?)", teamid).Scan(&challenges).Error; err != nil {
 		return nil, err
 	}
 
 	// Post-fetch filtering and modifications
-	filteredChallenges := make(map[string][]models.ChallengeData)
+	filteredChallenges := make(map[string][]models.Challenge)
 
 	for _, challenge := range challenges {
 		if challenge.Type == "dynamic" {
@@ -39,7 +39,7 @@ func ReadChallenges(c *fiber.Ctx, teamid int64) (map[string][]models.ChallengeDa
 		if catChallenges, exists := filteredChallenges[challenge.CategoryName]; exists {
 			filteredChallenges[challenge.CategoryName] = append(catChallenges, challenge)
 		} else {
-			filteredChallenges[challenge.CategoryName] = []models.ChallengeData{challenge}
+			filteredChallenges[challenge.CategoryName] = []models.Challenge{challenge}
 		}
 	}
 
