@@ -1,11 +1,11 @@
 package database
 
 import (
-	"log"
-	"time"
-	"errors"
 	"context"
+	"errors"
+	"log"
 	"strings"
+	"time"
 
 	"github.com/TheAlpha16/isolet/api/config"
 	"github.com/TheAlpha16/isolet/api/models"
@@ -13,27 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
-
-func AddToChallenges(chall models.Challenge) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
-
-	db := DB.WithContext(ctx)
-
-	// Use GORM's Upsert equivalent for "ON CONFLICT DO UPDATE"
-	err := db.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "level"}},
-		DoUpdates: clause.AssignmentColumns([]string{"chall_name", "prompt", "tags"}),
-	}).Create(&chall).Error
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 func ReadChallenges(c *fiber.Ctx, teamid int64) (map[string][]models.ChallengeData, error) {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
@@ -109,7 +89,7 @@ func VerifyFlag(c *fiber.Ctx, chall_id int, userid int64, teamid int64, flag str
 		TeamID:  teamid,
 		Flag:    flag,
 		Correct: flag == challenge.Flag,
-		IP: c.Locals("clientIP").(string),
+		IP:      c.Locals("clientIP").(string),
 	}
 
 	if config.POST_EVENT != "false" {
