@@ -42,7 +42,7 @@ async function fetchInstances(teamid: number): Promise<any[]> {
     const client = await pool.connect();
     try {
         const
-            res = await client.query("SELECT flags.chall_id, flags.password, flags.port, flags.hostname, flags.deadline, images.deployment FROM flags JOIN images ON images.chall_id = flags.chall_id WHERE teamid = $1", [teamid]);
+            res = await client.query("SELECT flags.chall_id, flags.password, flags.port, flags.hostname, flags.deadline, challenges.deployment FROM flags JOIN challenges ON challenges.chall_id = flags.chall_id WHERE teamid = $1", [teamid]);
         return res.rows;
     }
     catch (error) {

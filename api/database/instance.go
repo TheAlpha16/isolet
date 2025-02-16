@@ -82,13 +82,13 @@ func DeleteFlag(c *fiber.Ctx, chall_id int, teamid int64) error {
 	return nil
 }
 
-func ValidOnDemandChallenge(c *fiber.Ctx, chall_id int, teamid int64, challenge *models.Challenge, image *models.Image) error {
+func ValidOnDemandChallenge(c *fiber.Ctx, chall_id int, teamid int64, challenge *models.Challenge) error {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
 	db := DB.WithContext(ctx)
 
-	if err := db.Raw("WITH solved_challenges AS (SELECT ARRAY_AGG(solves.chall_id) AS solved_array FROM solves WHERE teamid = ?) SELECT challenges.type, challenges.flag FROM challenges CROSS JOIN solved_challenges WHERE challenges.chall_id = ? AND challenges.visible = true AND (challenges.requirements = '{}' OR challenges.requirements <@ solved_array)", teamid, chall_id).First(&challenge).Error; err != nil {
+	if err := db.Raw("WITH solved_challenges AS (SELECT ARRAY_AGG(solves.chall_id) AS solved_array FROM solves WHERE teamid = ?) SELECT challenges.type, challenges.flag, challenges.port, challenges.deployment FROM challenges CROSS JOIN solved_challenges WHERE challenges.chall_id = ? AND challenges.visible = true AND (challenges.requirements = '{}' OR challenges.requirements <@ solved_array)", teamid, chall_id).First(&challenge).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return errors.New("challenge does not exist")
 		}
@@ -98,14 +98,6 @@ func ValidOnDemandChallenge(c *fiber.Ctx, chall_id int, teamid int64, challenge 
 	
 	if challenge.Type != "on-demand" {
 		return errors.New("challenge is not on-demand")
-	}
-
-	if err := db.Where("chall_id = ?", chall_id).First(image).Error; err != nil {
-		if err != gorm.ErrRecordNotFound {
-			log.Println(err)
-		}
-		log.Printf("image details not set for %d", chall_id)
-		return errors.New("error in starting the instance, contact admin")
 	}
 
 	return nil
@@ -137,8 +129,8 @@ func GetInstances(c *fiber.Ctx, teamid int64) ([]models.Instance, error) {
 	db := DB.WithContext(ctx)
 
 	if err := db.Model(&models.Flag{}).
-		Select("flags.chall_id, flags.password, flags.port, flags.hostname, flags.deadline, images.deployment").
-		Joins("JOIN images ON flags.chall_id = images.chall_id").
+		Select("flags.chall_id, flags.password, flags.port, flags.hostname, flags.deadline, challenges.deployment").
+		Joins("JOIN challenges ON flags.chall_id = challenges.chall_id").
 		Where("flags.teamid = ?", teamid).
 		Find(&instances).Error; err != nil {
 		log.Println(err)
