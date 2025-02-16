@@ -3,10 +3,10 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: challenge-certs
-  namespace: traefik
+  namespace: {{ .Values.dynamic.namespace }} 
   labels:
     app.kubernetes.io/component: certificate
-    app.kubernetes.io/part-of: traefik
+    app.kubernetes.io/part-of: {{ .Values.dynamic.namespace }}
     {{- include "charts.labels" . | nindent 4 }}
 spec:
   secretName: challenge-certs
@@ -18,15 +18,20 @@ spec:
     - "*.{{ .Values.challenges.url }}"
 
 ---
-apiVersion: traefik.io/v1alpha1
-kind: TLSStore
+apiVersion: cert-manager.io/v1
+kind: Certificate
 metadata:
-  name: challenge-tls
-  namespace: traefik
+  name: challenge-certs
+  namespace: {{ .Values.isolet.namespace }}
   labels:
-    app.kubernetes.io/component: tls
-    app.kubernetes.io/part-of: traefik
+    app.kubernetes.io/component: certificate
+    app.kubernetes.io/part-of: {{ .Values.isolet.namespace }}
     {{- include "charts.labels" . | nindent 4 }}
 spec:
-  defaultCertificate:
-    secretName: challenge-certs
+  secretName: challenge-certs
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+  dnsNames:
+    - {{ .Values.challenges.url }}
+    - "*.{{ .Values.challenges.url }}"
