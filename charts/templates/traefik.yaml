@@ -47,7 +47,7 @@ spec:
       serviceAccountName: traefik-service-account
       containers:
         - name: traefik
-          image: traefik:v3.1
+          image: traefik:v3.3
           volumeMounts:
           - name: config-volume
             mountPath: /etc/traefik
