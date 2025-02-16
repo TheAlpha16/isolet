@@ -67,6 +67,18 @@ spec:
                 secretKeyRef:
                   name: api-secrets
                   key: SESSION_SECRET
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: 8888
+            initialDelaySeconds: 200
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: 8888
+            initialDelaySeconds: 30
+            periodSeconds: 10
 
 ---
 apiVersion: v1
