@@ -29,17 +29,6 @@ type Instance struct {
 	ConnString string `gorm:"-" json:"connstring"`
 }
 
-type Image struct {
-	IID        int    `gorm:"primaryKey;autoIncrement;column:iid" json:"iid"`
-	ChallID    int    `gorm:"not null;column:chall_id" json:"chall_id"`
-	Image      string `gorm:"not null" json:"image"`
-	Deployment string `gorm:"type:deployment_type;default:http" json:"deployment"`
-	Port       int    `gorm:"default:80" json:"port"`
-	Subd       string `gorm:"default:localhost" json:"subd"`
-	CPU        int    `gorm:"default:5;column:cpu" json:"-"`
-	Memory     int    `gorm:"default:10;column:mem" json:"-"`
-}
-
 type ExtendDeadline struct {
 	Deadline int64 `json:"deadline"`
 }

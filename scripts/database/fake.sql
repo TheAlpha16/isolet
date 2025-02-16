@@ -10,7 +10,8 @@ INSERT INTO challenges (
     chall_id, chall_name, category_id, 
     prompt, flag, type, 
     points, files, requirements, 
-    author, tags, links
+    author, tags, links,
+    deployment, port, subd
 ) VALUES 
 (
     1, 'byteme', 2,
@@ -18,7 +19,8 @@ INSERT INTO challenges (
     'isolet-dev{e4sy_p34sy_byt3c0d3_d1s4sm}',
     'static',
     300, '{byteme.pyc}', '{}',
-    'TheAlpha', '{python,bytecode}', '{}'
+    'TheAlpha', '{python,bytecode}', '{}',
+    'http', 80, ''
 ),
 (
     2, 'babyheap', 3,
@@ -26,7 +28,8 @@ INSERT INTO challenges (
     'isolet-dev{He4p_1s_5ecur3_f0r_n0t3s??}',
     'dynamic',
     400, '{heap,libc.so.6}', '{}',
-    'Naughtyb0y', '{heap,pwn}', '{https://ctf101.org/binary-exploitation/heap-exploitation/}'
+    'Naughtyb0y', '{heap,pwn}', '{https://ctf101.org/binary-exploitation/heap-exploitation/}',
+    'nc', 31000, 'babyheap'
 ),
 (
     3, 'flag-finder', 3,
@@ -34,7 +37,8 @@ INSERT INTO challenges (
     'isolet-dev{f1nd_f1nd_f1nding_th3_fl4ggggg!}',
     'dynamic',
     400, '{flag-finder}', '{2}',
-    'Naughtyb0y', '{pwn}', '{}'
+    'Naughtyb0y', '{pwn}', '{}',
+    'nc', 31001, 'flag-finder'
 ),
 (
     4, 'Machine Trouble', 1,
@@ -42,7 +46,8 @@ INSERT INTO challenges (
     'isolet-dev{dfa_hacked}',
     'on-demand',
     250, '{}', '{}',
-    'e4stw1nd', '{dfa,misc}', '{}'
+    'e4stw1nd', '{dfa,misc}', '{}',
+    'nc', 5000, 'dfa'
 ),
 (
     5, 'Unixit', 4,
@@ -50,7 +55,8 @@ INSERT INTO challenges (
     'isolet-dev{n0w_y0u_kn0w}',
     'on-demand',
     100, '{}', '{}',
-    'bitc', '{ssh,linux}', '{}'
+    'bitc', '{ssh,linux}', '{}',
+    'ssh', 22, 'unixit'
 ),
 (
     6, 'pwn-me', 4,
@@ -58,7 +64,8 @@ INSERT INTO challenges (
     'isolet-dev{1_h4v3nt_exp3ct3d_th1s}',
     'on-demand',
     1000, '{}', '{5}',
-    'anonymous', '{0day,linux}', '{}'
+    'anonymous', '{0day,linux}', '{}',
+    'http', 80, 'nginx'
 );
 
 UPDATE challenges SET visible = true;
@@ -70,13 +77,6 @@ INSERT INTO hints (hid, chall_id, hint, cost) VALUES
     (4, 5, 'You can use ssh to connect to the machine', 10);
 
 UPDATE hints SET visible = true;
-
-INSERT INTO images (chall_id, image, deployment, port, subd, cpu, mem) VALUES 
-(2, 'babyheap', 'nc', 31000, 'babyheap', 30, 32),
-(3, 'flag-finder', 'nc', 31001, 'flag-finder', 30, 32),
-(4, 'dfa', 'nc', 5000, 'dfa', 50, 128),
-(5, 'unixit-level0', 'ssh', 22, 'unixit', 5, 10),
-(6, 'nginx:alpine-slim', 'http', 80, 'nginx', 5, 10);
 
 -- Users
 INSERT INTO users (userid, email, username, password, teamid) VALUES 
@@ -111,7 +111,6 @@ SELECT unlock_hint(2, 3);
 SELECT setval('categories_category_id_seq', 4);
 SELECT setval('challenges_chall_id_seq', 6);
 SELECT setval('hints_hid_seq', 4);
-SELECT setval('images_iid_seq', 5);
 SELECT setval('users_userid_seq', 6);
 SELECT setval('teams_teamid_seq', 2);
 SELECT setval('sublogs_sid_seq', 7);

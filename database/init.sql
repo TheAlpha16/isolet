@@ -108,7 +108,11 @@ CREATE TABLE IF NOT EXISTS challenges(
     author text DEFAULT 'anonymous',
     visible boolean DEFAULT false,
     tags text[] DEFAULT ARRAY[]::text[],
-    links text[] DEFAULT ARRAY[]::text[]
+    links text[] DEFAULT ARRAY[]::text[],
+    deployment deployment_type DEFAULT 'http',
+    port integer DEFAULT 80,
+    subd text DEFAULT '',
+    attempts integer DEFAULT 500
 );
 
 -- Create flags table
@@ -200,18 +204,6 @@ AFTER INSERT
 ON uhints
 FOR EACH ROW
 EXECUTE FUNCTION update_team_cost();
-
--- Table to store deployment data for on-demand and dynamic challenges
-CREATE TABLE IF NOT EXISTS images(
-    iid serial PRIMARY KEY,
-    chall_id integer NOT NULL REFERENCES challenges(chall_id),
-    image text NOT NULL,
-    deployment deployment_type NOT NULL DEFAULT 'http',
-    port integer DEFAULT 80,
-    subd text DEFAULT '',
-    cpu integer DEFAULT 0,
-    mem integer DEFAULT 0
-);
 
 -- Table to store buffer for running on-demand challenges
 CREATE TABLE IF NOT EXISTS running(
@@ -338,15 +330,13 @@ BEGIN
         ch.tags,
         ch.links,
         cat.category_name,
-        COALESCE(img.deployment, 'http') AS deployment,
-        COALESCE(img.port, 0) AS port,
-        COALESCE(img.subd, '') AS subd,
+        ch.deployment,
+        ch.port,
+        ch.subd,
         ch.chall_id = any(solved_array) AS done
     FROM challenges ch
     JOIN categories cat 
         ON ch.category_id = cat.category_id
-    LEFT JOIN images img 
-        ON img.chall_id = ch.chall_id
     CROSS JOIN solved_challenges
     WHERE ch.visible = true
     AND (
@@ -547,9 +537,9 @@ DECLARE
     payload TEXT;
     deployment deployment_type;
 BEGIN
-    SELECT INTO deployment images.deployment
-    FROM images
-    WHERE images.chall_id = NEW.chall_id;
+    SELECT INTO deployment challenges.deployment
+    FROM challenges
+    WHERE challenges.chall_id = NEW.chall_id;
 
     payload := json_build_object(
         'teamid', NEW.teamid,
