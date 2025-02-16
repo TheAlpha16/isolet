@@ -47,7 +47,7 @@ spec:
       serviceAccountName: traefik-service-account
       containers:
         - name: traefik
-          image: traefik:v2.10
+          image: traefik:v3.1
           volumeMounts:
           - name: config-volume
             mountPath: /etc/traefik
@@ -100,7 +100,6 @@ rules:
       - update
   - apiGroups:
       - traefik.io
-      - traefik.containo.us
     resources:
       - middlewares
       - middlewaretcps
