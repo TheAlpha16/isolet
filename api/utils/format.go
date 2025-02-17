@@ -46,3 +46,9 @@ func Int64Addr(i string) *int64 {
 	tempInt, _ := strconv.ParseInt(i, 10, 64)
 	return &tempInt
 }
+
+func Int32Addr(i string) *int32 {
+	tempInt, _ := strconv.ParseInt(i, 10, 32)
+	tempInt32 := int32(tempInt)
+	return &tempInt32
+}
