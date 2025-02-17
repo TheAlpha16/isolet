@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
-	"strings"
+	// "strings"
 	"time"
 
 	"github.com/TheAlpha16/isolet/api/models"
@@ -29,13 +29,13 @@ func CanStartInstance(c *fiber.Ctx, chall_id int, teamid int64) error {
 		return errors.New("error in starting the instance, contact admin")
 	}
 
-	if err := db.Model(&models.Running{}).Create(&models.Running{ChallID: chall_id, TeamID: teamid}).Error; err != nil {
-		if strings.Contains(err.Error(), "start more instances for the team") {
-			return errors.New("concurrent instance limit reached for the team")
-		}
-		log.Println(err)
-		return errors.New("error in starting the instance, contact admin")
-	}
+	// if err := db.Model(&models.Running{}).Create(&models.Running{ChallID: chall_id, TeamID: teamid}).Error; err != nil {
+	// 	if strings.Contains(err.Error(), "start more instances for the team") {
+	// 		return errors.New("concurrent instance limit reached for the team")
+	// 	}
+	// 	log.Println(err)
+	// 	return errors.New("error in starting the instance, contact admin")
+	// }
 
 	return nil
 }
@@ -88,7 +88,7 @@ func ValidOnDemandChallenge(c *fiber.Ctx, chall_id int, teamid int64, challenge 
 
 	db := DB.WithContext(ctx)
 
-	if err := db.Raw("WITH solved_challenges AS (SELECT ARRAY_AGG(solves.chall_id) AS solved_array FROM solves WHERE teamid = ?) SELECT challenges.type, challenges.flag, challenges.port, challenges.deployment FROM challenges CROSS JOIN solved_challenges WHERE challenges.chall_id = ? AND challenges.visible = true AND (challenges.requirements = '{}' OR challenges.requirements <@ solved_array)", teamid, chall_id).First(&challenge).Error; err != nil {
+	if err := db.Raw("WITH solved_challenges AS (SELECT ARRAY_AGG(solves.chall_id) AS solved_array FROM solves WHERE teamid = ?) SELECT challenges.type, challenges.flag, challenges.port, challenges.deployment, challenges.chall_name FROM challenges CROSS JOIN solved_challenges WHERE challenges.chall_id = ? AND challenges.visible = true AND (challenges.requirements = '{}' OR challenges.requirements <@ solved_array)", teamid, chall_id).First(&challenge).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return errors.New("challenge does not exist")
 		}
