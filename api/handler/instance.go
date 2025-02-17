@@ -5,7 +5,7 @@ import (
 
 	"github.com/TheAlpha16/isolet/api/models"
 	"github.com/TheAlpha16/isolet/api/database"
-	"github.com/TheAlpha16/isolet/api/deployment"
+	"github.com/TheAlpha16/isolet/api/instance"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -29,7 +29,7 @@ func StartInstance(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid challenge id"})
 	}
 
-	instance, err := deployment.DeployInstance(c, chall_id, teamid)
+	instance, err := instance.DeployInstance(c, chall_id, teamid)
 	if err != nil {
 		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": err.Error()})
 	}
@@ -55,7 +55,7 @@ func StopInstance(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid challenge id"})
 	}
 
-	if err := deployment.DeleteInstance(c, chall_id, teamid); err != nil {
+	if err := instance.DeleteInstance(c, chall_id, teamid); err != nil {
 		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": err.Error()})
 	}
 
@@ -82,7 +82,7 @@ func ExtendTime(c *fiber.Ctx) error {
 
 	packed := new(models.ExtendDeadline)
 
-	if err := deployment.AddTime(c, chall_id, teamid, packed); err != nil {
+	if err := instance.AddTime(c, chall_id, teamid, packed); err != nil {
 		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "failure", "message": err.Error()})
 	}
 
