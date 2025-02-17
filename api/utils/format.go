@@ -7,15 +7,14 @@ import (
 	"strings"
 
 	"github.com/TheAlpha16/isolet/api/config"
-	"github.com/TheAlpha16/isolet/api/models"
 )
 
 func GetInstanceName(chall_id int, teamid int64) string {
 	return Hash(fmt.Sprintf("%d@%d:%s", teamid, chall_id, config.INSTANCE_NAME_SECRET))[0:16]
 }
 
-func GetHostName(challenge *models.Challenge, teamid int64) string {
-	return GetInstanceName(challenge.ChallID, teamid) + GetChallengeSubdomain(challenge.Name) + config.INSTANCE_HOSTNAME
+func GetHostName(subdomains []string) string {
+	return strings.Join(subdomains, ".") + "." + config.INSTANCE_HOSTNAME
 }
 
 func GetChallengeSubdomain(input string) string {
