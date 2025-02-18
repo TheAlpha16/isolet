@@ -38,25 +38,26 @@ func SubmitFlag(c *fiber.Ctx) error {
 	flag := c.FormValue("flag")
 
 	if flag == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing flag in the request"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing flag in the request", "sub_count": -1})
 	}
 
 	if chall_id_string == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing chall_id in the request"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing chall_id in the request", "sub_count": -1})
 	}
 
 	chall_id, err := strconv.Atoi(chall_id_string)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid chall_id"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "invalid chall_id", "sub_count": -1})
 	}
 
 	flag = strings.TrimSpace(flag)
 
-	if isOK, message := database.VerifyFlag(c, chall_id, userid, teamid, flag); !isOK {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": message})
+	isOK, message, sub_count := database.VerifyFlag(c, chall_id, userid, teamid, flag)
+	if !isOK {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": message, "sub_count": sub_count})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "correct flag"})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "correct flag", "sub_count": sub_count})
 }
 
 func UnlockHint(c *fiber.Ctx) error {

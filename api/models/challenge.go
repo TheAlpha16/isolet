@@ -28,6 +28,7 @@ type Challenge struct {
 	Done         bool           `gorm:"column:done" json:"done"`
 	Visible      bool           `gorm:"column:visible" json:"-"`
 	Attempts     int            `gorm:"column:attempts" json:"attempts"`
+	SubCount     int            `gorm:"column:sub_count" json:"sub_count"`
 }
 
 type Hint struct {

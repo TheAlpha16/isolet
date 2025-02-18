@@ -22,7 +22,7 @@ func ReadChallenges(c *fiber.Ctx, teamid int64) (map[string][]models.Challenge, 
 	db := DB.WithContext(ctx)
 
 	var challenges []models.Challenge
-	if err := db.Raw("SELECT chall_id, chall_name, prompt, type, points, files, hints, solves, author, tags, links, category_name, deployment, port, subd, done FROM get_challenges(?)", teamid).Scan(&challenges).Error; err != nil {
+	if err := db.Raw("SELECT chall_id, chall_name, prompt, type, points, files, hints, solves, author, tags, links, category_name, deployment, port, subd, done, attempts, sub_count FROM get_challenges(?)", teamid).Scan(&challenges).Error; err != nil {
 		return nil, err
 	}
 
@@ -51,7 +51,7 @@ func ValidFlagEntry(ctx context.Context, chall_id int, teamid int64) (models.Cha
 	var err error
 
 	var challenge models.Challenge
-	if err := db.Raw("WITH solved_challenges AS (SELECT ARRAY_AGG(solves.chall_id) AS solved_array FROM solves WHERE teamid = ?) SELECT challenges.type, challenges.flag, challenges.chall_id = any(solved_array) AS done FROM challenges CROSS JOIN solved_challenges WHERE challenges.chall_id = ? AND challenges.visible = true AND (challenges.requirements = '{}' OR challenges.requirements <@ solved_array)", teamid, chall_id).First(&challenge).Error; err != nil {
+	if err := db.Raw("WITH solved_challenges AS (SELECT ARRAY_AGG(solves.chall_id) AS solved_array FROM solves WHERE teamid = ?) SELECT challenges.type, challenges.flag, challenges.chall_id = any(solved_array) AS done, challenges.attempts, COALESCE((SELECT COUNT(*)::integer FROM sublogs WHERE sublogs.chall_id = ? AND sublogs.teamid = ?), 0) AS sub_count FROM challenges CROSS JOIN solved_challenges WHERE challenges.chall_id = ? AND challenges.visible = true AND (challenges.requirements = '{}' OR challenges.requirements <@ solved_array)", teamid, chall_id, teamid, chall_id).First(&challenge).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return challenge, errors.New("challenge does not exist")
 		}
@@ -63,6 +63,10 @@ func ValidFlagEntry(ctx context.Context, chall_id int, teamid int64) (models.Cha
 		return challenge, errors.New("challenge already solved")
 	}
 
+	if challenge.SubCount >= challenge.Attempts {
+		return challenge, errors.New("maximum attempts reached")
+	}
+
 	if challenge.Type == "on-demand" {
 		if challenge.Flag, err = IsRunning(ctx, chall_id, teamid); err != nil {
 			return challenge, err
@@ -72,13 +76,13 @@ func ValidFlagEntry(ctx context.Context, chall_id int, teamid int64) (models.Cha
 	return challenge, nil
 }
 
-func VerifyFlag(c *fiber.Ctx, chall_id int, userid int64, teamid int64, flag string) (bool, string) {
+func VerifyFlag(c *fiber.Ctx, chall_id int, userid int64, teamid int64, flag string) (bool, string, int) {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
 
 	challenge, err := ValidFlagEntry(ctx, chall_id, teamid)
 	if err != nil {
-		return false, err.Error()
+		return false, err.Error(), -1
 	}
 
 	db := DB.WithContext(ctx)
@@ -94,22 +98,22 @@ func VerifyFlag(c *fiber.Ctx, chall_id int, userid int64, teamid int64, flag str
 
 	if config.POST_EVENT != "false" {
 		if !sublog.Correct {
-			return sublog.Correct, "incorrect flag"
+			return sublog.Correct, "incorrect flag", -1
 		} else {
-			return sublog.Correct, "correct flag"
+			return sublog.Correct, "correct flag", -1
 		}
 	}
 
 	if err := db.Omit("Points", "Timestamp").Create(&sublog).Error; err != nil {
 		log.Println(err)
-		return false, "error in verification, please contact admin"
+		return false, "error in verification, please contact admin", -1
 	}
 
 	if !sublog.Correct {
-		return false, "incorrect flag"
+		return false, "incorrect flag", challenge.SubCount + 1
 	}
 
-	return true, "correct flag"
+	return true, "correct flag", challenge.SubCount + 1
 }
 
 func UnlockHint(c *fiber.Ctx, hid int, teamid int64) (bool, string) {

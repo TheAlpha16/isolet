@@ -126,18 +126,21 @@ export function ChallengeModal({ challenge, onClose }: ChallengeModalProps) {
 						<InstanceCard chall_id={challenge.chall_id} />
 					)}
 
-					<form onSubmit={handleSubmit} className="flex gap-2">
-						<Input
-							type="text"
-							placeholder="Enter flag"
-							value={flag}
-							onChange={(e) => setFlag(e.target.value)}
-						/>
-						<Button type="submit" >Submit</Button>
+					<form onSubmit={handleSubmit} className="flex flex-col gap-2">
+						<span className="text-xs text-muted-foreground self-center">{challenge.sub_count}/{challenge.attempts} attempts </span>
+						<div className="flex gap-2">
+							<Input
+								type="text"
+								placeholder="Enter flag"
+								value={flag}
+								onChange={(e) => setFlag(e.target.value)}
+							/>
+							<Button type="submit" >Submit</Button>
+						</div>
 					</form>
 				</div>
-			</DialogContent>
-		</Dialog>
+			</DialogContent >
+		</Dialog >
 	);
 }
 

@@ -45,6 +45,8 @@ export interface ChallengeType {
 	tags: string[];
 	links: string[];
 	done: boolean;
+	attempts: number;
+	sub_count: number;
 };
 
 export interface InstanceType {

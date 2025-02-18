@@ -96,6 +96,7 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
             });
 
             if (res.ok) {
+                const response = await res.json();
                 showToast(ToastStatus.Success, "correct flag!");
                 set((state) => {
                     const updatedChallenges = { ...state.challenges };
@@ -104,6 +105,7 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
                         if (challenge) {
                             challenge.solves++;
                             challenge.done = true;
+                            challenge.sub_count = response.sub_count;
                             break;
                         }
                     }
@@ -114,7 +116,22 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
                 showToast(ToastStatus.Warning, "login to continue");
             } else {
                 const response = await res.json();
+                const sub_count = response.sub_count;
                 showToast(ToastStatus.Failure, response.message);
+                if (sub_count !== undefined && sub_count !== null && sub_count !== -1) {
+                    set((state) => {
+                        const updatedChallenges = { ...state.challenges };
+                        for (const category in updatedChallenges) {
+                            const challenge = updatedChallenges[category].find((c) => c.chall_id === chall_id);
+                            if (challenge) {
+                                challenge.sub_count = sub_count;
+                                break;
+                            }
+                        }
+
+                        return { challenges: updatedChallenges };
+                    });
+                }
             };
 
         } catch (error: any) {
