@@ -295,7 +295,9 @@ RETURNS TABLE (
     deployment deployment_type,
     port integer,
     subd text,
-    done boolean
+    done boolean,
+    attempts integer,
+    sub_count integer
 ) AS $$
 BEGIN
     RETURN QUERY 
@@ -333,7 +335,13 @@ BEGIN
         ch.deployment,
         ch.port,
         ch.subd,
-        ch.chall_id = any(solved_array) AS done
+        ch.chall_id = any(solved_array) AS done,
+        ch.attempts,
+        COALESCE((
+            SELECT COUNT(*)::integer
+            FROM sublogs
+            WHERE sublogs.chall_id = ch.chall_id AND sublogs.teamid = team_id
+        ), 0) AS sub_count
     FROM challenges ch
     JOIN categories cat 
         ON ch.category_id = cat.category_id
