@@ -6,6 +6,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type IK8sResource interface {
@@ -39,9 +40,19 @@ func (r *K8sResource) Create(ctx context.Context, obj *unstructured.Unstructured
 	return err
 }
 
-func (r *K8sResource) Get(ctx context.Context, name, namespace, kind string) (*unstructured.Unstructured, error) {
+func (r *K8sResource) Get(ctx context.Context, name, namespace, group, version, kind string) (*unstructured.Unstructured, error) {
+	gvk := schema.GroupVersionKind{
+		Group:   group,
+		Version: version,
+		Kind:    kind,
+	}
+	restMapping, err := r.Client.RESTMapper.RESTMapping(gvk.GroupKind(), gvk.Version)
+	if err != nil {
+		return nil, err
+	}
+
 	return r.Client.DynamicClient.
-		Resource((&unstructured.Unstructured{}).GroupVersionKind().GroupVersion().WithResource(kind)).
+		Resource(restMapping.Resource).
 		Namespace(namespace).
 		Get(ctx, name, metav1.GetOptions{})
 }
@@ -60,9 +71,19 @@ func (r *K8sResource) Update(ctx context.Context, obj *unstructured.Unstructured
 	return err
 }
 
-func (r *K8sResource) Delete(ctx context.Context, name, namespace, kind string) error {
+func (r *K8sResource) Delete(ctx context.Context, name, namespace, group, version, kind string) error {
+	gvk := schema.GroupVersionKind{
+		Group:   group,
+		Version: version,
+		Kind:    kind,
+	}
+	restMapping, err := r.Client.RESTMapper.RESTMapping(gvk.GroupKind(), gvk.Version)
+	if err != nil {
+		return err
+	}
+
 	return r.Client.DynamicClient.
-		Resource((&unstructured.Unstructured{}).GroupVersionKind().GroupVersion().WithResource(kind)).
+		Resource(restMapping.Resource).
 		Namespace(namespace).
 		Delete(ctx, name, metav1.DeleteOptions{})
 }
