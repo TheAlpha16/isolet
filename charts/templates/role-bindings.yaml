@@ -101,3 +101,79 @@ subjects:
   - kind: ServiceAccount
     name: deployment-service-account
     namespace: {{ .Values.automation.namespace }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cert-reader-binding
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/component: role-binding
+    app.kubernetes.io/part-of: cert-manager
+    {{- include "charts.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cert-reader
+subjects:
+  - kind: ServiceAccount
+    name: cert-copier-service-account
+    namespace: cert-manager
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: isolet-cert-copier-binding
+  namespace: {{ .Values.isolet.namespace }}
+  labels:
+    app.kubernetes.io/component: role-binding
+    app.kubernetes.io/part-of: isolet
+    {{- include "charts.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: isolet-cert-copier
+subjects:
+  - kind: ServiceAccount
+    name: cert-copier-service-account
+    namespace: cert-manager
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: dynamic-cert-copier-binding
+  namespace: {{ .Values.dynamic.namespace }}
+  labels:
+    app.kubernetes.io/component: role-binding
+    app.kubernetes.io/part-of: dynamic
+    {{- include "charts.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: dynamic-cert-copier
+subjects:
+  - kind: ServiceAccount
+    name: cert-copier-service-account
+    namespace: cert-manager
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cert-secret-reader-binding
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/component: role-binding
+    app.kubernetes.io/part-of: cert-manager
+    {{- include "charts.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cert-secret-reader
+subjects:
+  - kind: ServiceAccount
+    name: cert-copier-service-account
+    namespace: cert-manager

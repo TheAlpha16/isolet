@@ -3,10 +3,8 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: challenge-certs
-  namespace: {{ .Values.dynamic.namespace }} 
+  namespace: cert-manager
   labels:
-    app.kubernetes.io/component: certificate
-    app.kubernetes.io/part-of: {{ .Values.dynamic.namespace }}
     {{- include "charts.labels" . | nindent 4 }}
 spec:
   secretName: challenge-certs
@@ -18,20 +16,49 @@ spec:
     - "*.{{ .Values.challenges.url }}"
 
 ---
-apiVersion: cert-manager.io/v1
-kind: Certificate
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: challenge-certs
-  namespace: {{ .Values.isolet.namespace }}
+  name: copy-tls-certs
+  namespace: cert-manager
   labels:
-    app.kubernetes.io/component: certificate
-    app.kubernetes.io/part-of: {{ .Values.isolet.namespace }}
     {{- include "charts.labels" . | nindent 4 }}
 spec:
-  secretName: challenge-certs
-  issuerRef:
-    name: letsencrypt
-    kind: ClusterIssuer
-  dnsNames:
-    - {{ .Values.challenges.url }}
-    - "*.{{ .Values.challenges.url }}"
+  ttlSecondsAfterFinished: 100
+  template:
+    spec:
+      serviceAccountName: cert-copier-service-account
+      restartPolicy: Never
+      containers:
+        - name: cert-copy
+          image: bitnami/kubectl:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              
+              CERT_NAME="challenge-certs"
+              CERT_NAMESPACE="cert-manager"
+              TARGET_NAMESPACES="{{ .Values.isolet.namespace }} {{ .Values.dynamic.namespace }}"
+              
+              echo "[#] Waiting for certificate $CERT_NAME to be Ready..."
+              
+              until kubectl get certificate -n $CERT_NAMESPACE $CERT_NAME -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' | grep -q True; do
+                echo "[-] Certificate not ready yet. Sleeping..."
+                sleep 10
+              done
+              
+              echo "[+] Certificate is Ready! Copying TLS Secret..."
+              
+              for ns in $TARGET_NAMESPACES; do
+                echo "[#] Copying secret to namespace: $ns"
+                
+                kubectl delete secret $CERT_NAME -n $ns --ignore-not-found
+
+                echo "[#] Deleted duplcate secret if exists in namespace: $ns"
+                
+                kubectl get secret $CERT_NAME -n $CERT_NAMESPACE -o yaml | sed "s/namespace: $CERT_NAMESPACE/namespace: $ns/" | kubectl apply -f -
+              done
+              
+              echo "[+] All secrets copied successfully!"
