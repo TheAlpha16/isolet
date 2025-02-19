@@ -71,8 +71,8 @@ spec:
             httpGet:
               path: /ping
               port: 8888
-            initialDelaySeconds: 200
-            periodSeconds: 3
+            initialDelaySeconds: 40
+            periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /ping

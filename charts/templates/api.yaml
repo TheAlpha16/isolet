@@ -48,13 +48,13 @@ spec:
             httpGet:
               path: /ping
               port: 80
-            initialDelaySeconds: 200
-            periodSeconds: 3
+            initialDelaySeconds: 40
+            periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /ping
               port: 80
-            initialDelaySeconds: 120
+            initialDelaySeconds: 30
             periodSeconds: 10
 
 ---
