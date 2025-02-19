@@ -13,16 +13,16 @@ import (
 )
 
 func EvictInstance(job *models.Job, k8sclient *K8sClient) error {
-	if err := deleteDeployment(job.InstanceName, job.Ctx, k8sclient); err != nil {
-		log.Printf("[ERROR] (teamid: %d, chall_id: %d) (deployment) %s\n", job.TeamID, job.ChallID, err.Error())
+	if err := deleteIngress(fmt.Sprintf("%s-ingress", job.InstanceName), "IngressRoute", job.Ctx, k8sclient); err != nil {
+		log.Printf("[ERROR] (teamid: %d, chall_id: %d) (ingress) %s\n", job.TeamID, job.ChallID, err.Error())
 	}
 
 	if err := deleteService(fmt.Sprintf("%s-svc", job.InstanceName), job.Ctx, k8sclient); err != nil {
 		log.Printf("[ERROR] (teamid: %d, chall_id: %d) (service) %s\n", job.TeamID, job.ChallID, err.Error())
 	}
 
-	if err := deleteIngress(fmt.Sprintf("%s-ingress", job.InstanceName), "IngressRoute", job.Ctx, k8sclient); err != nil {
-		log.Printf("[ERROR] (teamid: %d, chall_id: %d) (ingress) %s\n", job.TeamID, job.ChallID, err.Error())
+	if err := deleteDeployment(job.InstanceName, job.Ctx, k8sclient); err != nil {
+		log.Printf("[ERROR] (teamid: %d, chall_id: %d) (deployment) %s\n", job.TeamID, job.ChallID, err.Error())
 	}
 
 	if err := database.DeleteFlag(job.TeamID, job.ChallID); err != nil {
