@@ -70,4 +70,10 @@ spec:
 
             - name: INSTANCE_NAMESPACE
               value: {{ .Values.isolet.namespace }}
+
+            - name: WORKER_COUNT
+              valueFrom:
+                configMapKeyRef:
+                  name: automation-config
+                  key: RIPPER_WORKER_COUNT
  

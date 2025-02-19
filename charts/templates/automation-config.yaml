@@ -15,3 +15,4 @@ data:
   EVENT_START: {{ .Values.event.startTime | quote }}
   EVENT_END: {{ .Values.event.endTime | quote }}
   POST_EVENT: {{ .Values.event.postEvent | quote }}
+  RIPPER_WORKER_COUNT: {{ .Values.automation.ripper.workerCount | quote }}
