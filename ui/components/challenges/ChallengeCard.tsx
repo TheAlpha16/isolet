@@ -16,7 +16,12 @@ export function ChallengeCard({ challenge, onClick }: ChallengeCardProps) {
 			<CardHeader>
 				<CardTitle className="flex justify-between items-center">
 					<span className="truncate">{challenge.name}</span>
-					<Badge variant={challenge.done ? "secondary" : "default"}>{challenge.points} pts</Badge>
+					<Badge
+						variant={challenge.done ? "secondary" : "default"}
+						className="ml-2 min-w-fit"
+					>
+						{challenge.points} pts
+					</Badge>
 				</CardTitle>
 			</CardHeader>
 			<CardContent>
@@ -24,7 +29,7 @@ export function ChallengeCard({ challenge, onClick }: ChallengeCardProps) {
 				<div className="flex flex-wrap gap-1">
 					{challenge.tags.map((tag) => (
 						<Badge key={tag} variant="outline">
-						{tag}
+							{tag}
 						</Badge>
 					))}
 				</div>

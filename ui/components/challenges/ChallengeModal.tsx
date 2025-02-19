@@ -50,7 +50,7 @@ export function ChallengeModal({ challenge, onClose }: ChallengeModalProps) {
 							<span>{challenge.name}</span>
 							{challenge.done && <Check className="w-5 h-5 text-green-500" strokeWidth={2.5} />}
 						</div>
-						<Badge variant="secondary" className="ml-2">{challenge.points} pts</Badge>
+						<Badge variant="secondary" className="ml-2 min-w-fit">{challenge.points} pts</Badge>
 					</DialogTitle>
 					<div className="flex items-center justify-between text-sm text-muted-foreground">
 						<span>by {challenge.author}</span>
