@@ -1,0 +1,150 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-dns-deployment
+  namespace: {{ .Values.automation.namespace }}
+  labels:
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: external-dns
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: deployment
+      app.kubernetes.io/part-of: external-dns
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: deployment
+        app.kubernetes.io/part-of: external-dns
+    spec:
+      serviceAccountName: external-dns-service-account
+      containers:
+        - name: external-dns
+          image: registry.k8s.io/external-dns/external-dns:v0.15.0
+          args:
+            - --source=service
+            - --provider=cloudflare
+            - --cloudflare-proxied
+            - --cloudflare-dns-records-per-page=5000
+          env:
+            - name: CF_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: automation-secrets
+                  key: CLOUDFLARE_API_KEY
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 10m
+              memory: 32Mi
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: external-dns-service-account
+  namespace: {{ .Values.automation.namespace }}
+  labels:
+    app.kubernetes.io/component: service-account
+    app.kubernetes.io/part-of: external-dns
+    {{- include "charts.labels" . | nindent 4 }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: external-dns-role
+  labels:
+    app.kubernetes.io/component: role
+    app.kubernetes.io/part-of: external-dns
+    {{- include "charts.labels" . | nindent 4 }}
+rules:
+  - apiGroups: 
+      - ""
+    resources: 
+      - services
+      - endpoints
+      - pods
+    verbs: 
+      - get
+      - watch
+      - list
+  - apiGroups: 
+      - extensions
+      - networking.k8s.io
+    resources: 
+      - ingresses
+    verbs: 
+      - get
+      - watch
+      - list
+  - apiGroups: 
+      - ""
+    resources: 
+      - nodes
+    verbs: 
+      - list
+      - watch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: read-automation-secrets
+  namespace: {{ .Values.automation.namespace }}
+  labels:
+    app.kubernetes.io/component: role
+    app.kubernetes.io/part-of: external-dns
+    {{- include "charts.labels" . | nindent 4 }}
+rules:
+  - apiGroups: 
+      - ""
+    resources: 
+      - secrets
+    verbs: 
+      - get
+      - list
+      - watch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: external-dns-role-binding
+  labels:
+    app.kubernetes.io/component: role-binding
+    app.kubernetes.io/part-of: external-dns
+    {{- include "charts.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: external-dns-role
+subjects:
+  - kind: ServiceAccount
+    name: external-dns-service-account
+    namespace: {{ .Values.automation.namespace }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-automation-secrets-binding
+  namespace: {{ .Values.automation.namespace }}
+  labels:
+    app.kubernetes.io/component: role-binding
+    app.kubernetes.io/part-of: external-dns
+    {{- include "charts.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: read-automation-secrets
+subjects:
+  - kind: ServiceAccount
+    name: external-dns-service-account
+    namespace: {{ .Values.automation.namespace }}
