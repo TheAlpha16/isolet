@@ -34,7 +34,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: automation-secrets
-                  key: CLOUDFLARE_API_KEY
+                  key: CLOUDFLARE_API_TOKEN
           resources:
             limits:
               cpu: 100m
