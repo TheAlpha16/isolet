@@ -24,7 +24,7 @@ metadata:
 spec:
   acme:
     email: {{ .Values.certManager.email }}
-    server: https://acme-v02.api.letsencrypt.org/directory
+    server: "{{- if eq .Values.event.environment "production" }}https://acme-v02.api.letsencrypt.org/directory{{- else }}https://acme-staging-v02.api.letsencrypt.org/directory{{- end }}"
     privateKeySecretRef:
       name: letsencrypt-private-key
     solvers:
