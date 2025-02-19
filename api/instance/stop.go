@@ -30,8 +30,8 @@ func DeleteInstance(c *fiber.Ctx, chall_id int, teamid int64) error {
 		return errors.New("error in stopping the instance, contact admin")
 	}
 
-	if err := deleteDeployment(instance_name, c.Context(), k8sclient); err != nil {
-		log.Println("error in stop (deployment) - chall_id: ", chall_id, " teamid: ", teamid)
+	if err := deleteIngress(fmt.Sprintf("%s-ingress", instance_name), "IngressRoute", c.Context(), k8sclient); err != nil {
+		log.Println("error in stop (ingress) - chall_id: ", chall_id, " teamid: ", teamid)
 		return errors.New("error in stopping the instance, contact admin")
 	}
 
@@ -40,8 +40,8 @@ func DeleteInstance(c *fiber.Ctx, chall_id int, teamid int64) error {
 		return errors.New("error in stopping the instance, contact admin")
 	}
 
-	if err := deleteIngress(fmt.Sprintf("%s-ingress", instance_name), "IngressRoute", c.Context(), k8sclient); err != nil {
-		log.Println("error in stop (ingress) - chall_id: ", chall_id, " teamid: ", teamid)
+	if err := deleteDeployment(instance_name, c.Context(), k8sclient); err != nil {
+		log.Println("error in stop (deployment) - chall_id: ", chall_id, " teamid: ", teamid)
 		return errors.New("error in stopping the instance, contact admin")
 	}
 
