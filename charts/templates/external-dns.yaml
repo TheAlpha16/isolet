@@ -28,7 +28,6 @@ spec:
           args:
             - --source=service
             - --provider=cloudflare
-            - --cloudflare-proxied
             - --cloudflare-dns-records-per-page=5000
           env:
             - name: CF_API_TOKEN
