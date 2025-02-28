@@ -13,14 +13,13 @@
     "cookie": "^1.0.2",
     "dotenv": "^16.4.7",
     "jsonwebtoken": "^9.0.2",
-    "pg": "^8.13.1",
+    "pg-promise": "^11.10.2",
     "socket.io": "^4.8.1",
     "winston": "^3.17.0"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.8",
     "@types/node": "^22.13.1",
-    "@types/pg": "^8.11.11",
     "nodemon": "^3.1.9",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
