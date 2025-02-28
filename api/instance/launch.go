@@ -43,20 +43,20 @@ func DeployInstance(
 	flagObject := models.Flag{
 		TeamID:   teamid,
 		ChallID:  chall_id,
-		Flag:     "",
-		Password: database.GenerateRandom()[0:32],
+		Flag:     challenge.Flag,
+		Password: "",
 		Port:     challenge.Port,
 		Hostname: utils.GetHostName([]string{instance_name}),
 		Deadline: 1893456000000,
 		Deployment: challenge.Deployment,
 	}
 
-	if challenge.Flag != "" {
-		flagObject.Flag = strings.TrimSuffix(challenge.Flag, "}")
-		flagObject.Flag = fmt.Sprintf("%s_%s}", flagObject.Flag, database.GenerateRandom()[0:16])
-	} else {
-		flagObject.Flag = fmt.Sprintf("%s{%s}", flagObject.Flag, database.GenerateRandom()[0:16])
-	}
+	// if challenge.Flag != "" {
+	// 	flagObject.Flag = strings.TrimSuffix(challenge.Flag, "}")
+	// 	flagObject.Flag = fmt.Sprintf("%s_%s}", flagObject.Flag, database.GenerateRandom()[0:16])
+	// } else {
+	// 	flagObject.Flag = fmt.Sprintf("%s{%s}", flagObject.Flag, database.GenerateRandom()[0:16])
+	// }
 
 	k8sclient, err := NewK8sClient()
 	if err != nil {
@@ -160,27 +160,27 @@ func createDeployment(obj *unstructured.Unstructured, instance_name string, flag
 	deployment.Deployment.Spec.Selector.MatchLabels["teamid"] = fmt.Sprintf("%d", flagObject.TeamID)
 
 	// update environment variables
-	for i, container := range deployment.Deployment.Spec.Template.Spec.Containers {
-		envVars := container.Env
-		envVars = append(envVars, core.EnvVar{
-			Name:  "FLAG",
-			Value: flagObject.Flag,
-		})
-		envVars = append(envVars, core.EnvVar{
-			Name:  "USERNAME",
-			Value: config.DEFAULT_USERNAME,
-		})
-		envVars = append(envVars, core.EnvVar{
-			Name:  "PASSWORD",
-			Value: flagObject.Password,
-		})
-		envVars = append(envVars, core.EnvVar{
-			Name:  "CTF_NAME",
-			Value: config.CTF_NAME,
-		})
+	// for i, container := range deployment.Deployment.Spec.Template.Spec.Containers {
+	// 	envVars := container.Env
+	// 	envVars = append(envVars, core.EnvVar{
+	// 		Name:  "FLAG",
+	// 		Value: flagObject.Flag,
+	// 	})
+	// 	envVars = append(envVars, core.EnvVar{
+	// 		Name:  "USERNAME",
+	// 		Value: config.DEFAULT_USERNAME,
+	// 	})
+	// 	envVars = append(envVars, core.EnvVar{
+	// 		Name:  "PASSWORD",
+	// 		Value: flagObject.Password,
+	// 	})
+	// 	envVars = append(envVars, core.EnvVar{
+	// 		Name:  "CTF_NAME",
+	// 		Value: config.CTF_NAME,
+	// 	})
 
-		deployment.Deployment.Spec.Template.Spec.Containers[i].Env = envVars
-	}
+	// 	deployment.Deployment.Spec.Template.Spec.Containers[i].Env = envVars
+	// }
 
 	if deployment.Deployment.Spec.Replicas == nil || *deployment.Deployment.Spec.Replicas == 0 {
 		deployment.Deployment.Spec.Replicas = utils.Int32Addr("1")
