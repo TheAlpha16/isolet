@@ -36,7 +36,15 @@ export const socketInit = (server: any) => {
         io.socketsJoin(`team-${(socket as any).user.teamid}`);
 
         const instances = await fetchInstances((socket as any).user.teamid);
+        logger.info(`Client connected: ${(socket as any).user.username}`);
+        logger.info(`Clients: ${io.sockets.sockets.size}`);
+
         socket.emit("instances", instances);
+
+        socket.on("disconnect", (reason) => {
+            logger.info(`Client disconnected: ${reason}`)
+            logger.info(`Clients: ${io.sockets.sockets.size}`);
+        });
     });
 
     return io;

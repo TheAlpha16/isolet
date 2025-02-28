@@ -1,17 +1,21 @@
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { socketInit } from "./socket";
 import { logger } from "./config/logger";
-import { dbConnect } from "./database";
-import { updateInstance } from "./services/instances/update";
-import { stopInstance } from "./services/instances/stop";
+import { connectToDB, db } from "./database";
+import { startListeners } from "./services/instances/handler";
 
 async function startServer() {
     try {
-        await dbConnect();
-        logger.info("Connected to database!");
+        await connectToDB();
 
         const server = createServer((req: IncomingMessage, res: ServerResponse) => {
             if (req.method === "GET" && req.url === "/ping") {
+                if (!db) {
+                    res.writeHead(500, { "Content-Type": "text/plain" });
+                    res.end("Database connection not established");
+                    return;
+                }
+
                 res.writeHead(200, { "Content-Type": "text/plain" });
                 res.end("pong");
             }
@@ -21,9 +25,7 @@ async function startServer() {
 
         server.listen(8888, () => {
             logger.info("Attaching postgres listeners...");
-            updateInstance(io);
-            stopInstance(io);
-            logger.info("Postgres listeners attached!");
+            startListeners(io);
             logger.info("Socket.IO relay server running on port 8888");
         });
     } catch (error) {
