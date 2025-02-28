@@ -3,8 +3,8 @@ import { create } from "zustand";
 interface MetadataStore {
     metadataLoaded: boolean;
     ctfName: string;
-    eventStart: string;
-    eventEnd: string;
+    eventStart: Date;
+    eventEnd: Date;
     postEvent: boolean;
     teamLen: number;
     fetchMetadata: () => void;
@@ -13,8 +13,8 @@ interface MetadataStore {
 export const useMetadataStore = create<MetadataStore>((set) => ({
     metadataLoaded: false,
     ctfName: "isolet",
-    eventStart: "",
-    eventEnd: "",
+    eventStart: new Date(0),
+    eventEnd: new Date(0),
     postEvent: false,
     teamLen: 0,
 
@@ -27,8 +27,8 @@ export const useMetadataStore = create<MetadataStore>((set) => ({
             const data = await res.json();
             set({
                 ctfName: data.ctf_name,
-                eventStart: data.event_start,
-                eventEnd: data.event_end,
+                eventStart: new Date(data.event_start),
+                eventEnd: new Date(data.event_end),
                 postEvent: data.post_event,
                 teamLen: data.team_len,
             });
