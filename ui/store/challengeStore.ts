@@ -62,7 +62,8 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
             } else if (res.status === 401) {
                 showToast(ToastStatus.Warning, "login to continue");
             } else if (res.status === 503) {
-                showToast(ToastStatus.Failure, "event has not yet started");
+                const response = await res.json();
+                showToast(ToastStatus.Warning, response.message);
             } else {
                 showToast(ToastStatus.Failure, "failed to fetch challenges");
             }
