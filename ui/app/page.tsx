@@ -17,7 +17,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen text-white flex flex-col items-center">
       {/* Main content */}
-      <main className="flex-1 w-full max-w-6xl px-4 py-12 md:py-24">
+      <main className="flex-1 w-full max-w-6xl px-4 py-12 md:py-12">
         {/* Hero section with logo */}
         <section className="flex flex-col items-center justify-center mb-16 relative">
           {/* Cyberpunk circuit lines */}
@@ -29,7 +29,6 @@ export default function HomePage() {
 
           {/* Logo */}
           <div className="relative mb-8 w-64 h-64 md:w-80 md:h-80">
-            <div className="absolute inset-0 rounded-full bg-blue-500/10 blur-xl"></div>
             <div className="relative w-full h-full flex items-center justify-center">
               <Image
                 src={pearlLogo.src}
