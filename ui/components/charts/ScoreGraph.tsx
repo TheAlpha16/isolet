@@ -46,27 +46,27 @@ export function ScoreGraph({ plots }: ScoreGraphProps) {
         [labels]
     ) satisfies ChartConfig;
 
-    const formatXAxis = (tickItem: string, index: number) => {
-        try {
-            const date = new Date(tickItem);
-            const prevDate = index > 0 ? new Date(plots[index - 1].timestamp) : null;
+    // const formatXAxis = (tickItem: string, index: number) => {
+    //     try {
+    //         const date = new Date(tickItem);
+    //         const prevDate = index > 0 ? new Date(plots[index - 1].timestamp) : null;
 
-            if (!prevDate || !isSameDay(date, prevDate)) {
-                return date.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                });
-            }
+    //         if (!prevDate || !isSameDay(date, prevDate)) {
+    //             return date.toLocaleDateString("en-US", {
+    //                 month: "short",
+    //                 day: "numeric",
+    //             });
+    //         }
 
-            return date.toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "numeric",
-            });
+    //         return date.toLocaleTimeString("en-US", {
+    //             hour: "numeric",
+    //             minute: "numeric",
+    //         });
 
-        } catch {
-            return ""
-        }
-    }
+    //     } catch {
+    //         return ""
+    //     }
+    // }
 
     return (
         <Card>
@@ -89,9 +89,9 @@ export function ScoreGraph({ plots }: ScoreGraphProps) {
                             dataKey="timestamp"
                             tickLine={false}
                             axisLine={false}
-                            tickMargin={8}
-                            minTickGap={32}
-                            tickFormatter={formatXAxis}
+                            // tickMargin={8}
+                            // minTickGap={32}
+                            tickFormatter={() => ""}
                         />
                         <ChartTooltip
                             cursor={false}
