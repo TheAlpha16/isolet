@@ -78,9 +78,14 @@ func JoinTeam(c *fiber.Ctx, user *models.User, team *models.Team) error {
 	defer cancel()
 
 	db := DB.WithContext(ctx)
+	teamLen, err := config.GetInt("TEAM_LEN")
+	if err != nil {
+		log.Println(err)
+		return errors.New("error in joining team")
+	}
 
-	err := db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Exec("SELECT join_team(?, ?, ?)", team.TeamID, user.UserID, config.TEAM_LEN).Error; err != nil {
+	err = db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Exec("SELECT join_team(?, ?, ?)", team.TeamID, user.UserID, teamLen).Error; err != nil {
 			return errors.New(CleanSQLException(err.Error()))
 		}
 		return nil

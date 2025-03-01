@@ -51,8 +51,13 @@ func GetInviteToken(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": err.Error()})
 	}
 
+	publicURL, err := config.Get("PUBLIC_URL")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in generating token, contact admin"})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "success",
-		"token":  fmt.Sprintf("http://%s/onboard/team/invite?token=%s", config.PUBLIC_URL, token),
+		"token":  fmt.Sprintf("http://%s/onboard/team/invite?token=%s", publicURL, token),
 	})
 }

@@ -28,10 +28,15 @@ func ReadChallenges(c *fiber.Ctx, teamid int64) (map[string][]models.Challenge, 
 
 	// Post-fetch filtering and modifications
 	filteredChallenges := make(map[string][]models.Challenge)
+	instanceHostname, err := config.Get("INSTANCE_HOSTNAME")
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
 
 	for _, challenge := range challenges {
 		if challenge.Type == "dynamic" {
-			connLink := GenerateChallengeEndpoint(challenge.Deployment, challenge.Subd, config.INSTANCE_HOSTNAME, challenge.Port)
+			connLink := GenerateChallengeEndpoint(challenge.Deployment, challenge.Subd, instanceHostname, challenge.Port)
 
 			challenge.Links = append(challenge.Links, connLink)
 		}
@@ -96,7 +101,13 @@ func VerifyFlag(c *fiber.Ctx, chall_id int, userid int64, teamid int64, flag str
 		IP:      c.Locals("clientIP").(string),
 	}
 
-	if config.POST_EVENT != "false" {
+	postEvent, err := config.GetBool("POST_EVENT")
+	if err != nil {
+		log.Println(err)
+		return false, "error in verification, please contact admin", -1
+	}
+
+	if postEvent {
 		if !sublog.Correct {
 			return sublog.Correct, "incorrect flag", -1
 		} else {

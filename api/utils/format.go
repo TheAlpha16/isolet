@@ -14,7 +14,9 @@ func GetInstanceName(chall_id int, teamid int64) string {
 }
 
 func GetHostName(subdomains []string) string {
-	return strings.Join(subdomains, ".") + "." + config.INSTANCE_HOSTNAME
+	instanceHostName, _ := config.Get("INSTANCE_HOSTNAME")
+
+	return strings.Join(subdomains, ".") + "." + instanceHostName
 }
 
 func GetChallengeSubdomain(input string) string {

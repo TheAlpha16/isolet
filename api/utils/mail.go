@@ -38,14 +38,44 @@ func SendVerificationMail(regInput *models.ToVerify) error {
 		return err
 	}
 
-	from := config.EMAIL_ID
-	secret := config.EMAIL_AUTH
+	ctfName, err := config.Get("CTF_NAME")
+	if err != nil {
+		return err
+	}
+
+	emailID, err := config.Get("EMAIL_ID")
+	if err != nil {
+		return err
+	}
+
+	emailAuth, err := config.Get("EMAIL_AUTH")
+	if err != nil {
+		return err
+	}
+
+	smtpHost, err := config.Get("SMTP_HOST")
+	if err != nil {
+		return err
+	}
+
+	smtpPort, err := config.Get("SMTP_PORT")
+	if err != nil {
+		return err
+	}
+
+	publicURL, err := config.Get("PUBLIC_URL")
+	if err != nil {
+		return err
+	}
+
+	from := emailID
+	secret := emailAuth
 
 	to := []string{
 		regInput.Email,
 	}
 
-	auth := smtp.PlainAuth("", from, secret, config.SMTP_HOST)
+	auth := smtp.PlainAuth("", from, secret, smtpHost)
 
 	t, err := template.ParseFiles("templates/mail.html")
 	if err != nil {
@@ -56,7 +86,7 @@ func SendVerificationMail(regInput *models.ToVerify) error {
 	var body bytes.Buffer
 
 	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
-	body.Write([]byte(fmt.Sprintf("Subject: %s account verification \n%s\n\n", config.CTF_NAME, mimeHeaders)))
+	body.Write([]byte(fmt.Sprintf("Subject: %s account verification \n%s\n\n", ctfName, mimeHeaders)))
 
 	err = t.Execute(&body, struct {
 		Username string
@@ -64,15 +94,15 @@ func SendVerificationMail(regInput *models.ToVerify) error {
 		Wargame  string
 	}{
 		Username: regInput.Username,
-		Link:     config.AUTH_URL + token,
-		Wargame:  config.CTF_NAME,
+		Link:     fmt.Sprintf("http://%s/auth/verify?token=%s", publicURL, token),
+		Wargame:  ctfName,
 	})
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	err = smtp.SendMail(config.SMTP_HOST+":"+config.SMTP_PORT, auth, from, to, body.Bytes())
+	err = smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, body.Bytes())
 	if err != nil {
 		return err
 	}
@@ -83,14 +113,44 @@ func SendVerificationMail(regInput *models.ToVerify) error {
 func SendResetPasswordMail(user *models.User, token *models.Token) error {
 	var err error
 
-	from := config.EMAIL_ID
-	secret := config.EMAIL_AUTH
+	emailID, err := config.Get("EMAIL_ID")
+	if err != nil {
+		return err
+	}
+
+	emailAuth, err := config.Get("EMAIL_AUTH")
+	if err != nil {
+		return err
+	}
+
+	smtpHost, err := config.Get("SMTP_HOST")
+	if err != nil {
+		return err
+	}
+
+	smtpPort, err := config.Get("SMTP_PORT")
+	if err != nil {
+		return err
+	}
+
+	publicURL, err := config.Get("PUBLIC_URL")
+	if err != nil {
+		return err
+	}
+
+	from := emailID
+	secret := emailAuth
+	ctfName, err := config.Get("CTF_NAME")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 
 	to := []string{
 		user.Email,
 	}
 
-	auth := smtp.PlainAuth("", from, secret, config.SMTP_HOST)
+	auth := smtp.PlainAuth("", from, secret, smtpHost)
 
 	t, err := template.ParseFiles("templates/reset.html")
 	if err != nil {
@@ -101,21 +161,21 @@ func SendResetPasswordMail(user *models.User, token *models.Token) error {
 	var body bytes.Buffer
 
 	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
-	body.Write([]byte(fmt.Sprintf("Subject: %s password reset \n%s\n\n", config.CTF_NAME, mimeHeaders)))
+	body.Write([]byte(fmt.Sprintf("Subject: %s password reset \n%s\n\n", ctfName, mimeHeaders)))
 
 	err = t.Execute(&body, struct {
-		Link    string
+		Link     string
 		Username string
 	}{
 		Username: user.Username,
-		Link:     fmt.Sprintf("http://%s/reset-password?token=%s", config.PUBLIC_URL, token.Token),
+		Link:     fmt.Sprintf("http://%s/reset-password?token=%s", publicURL, token.Token),
 	})
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	err = smtp.SendMail(config.SMTP_HOST+":"+config.SMTP_PORT, auth, from, to, body.Bytes())
+	err = smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, body.Bytes())
 	if err != nil {
 		log.Println(err)
 		return err

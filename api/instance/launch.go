@@ -41,13 +41,13 @@ func DeployInstance(
 	challenge_name := utils.GetChallengeSubdomain(challenge.Name)
 
 	flagObject := models.Flag{
-		TeamID:   teamid,
-		ChallID:  chall_id,
-		Flag:     challenge.Flag,
-		Password: "",
-		Port:     challenge.Port,
-		Hostname: utils.GetHostName([]string{instance_name}),
-		Deadline: 1893456000000,
+		TeamID:     teamid,
+		ChallID:    chall_id,
+		Flag:       challenge.Flag,
+		Password:   "",
+		Port:       challenge.Port,
+		Hostname:   utils.GetHostName([]string{instance_name}),
+		Deadline:   1893456000000,
 		Deployment: challenge.Deployment,
 	}
 
@@ -194,6 +194,12 @@ func createDeployment(obj *unstructured.Unstructured, instance_name string, flag
 		}
 	}
 
+	instanceTime, err := config.GetDuration("INSTANCE_TIME")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
 	for {
 		deploy, err := deployment.Get(ctx, deployment.Deployment.Name, deployment.Deployment.Namespace)
 		if err != nil {
@@ -243,7 +249,7 @@ func createDeployment(obj *unstructured.Unstructured, instance_name string, flag
 					return errors.New("no pods found")
 				}
 
-				flagObject.Deadline = pods.Items[0].Status.StartTime.Add(time.Minute * time.Duration(config.INSTANCE_TIME)).UnixMilli()
+				flagObject.Deadline = pods.Items[0].Status.StartTime.Add(time.Minute * instanceTime).UnixMilli()
 				break
 			}
 		}

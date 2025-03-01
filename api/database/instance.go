@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TheAlpha16/isolet/api/models"
 	"github.com/TheAlpha16/isolet/api/config"
+	"github.com/TheAlpha16/isolet/api/models"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -73,7 +73,7 @@ func DeleteFlag(c *fiber.Ctx, chall_id int, teamid int64) error {
 	defer cancel()
 
 	db := DB.WithContext(ctx)
-	
+
 	if err := db.Where("chall_id = ? AND teamid = ?", chall_id, teamid).Delete(&models.Flag{}).Error; err != nil {
 		log.Println(err)
 		return errors.New("error in stopping the instance, contact admin")
@@ -95,7 +95,7 @@ func ValidOnDemandChallenge(c *fiber.Ctx, chall_id int, teamid int64, challenge 
 		log.Println(err)
 		return errors.New("error in fetching challenge data")
 	}
-	
+
 	if challenge.Type != "on-demand" {
 		return errors.New("challenge is not on-demand")
 	}
@@ -103,14 +103,14 @@ func ValidOnDemandChallenge(c *fiber.Ctx, chall_id int, teamid int64, challenge 
 	return nil
 }
 
-func IsRunning (ctx context.Context, chall_id int, teamid int64) (string, error) {
+func IsRunning(ctx context.Context, chall_id int, teamid int64) (string, error) {
 	var flag string
 	db := DB.WithContext(ctx)
 
 	if err := db.Model(&models.Flag{}).
 		Select("flag").
 		Where("chall_id = ? AND teamid = ?", chall_id, teamid).
-    	First(&flag).Error; err != nil {
+		First(&flag).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
 			log.Println(err)
 		}
@@ -154,18 +154,30 @@ func AddTime(c *fiber.Ctx, chall_id int, teamid int64) (int64, error) {
 		return 0, errors.New("error in extension, please contact admin")
 	}
 
-	if (record.Extended + 1) > (config.MAX_INSTANCE_TIME / config.INSTANCE_TIME) {
+	maxInstanceTime, err := config.GetInt("MAX_INSTANCE_TIME")
+	if err != nil {
+		log.Println(err)
+		return 0, errors.New("error in extension, please contact admin")
+	}
+
+	instanceTime, err := config.GetInt("INSTANCE_TIME")
+	if err != nil {
+		log.Println(err)
+		return 0, errors.New("error in extension, please contact admin")
+	}
+
+	if (record.Extended + 1) > (int(maxInstanceTime) / int(instanceTime)) {
 		return 0, errors.New("limit reached")
 	}
 
 	if err := db.Model(&models.Flag{}).
 		Where("chall_id = ? AND teamid = ?", chall_id, teamid).
-		Update("extended", record.Extended + 1).Error; err != nil {
+		Update("extended", record.Extended+1).Error; err != nil {
 		log.Println(err)
 		return 0, errors.New("error in extension, please contact admin")
 	}
 
-	newdeadline := time.UnixMilli(record.Deadline).Add(time.Minute * time.Duration(config.INSTANCE_TIME)).UnixMilli()
+	newdeadline := time.UnixMilli(record.Deadline).Add(time.Minute * time.Duration(instanceTime)).UnixMilli()
 
 	if err := db.Model(&models.Flag{}).
 		Where("chall_id = ? AND teamid = ?", chall_id, teamid).
