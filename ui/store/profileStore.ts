@@ -65,7 +65,7 @@ export const useProfileStore = create<ProfileStore>((set) => ({
 					})),
 				};
 
-				const teamGraph = processScores([teamData], useMetadataStore.getState().eventStart);
+				const teamGraph = processScores([teamData], useMetadataStore.getState().eventStart.toUTCString());
 				const userSubmissions = submissions.filter((sub: SubmissionType) => sub.userid === useAuthStore.getState().user.userid);
 
 				var userCorrect = userSubmissions.filter((sub: SubmissionType) => sub.correct === true).length;
