@@ -19,7 +19,7 @@ func AreRegsOpen() fiber.Handler {
 		if !regsOpen {
 			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
 				"status":  "failure",
-				"message": "sorry, registrations are paused for the moment",
+				"message": "sorry, registrations are paused at the moment",
 			})
 		}
 
