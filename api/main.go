@@ -31,6 +31,8 @@ func main() {
 		break
 	}
 
+	database.InitializeGlobalDBConfig()
+
 	// Generate new secrets if don't exist
 	if err := utils.UpdateKey("SESSION_SECRET"); err != nil {
 		log.Fatal(err)

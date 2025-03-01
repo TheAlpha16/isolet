@@ -16,3 +16,12 @@ type Token struct {
 	User   User      `gorm:"foreignKey:UserID;references:UserID" json:"-"`
 	Expiry time.Time `gorm:"column:expiry" json:"-"`
 }
+
+type Config struct {
+	Key   string `gorm:"column:key;primaryKey"`
+	Value string `gorm:"column:value"`
+}
+
+func (Config) TableName() string {
+	return "config"
+}

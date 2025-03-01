@@ -1,12 +1,15 @@
 package database
 
 import (
-	"fmt"
-	"strings"
+	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
+	"log"
+	"strings"
 
 	"github.com/TheAlpha16/isolet/api/config"
+	"github.com/TheAlpha16/isolet/api/models"
 )
 
 func GenerateRandom() string {
@@ -23,34 +26,34 @@ func GenerateChallengeEndpoint(method string, subdomain string, domain string, p
 	}
 
 	switch method {
-		case "http":
-			if port == 80 {
-				connString = fmt.Sprintf("http://%s%s", subdomain, domain) 
-			} else if port == 443 {
-				connString = fmt.Sprintf("https://%s%s", subdomain, domain)
-			} else {
-				connString = fmt.Sprintf("http://%s%s:%d", subdomain, domain, port)
-			}
-		
-		case "ssh":
-			var user string
+	case "http":
+		if port == 80 {
+			connString = fmt.Sprintf("http://%s%s", subdomain, domain)
+		} else if port == 443 {
+			connString = fmt.Sprintf("https://%s%s", subdomain, domain)
+		} else {
+			connString = fmt.Sprintf("http://%s%s:%d", subdomain, domain, port)
+		}
 
-			if len(username) > 0 {
-				user = username[0]
-			} else {
-				user = config.DEFAULT_USERNAME
-			}
+	case "ssh":
+		var user string
 
-			if port == 22 {
-				connString = fmt.Sprintf("ssh %s@%s%s", user, subdomain, domain)
-			} else {
-				connString = fmt.Sprintf("ssh %s@%s%s -p %d", user, subdomain, domain, port)
-			}
+		if len(username) > 0 {
+			user = username[0]
+		} else {
+			user = config.DEFAULT_USERNAME
+		}
 
-		case "nc":
-			connString = fmt.Sprintf("nc %s%s %d", subdomain, domain, port)
+		if port == 22 {
+			connString = fmt.Sprintf("ssh %s@%s%s", user, subdomain, domain)
+		} else {
+			connString = fmt.Sprintf("ssh %s@%s%s -p %d", user, subdomain, domain, port)
+		}
+
+	case "nc":
+		connString = fmt.Sprintf("nc %s%s %d", subdomain, domain, port)
 	}
-	
+
 	return connString
 }
 
@@ -63,4 +66,16 @@ func CleanSQLException(error_msg string) string {
 	}
 
 	return error_msg
+}
+
+func GetConfigs(ctx context.Context) ([]models.Config, error) {
+	db := DB.WithContext(ctx)
+	
+	var configs []models.Config
+	if err := db.Table("config").Find(&configs).Error; err != nil {
+		log.Printf("Failed to get configs: %v\n", err)
+		return nil, err
+	}
+
+	return configs, nil
 }
