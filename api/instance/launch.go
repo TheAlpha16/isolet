@@ -47,7 +47,7 @@ func DeployInstance(
 		Password:   "",
 		Port:       challenge.Port,
 		Hostname:   utils.GetHostName([]string{instance_name}),
-		Deadline:   1893456000000,
+		Deadline:   time.Now().Add(time.Minute * 5).UnixMilli(),
 		Deployment: challenge.Deployment,
 	}
 
@@ -158,6 +158,12 @@ func createDeployment(obj *unstructured.Unstructured, instance_name string, flag
 	deployment.Deployment.Spec.Template.Labels["teamid"] = fmt.Sprintf("%d", flagObject.TeamID)
 	deployment.Deployment.Spec.Selector.MatchLabels["chall_id"] = fmt.Sprintf("%d", flagObject.ChallID)
 	deployment.Deployment.Spec.Selector.MatchLabels["teamid"] = fmt.Sprintf("%d", flagObject.TeamID)
+
+	if deployment.Deployment.Annotations == nil {
+		deployment.Deployment.Annotations = make(map[string]string)
+	}
+
+	deployment.Deployment.Annotations["deadline"] = fmt.Sprintf("%d", flagObject.Deadline)
 
 	// update environment variables
 	// for i, container := range deployment.Deployment.Spec.Template.Spec.Containers {
