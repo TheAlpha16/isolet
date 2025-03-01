@@ -223,25 +223,28 @@ CREATE OR REPLACE FUNCTION enforce_instance_count() RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    max_instance_count INTEGER := 2; 
+    max_instance_count INTEGER := 0;
     instance_count INTEGER := 0;
-    must_check BOOLEAN := false;
+    config_value TEXT;
 BEGIN
-    IF TG_OP = 'INSERT' THEN
-        must_check := true;
+    SELECT value INTO config_value
+    FROM config
+    WHERE key = 'CONCURRENT_INSTANCES';
+    
+    IF config_value IS NOT NULL THEN
+        max_instance_count := config_value::INTEGER;
     END IF;
 
-    IF must_check THEN
-        -- prevent concurrent inserts from multiple transactions
-        LOCK TABLE running IN EXCLUSIVE MODE;
+    -- Count current instances
+    WITH locked_rows AS (
+        SELECT 1 FROM running 
+        WHERE teamid = NEW.teamid
+        FOR UPDATE
+    )
+    SELECT COUNT(*) INTO instance_count FROM locked_rows;
 
-        SELECT INTO instance_count COUNT(*) 
-        FROM running 
-        WHERE teamid = NEW.teamid;
-
-        IF instance_count >= max_instance_count THEN
-            RAISE EXCEPTION 'Cannot start more instances for the team.';
-        END IF;
+    IF instance_count >= max_instance_count THEN
+        RAISE EXCEPTION 'Cannot start more instances for the team. Maximum allowed: %', max_instance_count;
     END IF;
 
     RETURN NEW;
