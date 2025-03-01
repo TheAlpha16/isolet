@@ -502,7 +502,7 @@ data:
                 t.rank,
                 jsonb_build_object(
                     'points', c.points,
-                    'timestamp', s.timestamp
+                    'timestamp', to_char(s.timestamp AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')
                 ) AS event
             FROM top_teams t
             LEFT JOIN solves s ON s.teamid = t.teamid
@@ -517,7 +517,7 @@ data:
                 t.rank,
                 jsonb_build_object(
                     'points', -h.cost,
-                    'timestamp', uh.timestamp
+                    'timestamp', to_char(uh.timestamp AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')
                 ) AS event
             FROM top_teams t
             LEFT JOIN uhints uh ON uh.teamid = t.teamid
