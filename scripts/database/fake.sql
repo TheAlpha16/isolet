@@ -85,7 +85,8 @@ INSERT INTO users (userid, email, username, password, teamid) VALUES
 (3, 'kingkongvsgodzilla@gmail.com', 'uselesscop', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 1),
 (4, 'lord.shardul@gmail.com', 'rayofhope', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 1),
 (5, 'getthisout@gmail.com', 'glimpse', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 2),
-(6, 'infoseccl@gmail.com', 'cyberlabs', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 2);
+(6, 'infoseccl@gmail.com', 'cyberlabs', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 2)
+(7, 'admin@isolet-dev.in', 'admin', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 1);
 
 -- Teams
 INSERT INTO teams (teamid, teamname, captain, password) VALUES
@@ -114,3 +115,19 @@ SELECT setval('hints_hid_seq', 4);
 SELECT setval('users_userid_seq', 6);
 SELECT setval('teams_teamid_seq', 2);
 SELECT setval('sublogs_sid_seq', 7);
+
+-- Config
+INSERT INTO config (key, value) VALUES ('EVENT_START', '1728813375'),
+('EVENT_END', '1799986175'),
+('POST_EVENT', 'false'),
+('TEAM_LEN', '4'),
+('CTF_NAME', 'isolet-dev'),
+('CONCURRENT_INSTANCES', '1'),
+('INSTANCE_HOSTNAME', 'ctf.isolet-dev.in'),
+('INSTANCE_TIME', '30'),
+('MAX_INSTANCE_TIME', '60'),
+('EMAIL_ID', 'menoone@isolet-dev.in'),
+('EMAIL_AUTH', 'jdrglctcdtdlbi'),
+('PUBLIC_URL', 'isolet-dev.in'),
+('SMTP_HOST', 'smtp.gmail.com'),
+('SMTP_PORT', '587');

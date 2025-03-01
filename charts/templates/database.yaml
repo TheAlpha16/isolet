@@ -609,6 +609,30 @@ data:
     FOR EACH ROW EXECUTE FUNCTION
     notify_instance_stop();
 
+    -- Populate the config table
+    INSERT INTO config (key, value) VALUES ('EVENT_START', '{{ .Values.event.startTime }}'),
+    ('EVENT_END', '{{ .Values.event.endTime }}'),
+    ('POST_EVENT', '{{ .Values.event.postEvent }}'),
+    ('TEAM_LEN', '{{ .Values.event.teamLength }}'),
+    ('CTF_NAME', '{{ .Values.event.name }}'),
+    ('CONCURRENT_INSTANCES', '{{ .Values.isolet.concurrentInstances }}'),
+    ('INSTANCE_HOSTNAME', '{{ .Values.challenges.url }}'),
+    ('INSTANCE_TIME', '{{ .Values.isolet.defaultInstanceTime }}'),
+    ('MAX_INSTANCE_TIME', '{{ .Values.isolet.maxInstanceTime }}'),
+    ('EMAIL_ID', '{{ .Values.secrets.smtp.emailID | b64dec }}'),
+    ('EMAIL_AUTH', '{{ .Values.secrets.smtp.emailAuth | b64dec }}'),
+    ('PUBLIC_URL', '{{ .Values.event.url }}'),
+    ('SMTP_HOST', '{{ .Values.secrets.smtp.smtpHost | b64dec }}'),
+    ('SMTP_PORT', '{{ .Values.secrets.smtp.smtpPort | b64dec }}');
+
+    -- Create admin defined users
+    {{- if .Values.users }}
+    INSERT INTO users (email, username, password, rank) VALUES
+    {{- range $index, $user := .Values.users }}
+    ('{{ $user.email }}', '{{ $user.username }}', '{{ $user.password_hash }}', 1){{- if not (eq (add1 $index) (len $.Values.users)) }},{{ end }}
+    {{- end }};
+    {{- end }}
+
 ---
 apiVersion: apps/v1
 kind: Deployment
