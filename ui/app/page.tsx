@@ -41,32 +41,32 @@ export default function HomePage() {
           </div>
 
           {/* Tagline */}
-          <h1 className="font-mono text-2xl md:text-4xl text-center mb-6 tracking-wider text-blue-100">
+          <h1 className="font-mono text-2xl md:text-4xl text-center mb-6 tracking-wider text-gray-800 dark:text-blue-100">
             <span className="text-blue-400">&gt;</span> DIVE INTO THE CHALLENGE
           </h1>
 
-          <p className="font-mono text-sm md:text-base text-center max-w-2xl text-blue-200/70 mb-8">
+          <p className="font-mono text-sm md:text-base text-center max-w-2xl text-gray-600 dark:text-blue-200/70 mb-8">
             An oceanic cybersecurity competition where hackers navigate the depths of digital challenges. Explore
             vulnerabilities, decrypt secrets, and capture flags in this immersive CTF experience.
           </p>
 
           {/* Event status */}
           <div className="flex flex-col sm:flex-row gap-4 mt-4">
-            <div className="font-mono text-xl font-bold text-center max-w-2xl text-blue-200/70">
-			  {
-			  Date.now() < eventStart.getTime() ? 
-			  <>
-			  <p className="mb-3">Event Starts on ${eventStart.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })}</p>
-			  <Countdown className="text-4xl" date={eventStart}/>
-			  </> : 
-			  Date.now() > eventEnd.getTime() ? 
-			  <p>Event has Ended</p> : 
-			  <>
-			  <p className="mb-3">Event will end on {eventEnd.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })}</p>
-			  <Countdown className="text-4xl" date={eventEnd}/>
-			  </>
-			  }
-			</div>
+            <div className="font-mono text-xl font-bold text-center max-w-2xl text-gray-600 dark:text-blue-200/70">
+              {
+              Date.now() < eventStart.getTime() ? 
+              <>
+              <p className="mb-3">Event Starts on ${eventStart.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })}</p>
+              <Countdown className="text-4xl" date={eventStart}/>
+              </> : 
+              Date.now() > eventEnd.getTime() ? 
+              <p>Event has Ended</p> : 
+              <>
+              <p className="mb-3">Event will end on {eventEnd.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })}</p>
+              <Countdown className="text-4xl" date={eventEnd}/>
+              </>
+              }
+            </div>
           </div>
         </section>
 
@@ -82,7 +82,7 @@ export default function HomePage() {
 
         {/* Social Links section */}
         <section className="mb-16">
-          <h2 className="font-mono text-xl md:text-2xl text-center mb-12 tracking-wider text-blue-300">
+          <h2 className="font-mono text-xl md:text-2xl text-center mb-12 tracking-wider text-gray-800 dark:text-blue-300">
             <span className="text-blue-400">#</span> JOIN OUR COMMUNITY
           </h2>
 
@@ -195,8 +195,8 @@ export default function HomePage() {
                 <div className="text-blue-400 mb-4 transform group-hover:scale-110 transition-transform">
                   {social.icon}
                 </div>
-                <h3 className="font-mono text-xl mb-2 text-blue-200">{social.name}</h3>
-                <p className="text-blue-200/70 text-sm">{social.handle}</p>
+                <h3 className="font-mono text-xl mb-2 text-gray-800 dark:text-blue-200">{social.name}</h3>
+                <p className="text-gray-600 dark:text-blue-200/70 text-sm">{social.handle}</p>
 
                 <div className="mt-6 font-mono text-xs text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
                   CONNECT &gt;
@@ -208,7 +208,7 @@ export default function HomePage() {
 
         {/* Sponsors section */}
         <section>
-          <h2 className="font-mono text-xl md:text-2xl text-center mb-12 tracking-wider text-blue-300">
+          <h2 className="font-mono text-xl md:text-2xl text-center mb-12 tracking-wider text-gray-800 dark:text-blue-300">
             <span className="text-blue-400">#</span> SPONSORS
           </h2>
 
