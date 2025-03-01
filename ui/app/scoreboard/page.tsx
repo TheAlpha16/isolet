@@ -37,7 +37,7 @@ export default function Scoreboard() {
             })),
         }));
 
-        const respon = processScores(toProcess, eventStart);
+        const respon = processScores(toProcess, eventStart.toUTCString());
         setGraphData(respon);
     }, [topScores, eventStart])
 
