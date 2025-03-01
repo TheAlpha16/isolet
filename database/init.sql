@@ -3,6 +3,12 @@ CREATE TYPE chall_type AS ENUM ('static', 'dynamic', 'on-demand');
 CREATE TYPE deployment_type AS ENUM ('ssh', 'nc', 'http');
 CREATE TYPE token_type AS ENUM ('password_reset', 'invite_token');
 
+-- Create config table
+CREATE TABLE IF NOT EXISTS config(
+    key text PRIMARY KEY,
+    value text
+);
+
 -- Create categories table
 CREATE TABLE IF NOT EXISTS categories(
     category_id serial PRIMARY KEY,
