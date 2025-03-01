@@ -1,6 +1,6 @@
 {
   "name": "isolet-ui",
-  "version": "0.1.0",
+  "version": "v2.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
