@@ -14,13 +14,6 @@ data:
   CTF_NAME: {{ .Values.event.name }}
   APP_PORT: "80"
   KUBECONFIG_FILE_PATH: "/root/.kube/config"
-  CPU_LIMIT: {{ .Values.isolet.limitCPU }}
-  CPU_REQUEST: {{ .Values.isolet.defaultCPU }}
-  MEMORY_LIMIT: {{ .Values.isolet.limitMemory }}
-  MEMORY_REQUEST: {{ .Values.isolet.defaultMemory }}
-  DISK_LIMIT: "1Gi"
-  DISK_REQUEST: "128Mi"
-  TERMINATION_PERIOD: "10"
   PUBLIC_URL: {{ .Values.event.url }}
   INSTANCE_HOSTNAME: {{ .Values.challenges.url }}
   INSTANCE_TIME: {{ .Values.isolet.defaultInstanceTime | quote }}
