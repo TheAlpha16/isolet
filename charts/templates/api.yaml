@@ -44,12 +44,6 @@ spec:
                 name: api-config
             - secretRef:
                 name: api-secrets
-          livenessProbe:
-            httpGet:
-              path: /ping
-              port: 80
-            initialDelaySeconds: 40
-            periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /ping

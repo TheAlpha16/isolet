@@ -12,7 +12,7 @@ import nvcti from "@/icons/nvcti.png"
 import pearlLogo from "@/icons/pearl-logo.png"
 
 export default function HomePage() {
-  const { eventStart, eventEnd, postEvent } = useMetadataStore();
+  const { eventStart, eventEnd } = useMetadataStore();
 
   return (
     <div className="min-h-screen text-white flex flex-col items-center">

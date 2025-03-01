@@ -72,12 +72,13 @@ spec:
               path: /ping
               port: 8888
             initialDelaySeconds: 40
+            failureThreshold: 5
             periodSeconds: 10
-          readinessProbe:
+          startupProbe:
             httpGet:
               path: /ping
               port: 8888
-            initialDelaySeconds: 30
+            failureThreshold: 30
             periodSeconds: 10
 
 ---
