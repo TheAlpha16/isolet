@@ -85,7 +85,7 @@ INSERT INTO users (userid, email, username, password, teamid) VALUES
 (3, 'kingkongvsgodzilla@gmail.com', 'uselesscop', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 1),
 (4, 'lord.shardul@gmail.com', 'rayofhope', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 1),
 (5, 'getthisout@gmail.com', 'glimpse', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 2),
-(6, 'infoseccl@gmail.com', 'cyberlabs', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 2)
+(6, 'infoseccl@gmail.com', 'cyberlabs', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 2),
 (7, 'admin@isolet-dev.in', 'admin', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 1);
 
 -- Teams
@@ -112,12 +112,13 @@ SELECT unlock_hint(2, 3);
 SELECT setval('categories_category_id_seq', 4);
 SELECT setval('challenges_chall_id_seq', 6);
 SELECT setval('hints_hid_seq', 4);
-SELECT setval('users_userid_seq', 6);
+SELECT setval('users_userid_seq', 7);
 SELECT setval('teams_teamid_seq', 2);
 SELECT setval('sublogs_sid_seq', 7);
 
 -- Config
-INSERT INTO config (key, value) VALUES ('EVENT_START', '1728813375'),
+INSERT INTO config (key, value) VALUES
+('EVENT_START', '1728813375'),
 ('EVENT_END', '1799986175'),
 ('POST_EVENT', 'false'),
 ('TEAM_LEN', '4'),
