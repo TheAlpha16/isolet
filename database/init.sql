@@ -64,7 +64,7 @@ CREATE OR REPLACE FUNCTION toverify_delete_old_rows() RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    DELETE FROM toverify WHERE timestamp < NOW() - INTERVAL '30 minutes';
+    DELETE FROM toverify WHERE timestamp < NOW() - INTERVAL '10 minutes';
     RETURN NEW;
 END;
 $$;
