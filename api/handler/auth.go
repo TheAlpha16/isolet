@@ -89,11 +89,26 @@ func Register(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": status})
 	}
 
+	regForm.Password = utils.Hash(regForm.Password)
+
+	emailVerfication, err := config.GetBool("EMAIL_VERIFICATION")
+	if err == nil && !emailVerfication {
+		user := new(models.User)
+
+		user.Email = regForm.Email
+		user.Password = regForm.Password
+		user.Username = regForm.Username
+
+		if err := database.CreateUserWithoutToken(c, user); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "please contact admin"})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "user created successfully!"})
+	}
+
 	if err := utils.SendVerificationMail(regForm); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "error in sending verification mail"})
 	}
-
-	regForm.Password = utils.Hash(regForm.Password)
 
 	if err := database.AddToVerify(c, regForm); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "failure", "message": "please contact admin"})

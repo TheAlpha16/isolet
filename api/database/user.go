@@ -102,6 +102,20 @@ func AddToUsers(c *fiber.Ctx, email string) (string, error) {
 	return "", nil
 }
 
+func CreateUserWithoutToken(c *fiber.Ctx, user *models.User) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+
+	if err := db.Create(user).Error; err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
 func UserExists(c *fiber.Ctx, userid int64) bool {
 	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
 	defer cancel()
