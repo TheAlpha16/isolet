@@ -56,6 +56,8 @@ func main() {
 		Format: "${time} | ${status} | ${latency} | ${locals:clientIP} | ${method} | ${path} | ${error}\n",
 	}
 
+	utils.InitRedis()
+
 	app := fiber.New()
 	app.Use(logger.New(loggerConfig))
 	app.Use(recover.New())
