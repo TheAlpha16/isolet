@@ -11,12 +11,12 @@ type Challenge struct {
 	Name         string         `gorm:"not null;unique;column:chall_name" json:"name"`
 	Prompt       string         `gorm:"type:text" json:"prompt"`
 	Category     Category       `gorm:"foreignKey:CategoryID;references:CategoryID" json:"-"`
-	CategoryID   int            `gorm:"not null;column:category_id" json:"-" form:"category_id"`
-	Flag         string         `gorm:"type:text" json:"-"`
+	CategoryID   int            `gorm:"not null;column:category_id" json:"category_id" form:"category_id"`
+	Flag         string         `gorm:"type:text" json:"flag"`
 	Type         string         `gorm:"type:chall_type;default:static" json:"type"`
 	Points       int            `gorm:"not null;default:100" json:"points"`
 	Files        pq.StringArray `gorm:"type:text[]" json:"files"`
-	Requirements pq.Int64Array  `gorm:"type:integer[]" json:"-" form:"requirements"`
+	Requirements pq.Int64Array  `gorm:"type:integer[]" json:"requirements" form:"requirements"`
 	Hints        []Hint         `gorm:"foreignKey:ChallID" json:"hints"`
 	Solves       int            `gorm:"default:0" json:"solves"`
 	Author       string         `gorm:"default:anonymous" json:"author"`

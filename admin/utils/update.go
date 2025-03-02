@@ -86,6 +86,12 @@ func UpdateHint (existingHint *models.Hint, hintData *models.Hint) *models.Hint 
 	return existingHint
 }
 
+func UpdateRequirements (existingChallenge *models.Challenge, updatedChallenge *models.Challenge) *models.Challenge {
+	
+	
+	return existingChallenge
+}
+
 func parseJsonStringArrays(arr []string) []string {
 	var dbArr []string
 

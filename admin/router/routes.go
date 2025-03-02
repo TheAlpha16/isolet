@@ -16,8 +16,12 @@ func SetupRoutes(app *fiber.App) {
 
 	admin := app.Group("/admin")
 
-	challenge := admin.Group("/edit/challenges")
+	challenge := admin.Group("/challenges/edit")
 	challenge.Post("/data", handler.EditChallengeMetaData)
 	challenge.Post("/files", handler.EditChallengeFiles)
+	challenge.Post("/requirements", handler.EditChallengeRequirements)
 	challenge.Post("/hints", handler.EditChallengeHints)
+
+	//config := admin.Group("/config/edit")
+	//config.Post("/variables", handler.EditConfigValues)
 }
