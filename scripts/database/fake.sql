@@ -133,4 +133,6 @@ INSERT INTO config (key, value) VALUES
 ('SMTP_HOST', 'smtp.gmail.com'),
 ('SMTP_PORT', '587'),
 ('SYNC_CONFIG_SECONDS', '30'),
-('USER_REGISTRATION', 'false');
+('USER_REGISTRATION', 'false'),
+('API_RATE_LIMIT', 'false'),
+('EMAIL_VERIFICATION', 'false');

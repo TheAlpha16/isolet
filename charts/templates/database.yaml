@@ -628,7 +628,9 @@ data:
     ('SMTP_HOST', '{{ .Values.secrets.smtp.smtpHost | b64dec }}'),
     ('SMTP_PORT', '{{ .Values.secrets.smtp.smtpPort | b64dec }}'),
     ('SYNC_CONFIG_SECONDS', '{{ .Values.platform.syncConfigSeconds }}'),
-    ('USER_REGISTRATION', '{{ .Values.event.userRegistration }}');
+    ('USER_REGISTRATION', '{{ .Values.event.userRegistration }}'),
+    ('API_RATE_LIMIT', '{{ .Values.platform.api.apiRateLimit }}'),
+    ('EMAIL_VERIFICATION', '{{ .Values.event.emailVerification }}');
 
     -- Create admin defined users
     {{- if .Values.users }}
