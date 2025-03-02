@@ -11,37 +11,7 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/ping", handler.Ping)
 	app.Use(middleware.ResolveIP())
 
-	auth := app.Group("/auth")
-	auth.Post("/login", handler.Login)
-	auth.Post("/register", middleware.AreRegsOpen(), handler.Register)
-	auth.Get("/verify", handler.Verify)
-	auth.Post("/forgot-password", handler.ForgotPassword)
-	auth.Post("/reset-password", handler.ResetPassword)
-
-	// need to change the group of this route
-	auth.Get("/metadata", handler.GetMetadata)
-
-	onboard := app.Group("/onboard", middleware.CheckOnBoardToken())
-	onboard.Post("/team/create", handler.CreateTeam)
-	onboard.Post("/team/join", handler.JoinTeam)
-	onboard.Get("/team/invite", handler.JoinWithInvite)
-
-	api := app.Group("/api", middleware.CheckTime(), middleware.CheckToken())
-	api.Get("/challs", handler.GetChalls)
-	api.Post("/submit", handler.SubmitFlag)
-	api.Post("/hint/unlock", handler.UnlockHint)
-
-	api.Get("/scoreboard", handler.ShowScoreBoard)
-	api.Get("scoreboard/top", handler.GetScoreGraph)
-	api.Get("/identify", handler.Identify)
-	api.Get("/logout", handler.Logout)
-
-	api.Post("/launch", handler.StartInstance)
-	api.Post("/stop", handler.StopInstance)
-	api.Get("/status", handler.GetStatus)
-	api.Post("/extend", handler.ExtendTime)
-
-	profile := api.Group("/profile")
-	profile.Get("/team/self", handler.GetSelfTeam)
-	profile.Get("/team/invite", handler.GetInviteToken)
+	SetupAuthRoutes(app)
+	SetupOnboardRoutes(app)
+	SetupAPIRoutes(app)
 }
