@@ -1,17 +1,23 @@
 # general
 event:
-  name: unixit
-  startTime: 1728813375
-  endTime: 1728986175
+  name: isolet-dev
+  startTime: "1739145600"
+  endTime: "1741564800"
   postEvent: false
-  url: unixit.fun
+  url: isolet-dev.in
+  teamLength: 4
   allowedDomains: 
     - gmail.com
     - yahoo.com
+    - hotmail.com
+    - outlook.com
     - protonmail.com
-    - iitism.ac.in
+  
+  environment: "production" # to determine the certificate server. use "production" for production environment
+  userRegistration: true # whether to allow user registration (usually for dev environment)
+  emailVerification: true # whether to send verification email to user (usually for dev environment)
 
-registry:
+registry: # this refers to the registry where the service (api, ui, ...) images are stored
   type: public
   url: docker.io/thealpha16
   dockerconfig: # leave it empty for public registry
@@ -19,6 +25,7 @@ registry:
 # platform unit
 platform:
   namespace: platform
+  syncConfigSeconds: 60 # refresh interval time in seconds to refresh the config
 
   database:
     image: postgres
@@ -28,7 +35,7 @@ platform:
 
   fileserver: # fileserver
     image: phoros
-    tag: v1.0.0
+    tag: v1.1.0
     storageClass: standard
     capacity: 3Gi
     objectStore: 
@@ -36,28 +43,28 @@ platform:
   
   api:
     image: isolet-api
-    tag: v2.0.0-dev
+    tag: v2.0.0
+    apiRateLimit: true # whether to enable rate limiting for api
     
   ui:
     image: isolet-ui
-    tag: v2.0.0-dev
+    tag: v2.0.2
+
+  proxy:
+    image: isolet-proxy
+    tag: v2.0.0
+
+  socky:
+    image: isolet-socky
+    tag: v1.2.0
 
 # dynamic challenges unit
 dynamic:
   namespace: dynamic
-  registry:
-    type: private
-    url: docker.io/unixit.fun
-    dockerConfig: # base64 encoded docker config json file (required for private registry)
 
 # isolated challenges unit
 isolet:
   namespace: isolet
-  url: isolet.unixit.fun
-  registry:
-    type: private
-    url: docker.io/unixit.fun
-    dockerConfig: # base64 encoded docker config json file (required for private registry)
 
   concurrentInstances: 2
   defaultCPU: 15m
@@ -67,21 +74,50 @@ isolet:
   defaultInstanceTime: 30 # minutes
   maxInstanceTime: 60 # minutes
 
+challenges:
+  url: ctf.isolet-dev.in
+  registry:
+    default: false # whether to use registry provided in the cluster
+    type: private
+    url: asia-south1-docker.pkg.dev/greek-proxy-814691-q2/isolet-dev # if you are using external registry, then provide the url here
+    storageClass: standard # if you are using default registry, then you can use the same storage class as database
+    capacity: 5Gi
+    dockerconfig: ewoJImF1dGhzIjogew...ydWUiCgl9Cn0= # base64 encoded docker config json file (required for private registry)
+
 # automation task unit
 automation:
   namespace: automation
 
   ripper:
     image: isolet-ripper
-    tag: v2.0.0-dev
+    tag: v2.0.0
+    workerCount: 6
 
 # admin unit
 admin:
   namespace: admin
 
+users:
+  - email: menoone@gmail.com
+    username: noone
+    password_hash: e3cd4ae1164ddd73fce1eec48d0d03060ffbfe8da865d0e6b968de9763bbd1b6 #sha256 hash of password
+    rank: 1
+
+  - email: thealpha16.pentest@gmail.com
+    username: thealpha16
+    password_hash: bfefce1eec48dde9763bbd03dea865d0e6b968303cd4ae1164ddd7060ff1b68d
+    rank: 1
+
+# certificate manager
+certManager:
+  dnsProvider: cloudflare
+  email: isolet-dev@gmail.com # email to register with the certificate server
+
 # base64 encoded secrets
 ## PLEASE DO NOT USE DEFAULT VALUES FOR PRODUCTION
 secrets:
+  dns:
+    token: MTQyNGU2ZjBhMTQ2MzM5Yjc0YWYyNzlkNjRhOTIzNjI== # cloudflare token
   signing:
     sessionSecret: ODE1NWIyODgwOWQ2MGJlMDQxNjM4N2E5OWM5NDI5NzU=
     tokenSecret: MTQyNGU2ZjBhMTQ2MzM5Yjc0YWYyNzlkNjRhOTIzNjI=
@@ -95,7 +131,6 @@ secrets:
     smtpPort: NTg3
 
   database:
-    dbHost: ZGF0YWJhc2Utc3Zj # do not change this
     dbUser: cG9zdGdyZXM=
     dbPassword: TXlmb290c3Ryb25ncGFzc3dkMDQzLgo=
     dbName: cG9zdGdyZXM= # it's better to have same name as db_user. Change it if you know what you are doing. 
