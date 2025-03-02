@@ -8,24 +8,24 @@ import (
 )
 
 func SetupAPIRoutes(app *fiber.App) {
-	api := app.Group("/api", middleware.CheckTime(), middleware.CheckToken())
-	api.Get("/challs", handler.GetChalls)
-	api.Post("/submit", handler.SubmitFlag)
-	api.Post("/hint/unlock", handler.UnlockHint)
+	api := app.Group(API_GROUP, middleware.CheckTime(), middleware.CheckToken())
+	api.Get(CHALLS, handler.GetChalls)
+	api.Post(SUBMIT, handler.SubmitFlag)
+	api.Post(UNLOCK_HINT, handler.UnlockHint)
 
-	scoreboard := api.Group("/scoreboard")
-	scoreboard.Get("/", handler.ShowScoreBoard)
-	scoreboard.Get("/top", handler.GetScoreGraph)
+	scoreboard := api.Group(SCOREBOARD_GROUP)
+	scoreboard.Get(SHOW_SCOREBOARD, handler.ShowScoreBoard)
+	scoreboard.Get(TOP_SCORES, handler.GetScoreGraph)
 	
-	api.Get("/identify", handler.Identify)
-	api.Get("/logout", handler.Logout)
+	api.Get(IDENTIFY, handler.Identify)
+	api.Get(LOGOUT, handler.Logout)
 
-	api.Post("/launch", handler.StartInstance)
-	api.Post("/stop", handler.StopInstance)
-	api.Get("/status", handler.GetStatus)
-	api.Post("/extend", handler.ExtendTime)
+	api.Post(LAUNCH, handler.StartInstance)
+	api.Post(STOP, handler.StopInstance)
+	api.Get(STATUS, handler.GetStatus)
+	api.Post(EXTEND, handler.ExtendTime)
 
-	profile := api.Group("/profile")
-	profile.Get("/team/self", handler.GetSelfTeam)
-	profile.Get("/team/invite", handler.GetInviteToken)
+	profile := api.Group(PROFILE_GROUP)
+	profile.Get(GET_SELF_TEAM, handler.GetSelfTeam)
+	profile.Get(GET_INVITE_TOKEN, handler.GetInviteToken)
 }

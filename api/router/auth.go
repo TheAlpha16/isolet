@@ -8,13 +8,13 @@ import (
 )
 
 func SetupAuthRoutes(app *fiber.App) {
-	auth := app.Group("/auth")
-	auth.Post("/login", handler.Login)
-	auth.Post("/register", middleware.AreRegsOpen(), handler.Register)
-	auth.Get("/verify", handler.Verify)
-	auth.Post("/forgot-password", handler.ForgotPassword)
-	auth.Post("/reset-password", handler.ResetPassword)
+	auth := app.Group(AUTH_GROUP)
+	auth.Post(LOGIN, handler.Login)
+	auth.Post(REGISTER, middleware.AreRegsOpen(), handler.Register)
+	auth.Get(VERIFY, handler.Verify)
+	auth.Post(FORGOT_PASSWORD, handler.ForgotPassword)
+	auth.Post(RESET_PASSWORD, handler.ResetPassword)
 	
 	// need to change the group of this route
-	auth.Get("/metadata", handler.GetMetadata)
+	auth.Get(METADATA, handler.GetMetadata)
 }
