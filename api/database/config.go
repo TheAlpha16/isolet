@@ -21,6 +21,7 @@ func InitializeGlobalDBConfig() {
 
 			newInterval, err := config.GetDuration(config.ConfigRefreshIntervalKey)
 			if err == nil {
+				newInterval = newInterval * time.Second
 				if newInterval != interval {
 					interval = newInterval
 				}

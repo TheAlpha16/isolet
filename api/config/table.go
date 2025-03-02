@@ -71,5 +71,5 @@ func GetDuration(key string) (time.Duration, error) {
 	if err != nil {
 		return 0, err
 	}
-	return time.Duration(val)* time.Second, nil
+	return time.Duration(val), nil
 }
