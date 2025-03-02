@@ -15,7 +15,7 @@ export function ChallengeCard({ challenge, onClick }: ChallengeCardProps) {
 		<Card className={`hover:shadow-lg dark:hover:shadow-zinc-900 transition-shadow w-[300px]`}>
 			<CardHeader>
 				<CardTitle className="flex justify-between items-center">
-					<span className="truncate">{challenge.name}</span>
+					<span>{challenge.name}</span>
 					<Badge
 						variant={challenge.done ? "secondary" : "default"}
 						className="ml-2 min-w-fit"
