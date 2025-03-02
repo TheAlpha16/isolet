@@ -8,7 +8,7 @@ import (
 )
 
 func SetupAuthRoutes(app *fiber.App) {
-	auth := app.Group(AUTH_GROUP)
+	auth := app.Group(AUTH_GROUP, RateLimiter())
 	auth.Post(LOGIN, handler.Login)
 	auth.Post(REGISTER, middleware.AreRegsOpen(), handler.Register)
 	auth.Get(VERIFY, handler.Verify)

@@ -14,4 +14,6 @@ var EMAIL_LEN = 320
 var PASS_LEN = 32
 var USERNAME_LEN = 32
 
+var REDIS_URL = os.Getenv("REDIS_URL")
+
 var APP_PORT = fmt.Sprintf(":%s", os.Getenv("APP_PORT"))
