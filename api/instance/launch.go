@@ -37,8 +37,8 @@ func DeployInstance(
 		return nil, err
 	}
 
-	instance_name := utils.GetInstanceName(chall_id, teamid)
 	challenge_name := utils.GetChallengeSubdomain(challenge.Name)
+	instance_name := utils.GetInstanceName(chall_id, teamid, challenge_name)
 
 	flagObject := models.Flag{
 		TeamID:     teamid,
@@ -117,21 +117,27 @@ func createHandler(yamlData string, instance_name string, flagObject *models.Fla
 
 			err = updateDeadline(instance_name, flagObject.Deadline, c.Context(), k8sclient)
 			if err != nil {
-				_ = DeleteInstance(c, flagObject.ChallID, flagObject.TeamID)
+				if err = DeleteInstance(c, flagObject.ChallID, flagObject.TeamID); err != nil {
+					log.Println("error in cleanup(deadline) - ", instance_name, " teamid: ", flagObject.TeamID, " error: ", err)
+				}
 				log.Println("error in launch - deadline: ", obj.GetName())
 				return err
 			}
 		case "Service":
 			err = createService(&obj, instance_name, flagObject, c.Context(), k8sclient)
 			if err != nil {
-				_ = DeleteInstance(c, flagObject.ChallID, flagObject.TeamID)
+				if err = DeleteInstance(c, flagObject.ChallID, flagObject.TeamID); err != nil {
+					log.Println("error in cleanup(service) - ", instance_name, " teamid: ", flagObject.TeamID, " error: ", err)
+				}
 				log.Println("error in launch - service: ", obj.GetName())
 				return err
 			}
 		default:
 			err = createDefault(&obj, instance_name, flagObject, c.Context(), k8sclient)
 			if err != nil {
-				_ = DeleteInstance(c, flagObject.ChallID, flagObject.TeamID)
+				if err = DeleteInstance(c, flagObject.ChallID, flagObject.TeamID); err != nil {
+					log.Println("error in cleanup(ingress) - ", instance_name, " teamid: ", flagObject.TeamID, " error: ", err)
+				}
 				log.Println("error in launch - default: ", obj.GetName())
 				return err
 			}

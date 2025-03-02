@@ -145,3 +145,21 @@ func UnlockHint(c *fiber.Ctx, hid int, teamid int64) (bool, string) {
 
 	return true, hint
 }
+
+func GetChallengeName(c *fiber.Ctx, chall_id int) (string, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 15*time.Second)
+	defer cancel()
+
+	db := DB.WithContext(ctx)
+
+	var name string
+	if err := db.Model(&models.Challenge{}).Select("chall_name").Where("chall_id = ?", chall_id).First(&name).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return name, errors.New("challenge does not exist")
+		}
+		log.Println(err)
+		return name, errors.New("error in fetching challenge name")
+	}
+
+	return name, nil
+}

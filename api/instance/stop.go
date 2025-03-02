@@ -23,7 +23,15 @@ func DeleteInstance(c *fiber.Ctx, chall_id int, teamid int64) error {
 		return err
 	}
 
-	instance_name := utils.GetInstanceName(chall_id, teamid)
+	chall_name, err := database.GetChallengeName(c, chall_id)
+	if err != nil {
+		log.Println(err)
+		return errors.New("error in stopping the instance, contact admin")
+	}
+	
+	challenge_name := utils.GetChallengeSubdomain(chall_name)
+
+	instance_name := utils.GetInstanceName(chall_id, teamid, challenge_name)
 	k8sclient, err := NewK8sClient()
 	if err != nil {
 		log.Println(err)

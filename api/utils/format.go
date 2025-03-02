@@ -9,8 +9,8 @@ import (
 	"github.com/TheAlpha16/isolet/api/config"
 )
 
-func GetInstanceName(chall_id int, teamid int64) string {
-	return Hash(fmt.Sprintf("%d@%d:%s", teamid, chall_id, config.INSTANCE_NAME_SECRET))[0:16]
+func GetInstanceName(chall_id int, teamid int64, challenge_name string) string {
+	return fmt.Sprintf("%s-%s", challenge_name, Hash(fmt.Sprintf("%d@%d:%s", teamid, chall_id, config.INSTANCE_NAME_SECRET))[0:16])
 }
 
 func GetHostName(subdomains []string) string {
