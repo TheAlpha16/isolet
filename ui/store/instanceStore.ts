@@ -33,8 +33,6 @@ export const useInstanceStore = create<InstanceStore>((set) => ({
 
     fetchInstances: async () => {
         if (useInstanceStore.getState().socket?.connected) {
-            console.log("socket already connected");
-            console.log(useInstanceStore.getState().socket?.connected);
             return;
         }
 
@@ -42,9 +40,9 @@ export const useInstanceStore = create<InstanceStore>((set) => ({
             path: "/ws",
         });
 
-        socket.on("disconnect", () => {
-            showToast(ToastStatus.Failure, "socket disconnected");
-        });
+        // socket.on("disconnect", () => {
+        //     showToast(ToastStatus.Failure, "socket disconnected");
+        // });
 
         socket.on("instanceUpdate", (payload) => {
             useInstanceStore.getState().updateInstance(payload.chall_id, {
