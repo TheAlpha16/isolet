@@ -22,3 +22,4 @@ data:
   EVENT_START: {{ .Values.event.startTime | quote }}
   EVENT_END: {{ .Values.event.endTime | quote }}
   POST_EVENT: {{ .Values.event.postEvent | quote }}
+  REDIS_URL: "redis://redis-svc:6379"

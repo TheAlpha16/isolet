@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+  namespace: {{ .Values.platform.namespace }}
+  labels: 
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: redis
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: deployment
+      app.kubernetes.io/part-of: redis
+  template:
+    metadata:
+      name: redis-deployment
+      labels:
+        app.kubernetes.io/component: deployment
+        app.kubernetes.io/part-of: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "30m"
+            limits:
+              memory: "512Mi"
+              cpu: "250m"
+          command: ["redis-server", "--save", ""]
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-svc
+  namespace: {{ .Values.platform.namespace }}
+  labels: 
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: redis
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: redis
+  ports:
+    - port: 6379
