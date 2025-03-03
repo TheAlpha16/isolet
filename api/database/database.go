@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -20,5 +21,19 @@ func Connect() error {
 	DB, err = gorm.Open(postgres.Open(connConfig), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
-	return err
+
+	if err != nil {
+		return err
+	}
+
+	sqlDB, err := DB.DB()
+	if err != nil {
+		return err
+	}
+
+	sqlDB.SetMaxOpenConns(50)
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetConnMaxLifetime(5 * time.Minute)
+
+	return nil
 }
