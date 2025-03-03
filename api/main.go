@@ -19,13 +19,16 @@ import (
 
 func main() {
 	logs.InitLogger()
-	log.Println("API version: v2.0.1")
+	log.Println("API version: v2.0.2")
+
+	wait_seconds_before_db_retry := 5
 
 	for {
 		if err := database.Connect(); err != nil {
 			log.Println(err)
-			log.Println("sleep for 1 minute")
-			time.Sleep(time.Minute)
+			log.Printf("sleep for %d seconds\n", wait_seconds_before_db_retry)
+			time.Sleep(time.Duration(wait_seconds_before_db_retry) * time.Second)
+			wait_seconds_before_db_retry *= 2
 			continue
 		}
 		break
