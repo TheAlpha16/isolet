@@ -39,12 +39,12 @@ func CreateTeam(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "missing teamname or password in request"})
 	}
 
-	if len(team.TeamName) < 3 || len(team.TeamName) > 20 {
+	if len(team.TeamName) < 3 || len(team.TeamName) > 32 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "teamname should be between 3 and 32 characters"})
 	}
 
-	if len(team.Password) < 6 || len(team.Password) > 20 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "password should be between 8 and 32 characters"})
+	if len(team.Password) < 6 || len(team.Password) > 32 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "failure", "message": "password should be between 6 and 32 characters"})
 	}
 
 	if database.TeamNameExists(team.TeamName) {
