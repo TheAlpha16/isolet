@@ -19,7 +19,7 @@ import (
 
 func main() {
 	logs.InitLogger()
-	log.Println("API version: v2.0.0")
+	log.Println("API version: v2.0.1")
 
 	for {
 		if err := database.Connect(); err != nil {
