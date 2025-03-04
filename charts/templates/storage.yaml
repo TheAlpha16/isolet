@@ -1,3 +1,4 @@
+{{ if eq .Values.platform.database.enabled true }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -15,6 +16,8 @@ spec:
   resources:
     requests:
       storage: {{ .Values.platform.database.capacity }}
+
+{{ end }}
 
 {{ if eq .Values.platform.fileserver.objectStore.type "native" }}
 ---
