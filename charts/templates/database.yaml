@@ -1,3 +1,5 @@
+{{- if eq .Values.platform.database.enabled true -}}
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -612,6 +614,13 @@ data:
     FOR EACH ROW EXECUTE FUNCTION
     notify_instance_stop();
 
+    -- Add some indices for better scaling
+    CREATE INDEX idx_sublogs_chall ON sublogs(chall_id);
+    CREATE INDEX idx_sublogs_user ON sublogs(userid);
+    CREATE INDEX idx_solves_team ON solves(teamid);
+    CREATE INDEX idx_solves_chall ON solves(chall_id);
+    CREATE INDEX idx_hints_chall ON hints(chall_id);
+
     -- Populate the config table
     INSERT INTO config (key, value) VALUES ('EVENT_START', '{{ .Values.event.startTime }}'),
     ('EVENT_END', '{{ .Values.event.endTime }}'),
@@ -669,11 +678,11 @@ spec:
           imagePullPolicy: Always
           resources:
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "2Gi"
+              cpu: "5000m"
             requests:
-              memory: "64Mi"
-              cpu: "50m"
+              memory: "500Mi"
+              cpu: "2000m"
           env:
             - name: POSTGRES_PASSWORD
               valueFrom:
@@ -749,3 +758,5 @@ spec:
   selector:
     app.kubernetes.io/component: deployment
     app.kubernetes.io/part-of: database
+
+{{- end -}}

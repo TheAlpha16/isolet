@@ -600,3 +600,10 @@ CREATE OR REPLACE TRIGGER notify_instance_stop_trigger
 BEFORE DELETE ON flags
 FOR EACH ROW EXECUTE FUNCTION
 notify_instance_stop();
+
+-- Add some indices for better scaling
+CREATE INDEX idx_sublogs_chall ON sublogs(chall_id);
+CREATE INDEX idx_sublogs_user ON sublogs(userid);
+CREATE INDEX idx_solves_team ON solves(teamid);
+CREATE INDEX idx_solves_chall ON solves(chall_id);
+CREATE INDEX idx_hints_chall ON hints(chall_id);
