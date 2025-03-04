@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgbouncer-deployment
+  namespace: {{ .Values.platform.namespace }}
+  labels: 
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: pgbouncer
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: deployment
+      app.kubernetes.io/part-of: pgbouncer
+  template:
+    metadata:
+      name: pgbouncer-deployment
+      labels:
+        app.kubernetes.io/component: deployment
+        app.kubernetes.io/part-of: pgbouncer
+    spec:
+      containers:
+        - name: pgbouncer
+          image: edoburu/pgbouncer:latest
+          ports:
+            - containerPort: 5432
+          env:
+            - name: DATABASE_URL
+              value: "postgres://{{ .Values.secrets.database.dbUser | b64dec }}:{{ .Values.secrets.database.dbPassword | b64dec }}@{{ .Values.secrets.database.dbHost | b64dec }}:5432/{{ .Values.secrets.database.dbName | b64dec }}"  
+            - name: POOL_MODE
+              value: "transaction"
+            - name: MAX_CLIENT_CONN
+              value: "1000"
+            - name: DEFAULT_POOL_SIZE
+              value: "50"
+            - name: RESERVE_POOL_SIZE
+              value: "20"
+            - name: AUTH_TYPE
+              value: "plain"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            tcpSocket:
+              port: 5432
+            periodSeconds: 60
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "killall -INT pgbouncer && sleep 120"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ['all']
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgbouncer-svc
+  namespace: {{ .Values.platform.namespace }}
+  labels: 
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: pgbouncer
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: pgbouncer
+  ports:
+    - protocol: TCP
+      port: 5432
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: pgbouncer-hpa
+  namespace: {{ .Values.platform.namespace }}
+  labels: 
+    app.kubernetes.io/component: hpa
+    app.kubernetes.io/part-of: pgbouncer
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: pgbouncer-deployment
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 75
