@@ -29,7 +29,7 @@ spec:
             - name: DATABASE_URL
               value: "postgres://{{ .Values.secrets.database.dbUser | b64dec }}:{{ .Values.secrets.database.dbPassword | b64dec }}@{{ .Values.secrets.database.dbHost | b64dec }}:5432/{{ .Values.secrets.database.dbName | b64dec }}"  
             - name: POOL_MODE
-              value: "transaction"
+              value: "session"
             - name: MAX_CLIENT_CONN
               value: "1000"
             - name: DEFAULT_POOL_SIZE
