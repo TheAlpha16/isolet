@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/part-of: pgbouncer
     {{- include "charts.labels" . | nindent 4 }}
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/component: deployment
@@ -40,10 +40,10 @@ spec:
               value: "plain"
           resources:
             requests:
-              cpu: 100m
+              cpu: 50m
               memory: 32Mi
             limits:
-              cpu: 500m
+              cpu: 300m
               memory: 128Mi
           livenessProbe:
             tcpSocket:
@@ -107,7 +107,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: pgbouncer-deployment
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 5
   metrics:
     - type: Resource
