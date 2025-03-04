@@ -41,10 +41,10 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 128Mi
+              memory: 32Mi
             limits:
               cpu: 500m
-              memory: 256Mi
+              memory: 128Mi
           livenessProbe:
             tcpSocket:
               port: 5432
@@ -105,4 +105,4 @@ spec:
         name: memory
         target:
           type: Utilization
-          averageUtilization: 75
+          averageUtilization: 90
