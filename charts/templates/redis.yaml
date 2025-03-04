@@ -27,11 +27,11 @@ spec:
             - containerPort: 6379
           resources:
             requests:
-              memory: "256Mi"
+              memory: "128Mi"
               cpu: "30m"
             limits:
               memory: "512Mi"
-              cpu: "250m"
+              cpu: "150m"
           command: ["redis-server", "--save", ""]
 
 ---
