@@ -12,7 +12,7 @@ function useInvite() {
         try {
             const response = await fetchTimeout(
                 "api/profile/team/invite",
-                5000,
+                60000,
                 new AbortController().signal,
                 {},
             );

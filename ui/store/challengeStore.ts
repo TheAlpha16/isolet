@@ -91,7 +91,7 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
         formData.append("flag", flag);
 
         try {
-            const res = await fetchTimeout("/api/submit", 7000, new AbortController().signal, {
+            const res = await fetchTimeout("/api/submit", 60000, new AbortController().signal, {
                 method: "POST",
                 body: formData,
             });
@@ -150,7 +150,7 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
             formData.append("chall_id", chall_id.toString());
             formData.append("hid", hid.toString());
 
-            const res = await fetchTimeout("/api/hint/unlock", 7000, new AbortController().signal, {
+            const res = await fetchTimeout("/api/hint/unlock", 60000, new AbortController().signal, {
                 method: "POST",
                 body: formData,
             });

@@ -26,7 +26,7 @@ function useLogin() {
 		try {
 			const res = await fetchTimeout(
 				"/auth/login",
-				5000,
+				60000,
 				new AbortController().signal,
 				{
 					method: "POST",
@@ -80,7 +80,7 @@ function useLogin() {
 		try {
 			const res = await fetchTimeout(
 				"/auth/forgot-password",
-				5000,
+				60000,
 				new AbortController().signal,
 				{
 					method: "POST",
@@ -149,7 +149,7 @@ function useLogin() {
 		try {
 			const res = await fetchTimeout(
 				"/auth/reset-password",
-				5000,
+				60000,
 				new AbortController().signal,
 				{
 					method: "POST",

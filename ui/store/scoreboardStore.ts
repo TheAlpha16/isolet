@@ -44,7 +44,7 @@ export const useScoreboardStore = create<ScoreboardStore>((set) => ({
 		try {
 			const res = await fetchTimeout(
 				`/api/scoreboard?page=${page}`,
-				10000,
+				60000,
 				new AbortController().signal,
 				{
 					method: "GET",
@@ -99,7 +99,7 @@ export const useScoreboardStore = create<ScoreboardStore>((set) => ({
 		try {
 			const res = await fetchTimeout(
 				`/api/scoreboard?page=${page}`,
-				10000,
+				60000,
 				new AbortController().signal,
 				{
 					method: "GET",
@@ -134,7 +134,7 @@ export const useScoreboardStore = create<ScoreboardStore>((set) => ({
 		try {
 			const res = await fetchTimeout(
 				"/api/scoreboard/top",
-				10000,
+				60000,
 				new AbortController().signal,
 				{
 					method: "GET",

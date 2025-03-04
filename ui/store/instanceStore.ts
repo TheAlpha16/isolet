@@ -160,7 +160,7 @@ export const useInstanceStore = create<InstanceStore>((set) => ({
         formData.append("chall_id", chall_id.toString());
 
         try {
-            const res = await fetchTimeout("/api/extend", 7000, new AbortController().signal, {
+            const res = await fetchTimeout("/api/extend", 60000, new AbortController().signal, {
                 method: "POST",
                 body: formData,
             });

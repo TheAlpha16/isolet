@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 	},
 
 	logout: async () => {
-		await fetchTimeout("/api/logout", 5000, new AbortController().signal);
+		await fetchTimeout("/api/logout", 60000, new AbortController().signal);
 		localStorage.removeItem(LOCAL_STORAGE_KEY);
 		localStorage.removeItem(EXPIRY_KEY);
 		set({
@@ -68,7 +68,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 		try {
 			const res = await fetchTimeout(
 				"/api/identify",
-				5000,
+				60000,
 				new AbortController().signal
 			);
 			if (res.ok) {

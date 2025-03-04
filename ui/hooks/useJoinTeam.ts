@@ -41,7 +41,7 @@ function useJoinTeam() {
 		try {
 			const res = await fetchTimeout(
 				url,
-				5000,
+				60000,
 				new AbortController().signal,
 				{
 					method: "POST",
