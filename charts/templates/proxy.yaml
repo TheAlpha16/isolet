@@ -65,7 +65,7 @@ metadata:
     {{- include "charts.labels" . | nindent 4 }}
   annotations:
     external-dns.alpha.kubernetes.io/hostname: {{ .Values.event.url }}
-    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
 spec:
   type: LoadBalancer
   ports:
