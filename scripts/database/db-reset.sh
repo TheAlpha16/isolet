@@ -10,4 +10,4 @@ docker run -d --name test_database -p 5432:5432 -e POSTGRES_USER=$POSTGRES_USER 
 
 sleep 3
 cd $(dirname "$0")/../scripts/database
-PGPASSWORD="$POSTGRES_PASSWORD" psql -h localhost -p 5432 -U $POSTGRES_USER -d postgres -f "$(dirname "$0")/fake.sql"
+PGPASSWORD="$POSTGRES_PASSWORD" psql -h localhost -p 5432 -U $POSTGRES_USER -d postgres -f "./fake_data.sql"

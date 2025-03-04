@@ -142,6 +142,23 @@ INSERT INTO hints (hid, chall_id, hint, cost) VALUES
 (59, 60, 'Hint for challenge_60', 30),
 (60, 60, 'Hint for challenge_60', 20);
 
+INSERT INTO users (userid, email, username, password, teamid) VALUES 
+(1, 'menoexist@gmail.com', 'standalone',  'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 1),
+(2, 'live.stream@gmail.com', 'getone', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 2),
+(3, 'kingkongvsgodzilla@gmail.com', 'uselesscop', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 1),
+(4, 'lord.shardul@gmail.com', 'rayofhope', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 1),
+(5, 'getthisout@gmail.com', 'glimpse', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 2),
+(6, 'infoseccl@gmail.com', 'cyberlabs', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 2),
+(7, 'admin@isolet-dev.in', 'admin', 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4', 1);
+
+-- Teams
+INSERT INTO teams (teamid, teamname, captain, password) VALUES
+(1, 'TitanCrew', 1, 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4'),
+(2, 'BIT CRIMINALS', 2, 'b00cf059816d1d134ba722b08b3e330cd9c229ff8faa07a40ed4c795917a23a4');
+
+SELECT setval('users_userid_seq', 7);
+SELECT setval('teams_teamid_seq', 2);
+
 UPDATE challenges SET visible = true;
 UPDATE hints SET visible = true;
 
