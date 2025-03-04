@@ -29,6 +29,7 @@ spec:
             - --source=service
             - --provider=cloudflare
             - --cloudflare-dns-records-per-page=5000
+            - --policy=upsert-only
           env:
             - name: CF_API_TOKEN
               valueFrom:
@@ -37,11 +38,8 @@ spec:
                   key: CLOUDFLARE_API_TOKEN
           resources:
             limits:
-              cpu: 100m
-              memory: 128Mi
-            requests:
-              cpu: 10m
-              memory: 32Mi
+              cpu: 30m
+              memory: 64Mi
 
 ---
 apiVersion: v1
