@@ -86,6 +86,15 @@ func UpdateHint (existingHint *models.Hint, hintData *models.Hint) *models.Hint 
 	return existingHint
 }
 
+func UpdateConfig(existingConfig *models.Config, configData *models.Config) *models.Config {
+
+	if existingConfig.Value != "" {
+		existingConfig.Value = configData.Value
+	}
+
+	return configData
+}
+
 func UpdateRequirements (existingChallenge *models.Challenge, updatedChallenge *models.Challenge) *models.Challenge {
 	
 	

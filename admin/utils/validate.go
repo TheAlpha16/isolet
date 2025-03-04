@@ -48,6 +48,18 @@ func ValidateChallengeFields(challenge *models.Challenge) error {
 	return nil
 }
 
+func ValidateConfigFields (config *models.Config) error {
+	if config.Key == "" {
+		return errors.New("config key cannot be empty")
+	}
+
+	if config.Value == "" {
+		return errors.New("config value cannot be empty")
+	}
+
+	return nil
+}
+
 func ValidateHintFields (hint *models.Hint) error {
 	if hint.HID <= 0 && reflect.TypeOf(hint.HID).Kind() == reflect.Int{
 		return errors.New("HID is required")
