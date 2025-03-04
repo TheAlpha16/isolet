@@ -31,8 +31,8 @@ spec:
           imagePullPolicy: Always
           resources:
             limits:
-              memory: "1Gi"
-              cpu: "300m"
+              memory: "512Mi"
+              cpu: "100m"
             requests:
               memory: "128Mi"
               cpu: "10m"
@@ -56,3 +56,34 @@ spec:
   selector:
     app.kubernetes.io/component: deployment
     app.kubernetes.io/part-of: ui
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ui-hpa
+  namespace: {{ .Values.platform.namespace }}
+  labels: 
+    app.kubernetes.io/component: hpa
+    app.kubernetes.io/part-of: ui
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ui-deployment
+  minReplicas: 1
+  maxReplicas: 2
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 90 
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 90 
