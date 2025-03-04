@@ -27,7 +27,7 @@ spec:
             - containerPort: 5432
           env:
             - name: DATABASE_URL
-              value: "postgres://{{ .Values.secrets.database.dbUser | b64dec }}:{{ .Values.secrets.database.dbPassword | b64dec }}@{{ .Values.secrets.database.dbHost | b64dec }}:5432/{{ .Values.secrets.database.dbName | b64dec }}"  
+              value: "postgres://{{ .Values.secrets.database.dbUser | b64dec }}:{{ .Values.secrets.database.dbPassword | b64dec }}@{{ .Values.secrets.database.dbHost | b64dec }}:{{ .Values.secrets.database.dbPort | b64dec }}/{{ .Values.secrets.database.dbName | b64dec }}"  
             - name: POOL_MODE
               value: "session"
             - name: MAX_CLIENT_CONN
@@ -57,6 +57,22 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ['all']
+      {{ if ne .Values.platform.database.connectionName "" }}
+        - name: cloud-sql-proxy
+          image: gcr.io/cloudsql-docker/gce-proxy:1.37
+          command: ["/cloud_sql_proxy",
+                    "-instances={{ .Values.platform.database.connectionName }}=tcp:{{ .Values.secrets.database.dbPort | b64dec }}",
+                    "-credential_file=/secrets/cloudsql/credentials.json"]
+          volumeMounts:
+            - name: my-secrets-volume
+              mountPath: /secrets/cloudsql
+              readOnly: true
+        
+      volumes:
+        - name: my-secrets-volume
+          secret:
+            secretName: cloudsql-instance-credentials
+      {{ end }}
 
 ---
 apiVersion: v1
