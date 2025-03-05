@@ -9,6 +9,13 @@ import (
 
 func CheckTime() fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+		rank := int(claims["rank"].(float64))
+
+		if rank == 1 {
+			return c.Next()
+		}
+
 		startTime, err := config.GetInt("EVENT_START")
 		if err != nil {
 			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{

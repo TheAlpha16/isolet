@@ -8,7 +8,7 @@ import (
 )
 
 func SetupAPIRoutes(app *fiber.App) {
-	api := app.Group(API_GROUP, middleware.CheckTime(), middleware.CheckToken(), RateLimiter())
+	api := app.Group(API_GROUP, middleware.CheckToken(), middleware.CheckTime(), RateLimiter())
 	api.Get(CHALLS, handler.GetChalls)
 	api.Post(SUBMIT, handler.SubmitFlag)
 	api.Post(UNLOCK_HINT, handler.UnlockHint)
