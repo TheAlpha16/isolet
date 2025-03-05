@@ -19,7 +19,7 @@ import (
 
 func main() {
 	logs.InitLogger()
-	log.Println("API version: v2.0.4")
+	log.Println("API version: v2.0.5")
 
 	wait_seconds_before_db_retry := 5
 
