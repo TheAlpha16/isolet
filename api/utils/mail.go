@@ -144,6 +144,11 @@ func SendResetPasswordMail(user *models.User, token *models.Token) error {
 		return err
 	}
 
+	emailUsername, err := config.Get("EMAIL_USERNAME")
+	if err != nil {
+		return err
+	}
+
 	from := emailID
 	secret := emailAuth
 	ctfName, err := config.Get("CTF_NAME")
@@ -156,7 +161,7 @@ func SendResetPasswordMail(user *models.User, token *models.Token) error {
 		user.Email,
 	}
 
-	auth := smtp.PlainAuth("", from, secret, smtpHost)
+	auth := smtp.PlainAuth("", emailUsername, secret, smtpHost)
 
 	t, err := template.ParseFiles("templates/reset.html")
 	if err != nil {
