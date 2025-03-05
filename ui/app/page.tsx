@@ -56,7 +56,7 @@ export default function HomePage() {
               {
               Date.now() < eventStart.getTime() ? 
               <>
-              <p className="mb-3">Event Starts on ${eventStart.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })}</p>
+              <p className="mb-3">Event Starts on {eventStart.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })}</p>
               <Countdown className="text-4xl" date={eventStart}/>
               </> : 
               Date.now() > eventEnd.getTime() ? 
