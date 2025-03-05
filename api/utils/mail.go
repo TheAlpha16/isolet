@@ -68,6 +68,11 @@ func SendVerificationMail(regInput *models.ToVerify) error {
 		return err
 	}
 
+	emailUsername, err := config.Get("EMAIL_USERNAME")
+	if err != nil {
+		return err
+	}
+
 	from := emailID
 	secret := emailAuth
 
@@ -75,7 +80,7 @@ func SendVerificationMail(regInput *models.ToVerify) error {
 		regInput.Email,
 	}
 
-	auth := smtp.PlainAuth("", from, secret, smtpHost)
+	auth := smtp.PlainAuth("", emailUsername, secret, smtpHost)
 
 	t, err := template.ParseFiles("templates/mail.html")
 	if err != nil {
@@ -104,6 +109,7 @@ func SendVerificationMail(regInput *models.ToVerify) error {
 
 	err = smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, body.Bytes())
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
