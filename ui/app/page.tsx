@@ -42,12 +42,11 @@ export default function HomePage() {
 
           {/* Tagline */}
           <h1 className="font-mono text-2xl md:text-4xl text-center mb-6 tracking-wider text-gray-800 dark:text-blue-100">
-            <span className="text-blue-400">&gt;</span> DIVE INTO THE CHALLENGE
+            <span className="text-blue-400">&gt;</span> NAVIGATING THE DEPTHS OF THE UNKNOWN
           </h1>
 
           <p className="font-mono text-sm md:text-base text-center max-w-2xl text-gray-600 dark:text-blue-200/70 mb-8">
-            An oceanic cybersecurity competition where hackers navigate the depths of digital challenges. Explore
-            vulnerabilities, decrypt secrets, and capture flags in this immersive CTF experience.
+            Dive into the uncharted waters of mystery, where every challenge is a hidden trench, every exploit a sunken treasure, and each flag captured brings you closer to triumph.
           </p>
 
           {/* Event status */}
