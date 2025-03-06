@@ -48,6 +48,29 @@ func ValidateChallengeFields(challenge *models.Challenge) error {
 	return nil
 }
 
+func ValidateChallengeFileFields(challenge *models.Challenge) error {
+	if challenge.ChallID <= 0 && reflect.TypeOf(challenge.ChallID).Kind() == reflect.Int{
+		return errors.New("challenge ID is required")
+	}
+
+	if (challenge.CategoryID <= 0 || challenge.CategoryID > config.CATEGORY_SIZE) && reflect.TypeOf(challenge.CategoryID).Kind() == reflect.Int{
+		return errors.New("category id out of bounds")
+	}
+
+	if challenge.Type != "" {
+		validTypes := map[string]bool{
+			"static":    true,
+			"dynamic":   true,
+			"on-demand": true,
+		}
+		if !validTypes[challenge.Type] {
+			return errors.New("invalid challenge type")
+		}
+	}
+
+	return nil
+}
+
 func ValidateConfigFields (config *models.Config) error {
 	if config.Key == "" {
 		return errors.New("config key cannot be empty")

@@ -58,7 +58,7 @@ func EditChallengeFiles(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := utils.ValidateChallengeFields(&challengeMetadata); err != nil {
+	if err := utils.ValidateChallengeFileFields(&challengeMetadata); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "failure",
 			"message": err.Error(),
