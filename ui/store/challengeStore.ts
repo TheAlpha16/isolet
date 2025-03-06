@@ -61,10 +61,7 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
 
             } else if (res.status === 401) {
                 showToast(ToastStatus.Warning, "login to continue");
-            } else if (res.status === 503) {
-                const response = await res.json();
-                showToast(ToastStatus.Warning, response.message);
-            } else {
+            } else if (res.status === 503) { } else {
                 showToast(ToastStatus.Failure, "failed to fetch challenges");
             }
         } catch (error: any) {
@@ -98,21 +95,25 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
 
             if (res.ok) {
                 const response = await res.json();
+                const sub_count = response.sub_count;
                 showToast(ToastStatus.Success, "correct flag!");
-                set((state) => {
-                    const updatedChallenges = { ...state.challenges };
-                    for (const category in updatedChallenges) {
-                        const challenge = updatedChallenges[category].find((c) => c.chall_id === chall_id);
-                        if (challenge) {
-                            challenge.solves++;
-                            challenge.done = true;
-                            challenge.sub_count = response.sub_count;
-                            break;
-                        }
-                    }
 
-                    return { challenges: updatedChallenges };
-                })
+                if (sub_count !== undefined && sub_count !== null && sub_count !== -1) {
+                    set((state) => {
+                        const updatedChallenges = { ...state.challenges };
+                        for (const category in updatedChallenges) {
+                            const challenge = updatedChallenges[category].find((c) => c.chall_id === chall_id);
+                            if (challenge) {
+                                challenge.solves++;
+                                challenge.done = true;
+                                challenge.sub_count = sub_count;
+                                break;
+                            }
+                        }
+
+                        return { challenges: updatedChallenges };
+                    })
+                }
             } else if (res.status === 401) {
                 showToast(ToastStatus.Warning, "login to continue");
             } else {
