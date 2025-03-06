@@ -184,4 +184,5 @@ INSERT INTO config (key, value) VALUES
 ('SYNC_CONFIG_SECONDS', '30'),
 ('USER_REGISTRATION', 'true'),
 ('API_RATE_LIMIT', 'false'),
-('EMAIL_VERIFICATION', 'false');
+('EMAIL_VERIFICATION', 'false'),
+('EMAIL_USERNAME', 'something');

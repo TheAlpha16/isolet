@@ -633,6 +633,7 @@ data:
     ('MAX_INSTANCE_TIME', '{{ .Values.isolet.maxInstanceTime }}'),
     ('EMAIL_ID', '{{ .Values.secrets.smtp.emailID | b64dec }}'),
     ('EMAIL_AUTH', '{{ .Values.secrets.smtp.emailAuth | b64dec }}'),
+    ('EMAIL_USERNAME', '{{ .Values.secrets.smtp.emailUsername | b64dec }}'),
     ('PUBLIC_URL', '{{ .Values.event.url }}'),
     ('SMTP_HOST', '{{ .Values.secrets.smtp.smtpHost | b64dec }}'),
     ('SMTP_PORT', '{{ .Values.secrets.smtp.smtpPort | b64dec }}'),
