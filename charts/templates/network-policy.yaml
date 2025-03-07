@@ -1,0 +1,31 @@
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: default-deny-requests
+  namespace: {{ .Values.isolet.namespace }}
+  labels:
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: isolet
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels: {}
+  policyTypes:
+    - Egress
+
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: default-deny-requests
+  namespace: {{ .Values.dynamic.namespace }}
+  labels:
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: dynamic
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels: {}
+  policyTypes:
+    - Egress
