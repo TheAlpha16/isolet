@@ -13,14 +13,14 @@ import (
 )
 
 var RateLimits = map[string]limiter.Config{
-	AUTH_GROUP + METADATA:        NewLimitConfig(10, 10*time.Second),
-	AUTH_GROUP + LOGIN:           NewLimitConfig(5, 10*time.Second),
-	AUTH_GROUP + REGISTER:        NewLimitConfig(5, 10*time.Second),
+	AUTH_GROUP + METADATA:        NewLimitConfig(20, 10*time.Second),
+	AUTH_GROUP + LOGIN:           NewLimitConfig(12, 10*time.Second),
+	AUTH_GROUP + REGISTER:        NewLimitConfig(8, 10*time.Second),
 	AUTH_GROUP + VERIFY:          NewLimitConfig(5, 10*time.Second),
 	AUTH_GROUP + FORGOT_PASSWORD: NewLimitConfig(5, 10*time.Second),
 	AUTH_GROUP + RESET_PASSWORD:  NewLimitConfig(5, 10*time.Second),
 
-	ONBOARD_GROUP + TEAM_JOIN:        NewLimitConfig(3, 1*time.Minute),
+	ONBOARD_GROUP + TEAM_JOIN:        NewLimitConfig(10, 1*time.Minute),
 	ONBOARD_GROUP + TEAM_CREATE:      NewLimitConfig(5, 30*time.Second),
 	ONBOARD_GROUP + JOIN_TEAM_INVITE: NewLimitConfig(5, 30*time.Second),
 
@@ -28,15 +28,15 @@ var RateLimits = map[string]limiter.Config{
 	API_GROUP + SUBMIT:      NewLimitConfig(5, 10*time.Second),
 	API_GROUP + UNLOCK_HINT: NewLimitConfig(5, 10*time.Second),
 
-	API_GROUP + SCOREBOARD_GROUP: NewLimitConfig(7, 10*time.Second),
+	API_GROUP + SCOREBOARD_GROUP: NewLimitConfig(10, 10*time.Second),
 
-	API_GROUP + IDENTIFY: NewLimitConfig(7, 10*time.Second),
-	API_GROUP + LOGOUT:   NewLimitConfig(7, 10*time.Second),
+	API_GROUP + IDENTIFY: NewLimitConfig(14, 10*time.Second),
+	API_GROUP + LOGOUT:   NewLimitConfig(14, 10*time.Second),
 
-	API_GROUP + LAUNCH: NewLimitConfig(5, 10*time.Second),
-	API_GROUP + STOP:   NewLimitConfig(5, 10*time.Second),
-	API_GROUP + STATUS: NewLimitConfig(5, 10*time.Second),
-	API_GROUP + EXTEND: NewLimitConfig(5, 10*time.Second),
+	API_GROUP + LAUNCH: NewLimitConfig(10, 10*time.Second),
+	API_GROUP + STOP:   NewLimitConfig(10, 10*time.Second),
+	API_GROUP + STATUS: NewLimitConfig(10, 10*time.Second),
+	API_GROUP + EXTEND: NewLimitConfig(10, 10*time.Second),
 
 	API_GROUP + PROFILE_GROUP: NewLimitConfig(15, 10*time.Second),
 }
