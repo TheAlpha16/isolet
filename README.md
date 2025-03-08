@@ -2,6 +2,10 @@
 
 Isolet is a framework to deploy linux wargames like [Bandit](https://overthewire.org/wargames/bandit/). It uses pre-configured templates to provide isolated instance using kubernetes pods for each user.
 
+> [!warn]
+> README is outdated :)
+> will update it soon
+
 ## Contents
 
 - [Features](#features)
