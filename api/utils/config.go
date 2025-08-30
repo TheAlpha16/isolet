@@ -9,6 +9,8 @@ import (
 
 type Environment string
 
+var appConfig *Config
+
 const (
 	LOCAL Environment = "local"
 	DEV   Environment = "dev"
@@ -21,12 +23,16 @@ type Config struct {
 	Environment Environment `env:"ENVIRONMENT" envDefault:"local"`
 }
 
-func NewConfig() *Config {
-	godotenv.Load()
+func GetConfig() *Config {
+	if appConfig != nil {
+		return appConfig
+	} else {
+		godotenv.Load()
 
-	cfg, err := env.ParseAs[Config]()
-	if err != nil {
-		log.Panic("Error parsing config: ", err)
+		cfg, err := env.ParseAs[Config]()
+		if err != nil {
+			log.Panic("Error parsing config: ", err)
+		}
+		return &cfg
 	}
-	return &cfg
 }
