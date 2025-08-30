@@ -1,5 +1,7 @@
 package user
 
+import "time"
+
 type Rank int
 
 const (
@@ -9,11 +11,13 @@ const (
 )
 
 type User struct {
-	ID       int64
-	Username string
-	Email    string
-	Password string
-	TeamID   *int64
-	Rank     Rank
-	IsBanned bool
+	ID        int64
+	Username  string
+	Email     string
+	Password  string
+	TeamID    *int64
+	Rank      Rank
+	IsBanned  bool
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
