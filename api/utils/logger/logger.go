@@ -70,7 +70,7 @@ func (l *StandardLogger) Sync() {
 	l.Logger.Sync()
 }
 
-func FromContext(ctx context.Context) *StandardLogger {
+func GetLogger(ctx context.Context) *StandardLogger {
 	if ctxLogger, ok := ctx.Value(loggerKey).(*StandardLogger); ok {
 		return ctxLogger
 	}
