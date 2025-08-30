@@ -25,38 +25,49 @@ type StandardLogger struct {
 
 func Init() {
 	once.Do(func() {
-		var cfg zap.Config
-		config := utils.GetConfig()
-		outputLevel, err := zapcore.ParseLevel(config.LogLevel)
-		if err != nil {
-			outputLevel = zapcore.InfoLevel
-		}
-
-		if config.Environment != utils.LOCAL {
-			cfg = zap.NewProductionConfig()
-			cfg.Level = zap.NewAtomicLevelAt(outputLevel)
-			cfg.Encoding = "json"
-		} else {
-			cfg = zap.NewDevelopmentConfig()
-		}
-
-		cfg.OutputPaths = []string{"stdout"}
-		cfg.ErrorOutputPaths = []string{"stdout"}
-		cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-		cfg.EncoderConfig.TimeKey = "time"
-		cfg.DisableStacktrace = true
-
-		zapLogger, err := cfg.Build()
-		if err != nil {
-			panic(err)
-		}
-
-		logger = &StandardLogger{zapLogger}
+		logger = New()
 	})
+}
+
+func New() *StandardLogger {
+	var cfg zap.Config
+	config := utils.GetConfig()
+	outputLevel, err := zapcore.ParseLevel(config.LogLevel)
+	if err != nil {
+		outputLevel = zapcore.InfoLevel
+	}
+
+	if config.Environment != utils.LOCAL {
+		cfg = zap.NewProductionConfig()
+		cfg.Level = zap.NewAtomicLevelAt(outputLevel)
+		cfg.Encoding = "json"
+	} else {
+		cfg = zap.NewDevelopmentConfig()
+	}
+
+	cfg.OutputPaths = []string{"stdout"}
+	cfg.ErrorOutputPaths = []string{"stdout"}
+	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	cfg.EncoderConfig.TimeKey = "time"
+	cfg.DisableStacktrace = true
+
+	zapLogger, err := cfg.Build()
+	if err != nil {
+		panic(err)
+	}
+
+	newLogger := &StandardLogger{zapLogger}
+	newLogger.Info("Logger initialized", zap.String("level", outputLevel.String()))
+
+	return newLogger
 }
 
 func (l *StandardLogger) WithFields(fields ...zapcore.Field) *StandardLogger {
 	return &StandardLogger{l.Logger.With(fields...)}
+}
+
+func (l *StandardLogger) Sync() {
+	l.Logger.Sync()
 }
 
 func FromContext(ctx context.Context) *StandardLogger {
@@ -74,5 +85,8 @@ func NewContext(
 }
 
 func GetAppLogger() *StandardLogger {
+	if logger == nil {
+		Init()
+	}
 	return logger
 }
