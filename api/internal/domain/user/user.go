@@ -9,11 +9,11 @@ const (
 )
 
 type User struct {
-	ID       int64
+	ID       int
 	Username string
 	Email    string
 	Password string
-	TeamID   *int64
+	TeamID   *int
 	Rank     Rank
 	IsBanned bool
 }
