@@ -2,6 +2,7 @@ package user
 
 import (
 	domain_user "github.com/TheAlpha16/isolet/api/internal/domain/user"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

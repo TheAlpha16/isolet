@@ -4,14 +4,14 @@ import (
 	"context"
 
 	"github.com/TheAlpha16/isolet/api/internal/repository"
-	"github.com/TheAlpha16/isolet/api/utils"
+	"github.com/TheAlpha16/isolet/api/internal/usecase"
 	"github.com/TheAlpha16/isolet/api/utils/logger"
+
 	"go.uber.org/zap"
 )
 
 func main() {
 	ctx := context.Background()
-	config := utils.GetConfig()
 
 	appLogger := logger.GetAppLogger()
 	defer appLogger.Sync()
@@ -25,4 +25,7 @@ func main() {
 
 	// Initialize repositories
 	repos := repository.New(dbPool)
+
+	// Initialize usecases
+	_ = usecase.New(repos)
 }
