@@ -37,7 +37,7 @@ type Config struct {
 	Sentry struct {
 		DSN             string  `env:"SENTRY_DSN" envDefault:""`
 		SampleRate      float64 `env:"SENTRY_SAMPLE_RATE" envDefault:"1.0"`
-		TraceSampleRate float64 `env:"SENTRY_TRACE_SAMPLE_RATE" envDefault:"1.0"`
+		TraceSampleRate float64 `env:"SENTRY_TRACE_SAMPLE_RATE" envDefault:"0.05"`
 	}
 
 	Rest struct {
