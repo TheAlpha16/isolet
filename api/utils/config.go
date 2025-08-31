@@ -20,16 +20,16 @@ const (
 
 type Config struct {
 	Name        string      `env:"NAME"        envDefault:"api"`
-	LogLevel    string      `env:"LOG_LEVEL"   envDefault:"INFO"`
+	LogLevel    string      `env:"LOG_LEVEL"   envDefault:"DEBUG"`
 	Environment Environment `env:"ENVIRONMENT" envDefault:"local"`
 	Version     string      `env:"VERSION"     envDefault:"v2.0.0"`
 
 	Database struct {
-		User                  string        `env:"DB_USER"     envDefault:"user"`
-		Password              string        `env:"DB_PASSWORD" envDefault:"password"`
+		Name                  string        `env:"DB_NAME"     envDefault:"isolet"`
+		User                  string        `env:"DB_USER"     envDefault:"postgres"`
+		Password              string        `env:"DB_PASSWORD" envDefault:"postgres"`
 		Host                  string        `env:"DB_HOST"     envDefault:"localhost"`
 		Port                  int           `env:"DB_PORT"     envDefault:"5432"`
-		Name                  string        `env:"DB_NAME"     envDefault:"isolet"`
 		MaxConnections        int           `env:"DB_MAX_CONNECTIONS" envDefault:"50"`
 		MaxConnectionIdleTime time.Duration `env:"DB_MAX_CONNECTION_IDLE_TIME" envDefault:"5m"`
 	}
