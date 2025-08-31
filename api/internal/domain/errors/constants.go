@@ -19,6 +19,9 @@ const (
 
 	// Rest errors
 	ErrInvalidPayload ErrorCode = "REST-00"
+
+	// User errors
+	ErrInvalidRole ErrorCode = "USER-00"
 )
 
 // Map of error codes to user-facing messages
@@ -31,6 +34,9 @@ var msgMap = map[ErrorCode]string{
 
 	// Rest errors
 	ErrInvalidPayload: "invalid request payload",
+
+	// User errors
+	ErrInvalidRole: "invalid user role",
 }
 
 // Map of server-side error codes that need to be filtered
