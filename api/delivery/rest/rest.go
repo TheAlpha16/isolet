@@ -31,6 +31,7 @@ func New(
 		}),
 	))
 	app.Use(middleware.LoggingMiddleware())
+	app.Use(middleware.ErrorMiddleware())
 
 	routes.RegisterHealth(app)
 
