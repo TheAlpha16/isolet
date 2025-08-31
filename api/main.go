@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	restDel "github.com/TheAlpha16/isolet/api/delivery/rest"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	"github.com/TheAlpha16/isolet/api/internal/repository"
 	"github.com/TheAlpha16/isolet/api/internal/usecase"
@@ -36,7 +37,10 @@ func main() {
 	repos := repository.New(dbPool)
 
 	// Initialize usecases
-	_ = usecase.New(repos)
+	usecases := usecase.New(repos)
+
+	// Start the rest server
+	StartRestServer(ctx, usecases)
 }
 
 func ConnectToDatabase(ctx context.Context) (*pgxpool.Pool, func(), error) {
@@ -55,4 +59,13 @@ func ConnectToDatabase(ctx context.Context) (*pgxpool.Pool, func(), error) {
 	}
 
 	return dbPool, closeConn, nil
+}
+
+func StartRestServer(ctx context.Context, usecases *usecase.Usecases) {
+	app := restDel.New(usecases)
+	restDel.StartServer(app)
+
+	utils.InterruptHandlerChannel <- func() {
+		restDel.Shutdown(app)
+	}
 }

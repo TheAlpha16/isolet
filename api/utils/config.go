@@ -39,6 +39,10 @@ type Config struct {
 		SampleRate      float64 `env:"SENTRY_SAMPLE_RATE" envDefault:"1.0"`
 		TraceSampleRate float64 `env:"SENTRY_TRACE_SAMPLE_RATE" envDefault:"1.0"`
 	}
+
+	Rest struct {
+		Port int `env:"REST_PORT" envDefault:"8000"`
+	}
 }
 
 func GetConfig() *Config {
