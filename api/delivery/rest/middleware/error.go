@@ -45,6 +45,7 @@ func ErrorMiddleware() fiber.Handler {
 			message := err.Error()
 			if code == fiber.StatusInternalServerError {
 				message = "Internal Server Error"
+				logger.GetLogger(c.UserContext()).Error(message, zap.Error(err))
 				errorDom.RaiseToSentry(c.UserContext(), err)
 			}
 
