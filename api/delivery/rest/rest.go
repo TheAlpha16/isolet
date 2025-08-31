@@ -24,6 +24,7 @@ func New(
 		},
 	)
 
+	app.Use(middleware.ContextMiddleware())
 	app.Use(otelfiber.Middleware(
 		otelfiber.WithNext(func(ctx *fiber.Ctx) bool {
 			return ctx.Path() == "/ping"
