@@ -10,10 +10,6 @@ import (
 	"go.uber.org/zap"
 )
 
-var skipPaths = map[string]struct{}{
-	"/ping": {},
-}
-
 func LoggingMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		if _, ok := skipPaths[c.Path()]; ok {
