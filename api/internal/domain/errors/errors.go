@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cockroachdb/errors"
 	"github.com/getsentry/sentry-go"
 	goerrors "github.com/go-errors/errors"
 	"github.com/gofiber/fiber/v2"
@@ -27,11 +28,7 @@ type AppError struct {
 }
 
 func (ae *AppError) Error() string {
-	baseErr := fmt.Sprintf("[%s] %s", ae.GetCode(), ae.GetMessage())
-	if ae.Cause != nil {
-		baseErr = fmt.Sprintf("%s : %s", baseErr, ae.Cause.Error())
-	}
-	return baseErr
+	return fmt.Sprintf("[%s] %s", ae.GetCode(), ae.GetMessage())
 }
 
 func (ae *AppError) Unwrap() error {
@@ -61,6 +58,10 @@ func (ae *AppError) GetExtraData() ExtraData {
 	return ae.ExtraData
 }
 
+func (ae *AppError) Format(s fmt.State, verb rune) {
+	errors.FormatError(ae, s, verb)
+}
+
 func Raise(ctx context.Context, code ErrorCode, msg string, errToWrap error, extraData ExtraData) error {
 	ae := &AppError{
 		ErrorCode: code,
@@ -72,7 +73,9 @@ func Raise(ctx context.Context, code ErrorCode, msg string, errToWrap error, ext
 		ae.Message = msgMap[code]
 	}
 	if errToWrap != nil {
-		ae.Cause = errToWrap
+		ae.Cause = goerrors.Wrap(errToWrap, 1)
+	} else {
+		ae.Cause = goerrors.Wrap(fmt.Errorf("%s", ae.Error()), 1)
 	}
 	if ctx != nil {
 		EnrichWithCtx(ctx, ae)
@@ -101,6 +104,9 @@ func RaiseToSentry(ctx context.Context, err error) {
 			}}
 			event.Extra = map[string]interface{}{
 				"context": e.GetExtraData(),
+			}
+			if e.Cause != nil {
+				event.Extra["cause"] = e.Cause.Error()
 			}
 		})
 		hub.CaptureEvent(event)
