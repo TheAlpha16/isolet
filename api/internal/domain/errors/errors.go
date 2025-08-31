@@ -113,7 +113,7 @@ func RaiseToSentry(ctx context.Context, err error) {
 				Stacktrace: sentry.ExtractStacktrace(stackErr),
 			}}
 			event.Extra = map[string]interface{}{
-				"context": ExtraDataFromCtx(ctx),
+				"context": GetExtraDataFromCtx(ctx),
 			}
 		})
 		addTraceContextToSentryEvent(ctx, event)
