@@ -25,6 +25,36 @@ func IsSameError(err error, code ErrorCode) bool {
 	return false
 }
 
+// IsServerSideError checks if the error is a server-side error
+func IsServerSideError(err error) bool {
+	errCode, ok := ExtractErrorCode(err)
+	if !ok {
+		return false
+	}
+	_, isServerSide := ServerSideErrors[errCode]
+	return isServerSide
+}
+
+// IsAuthError checks if the error is an auth error
+func IsAuthError(err error) bool {
+	errCode, ok := ExtractErrorCode(err)
+	if !ok {
+		return false
+	}
+	_, isAuth := AuthErrors[errCode]
+	return isAuth
+}
+
+// IsForbiddenError checks if the error is a forbidden error
+func IsForbiddenError(err error) bool {
+	errCode, ok := ExtractErrorCode(err)
+	if !ok {
+		return false
+	}
+	_, isForbidden := ForbiddenErrors[errCode]
+	return isForbidden
+}
+
 // Sets `ExtraData` in the given context
 func SetExtraDataInCtx(ctx context.Context, extraData ExtraData) context.Context {
 	return context.WithValue(ctx, errExtraDataKey, extraData)

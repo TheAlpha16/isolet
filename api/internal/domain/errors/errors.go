@@ -6,6 +6,7 @@ import (
 
 	"github.com/getsentry/sentry-go"
 	goerrors "github.com/go-errors/errors"
+	"github.com/gofiber/fiber/v2"
 )
 
 // ErrorCode type
@@ -119,4 +120,21 @@ func RaiseToSentry(ctx context.Context, err error) {
 		addTraceContextToSentryEvent(ctx, event)
 		hub.CaptureEvent(event)
 	}
+}
+
+func GetHTTPStatusCode(err error) int {
+	_, isDomErr := ExtractErrorCode(err)
+	if !isDomErr {
+		return -1 // return -1 if not a domain error
+	}
+	if isServerSideErr := IsServerSideError(err); isServerSideErr {
+		return fiber.StatusInternalServerError
+	}
+	if isAuthErr := IsAuthError(err); isAuthErr {
+		return fiber.StatusUnauthorized
+	}
+	if isForbiddenErr := IsForbiddenError(err); isForbiddenErr {
+		return fiber.StatusForbidden
+	}
+	return fiber.StatusBadRequest
 }
