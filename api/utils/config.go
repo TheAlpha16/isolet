@@ -25,13 +25,14 @@ type Config struct {
 	Version     string      `env:"VERSION"     envDefault:"v2.0.0"`
 
 	Database struct {
-		Name                  string        `env:"DB_NAME"     envDefault:"isolet"`
-		User                  string        `env:"DB_USER"     envDefault:"postgres"`
+		Name                  string        `env:"DB_NAME" envDefault:"isolet"`
+		User                  string        `env:"DB_USER" envDefault:"postgres"`
 		Password              string        `env:"DB_PASSWORD" envDefault:"postgres"`
-		Host                  string        `env:"DB_HOST"     envDefault:"localhost"`
-		Port                  int           `env:"DB_PORT"     envDefault:"5432"`
-		MaxConnections        int           `env:"DB_MAX_CONNECTIONS" envDefault:"50"`
-		MaxConnectionIdleTime time.Duration `env:"DB_MAX_CONNECTION_IDLE_TIME" envDefault:"5m"`
+		Host                  string        `env:"DB_HOST" envDefault:"localhost"`
+		Port                  int           `env:"DB_PORT" envDefault:"5432"`
+		MaxOpenConnections    int           `env:"DB_MAX_OPEN_CONNECTIONS" envDefault:"30"`
+		MaxIdleConnections    int           `env:"DB_MAX_IDLE_CONNECTIONS" envDefault:"30"`
+		MaxConnectionLifeTime time.Duration `env:"DB_MAX_CONNECTION_LIFETIME" envDefault:"3600s"`
 	}
 
 	Sentry struct {

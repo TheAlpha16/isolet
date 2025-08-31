@@ -2,107 +2,59 @@ package postgres
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/TheAlpha16/isolet/api/utils"
-	"github.com/TheAlpha16/isolet/api/utils/logger"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/zap"
+	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	glogger "gorm.io/gorm/logger"
 )
 
-type tablesMap map[string]TableInfo
-
-const STRUCT_DB_TAG = "db"
-
-var Tables = make(tablesMap) // Tables
-
 type BaseModel struct {
-	ID        int64 `db:"id"`
-	CreatedAt int64 `db:"created_at"`
-	UpdatedAt int64 `db:"updated_at"`
+	ID        int64 `gorm:"id"`
+	CreatedAt int64 `gorm:"created_at"`
+	UpdatedAt int64 `gorm:"updated_at"`
 }
 
-func (t tablesMap) Register(tableName string, tab interface{}) {
-	if _, ok := t[tableName]; ok {
-		return
-	}
-	fieldNames := utils.StructTagsAsString(tab, STRUCT_DB_TAG, 1)
-	var fieldNamesWithPrefix string
-	fieldNameSlice := strings.SplitSeq(fieldNames, ",")
-	for f := range fieldNameSlice {
-		fieldNamesWithPrefix += fmt.Sprintf("%s.%s,", tableName, f)
-	}
-	if len(fieldNamesWithPrefix) > 0 {
-		fieldNamesWithPrefix = fieldNamesWithPrefix[:len(fieldNamesWithPrefix)-1]
-	}
-	t[tableName] = TableInfo{
-		FieldNames:           fieldNames,
-		FieldNamesWithPrefix: fieldNamesWithPrefix,
-	}
-}
-
-type TableInfo struct {
-	FieldNames           string
-	FieldNamesWithPrefix string
-}
-
-type myQueryTracer struct {
-	config *utils.Config
-	log    *logger.StandardLogger
-}
-
-func (tracer *myQueryTracer) TraceQueryStart(
-	ctx context.Context,
-	conn *pgx.Conn,
-	data pgx.TraceQueryStartData,
-) context.Context {
-	ctx, _ = otel.Tracer("pgx").Start(ctx, "PGXQuery", trace.WithAttributes(
-		attribute.String("db.system", "Postgres"),
-		attribute.String("db.statement", data.SQL),
-		attribute.String("db.name", conn.Config().Database),
-	))
-	logger.GetLogger(ctx).Debug(
-		"Executing SQL command",
-		zap.String("db", conn.Config().Database),
-		zap.String("sql", data.SQL),
-		zap.Any("args", data.Args),
-	)
-	return ctx
-}
-
-func (tracer *myQueryTracer) TraceQueryEnd(ctx context.Context, conn *pgx.Conn, data pgx.TraceQueryEndData) {
-	span := trace.SpanFromContext(ctx)
-	if data.Err != nil {
-		span.RecordError(data.Err)
-	}
-	span.End()
-}
-
-func NewConnection(ctx context.Context, dbURI string) (*pgxpool.Pool, func(), error) {
+func NewConnection(ctx context.Context, dbURI string) (*gorm.DB, func(), error) {
 	config := utils.GetConfig()
-	logger := logger.GetAppLogger()
-	pgxConfig, err := pgxpool.ParseConfig(dbURI)
+
+	gormConfig := &gorm.Config{
+		Logger:                 glogger.Default.LogMode(glogger.Silent),
+		SkipDefaultTransaction: true,
+	}
+	if config.Environment != utils.PROD {
+		gormConfig.Logger = glogger.Default.LogMode(glogger.Info)
+	}
+
+	db, err := gorm.Open(postgres.Open(dbURI), gormConfig)
 	if err != nil {
 		return nil, nil, err
 	}
-	pgxConfig.MaxConns = int32(config.Database.MaxConnections)
-	pgxConfig.MaxConnLifetime = config.Database.MaxConnectionIdleTime
-	pgxConfig.ConnConfig.Tracer = &myQueryTracer{log: logger, config: config}
-	dbPool, err := pgxpool.NewWithConfig(ctx, pgxConfig)
+	if err := db.Use(otelgorm.NewPlugin(otelgorm.WithDBName(config.Database.Name))); err != nil {
+		return nil, nil, err
+	}
+
+	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, nil, err
 	}
-	if err := dbPool.Ping(ctx); err != nil {
+
+	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
+	sqlDB.SetMaxIdleConns(config.Database.MaxIdleConnections)
+	// SetMaxOpenConns sets the maximum number of open connections to the database.
+	sqlDB.SetMaxOpenConns(config.Database.MaxOpenConnections)
+	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
+	sqlDB.SetConnMaxLifetime(config.Database.MaxConnectionLifeTime)
+
+	err = sqlDB.Ping()
+	if err != nil {
 		return nil, nil, err
 	}
 	closeConn := func() {
-		dbPool.Close()
+		sqlDB.Close()
 	}
-	return dbPool, closeConn, nil
+
+	return db, closeConn, nil
 }

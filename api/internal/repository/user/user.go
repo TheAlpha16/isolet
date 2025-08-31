@@ -3,11 +3,11 @@ package user
 import (
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 )
 
 type UserRepo struct {
-	db *pgxpool.Pool
+	db *gorm.DB
 }
 
 func (userRepo *UserRepo) Create(user *userDom.User) error {
@@ -20,7 +20,7 @@ func (userRepo *UserRepo) Update(user *userDom.User) error {
 	return nil
 }
 
-func New(db *pgxpool.Pool) userDom.Repository {
+func New(db *gorm.DB) userDom.Repository {
 	return &UserRepo{
 		db: db,
 	}

@@ -6,7 +6,7 @@ import (
 	authRepo "github.com/TheAlpha16/isolet/api/internal/repository/auth"
 	userRepo "github.com/TheAlpha16/isolet/api/internal/repository/user"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 )
 
 type Repositories struct {
@@ -14,7 +14,7 @@ type Repositories struct {
 	Auth authDom.Repository
 }
 
-func New(db *pgxpool.Pool) *Repositories {
+func New(db *gorm.DB) *Repositories {
 	userRepo := userRepo.New(db)
 	authRepo := authRepo.New(db)
 

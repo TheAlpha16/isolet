@@ -3,14 +3,14 @@ package auth
 import (
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 )
 
 type AuthRepo struct {
-	db *pgxpool.Pool
+	db *gorm.DB
 }
 
-func New(db *pgxpool.Pool) authDom.Repository {
+func New(db *gorm.DB) authDom.Repository {
 	return &AuthRepo{
 		db: db,
 	}

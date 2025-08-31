@@ -12,8 +12,8 @@ import (
 	"github.com/TheAlpha16/isolet/api/utils/logger"
 	"github.com/TheAlpha16/isolet/api/utils/postgres"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -43,7 +43,7 @@ func main() {
 	StartRestServer(ctx, usecases)
 }
 
-func ConnectToDatabase(ctx context.Context) (*pgxpool.Pool, func(), error) {
+func ConnectToDatabase(ctx context.Context) (*gorm.DB, func(), error) {
 	config := utils.GetConfig()
 	dbURI := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		config.Database.User,
