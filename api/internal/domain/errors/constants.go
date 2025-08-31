@@ -22,6 +22,9 @@ const (
 
 	// User errors
 	ErrInvalidRole ErrorCode = "USER-00"
+
+	// DB errors
+	ErrDBCreateError ErrorCode = "DB-00"
 )
 
 // Map of error codes to user-facing messages
