@@ -20,7 +20,7 @@ type Token struct {
 	Purpose   TokenPurpose
 	UserID    int64
 	IsActive  bool
-	Data      map[string]string
+	Metadata  map[string]string
 	ExpiresAt time.Time
 	domain.BaseEntity
 }
