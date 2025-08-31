@@ -1,15 +1,16 @@
 package user
 
-import "time"
+import (
+	"github.com/TheAlpha16/isolet/api/internal/domain"
+)
 
 type User struct {
-	ID        int64
-	Username  string
-	Email     string
-	Password  string
-	TeamID    *int64
-	Role      Role
-	IsBanned  bool
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID       int64
+	Username string
+	Email    string
+	Password string
+	TeamID   *int64
+	Role     Role
+	IsBanned bool
+	domain.BaseEntity
 }
