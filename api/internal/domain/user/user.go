@@ -5,12 +5,13 @@ import (
 )
 
 type User struct {
-	ID       int64
-	Username string
-	Email    string
-	Password string
-	TeamID   *int64
-	Role     Role
-	IsBanned bool
+	ID         int64
+	Username   string
+	Email      string
+	Password   string
+	TeamID     *int64
+	Role       Role
+	IsVerified bool
+	IsBanned   bool
 	domain.BaseEntity
 }
