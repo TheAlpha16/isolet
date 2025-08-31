@@ -3,6 +3,7 @@ package rest
 import (
 	"fmt"
 
+	healthHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/health"
 	"github.com/TheAlpha16/isolet/api/delivery/rest/middleware"
 	"github.com/TheAlpha16/isolet/api/delivery/rest/routes"
 	"github.com/TheAlpha16/isolet/api/internal/usecase"
@@ -24,6 +25,7 @@ func New(
 		},
 	)
 
+	// Setup middlewares
 	app.Use(middleware.ContextMiddleware())
 	app.Use(otelfiber.Middleware(
 		otelfiber.WithNext(func(c *fiber.Ctx) bool {
@@ -34,7 +36,12 @@ func New(
 	app.Use(middleware.LoggingMiddleware())
 	app.Use(middleware.ErrorMiddleware())
 
-	routes.RegisterHealth(app)
+	// Init handlers
+	healthHandler := healthHan.New()
+
+	// Setup routes
+	apiRouter := app.Group("/api/v1")
+	routes.RegisterHealth(apiRouter, healthHandler)
 
 	return app
 }

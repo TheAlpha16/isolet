@@ -6,9 +6,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func RegisterHealth(
-	router fiber.Router,
-) {
-	healthHandler := healthHan.New()
+func RegisterHealth(router fiber.Router, healthHandler healthHan.HealthHandler) {
 	router.Get("/ping", healthHandler.CheckHealth)
 }
