@@ -3,6 +3,7 @@ package rest
 import (
 	"fmt"
 
+	authHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/auth"
 	healthHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/health"
 	"github.com/TheAlpha16/isolet/api/delivery/rest/middleware"
 	"github.com/TheAlpha16/isolet/api/delivery/rest/routes"
@@ -38,10 +39,12 @@ func New(
 
 	// Init handlers
 	healthHandler := healthHan.New()
+	authHandler := authHan.New(usecases.Auth)
 
 	// Setup routes
 	apiRouter := app.Group("/api/v1")
 	routes.RegisterHealth(apiRouter, healthHandler)
+	routes.RegisterAuth(apiRouter, authHandler)
 
 	return app
 }
