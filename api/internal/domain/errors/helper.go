@@ -25,6 +25,7 @@ func IsSameError(err error, code ErrorCode) bool {
 	return false
 }
 
+// Sets `ExtraData` in the given context.
 func ExtraDataFromCtx(ctx context.Context) ExtraData {
 	ctxVal := ctx.Value(errExtraDataKey)
 	switch ex := ctxVal.(type) {
@@ -39,6 +40,17 @@ func EnrichWithCtx(ctx context.Context, ae *AppError) {
 	extraData := ExtraDataFromCtx(ctx)
 	for k, v := range extraData {
 		ae.AddExtraData(k, v)
+	}
+}
+
+// Extracts `Src` from the given context.
+func GetSrcFromCtx(ctx context.Context) string {
+	ctxVal := ctx.Value(srcKey)
+	switch src := ctxVal.(type) {
+	case string:
+		return src
+	default:
+		return ""
 	}
 }
 

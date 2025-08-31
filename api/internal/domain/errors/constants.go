@@ -1,9 +1,12 @@
 package errors
 
-// SVC prefix for error codes
 const (
+	// Context key for storing/retrieving error extra data
 	errExtraDataKey ErrCtxKey = "ctxErrExData"
-	SVC             string    = "API"
+	srcKey          ErrCtxKey = "ctxErrSrc"
+
+	// SVC prefix for error codes
+	SVC string = "API"
 )
 
 // Error codes

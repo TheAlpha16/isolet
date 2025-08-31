@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/TheAlpha16/isolet/api/utils"
 	"github.com/getsentry/sentry-go"
 	goerrors "github.com/go-errors/errors"
 )
@@ -82,7 +81,6 @@ func Raise(ctx context.Context, code ErrorCode, msg string, errToWrap error, ext
 
 // RaiseToSentry raises the error to Sentry
 func RaiseToSentry(ctx context.Context, err error) {
-	config := utils.GetConfig()
 	hub := sentry.GetHubFromContext(ctx)
 	if hub == nil {
 		sentry.CaptureException(err)
@@ -94,9 +92,9 @@ func RaiseToSentry(ctx context.Context, err error) {
 	case *AppError:
 		hub.WithScope(func(scope *sentry.Scope) {
 			EnrichWithCtx(ctx, e)
-			event.Message = fmt.Sprintf("%s in %s: %s", e.GetCode(), config.Name, e.GetMessage())
+			event.Message = fmt.Sprintf("%s in %s: %s", e.GetCode(), GetSrcFromCtx(ctx), e.GetMessage())
 			event.Exception = []sentry.Exception{{
-				Value:      fmt.Sprintf("%s: %s", e.GetCode(), config.Name),
+				Value:      fmt.Sprintf("%s: %s", e.GetCode(), GetSrcFromCtx(ctx)),
 				Type:       fmt.Sprintf("%T", e),
 				Stacktrace: sentry.ExtractStacktrace(e.Cause),
 			}}
@@ -107,8 +105,8 @@ func RaiseToSentry(ctx context.Context, err error) {
 		hub.CaptureEvent(event)
 	default:
 		stackErr := goerrors.Wrap(e, 1)
-		hub.WithScope(func(_ *sentry.Scope) {
-			event.Message = fmt.Sprintf("%s in %s", e.Error(), config.Name)
+		hub.WithScope(func(scope *sentry.Scope) {
+			event.Message = fmt.Sprintf("%s in %s", e.Error(), GetSrcFromCtx(ctx))
 			event.Exception = []sentry.Exception{{
 				Value:      e.Error(),
 				Type:       fmt.Sprintf("%T", e),
