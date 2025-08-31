@@ -30,6 +30,7 @@ func New(
 			return ctx.Path() == "/ping"
 		}),
 	))
+	app.Use(middleware.SentryMiddleware())
 	app.Use(middleware.LoggingMiddleware())
 	app.Use(middleware.ErrorMiddleware())
 
