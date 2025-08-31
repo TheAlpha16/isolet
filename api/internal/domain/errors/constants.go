@@ -16,6 +16,9 @@ const (
 
 	// Validation errors
 	ErrValidationFailed ErrorCode = "VAL-00"
+
+	// Rest errors
+	ErrInvalidPayload ErrorCode = "REST-00"
 )
 
 // Map of error codes to user-facing messages
@@ -25,6 +28,9 @@ var msgMap = map[ErrorCode]string{
 
 	// Validation errors
 	ErrValidationFailed: "one or more validation errors occurred",
+
+	// Rest errors
+	ErrInvalidPayload: "invalid request payload",
 }
 
 // Map of server-side error codes that need to be filtered
