@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 
+	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
 
 	"gorm.io/gorm"
@@ -13,7 +14,10 @@ type UserRepo struct {
 }
 
 func (userRepo *UserRepo) Create(ctx context.Context, user *userDom.User) error {
-	// Implementation for creating a user
+	userModel := NewUserModel(user)
+	if err := userRepo.db.Create(userModel).Error; err != nil {
+		return errorDom.Raise(ctx, errorDom.ErrDBCreateError, "failed to create user", err, nil)
+	}
 	return nil
 }
 
