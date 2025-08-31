@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"net/http"
+
 	"github.com/getsentry/sentry-go"
 	"github.com/gofiber/fiber/v2"
 	"go.opentelemetry.io/otel/codes"
@@ -32,14 +34,13 @@ func SentryMiddleware() fiber.Handler {
 		err := c.Next()
 
 		// Update span status
-		if span != nil {
-			if err != nil {
-				span.RecordError(err)
-				span.SetStatus(codes.Error, err.Error())
-			} else {
-				span.SetStatus(codes.Ok, "")
-			}
+		description := http.StatusText(c.Response().StatusCode())
+		status := codes.Ok
+		if err != nil {
+			status = codes.Error
 		}
+		span.SetStatus(status, description)
+		span.RecordError(err)
 
 		return err
 	}
