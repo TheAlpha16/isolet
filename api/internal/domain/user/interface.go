@@ -1,11 +1,13 @@
 package user
 
+import "context"
+
 type Usecase interface {
-	Create(user *User) error
-	Update(user *User) error
+	Create(ctx context.Context, user *User) error
+	Update(ctx context.Context, user *User) error
 }
 
 type Repository interface {
-	Create(user *User) error
-	Update(user *User) error
+	Create(ctx context.Context, user *User) error
+	Update(ctx context.Context, user *User) error
 }
