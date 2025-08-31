@@ -12,9 +12,9 @@ import (
 )
 
 type BaseModel struct {
-	ID        int64 `gorm:"id"`
-	CreatedAt int64 `gorm:"created_at"`
-	UpdatedAt int64 `gorm:"updated_at"`
+	ID        int64 `gorm:"primaryKey;autoIncrement"`
+	CreatedAt int64 `gorm:"autoCreateTime"`
+	UpdatedAt int64 `gorm:"autoUpdateTime"`
 }
 
 func NewConnection(ctx context.Context, dbURI string) (*gorm.DB, func(), error) {
