@@ -3,13 +3,20 @@ package errors
 import (
 	"context"
 	"fmt"
+
+	"github.com/TheAlpha16/isolet/api/utils"
+	"github.com/getsentry/sentry-go"
+	goerrors "github.com/go-errors/errors"
 )
 
 // ErrorCode type
 type ErrorCode string
 
+// ErrCtxKey is a key for storing/retrieving error context data from context.Context
+type ErrCtxKey string
+
 // ExtraData type
-type ExtraData map[string]string
+type ExtraData map[string]any
 
 // AppError represents an application error with a code, message, cause, and extra data
 type AppError struct {
@@ -43,9 +50,9 @@ func (ae *AppError) GetMessage() string {
 	return ae.Message
 }
 
-func (ae *AppError) AddExtraData(key string, val string) {
+func (ae *AppError) AddExtraData(key string, val any) {
 	if ae.ExtraData == nil {
-		ae.ExtraData = make(map[string]string)
+		ae.ExtraData = make(map[string]any)
 	}
 	ae.ExtraData[key] = val
 }
@@ -67,5 +74,51 @@ func Raise(ctx context.Context, code ErrorCode, msg string, errToWrap error, ext
 	if errToWrap != nil {
 		ae.Cause = errToWrap
 	}
+	if ctx != nil {
+		EnrichWithCtx(ctx, ae)
+	}
 	return ae
+}
+
+// RaiseToSentry raises the error to Sentry
+func RaiseToSentry(ctx context.Context, err error) {
+	config := utils.GetConfig()
+	hub := sentry.GetHubFromContext(ctx)
+	if hub == nil {
+		sentry.CaptureException(err)
+		return
+	}
+	event := sentry.NewEvent()
+	event.Level = sentry.LevelError
+	switch e := err.(type) {
+	case *AppError:
+		hub.WithScope(func(scope *sentry.Scope) {
+			EnrichWithCtx(ctx, e)
+			event.Message = fmt.Sprintf("%s in %s: %s", e.GetCode(), config.Name, e.GetMessage())
+			event.Exception = []sentry.Exception{{
+				Value:      fmt.Sprintf("%s: %s", e.GetCode(), config.Name),
+				Type:       fmt.Sprintf("%T", e),
+				Stacktrace: sentry.ExtractStacktrace(e.Cause),
+			}}
+			event.Extra = map[string]interface{}{
+				"context": e.GetExtraData(),
+			}
+		})
+		hub.CaptureEvent(event)
+	default:
+		stackErr := goerrors.Wrap(e, 1)
+		hub.WithScope(func(_ *sentry.Scope) {
+			event.Message = fmt.Sprintf("%s in %s", e.Error(), config.Name)
+			event.Exception = []sentry.Exception{{
+				Value:      e.Error(),
+				Type:       fmt.Sprintf("%T", e),
+				Stacktrace: sentry.ExtractStacktrace(stackErr),
+			}}
+			event.Extra = map[string]interface{}{
+				"context": ExtraDataFromCtx(ctx),
+			}
+		})
+		addTraceContextToSentryEvent(ctx, event)
+		hub.CaptureEvent(event)
+	}
 }

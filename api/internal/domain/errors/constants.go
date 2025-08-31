@@ -1,7 +1,10 @@
 package errors
 
 // SVC prefix for error codes
-const SVC = "API"
+const (
+	errExtraDataKey ErrCtxKey = "ctxErrExData"
+	SVC             string    = "API"
+)
 
 // Error codes
 const ()

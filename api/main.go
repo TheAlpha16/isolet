@@ -5,6 +5,7 @@ import (
 
 	"github.com/TheAlpha16/isolet/api/internal/repository"
 	"github.com/TheAlpha16/isolet/api/internal/usecase"
+	"github.com/TheAlpha16/isolet/api/utils"
 	"github.com/TheAlpha16/isolet/api/utils/logger"
 
 	"go.uber.org/zap"
@@ -15,6 +16,9 @@ func main() {
 
 	appLogger := logger.GetAppLogger()
 	defer appLogger.Sync()
+
+	// Initialize Sentry
+	utils.InitSentry(utils.GetConfig())
 
 	// Initialize database connection
 	dbPool, closeDBConn, err := ConnectToDatabase(ctx)
