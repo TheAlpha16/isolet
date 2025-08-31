@@ -26,8 +26,8 @@ func New(
 
 	app.Use(middleware.ContextMiddleware())
 	app.Use(otelfiber.Middleware(
-		otelfiber.WithNext(func(ctx *fiber.Ctx) bool {
-			return ctx.Path() == "/ping"
+		otelfiber.WithNext(func(c *fiber.Ctx) bool {
+			return c.Path() == "/ping"
 		}),
 	))
 	app.Use(middleware.SentryMiddleware())

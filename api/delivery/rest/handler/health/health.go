@@ -7,13 +7,13 @@ import (
 )
 
 type HealthHandler interface {
-	CheckHealth(ctx *fiber.Ctx) error
+	CheckHealth(c *fiber.Ctx) error
 }
 
 type healthHandler struct{}
 
-func (h *healthHandler) CheckHealth(ctx *fiber.Ctx) error {
-	return ctx.Status(fiber.StatusOK).
+func (h *healthHandler) CheckHealth(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).
 		JSON(response.Success[any]("still alive, atleast for now!", nil))
 }
 
