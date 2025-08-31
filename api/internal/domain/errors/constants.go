@@ -7,10 +7,14 @@ const (
 )
 
 // Error codes
-const ()
+const (
+	ErrValidationFailed ErrorCode = "VAL-00"
+)
 
 // Map of error codes to user-facing messages
-var msgMap = map[ErrorCode]string{}
+var msgMap = map[ErrorCode]string{
+	ErrValidationFailed: "one or more validation errors occurred",
+}
 
 // Map of server-side error codes that need to be filtered
 var ServerSideErrors = map[ErrorCode]struct{}{}
