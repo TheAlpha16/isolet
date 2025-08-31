@@ -98,6 +98,9 @@ func NewConnection(ctx context.Context, dbURI string) (*pgxpool.Pool, func(), er
 	if err != nil {
 		return nil, nil, err
 	}
+	if err := dbPool.Ping(ctx); err != nil {
+		return nil, nil, err
+	}
 	closeConn := func() {
 		dbPool.Close()
 	}
