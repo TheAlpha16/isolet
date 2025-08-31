@@ -44,7 +44,7 @@ func LoggingMiddleware() fiber.Handler {
 			zap.String("method", c.Method()),
 			zap.String("path", c.Path()),
 			zap.Int("status", c.Response().StatusCode()),
-			zap.String("latency", time.Since(start).Truncate(time.Millisecond).String()),
+			zap.Duration("latency", time.Since(start)),
 		)
 
 		return nil
