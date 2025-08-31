@@ -2,12 +2,13 @@ package user
 
 import "time"
 
-type Rank int
+type Role string
 
 const (
-	RankAdmin   Rank = 1
-	RankCaptain Rank = 2
-	RankPlayer  Rank = 3
+	RoleAdmin   Role = "admin"
+	RoleAuthor  Role = "author"
+	RoleCaptain Role = "captain"
+	RolePlayer  Role = "player"
 )
 
 type User struct {
@@ -16,8 +17,16 @@ type User struct {
 	Email     string
 	Password  string
 	TeamID    *int64
-	Rank      Rank
+	Role      Role
 	IsBanned  bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+func (r Role) IsValid() bool {
+	switch r {
+	case RoleAdmin, RoleAuthor, RoleCaptain, RolePlayer:
+		return true
+	}
+	return false
 }
