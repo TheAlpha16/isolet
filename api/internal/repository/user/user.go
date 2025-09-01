@@ -14,7 +14,11 @@ type UserRepo struct {
 }
 
 func (userRepo *UserRepo) Create(ctx context.Context, user *userDom.User) error {
-	userModel := NewUserModel(user)
+	userModel, err := NewUserModel(user)
+	if err != nil {
+		return err
+	}
+
 	if err := userRepo.db.Create(userModel).Error; err != nil {
 		return errorDom.Raise(ctx, errorDom.ErrDBCreateError, "failed to create user", err, nil)
 	}

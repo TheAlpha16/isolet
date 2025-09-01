@@ -45,7 +45,7 @@ func (u *User) ToDomain(ctx context.Context) (*userDom.User, error) {
 	}, nil
 }
 
-func NewUserModel(u *userDom.User) *User {
+func NewUserModel(u *userDom.User) (*User, error) {
 	return &User{
 		Username:   u.Username,
 		Email:      u.Email,
@@ -54,5 +54,5 @@ func NewUserModel(u *userDom.User) *User {
 		Role:       string(u.Role),
 		IsVerified: u.IsVerified,
 		IsBanned:   u.IsBanned,
-	}
+	}, nil
 }
