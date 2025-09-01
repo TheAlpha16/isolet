@@ -12,7 +12,7 @@ const (
 // Error codes
 const (
 	// System errors
-	ErrInternalServerError ErrorCode = "SYS-00"
+	ErrInternalError ErrorCode = "SYS-00"
 
 	// Validation errors
 	ErrValidationFailed ErrorCode = "VAL-00"
@@ -30,7 +30,7 @@ const (
 // Map of error codes to user-facing messages
 var msgMap = map[ErrorCode]string{
 	// System errors
-	ErrInternalServerError: "internal server error",
+	ErrInternalError: "internal server error",
 
 	// Validation errors
 	ErrValidationFailed: "one or more validation errors occurred",
@@ -44,7 +44,7 @@ var msgMap = map[ErrorCode]string{
 
 // Map of server-side error codes that need to be filtered
 var ServerSideErrors = map[ErrorCode]struct{}{
-	ErrInternalServerError: {},
+	ErrInternalError: {},
 }
 
 // Map of auth error codes

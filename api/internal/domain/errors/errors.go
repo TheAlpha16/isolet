@@ -62,6 +62,7 @@ func (ae *AppError) Format(s fmt.State, verb rune) {
 	errors.FormatError(ae, s, verb)
 }
 
+// Raise is a general util to construct domain errors
 func Raise(ctx context.Context, code ErrorCode, msg string, errToWrap error, extraData ExtraData) error {
 	ae := &AppError{
 		ErrorCode: code,
@@ -81,6 +82,11 @@ func Raise(ctx context.Context, code ErrorCode, msg string, errToWrap error, ext
 		EnrichWithCtx(ctx, ae)
 	}
 	return ae
+}
+
+// RaiseInternal raises an internal error
+func RaiseInternal(ctx context.Context, msg string, errToWrap error, extraData ExtraData) error {
+	return Raise(ctx, ErrInternalError, msg, errToWrap, extraData)
 }
 
 // RaiseToSentry raises the error to Sentry

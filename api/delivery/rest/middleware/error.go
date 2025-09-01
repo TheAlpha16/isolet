@@ -16,8 +16,8 @@ func ErrorMiddleware() fiber.Handler {
 
 		defer func() {
 			if r := recover(); r != nil {
-				panicErr := errorDom.Raise(
-					c.UserContext(), errorDom.ErrInternalServerError,
+				panicErr := errorDom.RaiseInternal(
+					c.UserContext(),
 					"", fmt.Errorf("%v", r),
 					errorDom.ExtraData{"stacktrace": errorDom.GetStackTrace()},
 				)
@@ -26,11 +26,9 @@ func ErrorMiddleware() fiber.Handler {
 				errorDom.RaiseToSentry(c.UserContext(), panicErr)
 
 				// return a generic internal server error
-				err = errorDom.Raise(
-					c.UserContext(), errorDom.ErrInternalServerError,
-					"", nil, nil,
+				err = c.Status(fiber.StatusInternalServerError).JSON(
+					response.Error[any]("Internal server error", nil),
 				)
-				_ = defaultHandler(c, err)
 			}
 		}()
 		err = c.Next()
