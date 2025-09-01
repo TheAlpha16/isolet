@@ -19,7 +19,7 @@ func (userRepo *UserRepo) Create(ctx context.Context, user *userDom.User) error 
 		return err
 	}
 
-	if err := userRepo.db.Create(userModel).Error; err != nil {
+	if err := userRepo.db.WithContext(ctx).Create(userModel).Error; err != nil {
 		return errorDom.Raise(ctx, errorDom.ErrDBCreateError, "failed to create user", err, nil)
 	}
 	return nil
