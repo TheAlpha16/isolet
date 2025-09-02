@@ -21,9 +21,6 @@ func (u *userImpl) Update(ctx context.Context, user *userDom.User) error {
 	return u.repo.Update(ctx, user)
 }
 
-// ExistsByEmailOrUsername checks whether the given email or username exists.
-// It queries the cache first (email, then username) and returns immediately
-// on the first positive match; otherwise, it falls back to the repository.
 func (u *userImpl) ExistsByEmailOrUsername(ctx context.Context, email, username string) (*userDom.IdentifierExistence, error) {
 	exists := userDom.IdentifierExistence{
 		EmailExists:    false,
