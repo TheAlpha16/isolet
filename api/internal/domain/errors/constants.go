@@ -25,6 +25,10 @@ const (
 
 	// DB errors
 	ErrDBCreateError ErrorCode = "DB-00"
+
+	// Cache errors
+	ErrCacheCallFail ErrorCode = "CACHE-00"
+	ErrCacheMiss     ErrorCode = "CACHE-01"
 )
 
 // Map of error codes to user-facing messages
@@ -45,6 +49,7 @@ var msgMap = map[ErrorCode]string{
 // Map of server-side error codes that need to be filtered
 var ServerSideErrors = map[ErrorCode]struct{}{
 	ErrInternalError: {},
+	ErrCacheCallFail: {},
 }
 
 // Map of auth error codes
