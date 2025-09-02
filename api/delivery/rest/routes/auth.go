@@ -9,4 +9,5 @@ import (
 func RegisterAuth(router fiber.Router, authHandler authHan.AuthHandler) {
 	authRouter := router.Group("/auth")
 	authRouter.Post("/login", authHandler.Login)
+	authRouter.Post("/register", authHandler.Register)
 }
