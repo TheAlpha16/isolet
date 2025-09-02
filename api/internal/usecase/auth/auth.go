@@ -19,8 +19,8 @@ func (a *authImpl) Login(ctx context.Context, input *authDom.LoginInput) (*authD
 	}, nil
 }
 
-func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) error {
-	return nil
+func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (*authDom.Session, error) {
+	return nil, nil
 }
 
 func New(repo authDom.Repository) authDom.Usecase {

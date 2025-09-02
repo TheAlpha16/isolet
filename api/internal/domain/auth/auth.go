@@ -5,7 +5,7 @@ import (
 )
 
 type Session struct {
-	UserID    int64
-	Token     string
-	ExpiresAt time.Time
+	UserID    int64     `json:"user_id"`
+	Token     string    `json:"-"`
+	ExpiresAt time.Time `json:"expires_at"`
 }
