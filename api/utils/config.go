@@ -44,6 +44,13 @@ type Config struct {
 	Rest struct {
 		Port int `env:"REST_PORT" envDefault:"8000"`
 	}
+
+	Valkey struct {
+		Address  []string `env:"VALKEY_ADDRESS" envDefault:"valkey://localhost:6379"`
+		Username string   `env:"VALKEY_USERNAME" envDefault:""`
+		Password string   `env:"VALKEY_PASSWORD" envDefault:""`
+		UseTLS   bool     `env:"VALKEY_USE_TLS" envDefault:"false"`
+	}
 }
 
 func GetConfig() *Config {
