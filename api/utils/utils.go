@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -53,4 +54,8 @@ func HashPassword(passwd string) (string, error) {
 func ComparePassword(hashedPwd, plainPwd string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPwd), []byte(plainPwd))
 	return err == nil
+}
+
+func RandomUUID() string {
+	return uuid.New().String()
 }
