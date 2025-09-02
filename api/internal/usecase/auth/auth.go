@@ -13,8 +13,8 @@ type AuthUsecase struct {
 
 func (a *AuthUsecase) Login(ctx context.Context, input *authDom.LoginInput) (*authDom.Session, error) {
 	return &authDom.Session{
-		ID:        "<session_id>",
 		UserID:    6969,
+		Token:     "some-token-here",
 		ExpiresAt: time.Now().Add(24 * time.Hour),
 	}, nil
 }
