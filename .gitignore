@@ -13,3 +13,4 @@ ripper/.env
 
 notes.txt
 .DS_Store
+**/tmp/
