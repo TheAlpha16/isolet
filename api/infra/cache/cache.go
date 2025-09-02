@@ -12,6 +12,24 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+const setManyScript = `
+	--[[
+		This script sets multiple key-value pairs atomically.
+		Each key uses the same expiry timestamp passed as the last argument in ARGV.
+		Usage pattern:
+		  KEYS = list of keys
+		  ARGV = [value1, value2, ..., expiryTimestamp]
+	--]]
+	for i = 1, #KEYS do
+		redis.call("SET", KEYS[i], ARGV[i], "EXAT", ARGV[#ARGV])
+	end
+	return true
+`
+
+var (
+	setManyScriptHash string
+)
+
 type cache struct {
 	client valkey.Client
 	tracer trace.Tracer
@@ -53,8 +71,15 @@ func NewClient(ctx context.Context) (Cache, error) {
 
 	tracer := otel.GetTracerProvider().Tracer("api.cache", trace.WithInstrumentationAttributes(attribute.String("cache.provider", "valkey")))
 
-	return &cache{
+	cache := &cache{
 		client: client,
 		tracer: tracer,
-	}, nil
+	}
+
+	setManyScriptHash, err = cache.LoadScript(ctx, setManyScript)
+	if err != nil {
+		return nil, err
+	}
+
+	return cache, nil
 }

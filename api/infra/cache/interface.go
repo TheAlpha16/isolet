@@ -12,5 +12,7 @@ type Cache interface {
 	GetKeys(ctx context.Context, pattern string) ([]string, error)
 	SetWithExpiry(ctx context.Context, key, value string, expiresAt time.Time) error
 	SetWithTTL(ctx context.Context, key, value string, ttl time.Duration) error
+	LoadScript(ctx context.Context, script string) (string, error)
+	SetManyWithExpiry(ctx context.Context, items map[string]string, expiresAt time.Time) error
 	Close()
 }

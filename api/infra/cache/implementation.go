@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
@@ -80,6 +81,37 @@ func (c *cache) SetWithTTL(ctx context.Context, key, value string, ttl time.Dura
 	if err != nil {
 		return errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
 	}
+	return nil
+}
+
+func (c *cache) LoadScript(ctx context.Context, script string) (string, error) {
+	ctx, span := c.WithTrace(ctx, "load_script")
+	defer span.End()
+
+	sha1Hash, err := c.client.Do(ctx, c.client.B().ScriptLoad().Script(script).Build()).ToString()
+	if err != nil {
+		return "", errorDom.Raise(ctx, errorDom.ErrCacheScriptLoadFail, "", err, nil)
+	}
+	return sha1Hash, nil
+}
+
+func (c *cache) SetManyWithExpiry(ctx context.Context, items map[string]string, expiresAt time.Time) error {
+	ctx, span := c.WithTrace(ctx, "set_many")
+	defer span.End()
+
+	keys := make([]string, 0, len(items))
+	args := make([]string, 0, len(items)+1)
+	for k, v := range items {
+		keys = append(keys, k)
+		args = append(args, v)
+	}
+	args = append(args, strconv.FormatInt(expiresAt.Unix(), 10))
+
+	err := c.client.Do(ctx, c.client.B().Evalsha().Sha1(setManyScriptHash).Numkeys(int64(len(keys))).Key(keys...).Arg(args...).Build()).Error()
+	if err != nil {
+		return errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
+	}
+
 	return nil
 }
 

@@ -32,8 +32,9 @@ const (
 	ErrDBReadError   ErrorCode = "DB-01"
 
 	// Cache errors
-	ErrCacheCallFail ErrorCode = "CACHE-00"
-	ErrCacheMiss     ErrorCode = "CACHE-01"
+	ErrCacheCallFail       ErrorCode = "CACHE-00"
+	ErrCacheMiss           ErrorCode = "CACHE-01"
+	ErrCacheScriptLoadFail ErrorCode = "CACHE-02"
 )
 
 // Map of error codes to user-facing messages
@@ -51,16 +52,21 @@ var msgMap = map[ErrorCode]string{
 	ErrUserInvalidRole:   "invalid user role",
 	ErrUserEmailTaken:    "email is already taken",
 	ErrUserUsernameTaken: "username is already taken",
+
+	// Cache errors
+	ErrCacheMiss:           "cache miss",
+	ErrCacheScriptLoadFail: "failed to load cache script",
 }
 
 // Map of server-side error codes that need to be filtered
 var ServerSideErrors = map[ErrorCode]struct{}{
-	ErrInternalError:  {},
-	ErrCacheCallFail:  {},
-	ErrMarshalError:   {},
-	ErrUnmarshalError: {},
-	ErrDBCreateError:  {},
-	ErrDBReadError:    {},
+	ErrInternalError:       {},
+	ErrCacheCallFail:       {},
+	ErrMarshalError:        {},
+	ErrUnmarshalError:      {},
+	ErrDBCreateError:       {},
+	ErrDBReadError:         {},
+	ErrCacheScriptLoadFail: {},
 }
 
 // Map of auth error codes
