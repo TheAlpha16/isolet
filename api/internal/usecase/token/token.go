@@ -14,13 +14,19 @@ type tokenImpl struct {
 	cache cache.Cache
 }
 
-func (t *tokenImpl) Create(ctx context.Context, token *tokenDom.Token) error {
+func (t *tokenImpl) Create(ctx context.Context, token *tokenDom.Token, extras map[string]string) error {
 	key := token.Key()
 	valBytes, err := msgpack.Marshal(token)
 	if err != nil {
 		return errorDom.Raise(ctx, errorDom.ErrMarshalError, "failed to marshal token", err, nil)
 	}
-	return t.cache.Set(ctx, key, string(valBytes))
+
+	if extras == nil {
+		extras = map[string]string{}
+	}
+	extras[key] = string(valBytes)
+
+	return t.cache.SetManyWithExpiry(ctx, extras, token.ExpiresAt)
 }
 
 func (t *tokenImpl) Fetch(ctx context.Context, id *tokenDom.TokenIdentifier) (*tokenDom.Token, error) {
