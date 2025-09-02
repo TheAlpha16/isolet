@@ -14,3 +14,8 @@ type User struct {
 	IsBanned bool
 	domain.BaseEntity
 }
+
+type IdentifierExistence struct {
+	EmailExists    bool
+	UsernameExists bool
+}
