@@ -10,7 +10,7 @@ import (
 	"github.com/TheAlpha16/isolet/api/internal/usecase"
 	"github.com/TheAlpha16/isolet/api/utils"
 	"github.com/TheAlpha16/isolet/api/utils/logger"
-	"github.com/TheAlpha16/isolet/api/utils/postgres"
+	"github.com/TheAlpha16/isolet/api/infra/database/postgres"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -26,7 +26,7 @@ func main() {
 	utils.InitSentry(utils.GetConfig())
 
 	// Initialize database connection
-	dbPool, closeDBConn, err := ConnectToDatabase(ctx)
+	dbPool, closeDBConn, err := ConnectToPostgresDatabase(ctx)
 	if err != nil {
 		errorDom.RaiseToSentry(ctx, err)
 		appLogger.Fatal("Failed to connect to database", zap.Error(err))
@@ -43,7 +43,7 @@ func main() {
 	StartRestServer(ctx, usecases)
 }
 
-func ConnectToDatabase(ctx context.Context) (*gorm.DB, func(), error) {
+func ConnectToPostgresDatabase(ctx context.Context) (*gorm.DB, func(), error) {
 	config := utils.GetConfig()
 	dbURI := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		config.Database.User,

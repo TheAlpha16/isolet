@@ -7,7 +7,7 @@ import (
 	"github.com/TheAlpha16/isolet/api/internal/domain"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
-	"github.com/TheAlpha16/isolet/api/utils/postgres"
+	"github.com/TheAlpha16/isolet/api/infra/database/postgres"
 )
 
 type User struct {
