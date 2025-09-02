@@ -12,7 +12,9 @@ const (
 // Error codes
 const (
 	// System errors
-	ErrInternalError ErrorCode = "SYS-00"
+	ErrInternalError  ErrorCode = "SYS-00"
+	ErrMarshalError   ErrorCode = "SYS-01"
+	ErrUnmarshalError ErrorCode = "SYS-02"
 
 	// Validation errors
 	ErrValidationFailed ErrorCode = "VAL-00"
