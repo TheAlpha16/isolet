@@ -51,6 +51,10 @@ type Config struct {
 		Password string   `env:"VALKEY_PASSWORD" envDefault:""`
 		UseTLS   bool     `env:"VALKEY_USE_TLS" envDefault:"false"`
 	}
+
+	Token struct {
+		EmailVerificationValidity time.Duration `env:"EMAIL_VERIFICATION_VALIDITY" envDefault:"600s"`
+	}
 }
 
 func GetConfig() *Config {
