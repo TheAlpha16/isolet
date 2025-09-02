@@ -1,4 +1,4 @@
-package auth
+package token
 
 import (
 	"time"
@@ -16,10 +16,8 @@ const (
 )
 
 type Token struct {
-	Value     string
-	Purpose   TokenPurpose
-	UserID    int64
-	IsActive  bool
+	ID        string
+	EntityID  string
 	Metadata  map[string]string
 	ExpiresAt time.Time
 	domain.BaseEntity
