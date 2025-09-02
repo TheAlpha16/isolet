@@ -14,6 +14,11 @@ func decodeLoginInput(c *fiber.Ctx) (*authDom.LoginInput, error) {
 	if err := c.BodyParser(&input); err != nil {
 		return nil, errorDom.Raise(c.UserContext(), errorDom.ErrInvalidPayload, "", err, nil)
 	}
+
+	// normalize
+	input.Email = strings.TrimSpace(strings.ToLower(input.Email))
+	input.Password = strings.TrimSpace(input.Password)
+
 	if err := input.Validate(c.UserContext()); err != nil {
 		return nil, err
 	}
