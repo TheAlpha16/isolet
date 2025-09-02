@@ -15,12 +15,16 @@ func (a *authImpl) Login(ctx context.Context, input *authDom.LoginInput) (*authD
 	return &authDom.Session{
 		UserID:    6969,
 		Token:     "some-token-here",
-		ExpiresAt: time.Now().Add(24 * time.Hour),
+		ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
 	}, nil
 }
 
 func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (*authDom.Session, error) {
-	return nil, nil
+	return &authDom.Session{
+		UserID:    6969,
+		Token:     "registration-token",
+		ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
+	}, nil
 }
 
 func New(repo authDom.Repository) authDom.Usecase {

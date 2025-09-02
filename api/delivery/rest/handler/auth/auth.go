@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"time"
+
 	"github.com/TheAlpha16/isolet/api/delivery/rest/response"
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
 	"github.com/TheAlpha16/isolet/api/utils"
@@ -52,7 +54,7 @@ func buildAuthCookie(session *authDom.Session) *fiber.Cookie {
 	return &fiber.Cookie{
 		Name:     utils.AuthTokenCookieName,
 		Value:    session.Token,
-		Expires:  session.ExpiresAt,
+		Expires:  time.Unix(session.ExpiresAt, 0),
 		SameSite: fiber.CookieSameSiteStrictMode,
 		HTTPOnly: true,
 	}
