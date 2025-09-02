@@ -1,7 +1,14 @@
 package user
 
 import (
+	"fmt"
+
 	"github.com/TheAlpha16/isolet/api/internal/domain"
+)
+
+const (
+	emailCachePrefix    = "email"
+	usernameCachePrefix = "username"
 )
 
 type User struct {
@@ -18,4 +25,12 @@ type User struct {
 type IdentifierExistence struct {
 	EmailExists    bool
 	UsernameExists bool
+}
+
+func EmailCacheKey(email string) string {
+	return fmt.Sprintf("%s:%s", emailCachePrefix, email)
+}
+
+func UsernameCacheKey(username string) string {
+	return fmt.Sprintf("%s:%s", usernameCachePrefix, username)
 }
