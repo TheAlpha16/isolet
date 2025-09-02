@@ -23,10 +23,13 @@ const (
 	ErrRestInvalidPayload ErrorCode = "REST-00"
 
 	// User errors
-	ErrUserInvalidRole ErrorCode = "USER-00"
+	ErrUserInvalidRole   ErrorCode = "USER-00"
+	ErrUserEmailTaken    ErrorCode = "USER-01"
+	ErrUserUsernameTaken ErrorCode = "USER-02"
 
 	// DB errors
 	ErrDBCreateError ErrorCode = "DB-00"
+	ErrDBReadError   ErrorCode = "DB-01"
 
 	// Cache errors
 	ErrCacheCallFail ErrorCode = "CACHE-00"
@@ -45,13 +48,19 @@ var msgMap = map[ErrorCode]string{
 	ErrRestInvalidPayload: "invalid request payload",
 
 	// User errors
-	ErrUserInvalidRole: "invalid user role",
+	ErrUserInvalidRole:   "invalid user role",
+	ErrUserEmailTaken:    "email is already taken",
+	ErrUserUsernameTaken: "username is already taken",
 }
 
 // Map of server-side error codes that need to be filtered
 var ServerSideErrors = map[ErrorCode]struct{}{
-	ErrInternalError: {},
-	ErrCacheCallFail: {},
+	ErrInternalError:  {},
+	ErrCacheCallFail:  {},
+	ErrMarshalError:   {},
+	ErrUnmarshalError: {},
+	ErrDBCreateError:  {},
+	ErrDBReadError:    {},
 }
 
 // Map of auth error codes
