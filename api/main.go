@@ -5,12 +5,13 @@ import (
 	"fmt"
 
 	restDel "github.com/TheAlpha16/isolet/api/delivery/rest"
+	"github.com/TheAlpha16/isolet/api/infra/cache"
+	"github.com/TheAlpha16/isolet/api/infra/database/postgres"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	"github.com/TheAlpha16/isolet/api/internal/repository"
 	"github.com/TheAlpha16/isolet/api/internal/usecase"
 	"github.com/TheAlpha16/isolet/api/utils"
 	"github.com/TheAlpha16/isolet/api/utils/logger"
-	"github.com/TheAlpha16/isolet/api/infra/database/postgres"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -22,7 +23,7 @@ func main() {
 	appLogger := logger.GetAppLogger()
 	defer appLogger.Sync()
 
-	// Initialize Sentry
+	// Init Sentry
 	utils.InitSentry(utils.GetConfig())
 
 	// Initialize database connection
@@ -33,11 +34,18 @@ func main() {
 	}
 	defer closeDBConn()
 
-	// Initialize repositories
+	// Init cache
+	cache, err := cache.NewClient(ctx)
+	if err != nil {
+		errorDom.RaiseToSentry(ctx, err)
+		appLogger.Fatal("Failed to connect to cache", zap.Error(err))
+	}
+
+	// Init repositories
 	repos := repository.New(dbPool)
 
-	// Initialize usecases
-	usecases := usecase.New(repos)
+	// Init usecases
+	usecases := usecase.New(cache, repos)
 
 	// Start the rest server
 	StartRestServer(ctx, usecases)
