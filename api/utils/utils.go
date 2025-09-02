@@ -3,6 +3,8 @@ package utils
 import (
 	"reflect"
 	"strings"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // StructTagsAsString collects struct field annotations up to a specified depth.
@@ -41,4 +43,14 @@ func StructTagsAsString(obj interface{}, tagKey string, depth int) string {
 
 	collectTags(t, 0)
 	return strings.Join(tags, ",")
+}
+
+func HashPassword(passwd string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
+	return string(hash), err
+}
+
+func ComparePassword(hashedPwd, plainPwd string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPwd), []byte(plainPwd))
+	return err == nil
 }
