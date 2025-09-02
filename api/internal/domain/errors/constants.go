@@ -18,10 +18,10 @@ const (
 	ErrValidationFailed ErrorCode = "VAL-00"
 
 	// Rest errors
-	ErrInvalidPayload ErrorCode = "REST-00"
+	ErrRestInvalidPayload ErrorCode = "REST-00"
 
 	// User errors
-	ErrInvalidRole ErrorCode = "USER-00"
+	ErrUserInvalidRole ErrorCode = "USER-00"
 
 	// DB errors
 	ErrDBCreateError ErrorCode = "DB-00"
@@ -36,10 +36,10 @@ var msgMap = map[ErrorCode]string{
 	ErrValidationFailed: "one or more validation errors occurred",
 
 	// Rest errors
-	ErrInvalidPayload: "invalid request payload",
+	ErrRestInvalidPayload: "invalid request payload",
 
 	// User errors
-	ErrInvalidRole: "invalid user role",
+	ErrUserInvalidRole: "invalid user role",
 }
 
 // Map of server-side error codes that need to be filtered

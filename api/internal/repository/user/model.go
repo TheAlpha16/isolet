@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
+	"github.com/TheAlpha16/isolet/api/infra/database/postgres"
 	"github.com/TheAlpha16/isolet/api/internal/domain"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
-	"github.com/TheAlpha16/isolet/api/infra/database/postgres"
 )
 
 type User struct {
@@ -24,7 +24,7 @@ type User struct {
 func (u *User) ToDomain(ctx context.Context) (*userDom.User, error) {
 	role := userDom.Role(u.Role)
 	if !role.IsValid() {
-		return nil, errorDom.Raise(ctx, errorDom.ErrInvalidRole, "", nil, errorDom.ExtraData{
+		return nil, errorDom.Raise(ctx, errorDom.ErrUserInvalidRole, "", nil, errorDom.ExtraData{
 			"role": u.Role,
 		})
 	}

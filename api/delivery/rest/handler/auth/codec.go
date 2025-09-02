@@ -12,7 +12,7 @@ import (
 func decodeLoginInput(c *fiber.Ctx) (*authDom.LoginInput, error) {
 	var input authDom.LoginInput
 	if err := c.BodyParser(&input); err != nil {
-		return nil, errorDom.Raise(c.UserContext(), errorDom.ErrInvalidPayload, "", err, nil)
+		return nil, errorDom.Raise(c.UserContext(), errorDom.ErrRestInvalidPayload, "", err, nil)
 	}
 
 	// normalize
@@ -28,7 +28,7 @@ func decodeLoginInput(c *fiber.Ctx) (*authDom.LoginInput, error) {
 func decodeRegisterInput(c *fiber.Ctx) (*authDom.RegisterInput, error) {
 	var input authDom.RegisterInput
 	if err := c.BodyParser(&input); err != nil {
-		return nil, errorDom.Raise(c.UserContext(), errorDom.ErrInvalidPayload, "", err, nil)
+		return nil, errorDom.Raise(c.UserContext(), errorDom.ErrRestInvalidPayload, "", err, nil)
 	}
 
 	// normalize
