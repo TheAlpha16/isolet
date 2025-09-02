@@ -28,8 +28,8 @@ type TokenIdentifier struct {
 
 type Token struct {
 	TokenIdentifier
-	Metadata  map[string]string
-	ExpiresAt time.Time
+	Metadata  map[string]string `msgpack:"metadata"`
+	ExpiresAt time.Time         `msgpack:"expires_at"`
 	domain.BaseEntity
 }
 

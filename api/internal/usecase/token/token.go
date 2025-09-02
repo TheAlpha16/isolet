@@ -1,12 +1,39 @@
 package token
 
 import (
+	"context"
+
 	"github.com/TheAlpha16/isolet/api/infra/cache"
+	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	tokenDom "github.com/TheAlpha16/isolet/api/internal/domain/token"
+
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 type tokenImpl struct {
 	cache cache.Cache
+}
+
+func (t *tokenImpl) Create(ctx context.Context, token *tokenDom.Token) error {
+	key := token.Key()
+	valBytes, err := msgpack.Marshal(token)
+	if err != nil {
+		return errorDom.Raise(ctx, errorDom.ErrMarshalError, "failed to marshal token", err, nil)
+	}
+	return t.cache.Set(ctx, key, string(valBytes))
+}
+
+func (t *tokenImpl) Fetch(ctx context.Context, id *tokenDom.TokenIdentifier) (*tokenDom.Token, error) {
+	val, err := t.cache.Get(ctx, id.Key())
+	if err != nil {
+		return nil, err
+	}
+
+	var token tokenDom.Token
+	if err := msgpack.Unmarshal([]byte(val), &token); err != nil {
+		return nil, errorDom.Raise(ctx, errorDom.ErrUnmarshalError, "failed to unmarshal token", err, nil)
+	}
+	return &token, nil
 }
 
 func New(cache cache.Cache) tokenDom.Usecase {
