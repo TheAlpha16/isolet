@@ -9,11 +9,11 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserRepo struct {
+type userRepo struct {
 	db *gorm.DB
 }
 
-func (userRepo *UserRepo) Create(ctx context.Context, user *userDom.User) error {
+func (userRepo *userRepo) Create(ctx context.Context, user *userDom.User) error {
 	userModel, err := NewUserModel(user)
 	if err != nil {
 		return err
@@ -25,13 +25,13 @@ func (userRepo *UserRepo) Create(ctx context.Context, user *userDom.User) error 
 	return nil
 }
 
-func (userRepo *UserRepo) Update(ctx context.Context, user *userDom.User) error {
+func (userRepo *userRepo) Update(ctx context.Context, user *userDom.User) error {
 	// Implementation for updating a user
 	return nil
 }
 
 func New(db *gorm.DB) userDom.Repository {
-	return &UserRepo{
+	return &userRepo{
 		db: db,
 	}
 }

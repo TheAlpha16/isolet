@@ -6,12 +6,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type AuthRepo struct {
+type authRepo struct {
 	db *gorm.DB
 }
 
 func New(db *gorm.DB) authDom.Repository {
-	return &AuthRepo{
+	return &authRepo{
 		db: db,
 	}
 }
