@@ -18,9 +18,9 @@ type Usecases struct {
 }
 
 func New(cache cache.Cache, repos *repository.Repositories) *Usecases {
-	user := userUc.New(cache, repos.User)
-	auth := authUc.New(repos.Auth)
 	token := tokenUc.New(cache)
+	user := userUc.New(cache, repos.User)
+	auth := authUc.New(repos.Auth, user, token)
 	return &Usecases{
 		User:  user,
 		Auth:  auth,
