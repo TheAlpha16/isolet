@@ -4,15 +4,14 @@ import (
 	"context"
 	"sync"
 
+	"github.com/TheAlpha16/isolet/api/internal/domain/common"
 	"github.com/TheAlpha16/isolet/api/utils"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-type contextKey string
-
-const loggerKey contextKey = "logger"
+const loggerKey common.ContextKey = "logger"
 
 var (
 	logger *StandardLogger

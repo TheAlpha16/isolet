@@ -4,8 +4,10 @@ import (
 	"fmt"
 
 	"github.com/TheAlpha16/isolet/api/delivery/rest/response"
+	"github.com/TheAlpha16/isolet/api/internal/domain/common"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	"github.com/TheAlpha16/isolet/api/utils/logger"
+
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )
@@ -19,7 +21,7 @@ func ErrorMiddleware() fiber.Handler {
 				panicErr := errorDom.RaiseInternal(
 					c.UserContext(),
 					"", fmt.Errorf("%v", r),
-					errorDom.ExtraData{"stacktrace": errorDom.GetStackTrace()},
+					common.ExtraData{"stacktrace": errorDom.GetStackTrace()},
 				)
 				// log the error and send it to sentry
 				logger.GetLogger(c.UserContext()).Error("recovered panic", zap.Error(panicErr))

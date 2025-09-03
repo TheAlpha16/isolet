@@ -1,9 +1,10 @@
 package errors
 
+import "github.com/TheAlpha16/isolet/api/internal/domain/common"
+
 const (
 	// Context key for storing/retrieving error extra data
-	errExtraDataKey ErrCtxKey = "ctxErrExData"
-	srcKey          ErrCtxKey = "ctxErrSrc"
+	srcKey common.ContextKey = "ctxErrSrc"
 
 	// SVC prefix for error codes
 	SVC string = "API"

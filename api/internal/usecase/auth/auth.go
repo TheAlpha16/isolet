@@ -5,7 +5,8 @@ import (
 	"time"
 
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
-	"github.com/TheAlpha16/isolet/api/internal/domain/errors"
+	"github.com/TheAlpha16/isolet/api/internal/domain/common"
+	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	tokenDom "github.com/TheAlpha16/isolet/api/internal/domain/token"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
 	"github.com/TheAlpha16/isolet/api/utils"
@@ -21,7 +22,7 @@ func (a *authImpl) Login(ctx context.Context, input *authDom.LoginInput) (*authD
 	// hash the password
 	hashedPassword, err := utils.HashPassword(input.Password)
 	if err != nil {
-		return nil, errors.RaiseInternal(ctx, "failed to hash password", err, errors.ExtraData{"password": input.Password})
+		return nil, errorDom.RaiseInternal(ctx, "failed to hash password", err, common.ExtraData{"password": input.Password})
 	}
 	input.Password = hashedPassword
 
@@ -36,7 +37,7 @@ func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (
 	// hash the password
 	hashedPassword, err := utils.HashPassword(input.Password)
 	if err != nil {
-		return nil, errors.RaiseInternal(ctx, "failed to hash password", err, errors.ExtraData{"password": input.Password})
+		return nil, errorDom.RaiseInternal(ctx, "failed to hash password", err, common.ExtraData{"password": input.Password})
 	}
 	input.Password = hashedPassword
 
@@ -65,10 +66,10 @@ func (a *authImpl) ensureEmailAndUsernameAvailable(ctx context.Context, email, u
 		return err
 	}
 	if existence.EmailExists {
-		return errors.Raise(ctx, errors.ErrUserEmailTaken, "", nil, nil)
+		return errorDom.Raise(ctx, errorDom.ErrUserEmailTaken, "", nil, nil)
 	}
 	if existence.UsernameExists {
-		return errors.Raise(ctx, errors.ErrUserUsernameTaken, "", nil, nil)
+		return errorDom.Raise(ctx, errorDom.ErrUserUsernameTaken, "", nil, nil)
 	}
 	return nil
 }

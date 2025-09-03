@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/TheAlpha16/isolet/api/internal/domain/common"
+
 	"github.com/getsentry/sentry-go"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -55,25 +57,9 @@ func IsForbiddenError(err error) bool {
 	return isForbidden
 }
 
-// Sets `ExtraData` in the given context
-func SetExtraDataInCtx(ctx context.Context, extraData ExtraData) context.Context {
-	return context.WithValue(ctx, errExtraDataKey, extraData)
-}
-
-// Extracts `ExtraData` from the given context
-func GetExtraDataFromCtx(ctx context.Context) ExtraData {
-	ctxVal := ctx.Value(errExtraDataKey)
-	switch ex := ctxVal.(type) {
-	case ExtraData:
-		return ex
-	default:
-		return make(ExtraData)
-	}
-}
-
 // Sets `ExtraData` from context in the app error
 func EnrichWithCtx(ctx context.Context, ae *AppError) {
-	extraData := GetExtraDataFromCtx(ctx)
+	extraData := common.GetExtraDataFromCtx(ctx)
 	for k, v := range extraData {
 		ae.AddExtraData(k, v)
 	}

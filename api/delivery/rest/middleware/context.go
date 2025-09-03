@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/TheAlpha16/isolet/api/internal/domain/common"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,7 +11,7 @@ import (
 func ContextMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ctx := c.UserContext()
-		ctx = errorDom.SetExtraDataInCtx(ctx, make(errorDom.ExtraData))
+		ctx = common.SetExtraDataInCtx(ctx, make(common.ExtraData))
 		ctx = errorDom.SetSrcInCtx(ctx, c.Path()) // Set source to the path
 		c.SetUserContext(ctx)
 

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/TheAlpha16/isolet/api/internal/domain/common"
+
 	"github.com/cockroachdb/errors"
 	"github.com/getsentry/sentry-go"
 	goerrors "github.com/go-errors/errors"
@@ -13,18 +15,12 @@ import (
 // ErrorCode type
 type ErrorCode string
 
-// ErrCtxKey is a key for storing/retrieving error context data from context.Context
-type ErrCtxKey string
-
-// ExtraData type
-type ExtraData map[string]any
-
 // AppError represents an application error with a code, message, cause, and extra data
 type AppError struct {
-	ErrorCode ErrorCode // unique error code
-	Message   string    // optional human-readable message
-	Cause     error     // wrapped error
-	ExtraData ExtraData // extra data associated with the error
+	ErrorCode ErrorCode        // unique error code
+	Message   string           // optional human-readable message
+	Cause     error            // wrapped error
+	ExtraData common.ExtraData // extra data associated with the error
 }
 
 func (ae *AppError) Error() string {
@@ -49,12 +45,12 @@ func (ae *AppError) GetMessage() string {
 
 func (ae *AppError) AddExtraData(key string, val any) {
 	if ae.ExtraData == nil {
-		ae.ExtraData = make(map[string]any)
+		ae.ExtraData = make(common.ExtraData)
 	}
 	ae.ExtraData[key] = val
 }
 
-func (ae *AppError) GetExtraData() ExtraData {
+func (ae *AppError) GetExtraData() common.ExtraData {
 	return ae.ExtraData
 }
 
@@ -63,7 +59,7 @@ func (ae *AppError) Format(s fmt.State, verb rune) {
 }
 
 // Raise is a general util to construct domain errors
-func Raise(ctx context.Context, code ErrorCode, msg string, errToWrap error, extraData ExtraData) error {
+func Raise(ctx context.Context, code ErrorCode, msg string, errToWrap error, extraData common.ExtraData) error {
 	ae := &AppError{
 		ErrorCode: code,
 		ExtraData: extraData,
@@ -85,7 +81,7 @@ func Raise(ctx context.Context, code ErrorCode, msg string, errToWrap error, ext
 }
 
 // RaiseInternal raises an internal error
-func RaiseInternal(ctx context.Context, msg string, errToWrap error, extraData ExtraData) error {
+func RaiseInternal(ctx context.Context, msg string, errToWrap error, extraData common.ExtraData) error {
 	return Raise(ctx, ErrInternalError, msg, errToWrap, extraData)
 }
 
@@ -126,7 +122,7 @@ func RaiseToSentry(ctx context.Context, err error) {
 				Stacktrace: sentry.ExtractStacktrace(stackErr),
 			}}
 			event.Extra = map[string]interface{}{
-				"context": GetExtraDataFromCtx(ctx),
+				"context": common.GetExtraDataFromCtx(ctx),
 			}
 		})
 		addTraceContextToSentryEvent(ctx, event)
