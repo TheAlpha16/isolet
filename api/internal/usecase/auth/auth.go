@@ -43,15 +43,8 @@ func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (
 	input.Password = hashedPassword
 
 	// check if username or email is already taken
-	existence, err := a.userUc.ExistsByEmailOrUsername(ctx, input.Email, input.Username)
-	if err != nil {
+	if err := a.ensureEmailAndUsernameAvailable(ctx, input.Email, input.Username); err != nil {
 		return nil, err
-	}
-	if existence.EmailExists {
-		return nil, errors.Raise(ctx, errors.ErrUserEmailTaken, "", nil, nil)
-	}
-	if existence.UsernameExists {
-		return nil, errors.Raise(ctx, errors.ErrUserUsernameTaken, "", nil, nil)
 	}
 
 	// verify the email in case enabled
@@ -87,6 +80,20 @@ func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (
 		Token:     "registration-token",
 		ExpiresAt: token.ExpiresAt.Unix(),
 	}, nil
+}
+
+func (a *authImpl) ensureEmailAndUsernameAvailable(ctx context.Context, email, username string) error {
+	existence, err := a.userUc.ExistsByEmailOrUsername(ctx, email, username)
+	if err != nil {
+		return err
+	}
+	if existence.EmailExists {
+		return errors.Raise(ctx, errors.ErrUserEmailTaken, "", nil, nil)
+	}
+	if existence.UsernameExists {
+		return errors.Raise(ctx, errors.ErrUserUsernameTaken, "", nil, nil)
+	}
+	return nil
 }
 
 func New(repo authDom.Repository, userUc userDom.Usecase, tokenUc tokenDom.Usecase) authDom.Usecase {
