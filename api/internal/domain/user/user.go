@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	emailCachePrefix    = "email"
-	usernameCachePrefix = "username"
+	emailCachePrefix    = "exists:email"
+	usernameCachePrefix = "exists:username"
 )
 
 type User struct {
