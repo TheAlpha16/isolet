@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"github.com/TheAlpha16/isolet/api/infra"
 	"github.com/TheAlpha16/isolet/api/infra/cache"
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
 	tokenDom "github.com/TheAlpha16/isolet/api/internal/domain/token"
@@ -17,10 +18,10 @@ type Usecases struct {
 	Token tokenDom.Usecase
 }
 
-func New(cache cache.Cache, repos *repository.Repositories) *Usecases {
+func New(cache cache.Cache, repos *repository.Repositories, infra *infra.Infra) *Usecases {
 	token := tokenUc.New(cache)
 	user := userUc.New(cache, repos.User)
-	auth := authUc.New(repos.Auth, user, token)
+	auth := authUc.New(repos.Auth, user, token, infra.JWT)
 	return &Usecases{
 		User:  user,
 		Auth:  auth,

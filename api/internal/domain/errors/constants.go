@@ -36,6 +36,11 @@ const (
 	ErrCacheCallFail       ErrorCode = "CACHE-00"
 	ErrCacheMiss           ErrorCode = "CACHE-01"
 	ErrCacheScriptLoadFail ErrorCode = "CACHE-02"
+
+	// Token errors
+	ErrTokenMalformed      ErrorCode = "TOKEN-00"
+	ErrTokenExpiredInvalid ErrorCode = "TOKEN-01"
+	ErrTokenSigningFailed  ErrorCode = "TOKEN-02"
 )
 
 // Map of error codes to user-facing messages
@@ -57,6 +62,10 @@ var msgMap = map[ErrorCode]string{
 	// Cache errors
 	ErrCacheMiss:           "cache miss",
 	ErrCacheScriptLoadFail: "failed to load cache script",
+
+	// Token errors
+	ErrTokenExpiredInvalid: "token is invalid or expired",
+	ErrTokenSigningFailed:  "token signing failed",
 }
 
 // Map of server-side error codes that need to be filtered
@@ -68,10 +77,13 @@ var ServerSideErrors = map[ErrorCode]struct{}{
 	ErrDBCreateError:       {},
 	ErrDBReadError:         {},
 	ErrCacheScriptLoadFail: {},
+	ErrTokenSigningFailed:  {},
 }
 
 // Map of auth error codes
-var AuthErrors = map[ErrorCode]struct{}{}
+var AuthErrors = map[ErrorCode]struct{}{
+	ErrTokenExpiredInvalid: {},
+}
 
 // Map of forbidden error codes
 var ForbiddenErrors = map[ErrorCode]struct{}{}

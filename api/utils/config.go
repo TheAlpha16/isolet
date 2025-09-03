@@ -53,7 +53,8 @@ type Config struct {
 	}
 
 	Token struct {
-		EmailVerificationValidity time.Duration `env:"EMAIL_VERIFICATION_VALIDITY" envDefault:"600s"`
+		SigningKey                string        `env:"TOKEN_SIGNING_KEY" envDefault:"trustmebro"`
+		EmailVerificationValidity time.Duration `env:"TOKEN_EMAIL_VERIFICATION_VALIDITY" envDefault:"600s"`
 	}
 }
 

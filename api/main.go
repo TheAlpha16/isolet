@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	restDel "github.com/TheAlpha16/isolet/api/delivery/rest"
+	"github.com/TheAlpha16/isolet/api/infra"
 	"github.com/TheAlpha16/isolet/api/infra/cache"
 	"github.com/TheAlpha16/isolet/api/infra/database/postgres"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
@@ -41,11 +42,14 @@ func main() {
 		appLogger.Fatal("Failed to connect to cache", zap.Error(err))
 	}
 
+	// Init infra services
+	infra := infra.New()
+
 	// Init repositories
 	repos := repository.New(dbPool)
 
 	// Init usecases
-	usecases := usecase.New(cache, repos)
+	usecases := usecase.New(cache, repos, infra)
 
 	// Start the rest server
 	StartRestServer(ctx, usecases)
