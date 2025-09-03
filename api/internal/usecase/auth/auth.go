@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/TheAlpha16/isolet/api/infra/jwt"
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
@@ -16,6 +17,7 @@ type authImpl struct {
 	repo    authDom.Repository
 	userUc  userDom.Usecase
 	tokenUc tokenDom.Usecase
+	jwtSvc  jwt.JWT
 }
 
 func (a *authImpl) Login(ctx context.Context, input *authDom.LoginInput) (*authDom.Session, error) {
@@ -53,9 +55,26 @@ func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (
 		return nil, err
 	}
 
+	// TODO think from here
+	// I have user_id as a required field in the jwt claims
+	// this means that i am expecting the user_id to be present in the token for all tokens which might not be possible everytime
+	jwtClaims := jwt.Claims{
+		JWTID:     token.ID,
+		UserID:    6969,
+		Role:      userDom.RolePlayer,
+		Purpose:   tokenDom.TokenEmailVerification,
+		CreatedAt: token.CreatedAt,
+		ExpiresAt: token.ExpiresAt,
+	}
+
+	jwtToken, err := a.jwtSvc.Sign(ctx, &jwtClaims)
+	if err != nil {
+		return nil, err
+	}
+
 	return &authDom.Session{
 		UserID:    6969,
-		Token:     "registration-token",
+		Token:     jwtToken,
 		ExpiresAt: token.ExpiresAt.Unix(),
 	}, nil
 }
@@ -104,10 +123,11 @@ func (a *authImpl) createEmailVerificationToken(ctx context.Context, email, user
 	return &token, nil
 }
 
-func New(repo authDom.Repository, userUc userDom.Usecase, tokenUc tokenDom.Usecase) authDom.Usecase {
+func New(repo authDom.Repository, userUc userDom.Usecase, tokenUc tokenDom.Usecase, jwtSvc jwt.JWT) authDom.Usecase {
 	return &authImpl{
 		repo:    repo,
 		userUc:  userUc,
 		tokenUc: tokenUc,
+		jwtSvc:  jwtSvc,
 	}
 }
