@@ -25,6 +25,10 @@ func buildErrorMessage(fe validator.FieldError) string {
 		return fmt.Sprintf("%s must be at least %s characters long", fe.Field(), fe.Param())
 	case "max":
 		return fmt.Sprintf("%s must be at most %s characters long", fe.Field(), fe.Param())
+	case "token_purpose":
+		return fmt.Sprintf("%s (%v) is not a valid token purpose", fe.Field(), fe.Value())
+	case "role":
+		return fmt.Sprintf("%s (%v) is not a valid role", fe.Field(), fe.Value())
 	default:
 		return fmt.Sprintf("%s is invalid", fe.Field())
 	}
@@ -43,4 +47,11 @@ func Validate(ctx context.Context, input interface{}) error {
 		return errorDom.Raise(ctx, errorDom.ErrValidationFailed, "", err, nil)
 	}
 	return nil
+}
+
+func RegisterValidation(tag string, fn validator.Func) error {
+	once.Do(func() {
+		validate = validator.New(validator.WithRequiredStructEnabled())
+	})
+	return validate.RegisterValidation(tag, fn)
 }
