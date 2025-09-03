@@ -33,8 +33,6 @@ func (a *authImpl) Login(ctx context.Context, input *authDom.LoginInput) (*authD
 }
 
 func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (*authDom.Session, error) {
-	config := utils.GetConfig()
-
 	// hash the password
 	hashedPassword, err := utils.HashPassword(input.Password)
 	if err != nil {
@@ -49,28 +47,7 @@ func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (
 
 	// verify the email in case enabled
 	// TODO implement email send
-	token := tokenDom.Token{
-		TokenIdentifier: tokenDom.TokenIdentifier{
-			ID:       utils.RandomUUID(),
-			EntityID: utils.RandomUUID(),
-			Purpose:  tokenDom.TokenEmailVerification,
-		},
-		Metadata: map[string]string{
-			"email":    input.Email,
-			"username": input.Username,
-			"password": input.Password,
-		},
-	}
-	token.UpdateTime()
-	token.ExpiresAt = token.CreatedAt.Add(config.Token.EmailVerificationValidity)
-
-	// store email and username for existence lookup later
-	extras := map[string]string{
-		userDom.EmailCacheKey(input.Email):       "",
-		userDom.UsernameCacheKey(input.Username): "",
-	}
-
-	err = a.tokenUc.Create(ctx, &token, extras)
+	token, err := a.createEmailVerificationToken(ctx, input.Email, input.Username, input.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -94,6 +71,36 @@ func (a *authImpl) ensureEmailAndUsernameAvailable(ctx context.Context, email, u
 		return errors.Raise(ctx, errors.ErrUserUsernameTaken, "", nil, nil)
 	}
 	return nil
+}
+
+func (a *authImpl) createEmailVerificationToken(ctx context.Context, email, username, password string) (*tokenDom.Token, error) {
+	config := utils.GetConfig()
+	token := tokenDom.Token{
+		TokenIdentifier: tokenDom.TokenIdentifier{
+			ID:       utils.RandomUUID(),
+			EntityID: utils.RandomUUID(),
+			Purpose:  tokenDom.TokenEmailVerification,
+		},
+		Metadata: map[string]string{
+			"email":    email,
+			"username": username,
+			"password": password,
+		},
+	}
+	token.UpdateTime()
+	token.ExpiresAt = token.CreatedAt.Add(config.Token.EmailVerificationValidity)
+
+	// store email and username for existence lookup later
+	extras := map[string]string{
+		userDom.EmailCacheKey(email):       "",
+		userDom.UsernameCacheKey(username): "",
+	}
+
+	err := a.tokenUc.Create(ctx, &token, extras)
+	if err != nil {
+		return nil, err
+	}
+	return &token, nil
 }
 
 func New(repo authDom.Repository, userUc userDom.Usecase, tokenUc tokenDom.Usecase) authDom.Usecase {
