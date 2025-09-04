@@ -2,8 +2,10 @@ package jwt
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	tokenDom "github.com/TheAlpha16/isolet/api/internal/domain/token"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
@@ -20,8 +22,9 @@ const (
 
 type Claims struct {
 	JWTID     string                `validate:"required"`
-	UserID    int64                 `validate:"required"`
-	Role      userDom.Role          `validate:"required,role"`
+	Subject   string                `validate:"required"`
+	UserID    *int64                `validate:"omitempty"`
+	Role      *userDom.Role         `validate:"omitempty,role"`
 	Purpose   tokenDom.TokenPurpose `validate:"required,token_purpose"`
 	CreatedAt time.Time             `validate:"required"`
 	ExpiresAt time.Time             `validate:"required"`
@@ -35,26 +38,57 @@ func (claims *Claims) ToJWTToken(ctx context.Context) (jwt.Token, error) {
 
 	builder := jwt.NewBuilder().
 		JwtID(claims.JWTID).
+		Subject(claims.Subject).
 		IssuedAt(claims.CreatedAt).
 		Expiration(claims.ExpiresAt).
-		Claim(userIDClaim, claims.UserID).
-		Claim(roleClaim, claims.Role).
 		Claim(purposeClaim, claims.Purpose)
+
+	if claims.UserID != nil {
+		builder = builder.Claim(userIDClaim, *claims.UserID)
+	}
+	if claims.Role != nil {
+		builder = builder.Claim(roleClaim, *claims.Role)
+	}
 
 	return builder.Build()
 }
 
 func (claims *Claims) Validate(ctx context.Context) error {
-	return validator.Validate(ctx, claims)
+	err := validator.Validate(ctx, claims)
+	if err != nil {
+		return errors.Raise(ctx, errors.ErrTokenMalformed, "validation failed", err, nil)
+	}
+
+	var userIdRequired bool
+	var roleRequired bool
+
+	switch claims.Purpose {
+	case tokenDom.TokenAuth:
+		userIdRequired = true
+		roleRequired = true
+	case tokenDom.TokenPasswordReset:
+		userIdRequired = true
+	}
+
+	if userIdRequired && claims.UserID == nil {
+		return errors.Raise(ctx, errors.ErrTokenMalformed, "user_id is missing", nil, nil)
+	}
+	if roleRequired && claims.Role == nil {
+		return errors.Raise(ctx, errors.ErrTokenMalformed, "role is missing", nil, nil)
+	}
+
+	return nil
 }
 
 func JWTTokenToClaims(ctx context.Context, token jwt.Token) (*Claims, error) {
 	var claims Claims
-	var err error
 	var ok bool
 
 	if claims.JWTID, ok = token.JwtID(); !ok {
 		return nil, errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "jti is missing", nil, nil)
+	}
+	if claims.Subject, ok = token.Subject(); !ok {
+		return nil, errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "sub is missing", nil, nil)
 	}
 	if claims.ExpiresAt, ok = token.Expiration(); !ok {
 		return nil, errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "exp is missing", nil, nil)
@@ -62,18 +96,62 @@ func JWTTokenToClaims(ctx context.Context, token jwt.Token) (*Claims, error) {
 	if claims.CreatedAt, ok = token.IssuedAt(); !ok {
 		return nil, errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "iat is missing", nil, nil)
 	}
-	if err = token.Get(userIDClaim, &claims.UserID); err != nil {
-		return nil, errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "user_id is missing", nil, nil)
-	}
-	if err = token.Get(roleClaim, &claims.Role); err != nil {
-		return nil, errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "role is missing", nil, nil)
-	}
-	if err = token.Get(purposeClaim, &claims.Purpose); err != nil {
+
+	// These are optional - only parse if present
+	token.Get(userIDClaim, &claims.UserID)
+	token.Get(roleClaim, &claims.Role)
+
+	if err := token.Get(purposeClaim, &claims.Purpose); err != nil {
 		return nil, errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "purpose is missing", nil, nil)
 	}
 
-	if err = claims.Validate(ctx); err != nil {
-		return nil, errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "claims are invalid", err, nil)
+	return &claims, claims.Validate(ctx)
+}
+
+func NewAuthClaims(jwtID string, userID int64, role userDom.Role, expiresAt time.Time) *Claims {
+	return &Claims{
+		JWTID:     jwtID,
+		Subject:   fmt.Sprintf("%d", userID),
+		UserID:    &userID,
+		Role:      &role,
+		Purpose:   tokenDom.TokenAuth,
+		CreatedAt: time.Now(),
+		ExpiresAt: expiresAt,
 	}
-	return &claims, nil
+}
+
+func NewEmailVerificationClaims(jwtID, verificationID string, expiresAt time.Time) *Claims {
+	return &Claims{
+		JWTID:     jwtID,
+		Subject:   verificationID,
+		UserID:    nil,
+		Role:      nil,
+		Purpose:   tokenDom.TokenEmailVerification,
+		CreatedAt: time.Now(),
+		ExpiresAt: expiresAt,
+	}
+}
+
+func NewPasswordResetClaims(jwtID string, userID int64, expiresAt time.Time) *Claims {
+	return &Claims{
+		JWTID:     jwtID,
+		Subject:   fmt.Sprintf("%d", userID),
+		UserID:    &userID,
+		Role:      nil,
+		Purpose:   tokenDom.TokenPasswordReset,
+		CreatedAt: time.Now(),
+		ExpiresAt: expiresAt,
+	}
+}
+
+func NewTeamInviteClaims(jwtID string, teamID int64, expiresAt time.Time) *Claims {
+	return &Claims{
+		JWTID:     jwtID,
+		Subject:   fmt.Sprintf("%d", teamID),
+		UserID:    nil,
+		Role:      nil,
+		Purpose:   tokenDom.TokenTeamInvite,
+		CreatedAt: time.Now(),
+		ExpiresAt: expiresAt,
+	}
 }

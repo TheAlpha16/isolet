@@ -55,18 +55,8 @@ func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (
 		return nil, err
 	}
 
-	// TODO think from here
-	// I have user_id as a required field in the jwt claims
-	// this means that i am expecting the user_id to be present in the token for all tokens which might not be possible everytime
-	jwtClaims := jwt.Claims{
-		JWTID:     token.ID,
-		UserID:    6969,
-		Role:      userDom.RolePlayer,
-		Purpose:   tokenDom.TokenEmailVerification,
-		CreatedAt: token.CreatedAt,
-		ExpiresAt: token.ExpiresAt,
-	}
-
+	claims := jwt.NewEmailVerificationClaims(token.ID, token.EntityID, token.ExpiresAt)
+	
 	jwtToken, err := a.jwtSvc.Sign(ctx, &jwtClaims)
 	if err != nil {
 		return nil, err
