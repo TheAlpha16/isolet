@@ -55,9 +55,7 @@ func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (
 		return nil, err
 	}
 
-	claims := jwt.NewEmailVerificationClaims(token.ID, token.EntityID, token.ExpiresAt)
-	
-	jwtToken, err := a.jwtSvc.Sign(ctx, &jwtClaims)
+	jwtToken, err := a.jwtSvc.Sign(ctx, jwt.NewEmailVerificationClaims(token.ID, token.EntityID, token.ExpiresAt))
 	if err != nil {
 		return nil, err
 	}
