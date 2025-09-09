@@ -8,6 +8,7 @@ import (
 	"github.com/TheAlpha16/isolet/api/infra"
 	"github.com/TheAlpha16/isolet/api/infra/cache"
 	"github.com/TheAlpha16/isolet/api/infra/database/postgres"
+	"github.com/TheAlpha16/isolet/api/infra/database/valkey"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	"github.com/TheAlpha16/isolet/api/internal/repository"
 	"github.com/TheAlpha16/isolet/api/internal/usecase"
@@ -35,8 +36,15 @@ func main() {
 	}
 	defer closeDBConn()
 
+	// valkey client
+	valkeyClient, err := valkey.NewValkey(ctx)
+	if err != nil {
+		errorDom.RaiseToSentry(ctx, err)
+		appLogger.Fatal("Failed to connect to valkey", zap.Error(err))
+	}
+
 	// Init cache
-	cache, err := cache.NewClient(ctx)
+	cache, err := cache.NewClient(ctx, valkeyClient)
 	if err != nil {
 		errorDom.RaiseToSentry(ctx, err)
 		appLogger.Fatal("Failed to connect to cache", zap.Error(err))
