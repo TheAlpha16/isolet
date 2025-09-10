@@ -50,6 +50,15 @@ func main() {
 		appLogger.Fatal("Failed to connect to cache", zap.Error(err))
 	}
 
+	// automigrate database
+	if utils.GetConfig().Environment == utils.LOCAL {
+		err = repository.AutoMigrate(dbPool)
+		if err != nil {
+			errorDom.RaiseToSentry(ctx, err)
+			appLogger.Fatal("Failed to migrate database", zap.Error(err))
+		}
+	}
+
 	// Init infra services
 	infra := infra.New(valkeyClient)
 

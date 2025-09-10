@@ -20,11 +20,15 @@ type Repositories struct {
 func New(db *gorm.DB) *Repositories {
 	userRepo := userRepo.New(db)
 	authRepo := authRepo.New(db)
-	cvRepo := cvRepo.New()
+	cvRepo := cvRepo.New(db)
 
 	return &Repositories{
 		User:       userRepo,
 		Auth:       authRepo,
 		ConfigVars: cvRepo,
 	}
+}
+
+func AutoMigrate(db *gorm.DB) error {
+	return db.AutoMigrate(&userRepo.User{}, &cvRepo.ConfigVars{})
 }
