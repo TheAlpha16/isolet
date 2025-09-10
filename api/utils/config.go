@@ -60,6 +60,10 @@ type Config struct {
 	CNC struct {
 		Channel string `env:"CNC_CHANNEL" envDefault:"cnc"`
 	}
+
+	ConfigVars struct {
+		RefreshInterval time.Duration `env:"CONFIG_VARS_REFRESH_INTERVAL" envDefault:"600s"`
+	}
 }
 
 func GetConfig() *Config {

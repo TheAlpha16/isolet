@@ -2,20 +2,24 @@ package configvars
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"sync"
 	"time"
 
 	cvDom "github.com/TheAlpha16/isolet/api/internal/domain/configvars"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
+	"github.com/TheAlpha16/isolet/api/utils"
 	"github.com/TheAlpha16/isolet/api/utils/logger"
 	"go.uber.org/zap"
 )
 
 type cvImpl struct {
-	repo  cvDom.Repository
-	cache map[string]string
-	mu    sync.RWMutex
+	repo   cvDom.Repository
+	cache  map[string]string
+	mu     sync.RWMutex
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
 func (cv *cvImpl) GetString(ctx context.Context, key cvDom.ConfigKey[string]) string {
@@ -26,51 +30,30 @@ func (cv *cvImpl) GetString(ctx context.Context, key cvDom.ConfigKey[string]) st
 }
 
 func (cv *cvImpl) GetBool(ctx context.Context, key cvDom.ConfigKey[bool]) bool {
-	var err error
-	var cast bool
-	extraData := map[string]any{"key": key.Name, "expected": "bool"}
-
-	if val, ok := cv.get(key.Name); ok {
-		extraData["value"] = val
-		if cast, err = strconv.ParseBool(val); err == nil {
-			return cast
-		}
-	}
-
-	cv.handleInvalid(ctx, key.Name, errorDom.Raise(ctx, errorDom.ErrConfigVarInvalid, "", err, extraData))
-	return key.Default
+	return parseOrDefault(ctx, cv, key, strconv.ParseBool)
 }
 
 func (cv *cvImpl) GetInt(ctx context.Context, key cvDom.ConfigKey[int]) int {
-	var err error
-	var cast int
-	extraData := map[string]any{"key": key.Name, "expected": "int"}
-
-	if val, ok := cv.get(key.Name); ok {
-		extraData["value"] = val
-		if cast, err = strconv.Atoi(val); err == nil {
-			return cast
-		}
-	}
-
-	cv.handleInvalid(ctx, key.Name, errorDom.Raise(ctx, errorDom.ErrConfigVarInvalid, "", err, extraData))
-	return key.Default
+	return parseOrDefault(ctx, cv, key, strconv.Atoi)
 }
 
 func (cv *cvImpl) GetDuration(ctx context.Context, key cvDom.ConfigKey[time.Duration]) time.Duration {
-	var err error
-	var cast time.Duration
-	extraData := map[string]any{"key": key.Name, "expected": "duration"}
+	return parseOrDefault(ctx, cv, key, time.ParseDuration)
+}
 
-	if val, ok := cv.get(key.Name); ok {
-		extraData["value"] = val
-		if cast, err = time.ParseDuration(val); err == nil {
-			return cast
-		}
+func (cv *cvImpl) Refresh(ctx context.Context) {
+	cache, err := cv.repo.Refresh(ctx)
+	if err != nil {
+		refreshErr := errorDom.Raise(ctx, errorDom.ErrConfigVarRefreshFailed, "", err, nil)
+		logger.GetAppLogger().Error("failed to refresh config variables", zap.Error(err))
+		errorDom.RaiseToSentry(ctx, refreshErr)
+		return
 	}
 
-	cv.handleInvalid(ctx, key.Name, errorDom.Raise(ctx, errorDom.ErrConfigVarInvalid, "", err, extraData))
-	return key.Default
+	cv.mu.Lock()
+	defer cv.mu.Unlock()
+
+	cv.cache = cache
 }
 
 func (cv *cvImpl) get(key string) (string, bool) {
@@ -86,27 +69,62 @@ func (cv *cvImpl) handleInvalid(ctx context.Context, key string, err error) {
 	errorDom.RaiseToSentry(ctx, err)
 }
 
-func (cv *cvImpl) Refresh() {
-	cache, err := cv.repo.Refresh(context.TODO())
-	if err != nil {
-		refreshErr := errorDom.Raise(context.TODO(), errorDom.ErrConfigVarRefreshFailed, "", err, nil)
-		logger.GetAppLogger().Error("failed to refresh config variables", zap.Error(err))
-		errorDom.RaiseToSentry(context.TODO(), refreshErr)
-		return
+func (cv *cvImpl) startAutoRefresh(interval time.Duration) {
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				cv.Refresh(cv.ctx)
+			case <-cv.ctx.Done():
+				return
+			}
+		}
+	}()
+}
+
+func parseOrDefault[T any](ctx context.Context, cv *cvImpl, key cvDom.ConfigKey[T], parser func(string) (T, error)) T {
+	var val string
+	var err error
+	var cast T
+	var ok bool
+	extraData := map[string]any{
+		"key":      key.Name,
+		"expected": fmt.Sprintf("%T", key.Default),
 	}
 
-	cv.mu.Lock()
-	defer cv.mu.Unlock()
+	if val, ok = cv.get(key.Name); !ok {
+		return key.Default
+	}
 
-	cv.cache = cache
+	extraData["value"] = val
+	if cast, err = parser(val); err == nil {
+		return cast
+	}
+
+	cv.handleInvalid(ctx, key.Name, errorDom.Raise(ctx, errorDom.ErrConfigVarInvalid, "", err, extraData))
+	return key.Default
 }
 
 func New(repo cvDom.Repository) cvDom.Usecase {
+	config := utils.GetConfig()
+	ctx, cancel := context.WithCancel(context.Background())
+
 	cv := &cvImpl{
-		repo:  repo,
-		cache: make(map[string]string),
-		mu:    sync.RWMutex{},
+		repo:   repo,
+		cache:  make(map[string]string),
+		mu:     sync.RWMutex{},
+		ctx:    ctx,
+		cancel: cancel,
 	}
-	cv.Refresh()
+	cv.Refresh(ctx)
+	cv.startAutoRefresh(config.ConfigVars.RefreshInterval)
+
+	utils.InterruptHandlerChannel <- func() {
+		cancel()
+	}
+
 	return cv
 }
