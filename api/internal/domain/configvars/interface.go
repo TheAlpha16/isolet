@@ -13,5 +13,5 @@ type Usecase interface {
 }
 
 type Repository interface {
-	Refresh(ctx context.Context) (map[string]any, error)
+	Refresh(ctx context.Context) (map[string]string, error)
 }

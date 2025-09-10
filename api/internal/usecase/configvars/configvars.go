@@ -2,7 +2,8 @@ package configvars
 
 import (
 	"context"
-	"fmt"
+	"errors"
+	"strconv"
 	"sync"
 	"time"
 
@@ -12,73 +13,84 @@ import (
 	"go.uber.org/zap"
 )
 
+var ErrMissingConfigVariable = errors.New("missing config variable")
+
 type cvImpl struct {
 	repo  cvDom.Repository
-	cache map[string]any
+	cache map[string]string
 	mu    sync.RWMutex
 }
 
 func (cv *cvImpl) GetString(key cvDom.ConfigKey[string]) string {
-	cv.mu.RLock()
-	defer cv.mu.RUnlock()
-
-	if v, ok := cv.cache[key.Name]; ok {
-		if cast, ok := v.(string); ok {
-			return cast
-		}
+	if val, ok := cv.get(key.Name); ok {
+		return val
 	}
-	cv.handleInvalid(key.Name)
 	return key.Default
 }
 
 func (cv *cvImpl) GetBool(key cvDom.ConfigKey[bool]) bool {
-	cv.mu.RLock()
-	defer cv.mu.RUnlock()
+	var err error
+	var cast bool
 
-	if v, ok := cv.cache[key.Name]; ok {
-		if cast, ok := v.(bool); ok {
+	if val, ok := cv.get(key.Name); ok {
+		if cast, err = strconv.ParseBool(val); err == nil {
 			return cast
 		}
 	}
-	cv.handleInvalid(key.Name)
+
+	cv.handleInvalid(key.Name, err)
 	return key.Default
 }
 
 func (cv *cvImpl) GetInt(key cvDom.ConfigKey[int]) int {
-	cv.mu.RLock()
-	defer cv.mu.RUnlock()
+	var err error
+	var cast int
 
-	if v, ok := cv.cache[key.Name]; ok {
-		if cast, ok := v.(int); ok {
+	if val, ok := cv.get(key.Name); ok {
+		if cast, err = strconv.Atoi(val); err == nil {
 			return cast
 		}
 	}
-	cv.handleInvalid(key.Name)
+
+	cv.handleInvalid(key.Name, err)
 	return key.Default
 }
 
 func (cv *cvImpl) GetDuration(key cvDom.ConfigKey[time.Duration]) time.Duration {
-	cv.mu.RLock()
-	defer cv.mu.RUnlock()
+	var err error
+	var cast time.Duration
 
-	if v, ok := cv.cache[key.Name]; ok {
-		if cast, ok := v.(time.Duration); ok {
+	if val, ok := cv.get(key.Name); ok {
+		if cast, err = time.ParseDuration(val); err == nil {
 			return cast
 		}
 	}
-	cv.handleInvalid(key.Name)
+
+	cv.handleInvalid(key.Name, err)
 	return key.Default
 }
 
-func (cv *cvImpl) handleInvalid(key string) {
-	logger.GetAppLogger().Error("missing/invalid config variable", zap.String("key", key))
-	errorDom.RaiseToSentry(context.TODO(), fmt.Errorf("invalid config value for key %s", key))
+func (cv *cvImpl) get(key string) (string, bool) {
+	cv.mu.RLock()
+	defer cv.mu.RUnlock()
+
+	if val, ok := cv.cache[key]; ok {
+		return val, ok
+	}
+
+	cv.handleInvalid(key, ErrMissingConfigVariable)
+	return "", false
+}
+
+func (cv *cvImpl) handleInvalid(key string, err error) {
+	logger.GetAppLogger().Error("missing/invalid config variable", zap.String("key", key), zap.Error(err))
+	errorDom.RaiseToSentry(context.TODO(), err)
 }
 
 func New(repo cvDom.Repository) *cvImpl {
 	return &cvImpl{
 		repo:  repo,
-		cache: make(map[string]any),
+		cache: make(map[string]string),
 		mu:    sync.RWMutex{},
 	}
 }

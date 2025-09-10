@@ -12,14 +12,14 @@ type cvRepo struct {
 	db *gorm.DB
 }
 
-func (cvRepo *cvRepo) Refresh(ctx context.Context) (map[string]any, error) {
+func (cvRepo *cvRepo) Refresh(ctx context.Context) (map[string]string, error) {
 	var vars []ConfigVars
 
 	if err := cvRepo.db.WithContext(ctx).Model(ConfigVars{}).Find(&vars).Error; err != nil {
 		return nil, err
 	}
 
-	result := make(map[string]any)
+	result := make(map[string]string)
 	for _, v := range vars {
 		result[v.Key] = v.Value
 	}
