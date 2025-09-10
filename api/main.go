@@ -51,7 +51,7 @@ func main() {
 	}
 
 	// Init infra services
-	infra := infra.New()
+	infra := infra.New(valkeyClient)
 
 	// Init repositories
 	repos := repository.New(dbPool)

@@ -56,6 +56,10 @@ type Config struct {
 		SigningKey                string        `env:"TOKEN_SIGNING_KEY" envDefault:"trustmebro"`
 		EmailVerificationValidity time.Duration `env:"TOKEN_EMAIL_VERIFICATION_VALIDITY" envDefault:"600s"`
 	}
+
+	CNC struct {
+		Channel string `env:"CNC_CHANNEL" envDefault:"cnc"`
+	}
 }
 
 func GetConfig() *Config {

@@ -3,6 +3,7 @@ module github.com/TheAlpha16/isolet/api
 go 1.24
 
 require (
+	github.com/TheAlpha16/cnc-go v0.1.1
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/cockroachdb/errors v1.12.0
 	github.com/getsentry/sentry-go v0.34.1
