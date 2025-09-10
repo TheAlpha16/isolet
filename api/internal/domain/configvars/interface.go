@@ -1,6 +1,7 @@
 package configvars
 
 import (
+	"context"
 	"time"
 )
 
@@ -11,4 +12,6 @@ type Usecase interface {
 	GetDuration(key ConfigKey[time.Duration]) time.Duration
 }
 
-type Repository interface{}
+type Repository interface {
+	Refresh(ctx context.Context) (map[string]any, error)
+}
