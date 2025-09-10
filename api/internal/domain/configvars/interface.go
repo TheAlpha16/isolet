@@ -6,10 +6,10 @@ import (
 )
 
 type Usecase interface {
-	GetString(key ConfigKey[string]) string
-	GetBool(key ConfigKey[bool]) bool
-	GetInt(key ConfigKey[int]) int
-	GetDuration(key ConfigKey[time.Duration]) time.Duration
+	GetString(ctx context.Context, key ConfigKey[string]) string
+	GetBool(ctx context.Context, key ConfigKey[bool]) bool
+	GetInt(ctx context.Context, key ConfigKey[int]) int
+	GetDuration(ctx context.Context, key ConfigKey[time.Duration]) time.Duration
 }
 
 type Repository interface {

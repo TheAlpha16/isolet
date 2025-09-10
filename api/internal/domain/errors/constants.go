@@ -43,9 +43,8 @@ const (
 	ErrTokenSigningFailed  ErrorCode = "TOKEN-02"
 
 	// ConfigVar errors
-	ErrConfigVarNotFound      ErrorCode = "CONFIGVAR-00"
-	ErrConfigVarInvalid       ErrorCode = "CONFIGVAR-01"
-	ErrConfigVarRefreshFailed ErrorCode = "CONFIGVAR-02"
+	ErrConfigVarInvalid       ErrorCode = "CONFIGVAR-00"
+	ErrConfigVarRefreshFailed ErrorCode = "CONFIGVAR-01"
 )
 
 // Map of error codes to user-facing messages
@@ -73,7 +72,6 @@ var msgMap = map[ErrorCode]string{
 	ErrTokenSigningFailed:  "token signing failed",
 
 	// ConfigVar errors
-	ErrConfigVarNotFound:      "config variable not found",
 	ErrConfigVarInvalid:       "config variable is invalid",
 	ErrConfigVarRefreshFailed: "config variable refresh failed",
 }
@@ -88,7 +86,6 @@ var ServerSideErrors = map[ErrorCode]struct{}{
 	ErrDBReadError:            {},
 	ErrCacheScriptLoadFail:    {},
 	ErrTokenSigningFailed:     {},
-	ErrConfigVarNotFound:      {},
 	ErrConfigVarInvalid:       {},
 	ErrConfigVarRefreshFailed: {},
 }
