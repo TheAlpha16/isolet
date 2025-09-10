@@ -1,10 +1,15 @@
 package configvars
 
 import (
+	"context"
+	"fmt"
 	"sync"
 	"time"
 
 	cvDom "github.com/TheAlpha16/isolet/api/internal/domain/configvars"
+	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
+	"github.com/TheAlpha16/isolet/api/utils/logger"
+	"go.uber.org/zap"
 )
 
 type cvImpl struct {
@@ -22,6 +27,7 @@ func (cv *cvImpl) GetString(key cvDom.ConfigKey[string]) string {
 			return cast
 		}
 	}
+	cv.handleInvalid(key.Name)
 	return key.Default
 }
 
@@ -34,6 +40,7 @@ func (cv *cvImpl) GetBool(key cvDom.ConfigKey[bool]) bool {
 			return cast
 		}
 	}
+	cv.handleInvalid(key.Name)
 	return key.Default
 }
 
@@ -46,6 +53,7 @@ func (cv *cvImpl) GetInt(key cvDom.ConfigKey[int]) int {
 			return cast
 		}
 	}
+	cv.handleInvalid(key.Name)
 	return key.Default
 }
 
@@ -58,7 +66,13 @@ func (cv *cvImpl) GetDuration(key cvDom.ConfigKey[time.Duration]) time.Duration 
 			return cast
 		}
 	}
+	cv.handleInvalid(key.Name)
 	return key.Default
+}
+
+func (cv *cvImpl) handleInvalid(key string) {
+	logger.GetAppLogger().Error("missing/invalid config variable", zap.String("key", key))
+	errorDom.RaiseToSentry(context.TODO(), fmt.Errorf("invalid config value for key %s", key))
 }
 
 func New(repo cvDom.Repository) *cvImpl {
