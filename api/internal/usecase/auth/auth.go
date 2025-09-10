@@ -7,6 +7,7 @@ import (
 	"github.com/TheAlpha16/isolet/api/infra/jwt"
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
+	cvDom "github.com/TheAlpha16/isolet/api/internal/domain/configvars"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	tokenDom "github.com/TheAlpha16/isolet/api/internal/domain/token"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
@@ -17,6 +18,7 @@ type authImpl struct {
 	repo    authDom.Repository
 	userUc  userDom.Usecase
 	tokenUc tokenDom.Usecase
+	cvUc    cvDom.Usecase
 	jwtSvc  jwt.JWT
 }
 
@@ -111,11 +113,12 @@ func (a *authImpl) createEmailVerificationToken(ctx context.Context, email, user
 	return &token, nil
 }
 
-func New(repo authDom.Repository, userUc userDom.Usecase, tokenUc tokenDom.Usecase, jwtSvc jwt.JWT) authDom.Usecase {
+func New(repo authDom.Repository, userUc userDom.Usecase, tokenUc tokenDom.Usecase, cvUc cvDom.Usecase, jwtSvc jwt.JWT) authDom.Usecase {
 	return &authImpl{
 		repo:    repo,
 		userUc:  userUc,
 		tokenUc: tokenUc,
+		cvUc:    cvUc,
 		jwtSvc:  jwtSvc,
 	}
 }
