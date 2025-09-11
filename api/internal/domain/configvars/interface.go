@@ -10,6 +10,7 @@ type Usecase interface {
 	GetBool(ctx context.Context, key ConfigKey[bool]) bool
 	GetInt(ctx context.Context, key ConfigKey[int]) int
 	GetDuration(ctx context.Context, key ConfigKey[time.Duration]) time.Duration
+	Refresh(ctx context.Context) error
 }
 
 type Repository interface {

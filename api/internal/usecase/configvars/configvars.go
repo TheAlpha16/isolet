@@ -7,16 +7,23 @@ import (
 	"sync"
 	"time"
 
+	"github.com/TheAlpha16/isolet/api/infra/cnc"
 	cvDom "github.com/TheAlpha16/isolet/api/internal/domain/configvars"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	"github.com/TheAlpha16/isolet/api/utils"
 	"github.com/TheAlpha16/isolet/api/utils/logger"
+
 	"go.uber.org/zap"
+)
+
+const (
+	refreshCacheCmd = "refresh-cache"
 )
 
 type cvImpl struct {
 	repo   cvDom.Repository
 	cache  map[string]string
+	cnc    cnc.CNC
 	mu     sync.RWMutex
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -41,7 +48,14 @@ func (cv *cvImpl) GetDuration(ctx context.Context, key cvDom.ConfigKey[time.Dura
 	return parseOrDefault(ctx, cv, key, time.ParseDuration)
 }
 
-func (cv *cvImpl) Refresh(ctx context.Context) {
+func (cv *cvImpl) Refresh(ctx context.Context) error {
+	if err := cv.cnc.Trigger(ctx, refreshCacheCmd, nil); err != nil {
+		return errorDom.Raise(ctx, errorDom.ErrConfigVarRefreshFailed, "", err, nil)
+	}
+	return nil
+}
+
+func (cv *cvImpl) refresh(ctx context.Context) {
 	cache, err := cv.repo.Refresh(ctx)
 	if err != nil {
 		refreshErr := errorDom.Raise(ctx, errorDom.ErrConfigVarRefreshFailed, "", err, nil)
@@ -77,7 +91,7 @@ func (cv *cvImpl) startAutoRefresh(interval time.Duration) {
 		for {
 			select {
 			case <-ticker.C:
-				cv.Refresh(cv.ctx)
+				cv.refresh(cv.ctx)
 			case <-cv.ctx.Done():
 				return
 			}
@@ -108,19 +122,26 @@ func parseOrDefault[T any](ctx context.Context, cv *cvImpl, key cvDom.ConfigKey[
 	return key.Default
 }
 
-func New(repo cvDom.Repository) cvDom.Usecase {
+func New(repo cvDom.Repository, cnc cnc.CNC) cvDom.Usecase {
 	config := utils.GetConfig()
 	ctx, cancel := context.WithCancel(context.Background())
 
 	cv := &cvImpl{
 		repo:   repo,
 		cache:  make(map[string]string),
+		cnc:    cnc,
 		mu:     sync.RWMutex{},
 		ctx:    ctx,
 		cancel: cancel,
 	}
-	cv.Refresh(ctx)
+	cv.refresh(ctx)
 	cv.startAutoRefresh(config.ConfigVars.RefreshInterval)
+
+	// register handler for distributed cache refresh
+	cv.cnc.Register(refreshCacheCmd, func(ctx context.Context, params map[string]any) error {
+		cv.refresh(ctx)
+		return nil
+	})
 
 	utils.InterruptHandlerChannel <- func() {
 		cancel()
