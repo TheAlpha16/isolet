@@ -60,7 +60,11 @@ func main() {
 	}
 
 	// Init infra services
-	infra := infra.New(valkeyClient)
+	infra, err := infra.New(ctx, valkeyClient)
+	if err != nil {
+		errorDom.RaiseToSentry(ctx, err)
+		appLogger.Fatal("Failed to initialize infra services", zap.Error(err))
+	}
 
 	// Init repositories
 	repos := repository.New(dbPool)

@@ -28,8 +28,13 @@ func (c *cncImpl) Register(name string, handler func(ctx context.Context, params
 	return c.client.RegisterHandler(cncgo.CommandName(name), wrapped)
 }
 
-func NewCNC(cache valkey.Client) CNC {
+func NewCNC(ctx context.Context, cache valkey.Client) (CNC, error) {
 	config := utils.GetConfig()
 	client := cncgo.NewCNCWithValkey(cache, config.CNC.Channel)
-	return &cncImpl{client: client}
+	cnc := &cncImpl{client: client}
+
+	if err := client.Start(ctx); err != nil {
+		return nil, err
+	}
+	return cnc, nil
 }

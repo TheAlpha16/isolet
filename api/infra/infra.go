@@ -1,6 +1,8 @@
 package infra
 
 import (
+	"context"
+
 	"github.com/TheAlpha16/isolet/api/infra/cnc"
 	"github.com/TheAlpha16/isolet/api/infra/jwt"
 	"github.com/TheAlpha16/isolet/api/utils"
@@ -13,11 +15,15 @@ type Infra struct {
 	CNC cnc.CNC
 }
 
-func New(valkeyClient valkey.Client) *Infra {
+func New(ctx context.Context, valkeyClient valkey.Client) (*Infra, error) {
 	config := utils.GetConfig()
+	cnc, err := cnc.NewCNC(ctx, valkeyClient)
+	if err != nil {
+		return nil, err
+	}
 
 	return &Infra{
 		JWT: jwt.NewJWT(config.Token.SigningKey),
-		CNC: cnc.NewCNC(valkeyClient),
-	}
+		CNC: cnc,
+	}, nil
 }
