@@ -70,7 +70,7 @@ func main() {
 	repos := repository.New(dbPool)
 
 	// Init usecases
-	usecases := usecase.New(cache, repos, infra)
+	usecases := usecase.New(ctx, cache, repos, infra)
 
 	// Start the rest server
 	StartRestServer(ctx, usecases)

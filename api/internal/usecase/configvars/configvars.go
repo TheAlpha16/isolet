@@ -122,9 +122,9 @@ func parseOrDefault[T any](ctx context.Context, cv *cvImpl, key cvDom.ConfigKey[
 	return key.Default
 }
 
-func New(repo cvDom.Repository, cnc cnc.CNC) cvDom.Usecase {
+func New(ctx context.Context, repo cvDom.Repository, cnc cnc.CNC) cvDom.Usecase {
 	config := utils.GetConfig()
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(ctx)
 
 	cv := &cvImpl{
 		repo:   repo,
