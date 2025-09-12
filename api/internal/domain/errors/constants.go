@@ -45,6 +45,13 @@ const (
 	// ConfigVar errors
 	ErrConfigVarInvalid       ErrorCode = "CONFIGVAR-00"
 	ErrConfigVarRefreshFailed ErrorCode = "CONFIGVAR-01"
+
+	// SMTP errors
+	ErrSMTPDialError          ErrorCode = "SMTP-00"
+	ErrSMTPQueueFull          ErrorCode = "SMTP-01"
+	ErrSMTPMaxRetriesExceeded ErrorCode = "SMTP-02"
+	ErrSMTPSendFailed         ErrorCode = "SMTP-03"
+	ErrSMTPContextCanceled    ErrorCode = "SMTP-04"
 )
 
 // Map of error codes to user-facing messages
@@ -74,6 +81,13 @@ var msgMap = map[ErrorCode]string{
 	// ConfigVar errors
 	ErrConfigVarInvalid:       "config variable is invalid",
 	ErrConfigVarRefreshFailed: "config variable refresh failed",
+
+	// SMTP errors
+	ErrSMTPDialError:          "failed to dial SMTP server",
+	ErrSMTPQueueFull:          "SMTP queue is full",
+	ErrSMTPMaxRetriesExceeded: "email max retries exceeded",
+	ErrSMTPSendFailed:         "failed to send email",
+	ErrSMTPContextCanceled:    "SMTP context canceled",
 }
 
 // Map of server-side error codes that need to be filtered
@@ -88,6 +102,8 @@ var ServerSideErrors = map[ErrorCode]struct{}{
 	ErrTokenSigningFailed:     {},
 	ErrConfigVarInvalid:       {},
 	ErrConfigVarRefreshFailed: {},
+	ErrSMTPQueueFull:          {},
+	ErrSMTPContextCanceled:    {},
 }
 
 // Map of auth error codes
