@@ -22,3 +22,20 @@ func GetExtraDataFromCtx(ctx context.Context) ExtraData {
 		return make(ExtraData)
 	}
 }
+
+func GetFieldFromExtraData[T any](ctx context.Context, key string) T {
+	var zero T
+	extraData := GetExtraDataFromCtx(ctx)
+	if value, ok := extraData[key]; ok {
+		if strValue, ok := value.(T); ok {
+			return strValue
+		}
+	}
+	return zero
+}
+
+func SetFieldInExtraData[T any](ctx context.Context, key string, value T) context.Context {
+	extraData := GetExtraDataFromCtx(ctx)
+	extraData[key] = value
+	return SetExtraDataInCtx(ctx, extraData)
+}
