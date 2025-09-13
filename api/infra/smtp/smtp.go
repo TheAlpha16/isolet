@@ -55,7 +55,7 @@ func (s *smtpImpl) getSender() (gomail.SendCloser, error) {
 	var err error
 	if s.sender == nil {
 		dialer := gomail.NewDialer(
-			s.config.Host, s.config.Port, s.config.Username, s.config.Password,
+			s.config.Host, s.config.Port, s.config.User, s.config.Password,
 		)
 		s.sender, err = dialer.Dial()
 		if err != nil {

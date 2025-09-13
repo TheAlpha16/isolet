@@ -10,7 +10,7 @@ import (
 type Creds struct {
 	Host     string
 	Port     int
-	Username string
+	User     string
 	Password string
 }
 
