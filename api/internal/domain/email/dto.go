@@ -2,7 +2,7 @@ package email
 
 type EmailIdentifier struct {
 	Username string
-	To       []string
+	To       string
 }
 
 type EmailInput struct {
