@@ -38,7 +38,17 @@ func (userRepo *userRepo) Update(ctx context.Context, user *userDom.User) error 
 
 func (userRepo *userRepo) GetByEmailOrUsername(ctx context.Context, email, username string) (*userDom.User, error) {
 	var user User
-	if err := userRepo.db.WithContext(ctx).Where("email = ? OR username = ?", email, username).First(&user).Error; err != nil {
+	db := userRepo.db.WithContext(ctx)
+
+	if email != "" && username != "" {
+		db = db.Where("email = ? OR username = ?", email, username)
+	} else if email != "" {
+		db = db.Where("email = ?", email)
+	} else if username != "" {
+		db = db.Where("username = ?", username)
+	}
+
+	if err := db.First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, errorDom.Raise(ctx, errorDom.ErrUserNotFound, "", err, nil)
 		}
