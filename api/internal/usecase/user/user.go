@@ -21,39 +21,47 @@ func (u *userImpl) Update(ctx context.Context, user *userDom.User) error {
 	return u.repo.Update(ctx, user)
 }
 
-func (u *userImpl) GetByUsernameOrEmail(ctx context.Context, identifier string) (*userDom.User, error) {
-	return u.repo.GetByUsernameOrEmail(ctx, identifier)
+func (u *userImpl) GetByEmailOrUsername(ctx context.Context, email, username string) (*userDom.User, error) {
+	return u.repo.GetByEmailOrUsername(ctx, email, username)
 }
 
-func (u *userImpl) ExistsByEmailOrUsername(ctx context.Context, email, username string) (*userDom.IdentifierExistence, error) {
-	exists := userDom.IdentifierExistence{
-		EmailExists:    false,
-		UsernameExists: false,
-	}
+func (u *userImpl) ExistsByEmailOrUsername(ctx context.Context, email, username string) error {
+	emailTaken := errorDom.Raise(ctx, errorDom.ErrUserEmailTaken, "", nil, nil)
+	usernameTaken := errorDom.Raise(ctx, errorDom.ErrUserUsernameTaken, "", nil, nil)
 
 	_, err := u.cache.Get(ctx, userDom.EmailCacheKey(email))
 	if err != nil {
 		// return immediately in case of errors other than cache miss
 		if !errorDom.IsSameError(err, errorDom.ErrCacheMiss) {
-			return nil, err
+			return err
 		}
 	} else {
-		exists.EmailExists = true
-		return &exists, nil
+		return emailTaken
 	}
 
 	_, err = u.cache.Get(ctx, userDom.UsernameCacheKey(username))
 	if err != nil {
 		// return immediately in case of errors other than cache miss
 		if !errorDom.IsSameError(err, errorDom.ErrCacheMiss) {
-			return nil, err
+			return err
 		}
 	} else {
-		exists.UsernameExists = true
-		return &exists, nil
+		return usernameTaken
 	}
 
-	return u.repo.CheckIdentifiers(ctx, email, username)
+	user, err := u.repo.GetByEmailOrUsername(ctx, email, username)
+	if err != nil {
+		if errorDom.IsSameError(err, errorDom.ErrUserNotFound) {
+			return nil
+		}
+		return err
+	}
+
+	if user.Email == email {
+		return emailTaken
+	}
+
+	return usernameTaken
 }
 
 func New(cache cache.Cache, repo userDom.Repository) userDom.Usecase {

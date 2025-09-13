@@ -7,8 +7,8 @@ import (
 )
 
 type LoginInput struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=8,max=32"`
+	Identifier string `json:"identifier" validate:"min=3,max=320"`
+	Password   string `json:"password" validate:"required,min=8,max=32"`
 }
 
 func (l *LoginInput) Validate(ctx context.Context) error {
@@ -17,7 +17,7 @@ func (l *LoginInput) Validate(ctx context.Context) error {
 
 type RegisterInput struct {
 	Username string `json:"username" validate:"required,min=3,max=33"`
-	Email    string `json:"email" validate:"required,email"`
+	Email    string `json:"email" validate:"required,email,max=320"`
 	Password string `json:"password" validate:"required,min=8,max=32"`
 }
 

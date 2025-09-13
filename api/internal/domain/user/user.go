@@ -22,11 +22,6 @@ type User struct {
 	domain.BaseEntity
 }
 
-type IdentifierExistence struct {
-	EmailExists    bool
-	UsernameExists bool
-}
-
 func EmailCacheKey(email string) string {
 	return fmt.Sprintf("%s:%s", emailCachePrefix, email)
 }

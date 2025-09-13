@@ -36,9 +36,9 @@ func (userRepo *userRepo) Update(ctx context.Context, user *userDom.User) error 
 	return nil
 }
 
-func (userRepo *userRepo) GetByUsernameOrEmail(ctx context.Context, identifier string) (*userDom.User, error) {
+func (userRepo *userRepo) GetByEmailOrUsername(ctx context.Context, email, username string) (*userDom.User, error) {
 	var user User
-	if err := userRepo.db.WithContext(ctx).Where("email = ? OR username = ?", identifier, identifier).First(&user).Error; err != nil {
+	if err := userRepo.db.WithContext(ctx).Where("email = ? OR username = ?", email, username).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, errorDom.Raise(ctx, errorDom.ErrUserNotFound, "", err, nil)
 		}
@@ -49,16 +49,6 @@ func (userRepo *userRepo) GetByUsernameOrEmail(ctx context.Context, identifier s
 		return nil, err
 	}
 	return domUser, nil
-}
-
-func (userRepo *userRepo) CheckIdentifiers(ctx context.Context, email, username string) (*userDom.IdentifierExistence, error) {
-	var exists userDom.IdentifierExistence
-	query := `SELECT BOOL_OR(email = $1) AS email_exists, BOOL_OR(username = $2) AS username_exists FROM users WHERE email = $1 OR username = $2;`
-
-	if err := userRepo.db.WithContext(ctx).Raw(query, email, username).Scan(&exists).Error; err != nil {
-		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to check user identifiers", err, nil)
-	}
-	return &exists, nil
 }
 
 func New(db *gorm.DB) userDom.Repository {

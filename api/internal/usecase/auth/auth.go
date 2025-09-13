@@ -25,7 +25,7 @@ type authImpl struct {
 }
 
 func (a *authImpl) Login(ctx context.Context, input *authDom.LoginInput) (*authDom.Session, error) {
-	user, err := a.userUc.GetByUsernameOrEmail(ctx, input.Email)
+	user, err := a.userUc.GetByEmailOrUsername(ctx, input.Identifier, input.Identifier)
 	if err != nil {
 		if errorDom.IsSameError(err, errorDom.ErrUserNotFound) {
 			return nil, errorDom.Raise(ctx, errorDom.ErrAuthInvalidCredentials, "", nil, nil)
@@ -59,7 +59,7 @@ func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (
 	input.Password = hashedPassword
 
 	// check if username or email is already taken
-	if err := a.ensureEmailAndUsernameAvailable(ctx, input.Email, input.Username); err != nil {
+	if err := a.userUc.ExistsByEmailOrUsername(ctx, input.Email, input.Username); err != nil {
 		return nil, err
 	}
 
@@ -98,20 +98,6 @@ func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (
 		Token:     jwtToken,
 		ExpiresAt: token.ExpiresAt.Unix(),
 	}, nil
-}
-
-func (a *authImpl) ensureEmailAndUsernameAvailable(ctx context.Context, email, username string) error {
-	existence, err := a.userUc.ExistsByEmailOrUsername(ctx, email, username)
-	if err != nil {
-		return err
-	}
-	if existence.EmailExists {
-		return errorDom.Raise(ctx, errorDom.ErrUserEmailTaken, "", nil, nil)
-	}
-	if existence.UsernameExists {
-		return errorDom.Raise(ctx, errorDom.ErrUserUsernameTaken, "", nil, nil)
-	}
-	return nil
 }
 
 func (a *authImpl) generateEmailVerificationToken(ctx context.Context, email, username, password string) (*tokenDom.Token, string, error) {
