@@ -100,6 +100,41 @@ func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (
 	}, nil
 }
 
+func (a *authImpl) Verify(ctx context.Context, verifyToken string) error {
+	claims, err := a.jwtSvc.Verify(ctx, verifyToken)
+	if err != nil {
+		return err
+	}
+
+	if claims.Purpose != tokenDom.TokenEmailVerification {
+		return errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "", nil, nil)
+	}
+
+	token, err := a.tokenUc.Fetch(ctx, &tokenDom.TokenIdentifier{
+		ID:       claims.JWTID,
+		EntityID: claims.Subject,
+		Purpose:  tokenDom.TokenEmailVerification,
+	})
+	if err != nil {
+		return err
+	}
+
+	var email, username, password string
+	var ok bool
+	if email, ok = token.Metadata["email"]; !ok {
+		return errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "", nil, nil)
+	}
+	if username, ok = token.Metadata["username"]; !ok {
+		return errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "", nil, nil)
+	}
+	if password, ok = token.Metadata["password"]; !ok {
+		return errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "", nil, nil)
+	}
+
+	_, err = a.createUser(ctx, email, username, password)
+	return err
+}
+
 func (a *authImpl) generateEmailVerificationToken(ctx context.Context, email, username, password string) (*tokenDom.Token, string, error) {
 	config := utils.GetConfig()
 	token := tokenDom.Token{

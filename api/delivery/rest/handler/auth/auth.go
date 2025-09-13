@@ -13,6 +13,7 @@ import (
 type AuthHandler interface {
 	Login(c *fiber.Ctx) error
 	Register(c *fiber.Ctx) error
+	Verify(c *fiber.Ctx) error
 }
 
 type authHandler struct {
@@ -48,6 +49,18 @@ func (h *authHandler) Register(c *fiber.Ctx) error {
 	}
 	c.Cookie(buildAuthCookie(session))
 	return c.Status(fiber.StatusOK).JSON(response.Success("registration successful", session))
+}
+
+func (h *authHandler) Verify(c *fiber.Ctx) error {
+	token := c.Query(utils.TokenQueryKey)
+	if token == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error[any]("token is required", nil))
+	}
+
+	if err := h.authUsecase.Verify(c.UserContext(), token); err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusOK).JSON(response.Success[any]("verified successfully! proceed to login", nil))
 }
 
 func buildAuthCookie(session *authDom.Session) *fiber.Cookie {
