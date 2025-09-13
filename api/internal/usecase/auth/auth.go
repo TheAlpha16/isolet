@@ -38,6 +38,14 @@ func (a *authImpl) Login(ctx context.Context, input *authDom.LoginInput) (*authD
 		return nil, errorDom.Raise(ctx, errorDom.ErrAuthInvalidCredentials, "", nil, nil)
 	}
 
+	activeSessionCount, err := a.tokenUc.CountAuthTokens(ctx, user.ID)
+	if err != nil {
+		return nil, err
+	}
+	if activeSessionCount >= a.cvUc.GetInt(ctx, cvDom.AuthMaxSessions) {
+		return nil, errorDom.Raise(ctx, errorDom.ErrAuthMaxSessionsReached, "", nil, nil)
+	}
+
 	token, jwtToken, err := a.generateAuthToken(ctx, user)
 	if err != nil {
 		return nil, err

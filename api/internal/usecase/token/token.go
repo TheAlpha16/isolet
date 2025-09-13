@@ -2,6 +2,7 @@ package token
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/TheAlpha16/isolet/api/infra/cache"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
@@ -43,6 +44,19 @@ func (t *tokenImpl) Fetch(ctx context.Context, id *tokenDom.TokenIdentifier) (*t
 		return nil, errorDom.Raise(ctx, errorDom.ErrUnmarshalError, "failed to unmarshal token", err, nil)
 	}
 	return &token, nil
+}
+
+func (t *tokenImpl) CountAuthTokens(ctx context.Context, userID int64) (int, error) {
+	tokenIdentifier := &tokenDom.TokenIdentifier{
+		ID:       "*",
+		EntityID: fmt.Sprintf("%d", userID),
+		Purpose:  tokenDom.TokenAuth,
+	}
+	keys, err := t.cache.GetKeys(ctx, tokenIdentifier.Key())
+	if err != nil {
+		return 0, err
+	}
+	return len(keys), nil
 }
 
 func New(cache cache.Cache) tokenDom.Usecase {

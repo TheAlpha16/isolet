@@ -19,4 +19,7 @@ var (
 	// email
 	EmailVerification = ConfigKey[bool]{Name: "email_verification", Default: true}
 	EmailSender       = ConfigKey[string]{Name: "email_from", Default: "noreply@isolet.dev"}
+
+	// auth
+	AuthMaxSessions = ConfigKey[int]{Name: "auth_max_sessions", Default: 5}
 )

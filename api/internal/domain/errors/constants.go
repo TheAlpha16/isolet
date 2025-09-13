@@ -62,6 +62,7 @@ const (
 
 	// Auth errors
 	ErrAuthInvalidCredentials ErrorCode = "AUTH-00"
+	ErrAuthMaxSessionsReached ErrorCode = "AUTH-01"
 )
 
 // Map of error codes to user-facing messages
@@ -108,6 +109,7 @@ var msgMap = map[ErrorCode]string{
 
 	// Auth errors
 	ErrAuthInvalidCredentials: "invalid credentials",
+	ErrAuthMaxSessionsReached: "maximum sessions reached",
 }
 
 // Map of server-side error codes that need to be filtered
@@ -132,8 +134,11 @@ var ServerSideErrors = map[ErrorCode]struct{}{
 
 // Map of auth error codes
 var AuthErrors = map[ErrorCode]struct{}{
-	ErrTokenExpiredInvalid: {},
+	ErrTokenExpiredInvalid:    {},
+	ErrAuthInvalidCredentials: {},
 }
 
 // Map of forbidden error codes
-var ForbiddenErrors = map[ErrorCode]struct{}{}
+var ForbiddenErrors = map[ErrorCode]struct{}{
+	ErrAuthMaxSessionsReached: {},
+}
