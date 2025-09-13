@@ -46,11 +46,11 @@ func (t *tokenImpl) Fetch(ctx context.Context, id *tokenDom.TokenIdentifier) (*t
 	return &token, nil
 }
 
-func (t *tokenImpl) CountAuthTokens(ctx context.Context, userID int64) (int, error) {
+func (t *tokenImpl) CountUserTokens(ctx context.Context, purpose tokenDom.TokenPurpose, userID int64) (int, error) {
 	tokenIdentifier := &tokenDom.TokenIdentifier{
 		ID:       "*",
 		EntityID: fmt.Sprintf("%d", userID),
-		Purpose:  tokenDom.TokenAuth,
+		Purpose:  purpose,
 	}
 	keys, err := t.cache.GetKeys(ctx, tokenIdentifier.Key())
 	if err != nil {
