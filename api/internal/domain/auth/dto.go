@@ -7,7 +7,7 @@ import (
 )
 
 type LoginInput struct {
-	Identifier string `json:"identifier" validate:"max=320"`
+	Identifier string `json:"identifier" validate:"required,max=320"`
 	Password   string `json:"password" validate:"required,max=32"`
 }
 
