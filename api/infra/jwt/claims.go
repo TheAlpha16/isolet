@@ -82,6 +82,7 @@ func (claims *Claims) Validate(ctx context.Context) error {
 
 func JWTTokenToClaims(ctx context.Context, token jwt.Token) (*Claims, error) {
 	var claims Claims
+	var purpose string
 	var ok bool
 
 	if claims.JWTID, ok = token.JwtID(); !ok {
@@ -101,9 +102,10 @@ func JWTTokenToClaims(ctx context.Context, token jwt.Token) (*Claims, error) {
 	token.Get(userIDClaim, &claims.UserID)
 	token.Get(roleClaim, &claims.Role)
 
-	if err := token.Get(purposeClaim, &claims.Purpose); err != nil {
+	if err := token.Get(purposeClaim, &purpose); err != nil {
 		return nil, errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "purpose is missing", nil, nil)
 	}
+	claims.Purpose = tokenDom.TokenPurpose(purpose)
 
 	return &claims, claims.Validate(ctx)
 }
