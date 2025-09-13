@@ -76,7 +76,7 @@ func main() {
 	usecases := usecase.New(ctx, &wg, cache, repos, infra)
 
 	// Start the rest server
-	StartRestServer(ctx, usecases)
+	StartRestServer(ctx, usecases, infra)
 
 	utils.InterruptHandlerChannel <- func() {
 		wg.Wait()
@@ -102,8 +102,8 @@ func ConnectToPostgresDatabase(ctx context.Context) (*gorm.DB, func(), error) {
 	return dbPool, closeConn, nil
 }
 
-func StartRestServer(ctx context.Context, usecases *usecase.Usecases) {
-	app := restDel.New(usecases)
+func StartRestServer(ctx context.Context, usecases *usecase.Usecases, infra *infra.Infra) {
+	app := restDel.New(usecases, infra)
 	utils.InterruptHandlerChannel <- func() {
 		restDel.Shutdown(app)
 	}
