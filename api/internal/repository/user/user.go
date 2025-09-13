@@ -31,8 +31,16 @@ func (userRepo *userRepo) Create(ctx context.Context, user *userDom.User) (*user
 	return user, nil
 }
 
-func (userRepo *userRepo) Update(ctx context.Context, user *userDom.User) error {
-	// Implementation for updating a user
+func (userRepo *userRepo) Update(ctx context.Context, user *userDom.User, fields []string) error {
+	userModel, err := NewUserModel(user)
+	if err != nil {
+		return err
+	}
+
+	if err := userRepo.db.WithContext(ctx).Model(userModel).Where("id = ?", user.ID).Select(fields).Updates(userModel).Error; err != nil {
+		return errorDom.Raise(ctx, errorDom.ErrDBUpdateError, "failed to update user", err, nil)
+	}
+
 	return nil
 }
 

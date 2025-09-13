@@ -17,8 +17,8 @@ func (u *userImpl) Create(ctx context.Context, user *userDom.User) (*userDom.Use
 	return u.repo.Create(ctx, user)
 }
 
-func (u *userImpl) Update(ctx context.Context, user *userDom.User) error {
-	return u.repo.Update(ctx, user)
+func (u *userImpl) Update(ctx context.Context, user *userDom.User, fields []string) error {
+	return u.repo.Update(ctx, user, fields)
 }
 
 func (u *userImpl) GetByEmailOrUsername(ctx context.Context, email, username string) (*userDom.User, error) {
