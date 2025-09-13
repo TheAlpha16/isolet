@@ -25,6 +25,11 @@ const (
 	TokenQueryKey       = "token"
 )
 
+// front-end routes
+const (
+	RouteFrontResetPassword = "/reset-password"
+)
+
 // context keys
 const (
 	ContextKeyUserID = "user_id"

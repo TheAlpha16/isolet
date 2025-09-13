@@ -30,12 +30,20 @@ type emailImpl struct {
 type config struct {
 	Subject      string
 	Template     string
-	RedirectPath string
+	PathSegments []string
 }
 
 var configs = map[emailDom.Type]config{
-	emailDom.TypeVerification:  {Subject: "Verify your email", Template: "templates/verification.html", RedirectPath: utils.RouteAuthVerify},
-	emailDom.TypePasswordReset: {Subject: "Password Reset", Template: "templates/password_reset.html", RedirectPath: "/reset"},
+	emailDom.TypeVerification: {
+		Subject:      "Verify your email",
+		Template:     "templates/verification.html",
+		PathSegments: []string{utils.GetConfig().Rest.APIVersionPrefix, utils.RouteAuthVerify},
+	},
+	emailDom.TypePasswordReset: {
+		Subject:      "Password Reset",
+		Template:     "templates/password_reset.html",
+		PathSegments: []string{utils.RouteFrontResetPassword},
+	},
 }
 
 func (e *emailImpl) SendEmailAsync(ctx context.Context, input *emailDom.EmailInput) error {
@@ -44,7 +52,7 @@ func (e *emailImpl) SendEmailAsync(ctx context.Context, input *emailDom.EmailInp
 		return errorDom.Raise(ctx, errorDom.ErrEmailInvalidType, "", nil, common.ExtraData{"type": input.Type})
 	}
 
-	link, err := e.buildLink(ctx, config.RedirectPath, input.Token)
+	link, err := e.buildLink(ctx, input.Token, config.PathSegments)
 	if err != nil {
 		return err
 	}
@@ -92,8 +100,7 @@ func (e *emailImpl) getBody(ctx context.Context, templatePath string, data *emai
 	return buf.String(), nil
 }
 
-func (e *emailImpl) buildLink(ctx context.Context, redirectPath string, token string) (string, error) {
-	config := utils.GetConfig()
+func (e *emailImpl) buildLink(ctx context.Context, token string, pathSegments []string) (string, error) {
 	publicURL := e.cvUc.GetString(ctx, cvDom.PublicURL)
 
 	url, err := url.Parse(publicURL)
@@ -101,7 +108,7 @@ func (e *emailImpl) buildLink(ctx context.Context, redirectPath string, token st
 		return "", errorDom.Raise(ctx, errorDom.ErrEmailLinkBuild, "failed to parse public URL", err, common.ExtraData{"public_url": publicURL})
 	}
 
-	url = url.JoinPath(config.Rest.APIVersionPrefix, redirectPath)
+	url = url.JoinPath(pathSegments...)
 	query := url.Query()
 	query.Set(utils.TokenQueryKey, token)
 	url.RawQuery = query.Encode()
