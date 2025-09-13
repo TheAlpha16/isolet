@@ -7,8 +7,8 @@ import (
 )
 
 type LoginInput struct {
-	Identifier string `json:"identifier" validate:"min=3,max=320"`
-	Password   string `json:"password" validate:"required,min=8,max=32"`
+	Identifier string `json:"identifier" validate:"max=320"`
+	Password   string `json:"password" validate:"required,max=32"`
 }
 
 func (l *LoginInput) Validate(ctx context.Context) error {
