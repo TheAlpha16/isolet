@@ -22,6 +22,7 @@ const (
 
 	// Rest errors
 	ErrRestInvalidPayload ErrorCode = "REST-00"
+	ErrRestMissingToken   ErrorCode = "REST-01"
 
 	// User errors
 	ErrUserInvalidRole   ErrorCode = "USER-00"
@@ -75,6 +76,7 @@ var msgMap = map[ErrorCode]string{
 
 	// Rest errors
 	ErrRestInvalidPayload: "invalid request payload",
+	ErrRestMissingToken:   "token required for verification",
 
 	// User errors
 	ErrUserInvalidRole:   "invalid user role",

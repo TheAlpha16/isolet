@@ -5,6 +5,7 @@ import (
 
 	"github.com/TheAlpha16/isolet/api/delivery/rest/response"
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
+	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	"github.com/TheAlpha16/isolet/api/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -54,7 +55,7 @@ func (h *authHandler) Register(c *fiber.Ctx) error {
 func (h *authHandler) Verify(c *fiber.Ctx) error {
 	token := c.Query(utils.TokenQueryKey)
 	if token == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(response.Error[any]("token is required", nil))
+		return errorDom.Raise(c.UserContext(), errorDom.ErrRestMissingToken, "", nil, nil)
 	}
 
 	if err := h.authUsecase.Verify(c.UserContext(), token); err != nil {
