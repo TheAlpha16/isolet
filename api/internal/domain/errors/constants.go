@@ -2,6 +2,7 @@ package errors
 
 import "github.com/TheAlpha16/isolet/api/internal/domain/common"
 
+
 const (
 	// Context key for storing/retrieving error extra data
 	srcKey common.ContextKey = "ctxErrSrc"
@@ -65,6 +66,7 @@ const (
 	ErrAuthInvalidCredentials    ErrorCode = "AUTH-00"
 	ErrAuthMaxSessionsReached    ErrorCode = "AUTH-01"
 	ErrAuthPasswordResetDisabled ErrorCode = "AUTH-02"
+	ErrAuthMissingToken          ErrorCode = "AUTH-03"
 )
 
 // Map of error codes to user-facing messages
@@ -114,6 +116,7 @@ var msgMap = map[ErrorCode]string{
 	ErrAuthInvalidCredentials:    "invalid credentials",
 	ErrAuthMaxSessionsReached:    "maximum sessions reached",
 	ErrAuthPasswordResetDisabled: "password reset is disabled",
+	ErrAuthMissingToken:          "missing auth token",
 }
 
 // Map of server-side error codes that need to be filtered
@@ -140,6 +143,7 @@ var ServerSideErrors = map[ErrorCode]struct{}{
 var AuthErrors = map[ErrorCode]struct{}{
 	ErrTokenExpiredInvalid:    {},
 	ErrAuthInvalidCredentials: {},
+	ErrAuthMissingToken:       {},
 }
 
 // Map of forbidden error codes
