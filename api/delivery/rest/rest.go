@@ -40,7 +40,7 @@ func New(usecases *usecase.Usecases) *fiber.App {
 	authHandler := authHan.New(usecases.Auth)
 
 	// Setup routes
-	apiRouter := app.Group("/api/v1")
+	apiRouter := app.Group(config.Rest.APIVersionPrefix)
 	routes.RegisterHealth(apiRouter, healthHandler)
 	routes.RegisterAuth(apiRouter, authHandler)
 

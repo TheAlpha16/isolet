@@ -42,7 +42,8 @@ type Config struct {
 	}
 
 	Rest struct {
-		Port int `env:"REST_PORT" envDefault:"8000"`
+		Port             int    `env:"REST_PORT" envDefault:"8000"`
+		APIVersionPrefix string `env:"REST_API_VERSION_PREFIX" envDefault:"/api/v1"`
 	}
 
 	Valkey struct {
