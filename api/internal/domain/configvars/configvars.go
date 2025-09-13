@@ -17,9 +17,10 @@ var (
 	SMTPPassword = ConfigKey[string]{Name: "smtp_password", Default: "password"}
 
 	// email
-	EmailVerification = ConfigKey[bool]{Name: "email_verification", Default: true}
-	EmailSender       = ConfigKey[string]{Name: "email_from", Default: "noreply@isolet.dev"}
+	EmailVerificationEnabled = ConfigKey[bool]{Name: "email_verification_enabled", Default: true}
+	EmailSender              = ConfigKey[string]{Name: "email_from", Default: "noreply@isolet.dev"}
 
 	// auth
-	AuthMaxSessions = ConfigKey[int]{Name: "auth_max_sessions", Default: 5}
+	AuthMaxSessions      = ConfigKey[int]{Name: "auth_max_sessions", Default: 5}
+	PasswordResetEnabled = ConfigKey[bool]{Name: "password_reset_enabled", Default: true}
 )
