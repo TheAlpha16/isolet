@@ -28,7 +28,7 @@ func New(usecases *usecase.Usecases) *fiber.App {
 	app.Use(middleware.ContextMiddleware())
 	app.Use(otelfiber.Middleware(
 		otelfiber.WithNext(func(c *fiber.Ctx) bool {
-			return c.Path() == "/ping"
+			return c.Path() == utils.RoutePing
 		}),
 	))
 	app.Use(middleware.SentryMiddleware())

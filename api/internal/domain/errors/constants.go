@@ -52,6 +52,12 @@ const (
 	ErrSMTPMaxRetriesExceeded ErrorCode = "SMTP-02"
 	ErrSMTPSendFailed         ErrorCode = "SMTP-03"
 	ErrSMTPContextCanceled    ErrorCode = "SMTP-04"
+
+	// Email errors
+	ErrEmailInvalidType     ErrorCode = "EMAIL-00"
+	ErrEmailTemplateFetch   ErrorCode = "EMAIL-01"
+	ErrEmailTemplateExecute ErrorCode = "EMAIL-02"
+	ErrEmailLinkBuild       ErrorCode = "EMAIL-03"
 )
 
 // Map of error codes to user-facing messages
@@ -88,6 +94,12 @@ var msgMap = map[ErrorCode]string{
 	ErrSMTPMaxRetriesExceeded: "email max retries exceeded",
 	ErrSMTPSendFailed:         "failed to send email",
 	ErrSMTPContextCanceled:    "SMTP context canceled",
+
+	// Email errors
+	ErrEmailInvalidType:     "invalid email type",
+	ErrEmailTemplateFetch:   "failed to fetch email template",
+	ErrEmailTemplateExecute: "failed to execute email template",
+	ErrEmailLinkBuild:       "failed to build email link",
 }
 
 // Map of server-side error codes that need to be filtered
@@ -104,6 +116,10 @@ var ServerSideErrors = map[ErrorCode]struct{}{
 	ErrConfigVarRefreshFailed: {},
 	ErrSMTPQueueFull:          {},
 	ErrSMTPContextCanceled:    {},
+	ErrEmailInvalidType:       {},
+	ErrEmailTemplateFetch:     {},
+	ErrEmailTemplateExecute:   {},
+	ErrEmailLinkBuild:         {},
 }
 
 // Map of auth error codes
