@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	restDel "github.com/TheAlpha16/isolet/api/delivery/rest"
 	"github.com/TheAlpha16/isolet/api/infra"
@@ -24,6 +25,8 @@ func main() {
 
 	appLogger := logger.GetAppLogger()
 	defer appLogger.Sync()
+
+	var wg sync.WaitGroup
 
 	// Init Sentry
 	utils.InitSentry(utils.GetConfig())
@@ -70,10 +73,15 @@ func main() {
 	repos := repository.New(dbPool)
 
 	// Init usecases
-	usecases := usecase.New(ctx, cache, repos, infra)
+	usecases := usecase.New(ctx, &wg, cache, repos, infra)
 
 	// Start the rest server
 	StartRestServer(ctx, usecases)
+
+	utils.InterruptHandlerChannel <- func() {
+		wg.Wait()
+	}
+	utils.InterruptHandler()
 }
 
 func ConnectToPostgresDatabase(ctx context.Context) (*gorm.DB, func(), error) {
@@ -96,9 +104,8 @@ func ConnectToPostgresDatabase(ctx context.Context) (*gorm.DB, func(), error) {
 
 func StartRestServer(ctx context.Context, usecases *usecase.Usecases) {
 	app := restDel.New(usecases)
-	restDel.StartServer(app)
-
 	utils.InterruptHandlerChannel <- func() {
 		restDel.Shutdown(app)
 	}
+	go restDel.StartServer(app)
 }
