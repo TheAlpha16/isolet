@@ -10,7 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func AuthMiddleware(jwtSvc jwt.JWT) fiber.Handler {
+func AuthMiddleware(tokenUc tokenDom.Usecase, jwtSvc jwt.JWT) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		userCtx := c.UserContext()
 
@@ -26,6 +26,15 @@ func AuthMiddleware(jwtSvc jwt.JWT) fiber.Handler {
 
 		if claims.Purpose != tokenDom.TokenAuth {
 			return errorDom.Raise(userCtx, errorDom.ErrTokenExpiredInvalid, "", nil, nil)
+		}
+
+		_, err = tokenUc.Fetch(userCtx, &tokenDom.TokenIdentifier{
+			ID:       claims.JWTID,
+			EntityID: claims.Subject,
+			Purpose:  claims.Purpose,
+		})
+		if err != nil {
+			return err
 		}
 
 		// set user_id and role in the context
