@@ -64,6 +64,12 @@ type Config struct {
 	ConfigVars struct {
 		RefreshInterval time.Duration `env:"CONFIG_VARS_REFRESH_INTERVAL" envDefault:"600s"`
 	}
+
+	SMTP struct {
+		Retries     int           `env:"SMTP_RETRIES" envDefault:"3"`
+		Timeout     time.Duration `env:"SMTP_TIMEOUT" envDefault:"10s"`
+		ChannelSize int           `env:"SMTP_CHANNEL_SIZE" envDefault:"10"`
+	}
 }
 
 func GetConfig() *Config {
