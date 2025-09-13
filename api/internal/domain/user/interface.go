@@ -3,7 +3,7 @@ package user
 import "context"
 
 type Usecase interface {
-	Create(ctx context.Context, user *User) error
+	Create(ctx context.Context, user *User) (*User, error)
 	Update(ctx context.Context, user *User) error
 
 	// ExistsByEmailOrUsername checks whether the given email or username exists.
@@ -13,7 +13,7 @@ type Usecase interface {
 }
 
 type Repository interface {
-	Create(ctx context.Context, user *User) error
+	Create(ctx context.Context, user *User) (*User, error)
 	Update(ctx context.Context, user *User) error
 	CheckIdentifiers(ctx context.Context, email, username string) (*IdentifierExistence, error)
 }

@@ -13,16 +13,22 @@ type userRepo struct {
 	db *gorm.DB
 }
 
-func (userRepo *userRepo) Create(ctx context.Context, user *userDom.User) error {
+func (userRepo *userRepo) Create(ctx context.Context, user *userDom.User) (*userDom.User, error) {
 	userModel, err := NewUserModel(user)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := userRepo.db.WithContext(ctx).Create(userModel).Error; err != nil {
-		return errorDom.Raise(ctx, errorDom.ErrDBCreateError, "failed to create user", err, nil)
+		return nil, errorDom.Raise(ctx, errorDom.ErrDBCreateError, "failed to create user", err, nil)
 	}
-	return nil
+
+	user, err = userModel.ToDomain(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func (userRepo *userRepo) Update(ctx context.Context, user *userDom.User) error {

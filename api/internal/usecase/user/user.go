@@ -13,7 +13,7 @@ type userImpl struct {
 	cache cache.Cache
 }
 
-func (u *userImpl) Create(ctx context.Context, user *userDom.User) error {
+func (u *userImpl) Create(ctx context.Context, user *userDom.User) (*userDom.User, error) {
 	return u.repo.Create(ctx, user)
 }
 
