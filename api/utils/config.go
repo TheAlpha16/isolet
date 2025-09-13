@@ -55,8 +55,9 @@ type Config struct {
 
 	Token struct {
 		SigningKey                string        `env:"TOKEN_SIGNING_KEY" envDefault:"trustmebro"`
-		EmailVerificationValidity time.Duration `env:"TOKEN_EMAIL_VERIFICATION_VALIDITY" envDefault:"600s"`
+		EmailVerificationValidity time.Duration `env:"TOKEN_EMAIL_VERIFICATION_VALIDITY" envDefault:"10m"`
 		AuthValidity              time.Duration `env:"TOKEN_AUTH_VALIDITY" envDefault:"24h"`
+		PasswordResetValidity     time.Duration `env:"TOKEN_PASSWORD_RESET_VALIDITY" envDefault:"30m"`
 	}
 
 	CNC struct {
@@ -64,7 +65,7 @@ type Config struct {
 	}
 
 	ConfigVars struct {
-		RefreshInterval time.Duration `env:"CONFIG_VARS_REFRESH_INTERVAL" envDefault:"600s"`
+		RefreshInterval time.Duration `env:"CONFIG_VARS_REFRESH_INTERVAL" envDefault:"10m"`
 	}
 
 	SMTP struct {
