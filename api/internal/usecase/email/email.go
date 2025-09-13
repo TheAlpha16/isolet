@@ -60,7 +60,7 @@ func (e *emailImpl) SendEmailAsync(ctx context.Context, input *emailDom.EmailInp
 
 	if err := e.client.SendAsync(ctx, &emailDom.Email{
 		Sender: emailDom.Entity{
-			Name:    input.Username,
+			Name:    e.cvUc.GetString(ctx, cvDom.EventName),
 			Address: e.cvUc.GetString(ctx, cvDom.EmailSender),
 		},
 		Recipients: []emailDom.Entity{
