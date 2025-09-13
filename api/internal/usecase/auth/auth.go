@@ -121,7 +121,7 @@ func (a *authImpl) Verify(ctx context.Context, verifyToken string) error {
 	token, err := a.tokenUc.Fetch(ctx, &tokenDom.TokenIdentifier{
 		ID:       claims.JWTID,
 		EntityID: claims.Subject,
-		Purpose:  tokenDom.TokenEmailVerification,
+		Purpose:  claims.Purpose,
 	})
 	if err != nil {
 		return err
@@ -130,13 +130,13 @@ func (a *authImpl) Verify(ctx context.Context, verifyToken string) error {
 	var email, username, password string
 	var ok bool
 	if email, ok = token.Metadata["email"]; !ok {
-		return errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "", nil, nil)
+		return errorDom.Raise(ctx, errorDom.ErrTokenExpiredInvalid, "", nil, nil)
 	}
 	if username, ok = token.Metadata["username"]; !ok {
-		return errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "", nil, nil)
+		return errorDom.Raise(ctx, errorDom.ErrTokenExpiredInvalid, "", nil, nil)
 	}
 	if password, ok = token.Metadata["password"]; !ok {
-		return errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "", nil, nil)
+		return errorDom.Raise(ctx, errorDom.ErrTokenExpiredInvalid, "", nil, nil)
 	}
 
 	_, err = a.createUser(ctx, email, username, password)
@@ -170,6 +170,39 @@ func (a *authImpl) ForgotPassword(ctx context.Context, input *authDom.ForgotPass
 		Type:  emailDom.TypePasswordReset,
 		Token: jwtToken,
 	})
+}
+
+func (a *authImpl) ResetPassword(ctx context.Context, input *authDom.ResetPasswordInput) error {
+	claims, err := a.jwtSvc.Verify(ctx, input.Token)
+	if err != nil {
+		return err
+	}
+
+	if claims.Purpose != tokenDom.TokenPasswordReset {
+		return errorDom.Raise(ctx, errorDom.ErrTokenExpiredInvalid, "", nil, nil)
+	}
+
+	_, err = a.tokenUc.Fetch(ctx, &tokenDom.TokenIdentifier{
+		ID:       claims.JWTID,
+		EntityID: claims.Subject,
+		Purpose:  claims.Purpose,
+	})
+	if err != nil {
+		return err
+	}
+
+	// hash the password
+	hashedPassword, err := utils.HashPassword(input.Password)
+	if err != nil {
+		return errorDom.RaiseInternal(ctx, "failed to hash password", err, common.ExtraData{"password": input.Password})
+	}
+	input.Password = hashedPassword
+
+	// update the user's password
+	return a.userUc.Update(ctx, &userDom.User{
+		ID:       *claims.UserID,
+		Password: input.Password,
+	}, []string{"password"})
 }
 
 func (a *authImpl) generateEmailVerificationToken(ctx context.Context, email, username, password string) (*tokenDom.Token, string, error) {

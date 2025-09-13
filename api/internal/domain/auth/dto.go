@@ -36,3 +36,12 @@ type ForgotPasswordInput struct {
 func (f *ForgotPasswordInput) Validate(ctx context.Context) error {
 	return validator.Validate(ctx, f)
 }
+
+type ResetPasswordInput struct {
+	Token    string `json:"token" validate:"required,max=500"`
+	Password string `json:"password" validate:"required,min=8,max=32"`
+}
+
+func (r *ResetPasswordInput) Validate(ctx context.Context) error {
+	return validator.Validate(ctx, r)
+}

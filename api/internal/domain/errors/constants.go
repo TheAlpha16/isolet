@@ -1,7 +1,8 @@
 package errors
 
-import "github.com/TheAlpha16/isolet/api/internal/domain/common"
-
+import (
+	"github.com/TheAlpha16/isolet/api/internal/domain/common"
+)
 
 const (
 	// Context key for storing/retrieving error extra data
@@ -34,6 +35,7 @@ const (
 	// DB errors
 	ErrDBCreateError ErrorCode = "DB-00"
 	ErrDBReadError   ErrorCode = "DB-01"
+	ErrDBUpdateError ErrorCode = "DB-02"
 
 	// Cache errors
 	ErrCacheCallFail       ErrorCode = "CACHE-00"
@@ -127,6 +129,7 @@ var ServerSideErrors = map[ErrorCode]struct{}{
 	ErrUnmarshalError:         {},
 	ErrDBCreateError:          {},
 	ErrDBReadError:            {},
+	ErrDBUpdateError:          {},
 	ErrCacheScriptLoadFail:    {},
 	ErrTokenSigningFailed:     {},
 	ErrConfigVarInvalid:       {},

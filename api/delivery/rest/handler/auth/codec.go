@@ -56,3 +56,19 @@ func decodeForgotPasswordInput(c *fiber.Ctx) (*authDom.ForgotPasswordInput, erro
 	}
 	return &input, nil
 }
+
+func decodeResetPasswordInput(c *fiber.Ctx) (*authDom.ResetPasswordInput, error) {
+	var input authDom.ResetPasswordInput
+	if err := c.BodyParser(&input); err != nil {
+		return nil, errorDom.Raise(c.UserContext(), errorDom.ErrRestInvalidPayload, "", err, nil)
+	}
+
+	// normalize
+	input.Token = strings.TrimSpace(input.Token)
+	input.Password = strings.TrimSpace(input.Password)
+
+	if err := input.Validate(c.UserContext()); err != nil {
+		return nil, err
+	}
+	return &input, nil
+}

@@ -1,6 +1,8 @@
 package auth
 
-import "context"
+import (
+	"context"
+)
 
 type Repository interface{}
 
@@ -9,4 +11,5 @@ type Usecase interface {
 	Register(ctx context.Context, input *RegisterInput) (*Session, error)
 	Verify(ctx context.Context, token string) error
 	ForgotPassword(ctx context.Context, input *ForgotPasswordInput) error
+	ResetPassword(ctx context.Context, input *ResetPasswordInput) error
 }

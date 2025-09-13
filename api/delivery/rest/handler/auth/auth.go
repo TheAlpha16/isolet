@@ -16,6 +16,7 @@ type AuthHandler interface {
 	Register(c *fiber.Ctx) error
 	Verify(c *fiber.Ctx) error
 	ForgotPassword(c *fiber.Ctx) error
+	ResetPassword(c *fiber.Ctx) error
 }
 
 type authHandler struct {
@@ -75,6 +76,18 @@ func (h *authHandler) ForgotPassword(c *fiber.Ctx) error {
 		return err
 	}
 	return c.Status(fiber.StatusOK).JSON(response.Success[any]("check your mail for password reset", nil))
+}
+
+func (h *authHandler) ResetPassword(c *fiber.Ctx) error {
+	input, err := decodeResetPasswordInput(c)
+	if err != nil {
+		return err
+	}
+
+	if err := h.authUsecase.ResetPassword(c.UserContext(), input); err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusOK).JSON(response.Success[any]("password reset successful", nil))
 }
 
 func buildAuthCookie(session *authDom.Session) *fiber.Cookie {
