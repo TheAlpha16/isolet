@@ -46,6 +46,10 @@ func (t *tokenImpl) Fetch(ctx context.Context, id *tokenDom.TokenIdentifier) (*t
 	return &token, nil
 }
 
+func (t *tokenImpl) Delete(ctx context.Context, id *tokenDom.TokenIdentifier) error {
+	return t.cache.Delete(ctx, id.Key())
+}
+
 func (t *tokenImpl) CountUserTokens(ctx context.Context, purpose tokenDom.TokenPurpose, userID int64) (int, error) {
 	tokenIdentifier := &tokenDom.TokenIdentifier{
 		ID:       "*",

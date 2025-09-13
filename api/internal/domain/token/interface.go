@@ -8,5 +8,6 @@ type Usecase interface {
 	// The token and extras are written atomically, and all keys share the same TTL.
 	Create(ctx context.Context, token *Token, extras map[string]string) error
 	Fetch(ctx context.Context, id *TokenIdentifier) (*Token, error)
+	Delete(ctx context.Context, id *TokenIdentifier) error
 	CountUserTokens(ctx context.Context, purpose TokenPurpose, userID int64) (int, error)
 }

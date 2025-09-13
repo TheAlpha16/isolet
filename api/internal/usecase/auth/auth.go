@@ -190,11 +190,13 @@ func (a *authImpl) ResetPassword(ctx context.Context, input *authDom.ResetPasswo
 		return errorDom.Raise(ctx, errorDom.ErrTokenExpiredInvalid, "", nil, nil)
 	}
 
-	_, err = a.tokenUc.Fetch(ctx, &tokenDom.TokenIdentifier{
+	tokenIdentifier := &tokenDom.TokenIdentifier{
 		ID:       claims.JWTID,
 		EntityID: claims.Subject,
 		Purpose:  claims.Purpose,
-	})
+	}
+
+	_, err = a.tokenUc.Fetch(ctx, tokenIdentifier)
 	if err != nil {
 		return err
 	}
@@ -207,10 +209,15 @@ func (a *authImpl) ResetPassword(ctx context.Context, input *authDom.ResetPasswo
 	input.Password = hashedPassword
 
 	// update the user's password
-	return a.userUc.Update(ctx, &userDom.User{
+	if err := a.userUc.Update(ctx, &userDom.User{
 		ID:       *claims.UserID,
 		Password: input.Password,
-	}, []string{"password"})
+	}, []string{"password"}); err != nil {
+		return err
+	}
+
+	// delete the token
+	return a.tokenUc.Delete(ctx, tokenIdentifier)
 }
 
 func (a *authImpl) generateEmailVerificationToken(ctx context.Context, email, username, password string) (*tokenDom.Token, string, error) {
