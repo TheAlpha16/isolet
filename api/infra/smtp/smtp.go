@@ -93,10 +93,9 @@ func (s *smtpImpl) handleEmail(message *gomail.Message) {
 }
 
 func (s *smtpImpl) start() error {
-	// DEBUG
-	// if _, err := s.getSender(); err != nil {
-	// 	return err
-	// }
+	if _, err := s.getSender(); err != nil {
+		return err
+	}
 
 	go func() {
 		resetChan := make(chan struct{}, 1)
