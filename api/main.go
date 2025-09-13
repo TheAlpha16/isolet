@@ -32,7 +32,7 @@ func main() {
 	dbPool, closeDBConn, err := ConnectToPostgresDatabase(ctx)
 	if err != nil {
 		errorDom.RaiseToSentry(ctx, err)
-		appLogger.Fatal("Failed to connect to database", zap.Error(err))
+		appLogger.Fatal("failed to connect to database", zap.Error(err))
 	}
 	defer closeDBConn()
 
@@ -40,14 +40,14 @@ func main() {
 	valkeyClient, err := valkey.NewValkey(ctx)
 	if err != nil {
 		errorDom.RaiseToSentry(ctx, err)
-		appLogger.Fatal("Failed to connect to valkey", zap.Error(err))
+		appLogger.Fatal("failed to connect to valkey", zap.Error(err))
 	}
 
 	// Init cache
 	cache, err := cache.NewClient(ctx, valkeyClient)
 	if err != nil {
 		errorDom.RaiseToSentry(ctx, err)
-		appLogger.Fatal("Failed to connect to cache", zap.Error(err))
+		appLogger.Fatal("failed to connect to cache", zap.Error(err))
 	}
 
 	// automigrate database
@@ -55,7 +55,7 @@ func main() {
 		err = repository.AutoMigrate(dbPool)
 		if err != nil {
 			errorDom.RaiseToSentry(ctx, err)
-			appLogger.Fatal("Failed to migrate database", zap.Error(err))
+			appLogger.Fatal("failed to migrate database", zap.Error(err))
 		}
 	}
 
@@ -63,7 +63,7 @@ func main() {
 	infra, err := infra.New(ctx, valkeyClient)
 	if err != nil {
 		errorDom.RaiseToSentry(ctx, err)
-		appLogger.Fatal("Failed to initialize infra services", zap.Error(err))
+		appLogger.Fatal("failed to initialize infra services", zap.Error(err))
 	}
 
 	// Init repositories
