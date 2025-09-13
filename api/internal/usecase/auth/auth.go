@@ -118,11 +118,13 @@ func (a *authImpl) Verify(ctx context.Context, verifyToken string) error {
 		return errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "", nil, nil)
 	}
 
-	token, err := a.tokenUc.Fetch(ctx, &tokenDom.TokenIdentifier{
+	tokenIdentifier := &tokenDom.TokenIdentifier{
 		ID:       claims.JWTID,
 		EntityID: claims.Subject,
 		Purpose:  claims.Purpose,
-	})
+	}
+
+	token, err := a.tokenUc.Fetch(ctx, tokenIdentifier)
 	if err != nil {
 		return err
 	}
@@ -140,7 +142,11 @@ func (a *authImpl) Verify(ctx context.Context, verifyToken string) error {
 	}
 
 	_, err = a.createUser(ctx, email, username, password)
-	return err
+	if err != nil {
+		return err
+	}
+
+	return a.tokenUc.Delete(ctx, tokenIdentifier)
 }
 
 func (a *authImpl) ForgotPassword(ctx context.Context, input *authDom.ForgotPasswordInput) error {
