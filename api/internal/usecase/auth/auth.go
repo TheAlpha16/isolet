@@ -38,12 +38,12 @@ func (a *authImpl) Login(ctx context.Context, input *authDom.LoginInput) (*authD
 		return nil, errorDom.Raise(ctx, errorDom.ErrAuthInvalidCredentials, "", nil, nil)
 	}
 
-	activeSessionCount, err := a.tokenUc.CountAuthTokens(ctx, user.ID)
+	activeSessionCount, err := a.tokenUc.CountUserTokens(ctx, tokenDom.TokenAuth, user.ID)
 	if err != nil {
 		return nil, err
 	}
 	if activeSessionCount >= a.cvUc.GetInt(ctx, cvDom.AuthMaxSessions) {
-		return nil, errorDom.Raise(ctx, errorDom.ErrAuthMaxSessionsReached, "", nil, nil)
+		return nil, errorDom.Raise(ctx, errorDom.ErrAuthMaxSessionsReached, "max auth sessions reached", nil, nil)
 	}
 
 	token, jwtToken, err := a.generateAuthToken(ctx, user)
@@ -155,6 +155,14 @@ func (a *authImpl) ForgotPassword(ctx context.Context, input *authDom.ForgotPass
 			return nil
 		}
 		return err
+	}
+
+	activeSessionCount, err := a.tokenUc.CountUserTokens(ctx, tokenDom.TokenPasswordReset, user.ID)
+	if err != nil {
+		return err
+	}
+	if activeSessionCount >= a.cvUc.GetInt(ctx, cvDom.PasswordResetMaxSessions) {
+		return errorDom.Raise(ctx, errorDom.ErrAuthMaxSessionsReached, "max password reset sessions reached", nil, nil)
 	}
 
 	_, jwtToken, err := a.generatePasswordResetToken(ctx, user)

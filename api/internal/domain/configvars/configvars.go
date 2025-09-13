@@ -21,6 +21,7 @@ var (
 	EmailSender              = ConfigKey[string]{Name: "email_from", Default: "noreply@isolet.dev"}
 
 	// auth
-	AuthMaxSessions      = ConfigKey[int]{Name: "auth_max_sessions", Default: 5}
-	PasswordResetEnabled = ConfigKey[bool]{Name: "password_reset_enabled", Default: true}
+	AuthMaxSessions          = ConfigKey[int]{Name: "auth_max_sessions", Default: 5}
+	PasswordResetEnabled     = ConfigKey[bool]{Name: "password_reset_enabled", Default: true}
+	PasswordResetMaxSessions = ConfigKey[int]{Name: "password_reset_max_sessions", Default: 1}
 )
