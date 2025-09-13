@@ -2,12 +2,14 @@ package auth
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/TheAlpha16/isolet/api/infra/jwt"
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
 	cvDom "github.com/TheAlpha16/isolet/api/internal/domain/configvars"
+	emailDom "github.com/TheAlpha16/isolet/api/internal/domain/email"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	tokenDom "github.com/TheAlpha16/isolet/api/internal/domain/token"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
@@ -19,6 +21,7 @@ type authImpl struct {
 	userUc  userDom.Usecase
 	tokenUc tokenDom.Usecase
 	cvUc    cvDom.Usecase
+	emailUc emailDom.Usecase
 	jwtSvc  jwt.JWT
 }
 
@@ -51,19 +54,37 @@ func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (
 	}
 
 	// verify the email in case enabled
-	// TODO implement email send
-	token, err := a.createEmailVerificationToken(ctx, input.Email, input.Username, input.Password)
+	if a.cvUc.GetBool(ctx, cvDom.EmailVerification) {
+		_, jwtToken, err := a.generateEmailVerificationToken(ctx, input.Email, input.Username, input.Password)
+		if err != nil {
+			return nil, err
+		}
+
+		if err = a.emailUc.SendEmailAsync(ctx, &emailDom.EmailInput{
+			EmailIdentifier: emailDom.EmailIdentifier{
+				Username: input.Username,
+				To:       input.Email,
+			},
+			Type:  emailDom.TypeVerification,
+			Token: jwtToken,
+		}); err != nil {
+			return nil, err
+		}
+		return nil, nil
+	}
+
+	user, err := a.createUser(ctx, input.Email, input.Username, input.Password)
 	if err != nil {
 		return nil, err
 	}
 
-	jwtToken, err := a.jwtSvc.Sign(ctx, jwt.NewEmailVerificationClaims(token.ID, token.EntityID, token.ExpiresAt))
+	token, jwtToken, err := a.generateAuthToken(ctx, user)
 	if err != nil {
 		return nil, err
 	}
 
 	return &authDom.Session{
-		UserID:    6969,
+		UserID:    user.ID,
 		Token:     jwtToken,
 		ExpiresAt: token.ExpiresAt.Unix(),
 	}, nil
@@ -83,7 +104,7 @@ func (a *authImpl) ensureEmailAndUsernameAvailable(ctx context.Context, email, u
 	return nil
 }
 
-func (a *authImpl) createEmailVerificationToken(ctx context.Context, email, username, password string) (*tokenDom.Token, error) {
+func (a *authImpl) generateEmailVerificationToken(ctx context.Context, email, username, password string) (*tokenDom.Token, string, error) {
 	config := utils.GetConfig()
 	token := tokenDom.Token{
 		TokenIdentifier: tokenDom.TokenIdentifier{
@@ -108,9 +129,52 @@ func (a *authImpl) createEmailVerificationToken(ctx context.Context, email, user
 
 	err := a.tokenUc.Create(ctx, &token, extras)
 	if err != nil {
+		return nil, "", err
+	}
+
+	jwtToken, err := a.jwtSvc.Sign(ctx, jwt.NewEmailVerificationClaims(token.ID, token.EntityID, token.ExpiresAt))
+	if err != nil {
+		return nil, "", err
+	}
+	return &token, jwtToken, nil
+}
+
+func (a *authImpl) generateAuthToken(ctx context.Context, user *userDom.User) (*tokenDom.Token, string, error) {
+	config := utils.GetConfig()
+	token := tokenDom.Token{
+		TokenIdentifier: tokenDom.TokenIdentifier{
+			ID:       utils.RandomUUID(),
+			EntityID: fmt.Sprintf("%d", user.ID),
+			Purpose:  tokenDom.TokenAuth,
+		},
+	}
+	token.UpdateTime()
+	token.ExpiresAt = token.CreatedAt.Add(config.Token.AuthValidity)
+
+	err := a.tokenUc.Create(ctx, &token, nil)
+	if err != nil {
+		return nil, "", err
+	}
+
+	jwtToken, err := a.jwtSvc.Sign(ctx, jwt.NewAuthClaims(token.ID, user.ID, user.Role, token.ExpiresAt))
+	if err != nil {
+		return nil, "", err
+	}
+	return &token, jwtToken, nil
+}
+
+func (a *authImpl) createUser(ctx context.Context, email, username, password string) (*userDom.User, error) {
+	user := &userDom.User{
+		Email:    email,
+		Username: username,
+		Password: password,
+	}
+
+	user, err := a.userUc.Create(ctx, user)
+	if err != nil {
 		return nil, err
 	}
-	return &token, nil
+	return user, nil
 }
 
 func New(repo authDom.Repository, userUc userDom.Usecase, tokenUc tokenDom.Usecase, cvUc cvDom.Usecase, jwtSvc jwt.JWT) authDom.Usecase {

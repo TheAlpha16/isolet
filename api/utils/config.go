@@ -56,6 +56,7 @@ type Config struct {
 	Token struct {
 		SigningKey                string        `env:"TOKEN_SIGNING_KEY" envDefault:"trustmebro"`
 		EmailVerificationValidity time.Duration `env:"TOKEN_EMAIL_VERIFICATION_VALIDITY" envDefault:"600s"`
+		AuthValidity              time.Duration `env:"TOKEN_AUTH_VALIDITY" envDefault:"24h"`
 	}
 
 	CNC struct {
