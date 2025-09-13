@@ -82,7 +82,8 @@ func (claims *Claims) Validate(ctx context.Context) error {
 
 func JWTTokenToClaims(ctx context.Context, token jwt.Token) (*Claims, error) {
 	var claims Claims
-	var purpose string
+	var roleString, purpose string
+	var userIDFloat float64
 	var ok bool
 
 	if claims.JWTID, ok = token.JwtID(); !ok {
@@ -98,14 +99,23 @@ func JWTTokenToClaims(ctx context.Context, token jwt.Token) (*Claims, error) {
 		return nil, errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "iat is missing", nil, nil)
 	}
 
-	// These are optional - only parse if present
-	token.Get(userIDClaim, &claims.UserID)
-	token.Get(roleClaim, &claims.Role)
-
 	if err := token.Get(purposeClaim, &purpose); err != nil {
 		return nil, errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "purpose is missing", nil, nil)
 	}
 	claims.Purpose = tokenDom.TokenPurpose(purpose)
+
+	// These are optional - only parse if present
+	token.Get(userIDClaim, &userIDFloat)
+	token.Get(roleClaim, &roleString)
+
+	if userIDFloat != 0 {
+		userID := int64(userIDFloat)
+		claims.UserID = &userID
+	}
+	if roleString != "" {
+		userRole := userDom.Role(roleString)
+		claims.Role = &userRole
+	}
 
 	return &claims, claims.Validate(ctx)
 }
