@@ -21,6 +21,10 @@ func (u *userImpl) Update(ctx context.Context, user *userDom.User) error {
 	return u.repo.Update(ctx, user)
 }
 
+func (u *userImpl) GetByUsernameOrEmail(ctx context.Context, identifier string) (*userDom.User, error) {
+	return u.repo.GetByUsernameOrEmail(ctx, identifier)
+}
+
 func (u *userImpl) ExistsByEmailOrUsername(ctx context.Context, email, username string) (*userDom.IdentifierExistence, error) {
 	exists := userDom.IdentifierExistence{
 		EmailExists:    false,

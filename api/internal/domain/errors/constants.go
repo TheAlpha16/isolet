@@ -27,6 +27,7 @@ const (
 	ErrUserInvalidRole   ErrorCode = "USER-00"
 	ErrUserEmailTaken    ErrorCode = "USER-01"
 	ErrUserUsernameTaken ErrorCode = "USER-02"
+	ErrUserNotFound      ErrorCode = "USER-03"
 
 	// DB errors
 	ErrDBCreateError ErrorCode = "DB-00"
@@ -58,6 +59,9 @@ const (
 	ErrEmailTemplateFetch   ErrorCode = "EMAIL-01"
 	ErrEmailTemplateExecute ErrorCode = "EMAIL-02"
 	ErrEmailLinkBuild       ErrorCode = "EMAIL-03"
+
+	// Auth errors
+	ErrAuthInvalidCredentials ErrorCode = "AUTH-00"
 )
 
 // Map of error codes to user-facing messages
@@ -75,6 +79,7 @@ var msgMap = map[ErrorCode]string{
 	ErrUserInvalidRole:   "invalid user role",
 	ErrUserEmailTaken:    "email is already taken",
 	ErrUserUsernameTaken: "username is already taken",
+	ErrUserNotFound:      "user not found",
 
 	// Cache errors
 	ErrCacheMiss:           "cache miss",
@@ -100,6 +105,9 @@ var msgMap = map[ErrorCode]string{
 	ErrEmailTemplateFetch:   "failed to fetch email template",
 	ErrEmailTemplateExecute: "failed to execute email template",
 	ErrEmailLinkBuild:       "failed to build email link",
+
+	// Auth errors
+	ErrAuthInvalidCredentials: "invalid credentials",
 }
 
 // Map of server-side error codes that need to be filtered

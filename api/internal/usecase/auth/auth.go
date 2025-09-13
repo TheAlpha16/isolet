@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/TheAlpha16/isolet/api/infra/jwt"
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
@@ -26,17 +25,28 @@ type authImpl struct {
 }
 
 func (a *authImpl) Login(ctx context.Context, input *authDom.LoginInput) (*authDom.Session, error) {
-	// hash the password
-	hashedPassword, err := utils.HashPassword(input.Password)
+	user, err := a.userUc.GetByUsernameOrEmail(ctx, input.Email)
 	if err != nil {
-		return nil, errorDom.RaiseInternal(ctx, "failed to hash password", err, common.ExtraData{"password": input.Password})
+		if errorDom.IsSameError(err, errorDom.ErrUserNotFound) {
+			return nil, errorDom.Raise(ctx, errorDom.ErrAuthInvalidCredentials, "", nil, nil)
+		}
+		return nil, err
 	}
-	input.Password = hashedPassword
+
+	// verify the password
+	if !utils.ComparePassword(user.Password, input.Password) {
+		return nil, errorDom.Raise(ctx, errorDom.ErrAuthInvalidCredentials, "", nil, nil)
+	}
+
+	token, jwtToken, err := a.generateAuthToken(ctx, user)
+	if err != nil {
+		return nil, err
+	}
 
 	return &authDom.Session{
-		UserID:    6969,
-		Token:     "some-token-here",
-		ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
+		UserID:    user.ID,
+		Token:     jwtToken,
+		ExpiresAt: token.ExpiresAt.Unix(),
 	}, nil
 }
 
