@@ -11,4 +11,5 @@ func RegisterAuth(router fiber.Router, authHandler authHan.AuthHandler) {
 	authRouter := router.Group(utils.RouteAuth)
 	authRouter.Post(utils.RouteAuthLogin, authHandler.Login)
 	authRouter.Post(utils.RouteAuthRegister, authHandler.Register)
+	authRouter.Post(utils.RouteAuthVerify, authHandler.Verify)
 }
