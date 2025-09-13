@@ -16,9 +16,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func New(
-	usecases *usecase.Usecases,
-) *fiber.App {
+func New(usecases *usecase.Usecases) *fiber.App {
 	config := utils.GetConfig()
 	app := fiber.New(
 		fiber.Config{
