@@ -7,9 +7,11 @@ const (
 
 // auth routes
 const (
-	RouteAuthRegister = "/register"
-	RouteAuthLogin    = "/login"
-	RouteAuthVerify   = "/verify"
+	RouteAuthRegister       = "/register"
+	RouteAuthLogin          = "/login"
+	RouteAuthVerify         = "/verify"
+	RouteAuthForgotPassword = "/forgot-password"
+	RouteAuthResetPassword  = "/reset-password"
 )
 
 // misc routes
@@ -21,4 +23,10 @@ const (
 const (
 	AuthTokenCookieName = "token"
 	TokenQueryKey       = "token"
+)
+
+// context keys
+const (
+	ContextKeyUserID = "user_id"
+	ContextKeyRole   = "role"
 )

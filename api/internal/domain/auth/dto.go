@@ -28,3 +28,11 @@ func (r *RegisterInput) Validate(ctx context.Context) error {
 type RegisterOutput struct {
 	Session *Session
 }
+
+type ForgotPasswordInput struct {
+	Email string `json:"email" validate:"required,email,max=320"`
+}
+
+func (f *ForgotPasswordInput) Validate(ctx context.Context) error {
+	return validator.Validate(ctx, f)
+}

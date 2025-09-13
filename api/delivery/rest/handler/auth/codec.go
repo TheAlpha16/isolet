@@ -41,3 +41,18 @@ func decodeRegisterInput(c *fiber.Ctx) (*authDom.RegisterInput, error) {
 	}
 	return &input, nil
 }
+
+func decodeForgotPasswordInput(c *fiber.Ctx) (*authDom.ForgotPasswordInput, error) {
+	var input authDom.ForgotPasswordInput
+	if err := c.BodyParser(&input); err != nil {
+		return nil, errorDom.Raise(c.UserContext(), errorDom.ErrRestInvalidPayload, "", err, nil)
+	}
+
+	// normalize
+	input.Email = strings.TrimSpace(strings.ToLower(input.Email))
+
+	if err := input.Validate(c.UserContext()); err != nil {
+		return nil, err
+	}
+	return &input, nil
+}

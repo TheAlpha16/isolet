@@ -72,7 +72,7 @@ func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (
 	}
 
 	// verify the email in case enabled
-	if a.cvUc.GetBool(ctx, cvDom.EmailVerification) {
+	if a.cvUc.GetBool(ctx, cvDom.EmailVerificationEnabled) {
 		_, jwtToken, err := a.generateEmailVerificationToken(ctx, input.Email, input.Username, input.Password)
 		if err != nil {
 			return nil, err
@@ -143,6 +143,35 @@ func (a *authImpl) Verify(ctx context.Context, verifyToken string) error {
 	return err
 }
 
+func (a *authImpl) ForgotPassword(ctx context.Context, input *authDom.ForgotPasswordInput) error {
+	if !a.cvUc.GetBool(ctx, cvDom.PasswordResetEnabled) {
+		return errorDom.Raise(ctx, errorDom.ErrAuthPasswordResetDisabled, "", nil, nil)
+	}
+
+	user, err := a.userUc.GetByEmailOrUsername(ctx, input.Email, "")
+	if err != nil {
+		if errorDom.IsSameError(err, errorDom.ErrUserNotFound) {
+			// user not found -> do nothing
+			return nil
+		}
+		return err
+	}
+
+	_, jwtToken, err := a.generatePasswordResetToken(ctx, user)
+	if err != nil {
+		return err
+	}
+
+	return a.emailUc.SendEmailAsync(ctx, &emailDom.EmailInput{
+		EmailIdentifier: emailDom.EmailIdentifier{
+			Username: user.Username,
+			To:       user.Email,
+		},
+		Type:  emailDom.TypePasswordReset,
+		Token: jwtToken,
+	})
+}
+
 func (a *authImpl) generateEmailVerificationToken(ctx context.Context, email, username, password string) (*tokenDom.Token, string, error) {
 	config := utils.GetConfig()
 	token := tokenDom.Token{
@@ -196,6 +225,30 @@ func (a *authImpl) generateAuthToken(ctx context.Context, user *userDom.User) (*
 	}
 
 	jwtToken, err := a.jwtSvc.Sign(ctx, jwt.NewAuthClaims(token.ID, user.ID, user.Role, token.ExpiresAt))
+	if err != nil {
+		return nil, "", err
+	}
+	return &token, jwtToken, nil
+}
+
+func (a *authImpl) generatePasswordResetToken(ctx context.Context, user *userDom.User) (*tokenDom.Token, string, error) {
+	config := utils.GetConfig()
+	token := tokenDom.Token{
+		TokenIdentifier: tokenDom.TokenIdentifier{
+			ID:       utils.RandomUUID(),
+			EntityID: fmt.Sprintf("%d", user.ID),
+			Purpose:  tokenDom.TokenPasswordReset,
+		},
+	}
+	token.UpdateTime()
+	token.ExpiresAt = token.CreatedAt.Add(config.Token.PasswordResetValidity)
+
+	err := a.tokenUc.Create(ctx, &token, nil)
+	if err != nil {
+		return nil, "", err
+	}
+
+	jwtToken, err := a.jwtSvc.Sign(ctx, jwt.NewPasswordResetClaims(token.ID, user.ID, token.ExpiresAt))
 	if err != nil {
 		return nil, "", err
 	}

@@ -34,8 +34,8 @@ type config struct {
 }
 
 var configs = map[emailDom.Type]config{
-	emailDom.TypeVerification: {Subject: "Verify your email", Template: "templates/verification.html", RedirectPath: utils.RouteAuthVerify},
-	// emailDom.TypePasswordReset: {Subject: "Password Reset", Template: "templates/password_reset.html", RedirectPath: "/reset"},
+	emailDom.TypeVerification:  {Subject: "Verify your email", Template: "templates/verification.html", RedirectPath: utils.RouteAuthVerify},
+	emailDom.TypePasswordReset: {Subject: "Password Reset", Template: "templates/password_reset.html", RedirectPath: "/reset"},
 }
 
 func (e *emailImpl) SendEmailAsync(ctx context.Context, input *emailDom.EmailInput) error {

@@ -62,8 +62,9 @@ const (
 	ErrEmailLinkBuild       ErrorCode = "EMAIL-03"
 
 	// Auth errors
-	ErrAuthInvalidCredentials ErrorCode = "AUTH-00"
-	ErrAuthMaxSessionsReached ErrorCode = "AUTH-01"
+	ErrAuthInvalidCredentials    ErrorCode = "AUTH-00"
+	ErrAuthMaxSessionsReached    ErrorCode = "AUTH-01"
+	ErrAuthPasswordResetDisabled ErrorCode = "AUTH-02"
 )
 
 // Map of error codes to user-facing messages
@@ -110,8 +111,9 @@ var msgMap = map[ErrorCode]string{
 	ErrEmailLinkBuild:       "failed to build email link",
 
 	// Auth errors
-	ErrAuthInvalidCredentials: "invalid credentials",
-	ErrAuthMaxSessionsReached: "maximum sessions reached",
+	ErrAuthInvalidCredentials:    "invalid credentials",
+	ErrAuthMaxSessionsReached:    "maximum sessions reached",
+	ErrAuthPasswordResetDisabled: "password reset is disabled",
 }
 
 // Map of server-side error codes that need to be filtered
@@ -142,5 +144,6 @@ var AuthErrors = map[ErrorCode]struct{}{
 
 // Map of forbidden error codes
 var ForbiddenErrors = map[ErrorCode]struct{}{
-	ErrAuthMaxSessionsReached: {},
+	ErrAuthMaxSessionsReached:    {},
+	ErrAuthPasswordResetDisabled: {},
 }
