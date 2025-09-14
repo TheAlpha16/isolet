@@ -33,5 +33,6 @@ const (
 // context keys
 const (
 	ContextKeyUserID = "user_id"
+	ContextKeyTeamID = "team_id"
 	ContextKeyRole   = "role"
 )
