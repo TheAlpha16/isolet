@@ -2,13 +2,16 @@ package routes
 
 import (
 	teamHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/team"
+	"github.com/TheAlpha16/isolet/api/delivery/rest/middleware"
+	"github.com/TheAlpha16/isolet/api/infra/jwt"
+	tokenDom "github.com/TheAlpha16/isolet/api/internal/domain/token"
 	"github.com/TheAlpha16/isolet/api/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-func RegisterTeam(router fiber.Router, teamHandler teamHan.TeamHandler) {
-	teamRouter := router.Group(utils.RouteTeam)
-	teamRouter.Post(utils.RouteTeamCreate, teamHandler.Create)
-	teamRouter.Post(utils.RouteTeamJoin, teamHandler.Join)
+func RegisterTeam(router fiber.Router, teamHandler teamHan.TeamHandler, tokenUc tokenDom.Usecase, jwtSvc jwt.JWT) {
+	teamRouter := router.Group(utils.RouteTeam, middleware.AuthMiddleware(tokenUc, jwtSvc))
+	teamRouter.Post(utils.RouteTeamCreate, middleware.RequireEmptyTeamMiddleware(), teamHandler.Create)
+	teamRouter.Post(utils.RouteTeamJoin, middleware.RequireEmptyTeamMiddleware(), teamHandler.Join)
 }

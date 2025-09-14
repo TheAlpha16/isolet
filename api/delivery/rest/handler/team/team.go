@@ -1,6 +1,11 @@
 package team
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/TheAlpha16/isolet/api/delivery/rest/response"
+	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
+
+	"github.com/gofiber/fiber/v2"
+)
 
 type TeamHandler interface {
 	Create(c *fiber.Ctx) error
@@ -8,16 +13,27 @@ type TeamHandler interface {
 }
 
 type teamHandler struct {
+	teamUc teamDom.Usecase
 }
 
 func (h *teamHandler) Create(c *fiber.Ctx) error {
-	return nil
+	input, err := decodeCreateRequest(c)
+	if err != nil {
+		return err
+	}
+
+	session, err := h.teamUc.Create(c.UserContext(), input)
+	if err != nil {
+		return err
+	}
+	c.Cookie(response.BuildAuthCookie(session))
+	return c.Status(fiber.StatusCreated).JSON(response.Success("team created successfully", session))
 }
 
 func (h *teamHandler) Join(c *fiber.Ctx) error {
 	return nil
 }
 
-func NewTeamHandler() TeamHandler {
+func NewTeamHandler(teamUsecase teamDom.Usecase) TeamHandler {
 	return &teamHandler{}
 }
