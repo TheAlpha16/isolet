@@ -10,9 +10,9 @@ import (
 type Usecase interface {
 	Login(ctx context.Context, input *LoginInput) (*Session, error)
 	Register(ctx context.Context, input *RegisterInput) (*Session, error)
-	Verify(ctx context.Context, token string) error
+	Verify(ctx context.Context, verifyToken string) error
 	ForgotPassword(ctx context.Context, input *ForgotPasswordInput) error
 	ResetPassword(ctx context.Context, input *ResetPasswordInput) error
-	
+
 	GenerateAuthToken(ctx context.Context, user *userDom.User) (*tokenDom.Token, string, error)
 }
