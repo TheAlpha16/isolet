@@ -34,6 +34,6 @@ func (h *teamHandler) Join(c *fiber.Ctx) error {
 	return nil
 }
 
-func NewTeamHandler(teamUsecase teamDom.Usecase) TeamHandler {
-	return &teamHandler{}
+func New(teamUsecase teamDom.Usecase) TeamHandler {
+	return &teamHandler{teamUc: teamUsecase}
 }
