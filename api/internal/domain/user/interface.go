@@ -6,6 +6,7 @@ type Usecase interface {
 	Create(ctx context.Context, user *User) (*User, error)
 	Update(ctx context.Context, user *User, fields []string) error
 	GetByEmailOrUsername(ctx context.Context, email, username string) (*User, error)
+	GetByID(ctx context.Context, id int64) (*User, error)
 
 	// ExistsByEmailOrUsername checks whether the given email or username exists.
 	// It queries the cache first (email, then username) and returns immediately
@@ -17,4 +18,5 @@ type Repository interface {
 	Create(ctx context.Context, user *User) (*User, error)
 	Update(ctx context.Context, user *User, fields []string) error
 	GetByEmailOrUsername(ctx context.Context, email, username string) (*User, error)
+	GetByID(ctx context.Context, id int64) (*User, error)
 }

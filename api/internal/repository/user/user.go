@@ -60,6 +60,17 @@ func (userRepo *userRepo) GetByEmailOrUsername(ctx context.Context, email, usern
 	return user.ToDomain(ctx)
 }
 
+func (userRepo *userRepo) GetByID(ctx context.Context, id int64) (*userDom.User, error) {
+	var user User
+	if err := userRepo.db.WithContext(ctx).First(&user, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errorDom.Raise(ctx, errorDom.ErrUserNotFound, "", err, nil)
+		}
+		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to get user", err, nil)
+	}
+	return user.ToDomain(ctx)
+}
+
 func New(db *gorm.DB) userDom.Repository {
 	return &userRepo{
 		db: db,

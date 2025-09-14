@@ -25,6 +25,10 @@ func (u *userImpl) GetByEmailOrUsername(ctx context.Context, email, username str
 	return u.repo.GetByEmailOrUsername(ctx, email, username)
 }
 
+func (u *userImpl) GetByID(ctx context.Context, id int64) (*userDom.User, error) {
+	return u.repo.GetByID(ctx, id)
+}
+
 func (u *userImpl) ExistsByEmailOrUsername(ctx context.Context, email, username string) error {
 	emailTaken := errorDom.Raise(ctx, errorDom.ErrUserEmailTaken, "", nil, nil)
 	usernameTaken := errorDom.Raise(ctx, errorDom.ErrUserUsernameTaken, "", nil, nil)
