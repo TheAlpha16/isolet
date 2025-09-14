@@ -45,7 +45,7 @@ func (a *authImpl) Login(ctx context.Context, input *authDom.LoginInput) (*authD
 		return nil, errorDom.Raise(ctx, errorDom.ErrAuthMaxSessionsReached, "max auth sessions reached", nil, nil)
 	}
 
-	token, jwtToken, err := a.generateAuthToken(ctx, user)
+	token, jwtToken, err := a.GenerateAuthToken(ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (
 		return nil, err
 	}
 
-	token, jwtToken, err := a.generateAuthToken(ctx, user)
+	token, jwtToken, err := a.GenerateAuthToken(ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -260,7 +260,7 @@ func (a *authImpl) generateEmailVerificationToken(ctx context.Context, email, us
 	return &token, jwtToken, nil
 }
 
-func (a *authImpl) generateAuthToken(ctx context.Context, user *userDom.User) (*tokenDom.Token, string, error) {
+func (a *authImpl) GenerateAuthToken(ctx context.Context, user *userDom.User) (*tokenDom.Token, string, error) {
 	config := utils.GetConfig()
 	token := tokenDom.Token{
 		TokenIdentifier: tokenDom.TokenIdentifier{
