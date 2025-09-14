@@ -1,7 +1,7 @@
 -- ### FUNCTIONS ###
 
 -- function to join a team; enforces team limit
-CREATE OR REPLACE FUNCTION join_team(teamid bigint, user_id bigint, user_limit integer)
+CREATE OR REPLACE FUNCTION join_team(user_id bigint, teamid bigint, user_limit integer)
 RETURNS void AS $$
 DECLARE
     user_count integer;
