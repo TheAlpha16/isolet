@@ -42,7 +42,7 @@ func (a *authImpl) Login(ctx context.Context, input *authDom.LoginInput) (*authD
 		return nil, errorDom.Raise(ctx, errorDom.ErrAuthUserBanned, "", nil, nil)
 	}
 
-	activeSessionCount, err := a.tokenUc.CountUserTokens(ctx, tokenDom.TokenAuth, user.ID)
+	activeSessionCount, err := a.tokenUc.CountEntityTokens(ctx, tokenDom.TokenAuth, fmt.Sprintf("%d", user.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func (a *authImpl) ForgotPassword(ctx context.Context, input *authDom.ForgotPass
 		return err
 	}
 
-	activeSessionCount, err := a.tokenUc.CountUserTokens(ctx, tokenDom.TokenPasswordReset, user.ID)
+	activeSessionCount, err := a.tokenUc.CountEntityTokens(ctx, tokenDom.TokenPasswordReset, fmt.Sprintf("%d", user.ID))
 	if err != nil {
 		return err
 	}
@@ -230,6 +230,30 @@ func (a *authImpl) ResetPassword(ctx context.Context, input *authDom.ResetPasswo
 	return a.tokenUc.Delete(ctx, tokenIdentifier)
 }
 
+func (a *authImpl) GenerateAuthToken(ctx context.Context, user *userDom.User) (*tokenDom.Token, string, error) {
+	config := utils.GetConfig()
+	token := tokenDom.Token{
+		TokenIdentifier: tokenDom.TokenIdentifier{
+			ID:       utils.RandomUUID(),
+			EntityID: fmt.Sprintf("%d", user.ID),
+			Purpose:  tokenDom.TokenAuth,
+		},
+	}
+	token.UpdateTime()
+	token.ExpiresAt = token.CreatedAt.Add(config.Token.AuthValidity)
+
+	err := a.tokenUc.Create(ctx, &token, nil)
+	if err != nil {
+		return nil, "", err
+	}
+
+	jwtToken, err := a.jwtSvc.Sign(ctx, jwt.NewAuthClaims(token.ID, user.ID, user.TeamID, user.Role, token.ExpiresAt))
+	if err != nil {
+		return nil, "", err
+	}
+	return &token, jwtToken, nil
+}
+
 func (a *authImpl) generateEmailVerificationToken(ctx context.Context, email, username, password string) (*tokenDom.Token, string, error) {
 	config := utils.GetConfig()
 	token := tokenDom.Token{
@@ -259,30 +283,6 @@ func (a *authImpl) generateEmailVerificationToken(ctx context.Context, email, us
 	}
 
 	jwtToken, err := a.jwtSvc.Sign(ctx, jwt.NewEmailVerificationClaims(token.ID, token.EntityID, token.ExpiresAt))
-	if err != nil {
-		return nil, "", err
-	}
-	return &token, jwtToken, nil
-}
-
-func (a *authImpl) GenerateAuthToken(ctx context.Context, user *userDom.User) (*tokenDom.Token, string, error) {
-	config := utils.GetConfig()
-	token := tokenDom.Token{
-		TokenIdentifier: tokenDom.TokenIdentifier{
-			ID:       utils.RandomUUID(),
-			EntityID: fmt.Sprintf("%d", user.ID),
-			Purpose:  tokenDom.TokenAuth,
-		},
-	}
-	token.UpdateTime()
-	token.ExpiresAt = token.CreatedAt.Add(config.Token.AuthValidity)
-
-	err := a.tokenUc.Create(ctx, &token, nil)
-	if err != nil {
-		return nil, "", err
-	}
-
-	jwtToken, err := a.jwtSvc.Sign(ctx, jwt.NewAuthClaims(token.ID, user.ID, user.TeamID, user.Role, token.ExpiresAt))
 	if err != nil {
 		return nil, "", err
 	}

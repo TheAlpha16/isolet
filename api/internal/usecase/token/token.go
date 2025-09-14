@@ -2,7 +2,6 @@ package token
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/TheAlpha16/isolet/api/infra/cache"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
@@ -50,10 +49,10 @@ func (t *tokenImpl) Delete(ctx context.Context, id *tokenDom.TokenIdentifier) er
 	return t.cache.Delete(ctx, id.Key())
 }
 
-func (t *tokenImpl) CountUserTokens(ctx context.Context, purpose tokenDom.TokenPurpose, userID int64) (int, error) {
+func (t *tokenImpl) CountEntityTokens(ctx context.Context, purpose tokenDom.TokenPurpose, entityID string) (int, error) {
 	tokenIdentifier := &tokenDom.TokenIdentifier{
 		ID:       "*",
-		EntityID: fmt.Sprintf("%d", userID),
+		EntityID: entityID,
 		Purpose:  purpose,
 	}
 	keys, err := t.cache.GetKeys(ctx, tokenIdentifier.Key())
@@ -63,10 +62,10 @@ func (t *tokenImpl) CountUserTokens(ctx context.Context, purpose tokenDom.TokenP
 	return len(keys), nil
 }
 
-func (t *tokenImpl) RevokeUserTokens(ctx context.Context, purpose tokenDom.TokenPurpose, userID int64) error {
+func (t *tokenImpl) RevokeEntityTokens(ctx context.Context, purpose tokenDom.TokenPurpose, entityID string) error {
 	tokenIdentifier := &tokenDom.TokenIdentifier{
 		ID:       "*",
-		EntityID: fmt.Sprintf("%d", userID),
+		EntityID: entityID,
 		Purpose:  purpose,
 	}
 	keys, err := t.cache.GetKeys(ctx, tokenIdentifier.Key())

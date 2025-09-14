@@ -7,8 +7,9 @@ type Usecase interface {
 	// Optionally, additional key-value pairs can be provided via extras.
 	// The token and extras are written atomically, and all keys share the same TTL.
 	Create(ctx context.Context, token *Token, extras map[string]string) error
+
 	Fetch(ctx context.Context, id *TokenIdentifier) (*Token, error)
 	Delete(ctx context.Context, id *TokenIdentifier) error
-	CountUserTokens(ctx context.Context, purpose TokenPurpose, userID int64) (int, error)
-	RevokeUserTokens(ctx context.Context, purpose TokenPurpose, userID int64) error
+	CountEntityTokens(ctx context.Context, purpose TokenPurpose, entityID string) (int, error)
+	RevokeEntityTokens(ctx context.Context, purpose TokenPurpose, entityID string) error
 }
