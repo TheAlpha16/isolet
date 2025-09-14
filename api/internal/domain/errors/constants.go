@@ -27,10 +27,11 @@ const (
 	ErrRestMissingToken   ErrorCode = "REST-01"
 
 	// User errors
-	ErrUserInvalidRole   ErrorCode = "USER-00"
-	ErrUserEmailTaken    ErrorCode = "USER-01"
-	ErrUserUsernameTaken ErrorCode = "USER-02"
-	ErrUserNotFound      ErrorCode = "USER-03"
+	ErrUserInvalidRole     ErrorCode = "USER-00"
+	ErrUserEmailTaken      ErrorCode = "USER-01"
+	ErrUserUsernameTaken   ErrorCode = "USER-02"
+	ErrUserNotFound        ErrorCode = "USER-03"
+	ErrUserInsufficentRole ErrorCode = "USER-04"
 
 	// DB errors
 	ErrDBCreateError ErrorCode = "DB-00"
@@ -84,10 +85,11 @@ var msgMap = map[ErrorCode]string{
 	ErrRestMissingToken:   "token required for verification",
 
 	// User errors
-	ErrUserInvalidRole:   "invalid user role",
-	ErrUserEmailTaken:    "email is already taken",
-	ErrUserUsernameTaken: "username is already taken",
-	ErrUserNotFound:      "user not found",
+	ErrUserInvalidRole:     "invalid user role",
+	ErrUserEmailTaken:      "email is already taken",
+	ErrUserUsernameTaken:   "username is already taken",
+	ErrUserNotFound:        "user not found",
+	ErrUserInsufficentRole: "missing required role",
 
 	// Cache errors
 	ErrCacheMiss:           "cache miss",
@@ -153,4 +155,5 @@ var AuthErrors = map[ErrorCode]struct{}{
 var ForbiddenErrors = map[ErrorCode]struct{}{
 	ErrAuthMaxSessionsReached:    {},
 	ErrAuthPasswordResetDisabled: {},
+	ErrUserInsufficentRole:       {},
 }
