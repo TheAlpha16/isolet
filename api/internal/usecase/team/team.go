@@ -61,13 +61,13 @@ func (t *teamImpl) Join(ctx context.Context, input *teamDom.JoinInput) (*authDom
 		return nil, errorDom.Raise(ctx, errorDom.ErrAuthInvalidCredentials, "", nil, nil)
 	}
 
-	user, err := t.userUc.GetByID(ctx, userID)
-	if err != nil {
+	// update the user's team
+	if err := t.userUc.JoinTeam(ctx, userID, team.ID); err != nil {
 		return nil, err
 	}
 
-	// update the user's team
-	if err := t.userUc.JoinTeam(ctx, userID, team.ID); err != nil {
+	user, err := t.userUc.GetByID(ctx, userID)
+	if err != nil {
 		return nil, err
 	}
 
