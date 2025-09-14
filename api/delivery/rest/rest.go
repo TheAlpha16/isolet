@@ -5,6 +5,7 @@ import (
 
 	authHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/auth"
 	healthHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/health"
+	teamHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/team"
 	"github.com/TheAlpha16/isolet/api/delivery/rest/middleware"
 	"github.com/TheAlpha16/isolet/api/delivery/rest/routes"
 	"github.com/TheAlpha16/isolet/api/infra"
@@ -39,11 +40,13 @@ func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
 	// Init handlers
 	healthHandler := healthHan.New()
 	authHandler := authHan.New(usecases.Auth)
+	teamHandler := teamHan.New(usecases.Team)
 
 	// Setup routes
 	apiRouter := app.Group(config.Rest.APIVersionPrefix)
 	routes.RegisterHealth(apiRouter, healthHandler)
 	routes.RegisterAuth(apiRouter, authHandler)
+	routes.RegisterTeam(apiRouter, teamHandler, usecases.Token, infra.JWT)
 
 	return app
 }
