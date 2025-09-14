@@ -28,6 +28,6 @@ func RequireEmptyTeamMiddleware() fiber.Handler {
 			return c.Next()
 		}
 
-		return errorDom.Raise(userCtx, errorDom.ErrTeamRequired, "", nil, nil)
+		return errorDom.Raise(userCtx, errorDom.ErrTeamJoined, "", nil, nil)
 	}
 }
