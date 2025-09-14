@@ -30,5 +30,5 @@ func New(db *gorm.DB) *Repositories {
 }
 
 func AutoMigrate(db *gorm.DB) error {
-	return db.AutoMigrate(&userRepo.User{}, &cvRepo.ConfigVars{})
+	return db.AutoMigrate(&userRepo.User{}, &cvRepo.ConfigVars{}, &teamRepo.Team{})
 }
