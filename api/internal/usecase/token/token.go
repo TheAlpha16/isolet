@@ -63,6 +63,25 @@ func (t *tokenImpl) CountUserTokens(ctx context.Context, purpose tokenDom.TokenP
 	return len(keys), nil
 }
 
+func (t *tokenImpl) RevokeUserTokens(ctx context.Context, purpose tokenDom.TokenPurpose, userID int64) error {
+	tokenIdentifier := &tokenDom.TokenIdentifier{
+		ID:       "*",
+		EntityID: fmt.Sprintf("%d", userID),
+		Purpose:  purpose,
+	}
+	keys, err := t.cache.GetKeys(ctx, tokenIdentifier.Key())
+	if err != nil {
+		return err
+	}
+
+	for _, key := range keys {
+		if err := t.cache.Delete(ctx, key); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func New(cache cache.Cache) tokenDom.Usecase {
 	return &tokenImpl{
 		cache: cache,

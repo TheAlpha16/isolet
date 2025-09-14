@@ -10,4 +10,5 @@ type Usecase interface {
 	Fetch(ctx context.Context, id *TokenIdentifier) (*Token, error)
 	Delete(ctx context.Context, id *TokenIdentifier) error
 	CountUserTokens(ctx context.Context, purpose TokenPurpose, userID int64) (int, error)
+	RevokeUserTokens(ctx context.Context, purpose TokenPurpose, userID int64) error
 }
