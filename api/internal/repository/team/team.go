@@ -2,6 +2,7 @@ package team
 
 import (
 	"context"
+	"errors"
 
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
@@ -25,6 +26,9 @@ func (t *teamRepo) Create(ctx context.Context, team *teamDom.Team) (*teamDom.Tea
 	err = t.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// create the team
 		if err := tx.Create(teamModel).Error; err != nil {
+			if errors.Is(err, gorm.ErrDuplicatedKey) {
+				return errorDom.Raise(ctx, errorDom.ErrTeamNameTaken, "", err, nil)
+			}
 			return errorDom.Raise(ctx, errorDom.ErrDBCreateError, "failed to create team", err, nil)
 		}
 

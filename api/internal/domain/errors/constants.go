@@ -36,6 +36,7 @@ const (
 	// Team errors
 	ErrTeamRequired      ErrorCode = "TEAM-00"
 	ErrTeamAlreadyJoined ErrorCode = "TEAM-01"
+	ErrTeamNameTaken     ErrorCode = "TEAM-02"
 
 	// DB errors
 	ErrDBCreateError ErrorCode = "DB-00"
@@ -98,6 +99,7 @@ var msgMap = map[ErrorCode]string{
 	// Team errors
 	ErrTeamRequired:      "need to be a member of a team",
 	ErrTeamAlreadyJoined: "user is already in a team",
+	ErrTeamNameTaken:     "team name is already taken",
 
 	// Cache errors
 	ErrCacheMiss:           "cache miss",
