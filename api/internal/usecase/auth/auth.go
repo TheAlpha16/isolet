@@ -278,7 +278,7 @@ func (a *authImpl) generateAuthToken(ctx context.Context, user *userDom.User) (*
 		return nil, "", err
 	}
 
-	jwtToken, err := a.jwtSvc.Sign(ctx, jwt.NewAuthClaims(token.ID, user.ID, user.Role, token.ExpiresAt))
+	jwtToken, err := a.jwtSvc.Sign(ctx, jwt.NewAuthClaims(token.ID, user.ID, user.TeamID, user.Role, token.ExpiresAt))
 	if err != nil {
 		return nil, "", err
 	}

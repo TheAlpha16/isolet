@@ -16,6 +16,7 @@ import (
 
 const (
 	userIDClaim  string = "user_id"
+	teamIDClaim  string = "team_id"
 	roleClaim    string = "role"
 	purposeClaim string = "purpose"
 )
@@ -23,11 +24,12 @@ const (
 type Claims struct {
 	JWTID     string                `validate:"required"`
 	Subject   string                `validate:"required"`
-	UserID    *int64                `validate:"omitempty"`
-	Role      *userDom.Role         `validate:"omitempty,role"`
 	Purpose   tokenDom.TokenPurpose `validate:"required,token_purpose"`
 	CreatedAt time.Time             `validate:"required"`
 	ExpiresAt time.Time             `validate:"required"`
+	UserID    *int64                `validate:"omitempty"`
+	TeamID    *int64                `validate:"omitempty"`
+	Role      *userDom.Role         `validate:"omitempty,role"`
 }
 
 func (claims *Claims) ToJWTToken(ctx context.Context) (jwt.Token, error) {
@@ -46,6 +48,9 @@ func (claims *Claims) ToJWTToken(ctx context.Context) (jwt.Token, error) {
 	if claims.UserID != nil {
 		builder = builder.Claim(userIDClaim, *claims.UserID)
 	}
+	if claims.TeamID != nil {
+		builder = builder.Claim(teamIDClaim, *claims.TeamID)
+	}
 	if claims.Role != nil {
 		builder = builder.Claim(roleClaim, *claims.Role)
 	}
@@ -59,8 +64,7 @@ func (claims *Claims) Validate(ctx context.Context) error {
 		return errors.Raise(ctx, errors.ErrTokenMalformed, "validation failed", err, nil)
 	}
 
-	var userIdRequired bool
-	var roleRequired bool
+	var userIdRequired, teamIdRequired, roleRequired bool
 
 	switch claims.Purpose {
 	case tokenDom.TokenAuth:
@@ -68,10 +72,15 @@ func (claims *Claims) Validate(ctx context.Context) error {
 		roleRequired = true
 	case tokenDom.TokenPasswordReset:
 		userIdRequired = true
+	case tokenDom.TokenTeamInvite:
+		teamIdRequired = true
 	}
 
 	if userIdRequired && claims.UserID == nil {
 		return errors.Raise(ctx, errors.ErrTokenMalformed, "user_id is missing", nil, nil)
+	}
+	if teamIdRequired && claims.TeamID == nil {
+		return errors.Raise(ctx, errors.ErrTokenMalformed, "team_id is missing", nil, nil)
 	}
 	if roleRequired && claims.Role == nil {
 		return errors.Raise(ctx, errors.ErrTokenMalformed, "role is missing", nil, nil)
@@ -83,7 +92,7 @@ func (claims *Claims) Validate(ctx context.Context) error {
 func JWTTokenToClaims(ctx context.Context, token jwt.Token) (*Claims, error) {
 	var claims Claims
 	var roleString, purpose string
-	var userIDFloat float64
+	var userIDFloat, teamIDFloat float64
 	var ok bool
 
 	if claims.JWTID, ok = token.JwtID(); !ok {
@@ -106,11 +115,16 @@ func JWTTokenToClaims(ctx context.Context, token jwt.Token) (*Claims, error) {
 
 	// These are optional - only parse if present
 	token.Get(userIDClaim, &userIDFloat)
+	token.Get(teamIDClaim, &teamIDFloat)
 	token.Get(roleClaim, &roleString)
 
 	if userIDFloat != 0 {
 		userID := int64(userIDFloat)
 		claims.UserID = &userID
+	}
+	if teamIDFloat != 0 {
+		teamID := int64(teamIDFloat)
+		claims.TeamID = &teamID
 	}
 	if roleString != "" {
 		userRole := userDom.Role(roleString)
@@ -120,11 +134,12 @@ func JWTTokenToClaims(ctx context.Context, token jwt.Token) (*Claims, error) {
 	return &claims, claims.Validate(ctx)
 }
 
-func NewAuthClaims(jwtID string, userID int64, role userDom.Role, expiresAt time.Time) *Claims {
+func NewAuthClaims(jwtID string, userID int64, teamID *int64, role userDom.Role, expiresAt time.Time) *Claims {
 	return &Claims{
 		JWTID:     jwtID,
 		Subject:   fmt.Sprintf("%d", userID),
 		UserID:    &userID,
+		TeamID:    teamID,
 		Role:      &role,
 		Purpose:   tokenDom.TokenAuth,
 		CreatedAt: time.Now(),
@@ -137,6 +152,7 @@ func NewEmailVerificationClaims(jwtID, verificationID string, expiresAt time.Tim
 		JWTID:     jwtID,
 		Subject:   verificationID,
 		UserID:    nil,
+		TeamID:    nil,
 		Role:      nil,
 		Purpose:   tokenDom.TokenEmailVerification,
 		CreatedAt: time.Now(),
@@ -149,6 +165,7 @@ func NewPasswordResetClaims(jwtID string, userID int64, expiresAt time.Time) *Cl
 		JWTID:     jwtID,
 		Subject:   fmt.Sprintf("%d", userID),
 		UserID:    &userID,
+		TeamID:    nil,
 		Role:      nil,
 		Purpose:   tokenDom.TokenPasswordReset,
 		CreatedAt: time.Now(),
@@ -161,6 +178,7 @@ func NewTeamInviteClaims(jwtID string, teamID int64, expiresAt time.Time) *Claim
 		JWTID:     jwtID,
 		Subject:   fmt.Sprintf("%d", teamID),
 		UserID:    nil,
+		TeamID:    &teamID,
 		Role:      nil,
 		Purpose:   tokenDom.TokenTeamInvite,
 		CreatedAt: time.Now(),
