@@ -42,21 +42,7 @@ func (t *teamImpl) Create(ctx context.Context, input *teamDom.CreateInput) (*aut
 		return nil, err
 	}
 
-	// revoke all the auth tokens
-	if err := t.tokenUc.RevokeUserTokens(ctx, tokenDom.TokenAuth, captain.ID); err != nil {
-		return nil, err
-	}
-
-	token, jwtToken, err := t.authUc.GenerateAuthToken(ctx, captain)
-	if err != nil {
-		return nil, err
-	}
-
-	return &authDom.Session{
-		UserID:    team.CaptainID,
-		Token:     jwtToken,
-		ExpiresAt: token.ExpiresAt.Unix(),
-	}, nil
+	return t.reissueAuthSession(ctx, captain)
 }
 
 func (t *teamImpl) Join(ctx context.Context, input *teamDom.JoinInput) (*authDom.Session, error) {
@@ -86,6 +72,19 @@ func (t *teamImpl) Join(ctx context.Context, input *teamDom.JoinInput) (*authDom
 		return nil, err
 	}
 
+	return t.reissueAuthSession(ctx, user)
+}
+
+func New(repo teamDom.Repository, userUc userDom.Usecase, authUc authDom.Usecase, tokenUc tokenDom.Usecase) teamDom.Usecase {
+	return &teamImpl{
+		repo:    repo,
+		authUc:  authUc,
+		userUc:  userUc,
+		tokenUc: tokenUc,
+	}
+}
+
+func (t *teamImpl) reissueAuthSession(ctx context.Context, user *userDom.User) (*authDom.Session, error) {
 	// revoke all the auth tokens
 	if err := t.tokenUc.RevokeUserTokens(ctx, tokenDom.TokenAuth, user.ID); err != nil {
 		return nil, err
@@ -101,13 +100,4 @@ func (t *teamImpl) Join(ctx context.Context, input *teamDom.JoinInput) (*authDom
 		Token:     jwtToken,
 		ExpiresAt: token.ExpiresAt.Unix(),
 	}, nil
-}
-
-func New(repo teamDom.Repository, userUc userDom.Usecase, authUc authDom.Usecase, tokenUc tokenDom.Usecase) teamDom.Usecase {
-	return &teamImpl{
-		repo:    repo,
-		authUc:  authUc,
-		userUc:  userUc,
-		tokenUc: tokenUc,
-	}
 }
