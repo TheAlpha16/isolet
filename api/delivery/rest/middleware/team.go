@@ -20,7 +20,7 @@ func RequireTeamMiddleware() fiber.Handler {
 	}
 }
 
-func RequireNoTeamMiddleware() fiber.Handler {
+func RequireEmptyTeamMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		userCtx := c.UserContext()
 
