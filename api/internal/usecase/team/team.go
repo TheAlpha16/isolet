@@ -4,6 +4,7 @@ import (
 	"context"
 
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
+	"github.com/TheAlpha16/isolet/api/internal/domain/common"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
 	tokenDom "github.com/TheAlpha16/isolet/api/internal/domain/token"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
@@ -18,13 +19,19 @@ type teamImpl struct {
 }
 
 func (t *teamImpl) Create(ctx context.Context, input *teamDom.CreateInput) (*authDom.Session, error) {
+	userID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyUserID)
+
 	hashedPassword, err := utils.HashPassword(input.Password)
 	if err != nil {
 		return nil, err
 	}
 	input.Password = hashedPassword
 
-	team, err := t.repo.Create(ctx, &teamDom.Team{})
+	team, err := t.repo.Create(ctx, &teamDom.Team{
+		Name:      input.TeamName,
+		CaptainID: userID,
+		Password:  input.Password,
+	})
 	if err != nil {
 		return nil, err
 	}
