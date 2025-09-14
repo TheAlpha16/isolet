@@ -13,6 +13,7 @@ const (
 	RouteAuthVerify         = "/verify"
 	RouteAuthForgotPassword = "/forgot-password"
 	RouteAuthResetPassword  = "/reset-password"
+	RouteAuthLogout         = "/logout"
 )
 
 // team routes
@@ -40,7 +41,8 @@ const (
 
 // context keys
 const (
-	ContextKeyUserID = "user_id"
-	ContextKeyTeamID = "team_id"
-	ContextKeyRole   = "role"
+	ContextKeyUserID    = "user_id"
+	ContextKeyTeamID    = "team_id"
+	ContextKeyRole      = "role"
+	ContextKeySessionID = "session_id"
 )

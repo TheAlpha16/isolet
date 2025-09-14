@@ -40,6 +40,7 @@ func AuthMiddleware(tokenUc tokenDom.Usecase, jwtSvc jwt.JWT) fiber.Handler {
 		// set user_id, team_id and role in the context
 		userCtx = common.SetFieldInExtraData(userCtx, utils.ContextKeyUserID, *claims.UserID)
 		userCtx = common.SetFieldInExtraData(userCtx, utils.ContextKeyRole, *claims.Role)
+		userCtx = common.SetFieldInExtraData(userCtx, utils.ContextKeySessionID, claims.JWTID)
 
 		if claims.TeamID != nil {
 			userCtx = common.SetFieldInExtraData(userCtx, utils.ContextKeyTeamID, *claims.TeamID)
