@@ -3,6 +3,7 @@ package utils
 // base route groups
 const (
 	RouteAuth = "/auth"
+	RouteTeam = "/team"
 )
 
 // auth routes
@@ -12,6 +13,12 @@ const (
 	RouteAuthVerify         = "/verify"
 	RouteAuthForgotPassword = "/forgot-password"
 	RouteAuthResetPassword  = "/reset-password"
+)
+
+// team routes
+const (
+	RouteTeamCreate = "/create"
+	RouteTeamJoin   = "/join"
 )
 
 // misc routes
