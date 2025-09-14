@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"time"
-
 	"github.com/TheAlpha16/isolet/api/delivery/rest/response"
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
@@ -33,7 +31,7 @@ func (h *authHandler) Login(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	c.Cookie(buildAuthCookie(output))
+	c.Cookie(response.BuildAuthCookie(output))
 	return c.Status(fiber.StatusOK).JSON(response.Success("login successful", output))
 }
 
@@ -50,7 +48,7 @@ func (h *authHandler) Register(c *fiber.Ctx) error {
 	if session == nil {
 		return c.Status(fiber.StatusAccepted).JSON(response.Success[any]("check your mail for verification", nil))
 	}
-	c.Cookie(buildAuthCookie(session))
+	c.Cookie(response.BuildAuthCookie(session))
 	return c.Status(fiber.StatusOK).JSON(response.Success("registration successful", session))
 }
 
@@ -88,16 +86,6 @@ func (h *authHandler) ResetPassword(c *fiber.Ctx) error {
 		return err
 	}
 	return c.Status(fiber.StatusOK).JSON(response.Success[any]("password reset successful", nil))
-}
-
-func buildAuthCookie(session *authDom.Session) *fiber.Cookie {
-	return &fiber.Cookie{
-		Name:     utils.AuthTokenCookieName,
-		Value:    session.Token,
-		Expires:  time.Unix(session.ExpiresAt, 0),
-		SameSite: fiber.CookieSameSiteStrictMode,
-		HTTPOnly: true,
-	}
 }
 
 func New(authUsecase authDom.Usecase) AuthHandler {

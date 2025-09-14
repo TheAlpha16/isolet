@@ -1,5 +1,14 @@
 package response
 
+import (
+	"time"
+
+	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
+	"github.com/TheAlpha16/isolet/api/utils"
+
+	"github.com/gofiber/fiber/v2"
+)
+
 type Status string
 
 const (
@@ -26,5 +35,15 @@ func newAPIResponse[T any](status Status, message string, data T) APIResponse[T]
 		Status:  status,
 		Message: message,
 		Data:    data,
+	}
+}
+
+func BuildAuthCookie(session *authDom.Session) *fiber.Cookie {
+	return &fiber.Cookie{
+		Name:     utils.AuthTokenCookieName,
+		Value:    session.Token,
+		Expires:  time.Unix(session.ExpiresAt, 0),
+		SameSite: fiber.CookieSameSiteStrictMode,
+		HTTPOnly: true,
 	}
 }
