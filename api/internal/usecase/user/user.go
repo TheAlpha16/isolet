@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/TheAlpha16/isolet/api/infra/cache"
+	cvDom "github.com/TheAlpha16/isolet/api/internal/domain/configvars"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
 )
@@ -11,6 +12,7 @@ import (
 type userImpl struct {
 	repo  userDom.Repository
 	cache cache.Cache
+	cvUc  cvDom.Usecase
 }
 
 func (u *userImpl) Create(ctx context.Context, user *userDom.User) (*userDom.User, error) {
@@ -68,9 +70,17 @@ func (u *userImpl) ExistsByEmailOrUsername(ctx context.Context, email, username 
 	return usernameTaken
 }
 
-func New(cache cache.Cache, repo userDom.Repository) userDom.Usecase {
+func (u *userImpl) JoinTeam(ctx context.Context, userID int64, teamID int64) error {
+	return u.repo.JoinTeam(
+		ctx, userID, teamID,
+		u.cvUc.GetInt(ctx, cvDom.TeamMaxSize),
+	)
+}
+
+func New(cache cache.Cache, repo userDom.Repository, cvUc cvDom.Usecase) userDom.Usecase {
 	return &userImpl{
 		repo:  repo,
 		cache: cache,
+		cvUc:  cvUc,
 	}
 }

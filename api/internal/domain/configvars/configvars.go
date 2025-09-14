@@ -24,4 +24,7 @@ var (
 	AuthMaxSessions          = ConfigKey[int]{Name: "auth_max_sessions", Default: 5}
 	PasswordResetEnabled     = ConfigKey[bool]{Name: "password_reset_enabled", Default: true}
 	PasswordResetMaxSessions = ConfigKey[int]{Name: "password_reset_max_sessions", Default: 1}
+
+	// profile
+	TeamMaxSize = ConfigKey[int]{Name: "team_max_size", Default: 4}
 )

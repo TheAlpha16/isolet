@@ -10,6 +10,8 @@ import (
 type TeamHandler interface {
 	Create(c *fiber.Ctx) error
 	Join(c *fiber.Ctx) error
+	GenerateInvite(c *fiber.Ctx) error
+	AcceptInvite(c *fiber.Ctx) error
 }
 
 type teamHandler struct {
@@ -42,6 +44,14 @@ func (h *teamHandler) Join(c *fiber.Ctx) error {
 	}
 	c.Cookie(response.BuildAuthCookie(session))
 	return c.Status(fiber.StatusCreated).JSON(response.Success("team joined successfully", session))
+}
+
+func (h *teamHandler) GenerateInvite(c *fiber.Ctx) error {
+	return nil
+}
+
+func (h *teamHandler) AcceptInvite(c *fiber.Ctx) error {
+	return nil
 }
 
 func New(teamUsecase teamDom.Usecase) TeamHandler {

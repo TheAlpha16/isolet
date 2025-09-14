@@ -67,8 +67,7 @@ func (t *teamImpl) Join(ctx context.Context, input *teamDom.JoinInput) (*authDom
 	}
 
 	// update the user's team
-	user.TeamID = &team.ID
-	if err := t.userUc.Update(ctx, user, []string{"team_id"}); err != nil {
+	if err := t.userUc.JoinTeam(ctx, userID, team.ID); err != nil {
 		return nil, err
 	}
 

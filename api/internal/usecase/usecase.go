@@ -37,7 +37,7 @@ func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repo
 	email := emailUc.New(ctx, wg, cv)
 
 	// business
-	user := userUc.New(cache, repos.User)
+	user := userUc.New(cache, repos.User, cv)
 	auth := authUc.New(user, token, cv, email, infra.JWT)
 	team := teamUc.New(repos.Team, user, auth, token)
 

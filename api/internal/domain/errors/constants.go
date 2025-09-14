@@ -38,11 +38,13 @@ const (
 	ErrTeamAlreadyJoined ErrorCode = "TEAM-01"
 	ErrTeamNameTaken     ErrorCode = "TEAM-02"
 	ErrTeamNotFound      ErrorCode = "TEAM-03"
+	ErrTeamFull          ErrorCode = "TEAM-04"
 
 	// DB errors
 	ErrDBCreateError ErrorCode = "DB-00"
 	ErrDBReadError   ErrorCode = "DB-01"
 	ErrDBUpdateError ErrorCode = "DB-02"
+	ErrDBExecError   ErrorCode = "DB-03"
 
 	// Cache errors
 	ErrCacheCallFail       ErrorCode = "CACHE-00"
@@ -103,6 +105,7 @@ var msgMap = map[ErrorCode]string{
 	ErrTeamAlreadyJoined: "user is already in a team",
 	ErrTeamNameTaken:     "team name is already taken",
 	ErrTeamNotFound:      "team not found",
+	ErrTeamFull:          "team is full",
 
 	// Cache errors
 	ErrCacheMiss:           "cache miss",
@@ -146,6 +149,7 @@ var ServerSideErrors = map[ErrorCode]struct{}{
 	ErrDBCreateError:          {},
 	ErrDBReadError:            {},
 	ErrDBUpdateError:          {},
+	ErrDBExecError:            {},
 	ErrCacheScriptLoadFail:    {},
 	ErrTokenSigningFailed:     {},
 	ErrConfigVarInvalid:       {},

@@ -5,6 +5,7 @@ import (
 
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
+	"github.com/jackc/pgx/v5/pgconn"
 
 	"gorm.io/gorm"
 )
@@ -69,6 +70,19 @@ func (userRepo *userRepo) GetByID(ctx context.Context, id int64) (*userDom.User,
 		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to get user", err, nil)
 	}
 	return user.ToDomain(ctx)
+}
+
+func (userRepo *userRepo) JoinTeam(ctx context.Context, userID int64, teamID int64, teamLen int) error {
+	if err := userRepo.db.WithContext(ctx).Model(&User{}).
+		Exec("SELECT join_team(?, ?, ?)", userID, teamID, teamLen).Error; err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			if pgErr.Message == string(errorDom.ErrTeamFull) {
+				return errorDom.Raise(ctx, errorDom.ErrTeamFull, "", err, nil)
+			}
+		}
+		return errorDom.Raise(ctx, errorDom.ErrDBExecError, "failed to join team", err, nil)
+	}
+	return nil
 }
 
 func New(db *gorm.DB) userDom.Repository {
