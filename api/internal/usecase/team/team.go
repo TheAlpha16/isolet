@@ -80,20 +80,9 @@ func (t *teamImpl) Join(ctx context.Context, input *teamDom.JoinInput) (*authDom
 }
 
 func (t *teamImpl) GenerateInvite(ctx context.Context) (*teamDom.GenerateInviteOutput, error) {
-	config := utils.GetConfig()
 	teamID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyTeamID)
 
-	token := tokenDom.Token{
-		TokenIdentifier: tokenDom.TokenIdentifier{
-			ID:       utils.RandomUUID(),
-			EntityID: fmt.Sprintf("%d", teamID),
-			Purpose:  tokenDom.TokenTeamInvite,
-		},
-	}
-	token.UpdateTime()
-	token.ExpiresAt = token.CreatedAt.Add(config.Token.TeamInviteValidity)
-
-	err := t.tokenUc.Create(ctx, &token, nil)
+	token, err := t.getOrCreateInviteToken(ctx, teamID)
 	if err != nil {
 		return nil, err
 	}
@@ -103,13 +92,7 @@ func (t *teamImpl) GenerateInvite(ctx context.Context) (*teamDom.GenerateInviteO
 		return nil, err
 	}
 
-	publicURL := t.cvUc.GetString(ctx, cvDom.PublicURL)
-	inviteLink, err := utils.BuildLink(
-		publicURL, jwtToken,
-		[]string{
-			utils.GetConfig().Rest.APIVersionPrefix,
-			utils.RouteTeamInvite,
-		})
+	inviteLink, err := t.buildInviteLink(ctx, jwtToken)
 	if err != nil {
 		return nil, err
 	}
@@ -135,6 +118,50 @@ func (t *teamImpl) reissueAuthSession(ctx context.Context, user *userDom.User) (
 		Token:     jwtToken,
 		ExpiresAt: token.ExpiresAt.Unix(),
 	}, nil
+}
+
+func (t *teamImpl) getOrCreateInviteToken(ctx context.Context, teamID int64) (*tokenDom.Token, error) {
+	config := utils.GetConfig()
+
+	// check if there's a token already
+	tokens, err := t.tokenUc.FetchEntityTokens(ctx, tokenDom.TokenTeamInvite, fmt.Sprintf("%d", teamID))
+	if err != nil {
+		return nil, err
+	}
+	if len(tokens) > 0 {
+		return tokens[0], nil
+	}
+
+	// generate new token
+	token := tokenDom.Token{
+		TokenIdentifier: tokenDom.TokenIdentifier{
+			ID:       utils.RandomUUID(),
+			EntityID: fmt.Sprintf("%d", teamID),
+			Purpose:  tokenDom.TokenTeamInvite,
+		},
+	}
+	token.UpdateTime()
+	token.ExpiresAt = token.CreatedAt.Add(config.Token.TeamInviteValidity)
+
+	err = t.tokenUc.Create(ctx, &token, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &token, nil
+}
+
+func (t *teamImpl) buildInviteLink(ctx context.Context, token string) (string, error) {
+	publicURL := t.cvUc.GetString(ctx, cvDom.PublicURL)
+	inviteLink, err := utils.BuildLink(
+		publicURL, token,
+		[]string{
+			utils.GetConfig().Rest.APIVersionPrefix,
+			utils.RouteTeamInvite,
+		})
+	if err != nil {
+		return "", err
+	}
+	return inviteLink, nil
 }
 
 func New(repo teamDom.Repository, userUc userDom.Usecase, authUc authDom.Usecase, tokenUc tokenDom.Usecase, cvUc cvDom.Usecase, jwtSvc jwt.JWT) teamDom.Usecase {
