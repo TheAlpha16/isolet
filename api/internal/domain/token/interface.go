@@ -12,4 +12,5 @@ type Usecase interface {
 	Delete(ctx context.Context, id *TokenIdentifier) error
 	CountEntityTokens(ctx context.Context, purpose TokenPurpose, entityID string) (int, error)
 	RevokeEntityTokens(ctx context.Context, purpose TokenPurpose, entityID string) error
+	FetchEntityTokens(ctx context.Context, purpose TokenPurpose, entityID string) ([]*Token, error)
 }

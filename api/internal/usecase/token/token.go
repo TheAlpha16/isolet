@@ -81,6 +81,33 @@ func (t *tokenImpl) RevokeEntityTokens(ctx context.Context, purpose tokenDom.Tok
 	return nil
 }
 
+func (t *tokenImpl) FetchEntityTokens(ctx context.Context, purpose tokenDom.TokenPurpose, entityID string) ([]*tokenDom.Token, error) {
+	tokenIdentifier := &tokenDom.TokenIdentifier{
+		ID:       "*",
+		EntityID: entityID,
+		Purpose:  purpose,
+	}
+	keys, err := t.cache.GetKeys(ctx, tokenIdentifier.Key())
+	if err != nil {
+		return nil, err
+	}
+
+	var tokens []*tokenDom.Token
+	for _, key := range keys {
+		val, err := t.cache.Get(ctx, key)
+		if err != nil {
+			return nil, err
+		}
+
+		var token tokenDom.Token
+		if err := msgpack.Unmarshal([]byte(val), &token); err != nil {
+			return nil, errorDom.Raise(ctx, errorDom.ErrUnmarshalError, "failed to unmarshal token", err, nil)
+		}
+		tokens = append(tokens, &token)
+	}
+	return tokens, nil
+}
+
 func New(cache cache.Cache) tokenDom.Usecase {
 	return &tokenImpl{
 		cache: cache,
