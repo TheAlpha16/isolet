@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/TheAlpha16/isolet/api/infra/jwt"
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
@@ -24,7 +25,7 @@ type authImpl struct {
 }
 
 func (a *authImpl) Login(ctx context.Context, input *authDom.LoginInput) (*authDom.Session, error) {
-	user, err := a.userUc.GetByEmailOrUsername(ctx, input.Identifier, input.Identifier)
+	user, err := a.userUc.GetByEmailOrUsername(ctx, strings.ToLower(input.Identifier), input.Identifier)
 	if err != nil {
 		if errorDom.IsSameError(err, errorDom.ErrUserNotFound) {
 			return nil, errorDom.Raise(ctx, errorDom.ErrAuthInvalidCredentials, "", nil, nil)
