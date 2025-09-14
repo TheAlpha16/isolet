@@ -23,12 +23,7 @@ func (userRepo *userRepo) Create(ctx context.Context, user *userDom.User) (*user
 		return nil, errorDom.Raise(ctx, errorDom.ErrDBCreateError, "failed to create user", err, nil)
 	}
 
-	user, err = userModel.ToDomain(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
+	return userModel.ToDomain(ctx)
 }
 
 func (userRepo *userRepo) Update(ctx context.Context, user *userDom.User, fields []string) error {
@@ -62,11 +57,7 @@ func (userRepo *userRepo) GetByEmailOrUsername(ctx context.Context, email, usern
 		}
 		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to get user", err, nil)
 	}
-	domUser, err := user.ToDomain(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return domUser, nil
+	return user.ToDomain(ctx)
 }
 
 func New(db *gorm.DB) userDom.Repository {
