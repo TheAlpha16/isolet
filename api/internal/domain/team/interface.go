@@ -8,8 +8,10 @@ import (
 
 type Usecase interface {
 	Create(ctx context.Context, input *CreateInput) (*authDom.Session, error)
+	Join(ctx context.Context, input *JoinInput) (*authDom.Session, error)
 }
 
 type Repository interface {
 	Create(ctx context.Context, team *Team) (*Team, error)
+	GetByName(ctx context.Context, name string) (*Team, error)
 }

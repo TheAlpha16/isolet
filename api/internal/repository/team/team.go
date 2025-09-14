@@ -55,6 +55,23 @@ func (t *teamRepo) Create(ctx context.Context, team *teamDom.Team) (*teamDom.Tea
 	return domainTeam, nil
 }
 
+func (t *teamRepo) GetByName(ctx context.Context, name string) (*teamDom.Team, error) {
+	var team Team
+	if err := t.db.WithContext(ctx).Where("name = ?", name).First(&team).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errorDom.Raise(ctx, errorDom.ErrTeamNotFound, "", err, nil)
+		}
+		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to get team by name", err, nil)
+	}
+
+	domainTeam, err := team.ToDomain(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return domainTeam, nil
+}
+
 func New(db *gorm.DB) teamDom.Repository {
 	return &teamRepo{
 		db: db,

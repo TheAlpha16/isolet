@@ -23,3 +23,19 @@ func decodeCreateRequest(c *fiber.Ctx) (*teamDom.CreateInput, error) {
 	}
 	return &input, nil
 }
+
+func decodeJoinRequest(c *fiber.Ctx) (*teamDom.JoinInput, error) {
+	var input teamDom.JoinInput
+	if err := c.BodyParser(&input); err != nil {
+		return nil, errorDom.Raise(c.UserContext(), errorDom.ErrRestInvalidPayload, "", err, nil)
+	}
+
+	// normalize
+	input.TeamName = strings.TrimSpace(input.TeamName)
+	input.Password = strings.TrimSpace(input.Password)
+
+	if err := input.Validate(c.UserContext()); err != nil {
+		return nil, err
+	}
+	return &input, nil
+}

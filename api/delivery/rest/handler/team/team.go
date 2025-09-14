@@ -31,9 +31,21 @@ func (h *teamHandler) Create(c *fiber.Ctx) error {
 }
 
 func (h *teamHandler) Join(c *fiber.Ctx) error {
-	return nil
+	input, err := decodeJoinRequest(c)
+	if err != nil {
+		return err
+	}
+
+	session, err := h.teamUc.Join(c.UserContext(), input)
+	if err != nil {
+		return err
+	}
+	c.Cookie(response.BuildAuthCookie(session))
+	return c.Status(fiber.StatusCreated).JSON(response.Success("team joined successfully", session))
 }
 
 func New(teamUsecase teamDom.Usecase) TeamHandler {
-	return &teamHandler{teamUc: teamUsecase}
+	return &teamHandler{
+		teamUc: teamUsecase,
+	}
 }

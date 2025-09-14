@@ -5,6 +5,7 @@ import (
 
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
+	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
 	tokenDom "github.com/TheAlpha16/isolet/api/internal/domain/token"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
@@ -53,6 +54,50 @@ func (t *teamImpl) Create(ctx context.Context, input *teamDom.CreateInput) (*aut
 
 	return &authDom.Session{
 		UserID:    team.CaptainID,
+		Token:     jwtToken,
+		ExpiresAt: token.ExpiresAt.Unix(),
+	}, nil
+}
+
+func (t *teamImpl) Join(ctx context.Context, input *teamDom.JoinInput) (*authDom.Session, error) {
+	userID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyUserID)
+
+	team, err := t.repo.GetByName(ctx, input.TeamName)
+	if err != nil {
+		if errorDom.IsSameError(err, errorDom.ErrTeamNotFound) {
+			return nil, errorDom.Raise(ctx, errorDom.ErrAuthInvalidCredentials, "", nil, nil)
+		}
+		return nil, err
+	}
+
+	// verify the password
+	if !utils.ComparePassword(team.Password, input.Password) {
+		return nil, errorDom.Raise(ctx, errorDom.ErrAuthInvalidCredentials, "", nil, nil)
+	}
+
+	user, err := t.userUc.GetByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	// update the user's team
+	user.TeamID = &team.ID
+	if err := t.userUc.Update(ctx, user, []string{"team_id"}); err != nil {
+		return nil, err
+	}
+
+	// revoke all the auth tokens
+	if err := t.tokenUc.RevokeUserTokens(ctx, tokenDom.TokenAuth, user.ID); err != nil {
+		return nil, err
+	}
+
+	token, jwtToken, err := t.authUc.GenerateAuthToken(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &authDom.Session{
+		UserID:    user.ID,
 		Token:     jwtToken,
 		ExpiresAt: token.ExpiresAt.Unix(),
 	}, nil
