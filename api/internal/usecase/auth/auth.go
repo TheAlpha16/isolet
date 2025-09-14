@@ -16,7 +16,6 @@ import (
 )
 
 type authImpl struct {
-	repo    authDom.Repository
 	userUc  userDom.Usecase
 	tokenUc tokenDom.Usecase
 	cvUc    cvDom.Usecase
@@ -323,9 +322,8 @@ func (a *authImpl) createUser(ctx context.Context, email, username, password str
 	return user, nil
 }
 
-func New(repo authDom.Repository, userUc userDom.Usecase, tokenUc tokenDom.Usecase, cvUc cvDom.Usecase, emailUc emailDom.Usecase, jwtSvc jwt.JWT) authDom.Usecase {
+func New(userUc userDom.Usecase, tokenUc tokenDom.Usecase, cvUc cvDom.Usecase, emailUc emailDom.Usecase, jwtSvc jwt.JWT) authDom.Usecase {
 	return &authImpl{
-		repo:    repo,
 		userUc:  userUc,
 		tokenUc: tokenUc,
 		cvUc:    cvUc,

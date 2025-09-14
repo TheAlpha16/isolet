@@ -35,7 +35,7 @@ func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repo
 
 	// business
 	user := userUc.New(cache, repos.User)
-	auth := authUc.New(repos.Auth, user, token, cv, email, infra.JWT)
+	auth := authUc.New(user, token, cv, email, infra.JWT)
 
 	return &Usecases{
 		User:       user,
