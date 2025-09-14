@@ -37,6 +37,11 @@ func (a *authImpl) Login(ctx context.Context, input *authDom.LoginInput) (*authD
 		return nil, errorDom.Raise(ctx, errorDom.ErrAuthInvalidCredentials, "", nil, nil)
 	}
 
+	// don't allow banned users to Login
+	if user.IsBanned {
+		return nil, errorDom.Raise(ctx, errorDom.ErrAuthUserBanned, "", nil, nil)
+	}
+
 	activeSessionCount, err := a.tokenUc.CountUserTokens(ctx, tokenDom.TokenAuth, user.ID)
 	if err != nil {
 		return nil, err

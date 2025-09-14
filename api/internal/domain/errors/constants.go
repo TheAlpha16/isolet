@@ -76,6 +76,7 @@ const (
 	ErrAuthMaxSessionsReached    ErrorCode = "AUTH-01"
 	ErrAuthPasswordResetDisabled ErrorCode = "AUTH-02"
 	ErrAuthMissingToken          ErrorCode = "AUTH-03"
+	ErrAuthUserBanned            ErrorCode = "AUTH-04"
 )
 
 // Map of error codes to user-facing messages
@@ -133,6 +134,7 @@ var msgMap = map[ErrorCode]string{
 	ErrAuthMaxSessionsReached:    "maximum sessions reached",
 	ErrAuthPasswordResetDisabled: "password reset is disabled",
 	ErrAuthMissingToken:          "missing auth token",
+	ErrAuthUserBanned:            "user is banned",
 }
 
 // Map of server-side error codes that need to be filtered
@@ -169,6 +171,7 @@ var ForbiddenErrors = map[ErrorCode]struct{}{
 	ErrAuthPasswordResetDisabled: {},
 	ErrUserInsufficentRole:       {},
 	ErrTeamRequired:              {},
+	ErrAuthUserBanned:            {},
 }
 
 // postgres error codes
