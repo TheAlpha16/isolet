@@ -98,7 +98,7 @@ var msgMap = map[ErrorCode]string{
 	ErrUserEmailTaken:      "email is already taken",
 	ErrUserUsernameTaken:   "username is already taken",
 	ErrUserNotFound:        "user not found",
-	ErrUserInsufficentRole: "missing required role",
+	ErrUserInsufficentRole: "insufficient role",
 
 	// Team errors
 	ErrTeamRequired:      "need to be a member of a team",
