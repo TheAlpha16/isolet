@@ -168,3 +168,8 @@ var ForbiddenErrors = map[ErrorCode]struct{}{
 	ErrUserInsufficentRole:       {},
 	ErrTeamRequired:              {},
 }
+
+// postgres error codes
+const (
+	PgErrDuplicateKey = "23505"
+)

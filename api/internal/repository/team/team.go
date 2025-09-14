@@ -2,13 +2,13 @@ package team
 
 import (
 	"context"
-	"errors"
 
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
 	userRepo "github.com/TheAlpha16/isolet/api/internal/repository/user"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 )
 
@@ -26,8 +26,10 @@ func (t *teamRepo) Create(ctx context.Context, team *teamDom.Team) (*teamDom.Tea
 	err = t.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// create the team
 		if err := tx.Create(teamModel).Error; err != nil {
-			if errors.Is(err, gorm.ErrDuplicatedKey) {
-				return errorDom.Raise(ctx, errorDom.ErrTeamNameTaken, "", err, nil)
+			if pgErr, ok := err.(*pgconn.PgError); ok {
+				if pgErr.Code == errorDom.PgErrDuplicateKey {
+					return errorDom.Raise(ctx, errorDom.ErrTeamNameTaken, "", err, nil)
+				}
 			}
 			return errorDom.Raise(ctx, errorDom.ErrDBCreateError, "failed to create team", err, nil)
 		}
