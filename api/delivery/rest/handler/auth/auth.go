@@ -20,7 +20,7 @@ type AuthHandler interface {
 }
 
 type authHandler struct {
-	authUsecase authDom.Usecase
+	authUc authDom.Usecase
 }
 
 func (h *authHandler) Login(c *fiber.Ctx) error {
@@ -29,7 +29,7 @@ func (h *authHandler) Login(c *fiber.Ctx) error {
 		return err
 	}
 
-	output, err := h.authUsecase.Login(c.UserContext(), input)
+	output, err := h.authUc.Login(c.UserContext(), input)
 	if err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func (h *authHandler) Register(c *fiber.Ctx) error {
 		return err
 	}
 
-	session, err := h.authUsecase.Register(c.UserContext(), input)
+	session, err := h.authUc.Register(c.UserContext(), input)
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (h *authHandler) Verify(c *fiber.Ctx) error {
 		return errorDom.Raise(c.UserContext(), errorDom.ErrRestMissingToken, "", nil, nil)
 	}
 
-	if err := h.authUsecase.Verify(c.UserContext(), token); err != nil {
+	if err := h.authUc.Verify(c.UserContext(), token); err != nil {
 		return err
 	}
 	return c.Status(fiber.StatusOK).JSON(response.Success[any]("verified successfully! proceed to login", nil))
@@ -72,7 +72,7 @@ func (h *authHandler) ForgotPassword(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := h.authUsecase.ForgotPassword(c.UserContext(), input); err != nil {
+	if err := h.authUc.ForgotPassword(c.UserContext(), input); err != nil {
 		return err
 	}
 	return c.Status(fiber.StatusOK).JSON(response.Success[any]("check your mail for password reset", nil))
@@ -84,7 +84,7 @@ func (h *authHandler) ResetPassword(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := h.authUsecase.ResetPassword(c.UserContext(), input); err != nil {
+	if err := h.authUc.ResetPassword(c.UserContext(), input); err != nil {
 		return err
 	}
 	return c.Status(fiber.StatusOK).JSON(response.Success[any]("password reset successful", nil))
@@ -102,6 +102,6 @@ func buildAuthCookie(session *authDom.Session) *fiber.Cookie {
 
 func New(authUsecase authDom.Usecase) AuthHandler {
 	return &authHandler{
-		authUsecase: authUsecase,
+		authUc: authUsecase,
 	}
 }
