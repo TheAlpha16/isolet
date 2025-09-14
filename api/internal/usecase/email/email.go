@@ -5,7 +5,6 @@ import (
 	"context"
 	"embed"
 	"html/template"
-	"net/url"
 	"sync"
 
 	"github.com/TheAlpha16/isolet/api/infra/smtp"
@@ -52,9 +51,10 @@ func (e *emailImpl) SendEmailAsync(ctx context.Context, input *emailDom.EmailInp
 		return errorDom.Raise(ctx, errorDom.ErrEmailInvalidType, "", nil, common.ExtraData{"type": input.Type})
 	}
 
-	link, err := e.buildLink(ctx, input.Token, config.PathSegments)
+	publicURL := e.cvUc.GetString(ctx, cvDom.PublicURL)
+	link, err := utils.BuildLink(publicURL, input.Token, config.PathSegments)
 	if err != nil {
-		return err
+		return errorDom.Raise(ctx, errorDom.ErrEmailLinkBuild, "failed to build email link", err, common.ExtraData{"public_url": publicURL})
 	}
 
 	body, err := e.getBody(ctx, config.Template, &emailDom.TemplateInput{
@@ -98,26 +98,6 @@ func (e *emailImpl) getBody(ctx context.Context, templatePath string, data *emai
 	}
 
 	return buf.String(), nil
-}
-
-func (e *emailImpl) buildLink(ctx context.Context, token string, pathSegments []string) (string, error) {
-	publicURL := e.cvUc.GetString(ctx, cvDom.PublicURL)
-
-	url, err := url.Parse(publicURL)
-	if err != nil {
-		return "", errorDom.Raise(ctx, errorDom.ErrEmailLinkBuild, "failed to parse public URL", err, common.ExtraData{"public_url": publicURL})
-	}
-
-	url = url.JoinPath(pathSegments...)
-	query := url.Query()
-	query.Set(utils.TokenQueryKey, token)
-	url.RawQuery = query.Encode()
-
-	if url.Scheme == "" {
-		url.Scheme = "https"
-	}
-
-	return url.String(), nil
 }
 
 func New(ctx context.Context, wg *sync.WaitGroup, cvUc cvDom.Usecase) emailDom.Usecase {

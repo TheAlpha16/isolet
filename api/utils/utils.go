@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"net/url"
 	"reflect"
 	"strings"
 
@@ -58,4 +59,22 @@ func ComparePassword(hashedPwd, plainPwd string) bool {
 
 func RandomUUID() string {
 	return uuid.New().String()
+}
+
+func BuildLink(publicURL, token string, pathSegments []string) (string, error) {
+	url, err := url.Parse(publicURL)
+	if err != nil {
+		return "", err
+	}
+
+	url = url.JoinPath(pathSegments...)
+	query := url.Query()
+	query.Set(TokenQueryKey, token)
+	url.RawQuery = query.Encode()
+
+	if url.Scheme == "" {
+		url.Scheme = "https"
+	}
+
+	return url.String(), nil
 }
