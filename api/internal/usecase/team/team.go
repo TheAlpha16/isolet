@@ -102,6 +102,40 @@ func (t *teamImpl) GenerateInvite(ctx context.Context) (*teamDom.GenerateInviteO
 	}, nil
 }
 
+func (t *teamImpl) AcceptInvite(ctx context.Context, inviteToken string) (*authDom.Session, error) {
+	userID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyUserID)
+
+	claims, err := t.jwtSvc.Verify(ctx, inviteToken)
+	if err != nil {
+		return nil, err
+	}
+
+	if claims.Purpose != tokenDom.TokenTeamInvite {
+		return nil, errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "", nil, nil)
+	}
+
+	tokenIdentfier := &tokenDom.TokenIdentifier{
+		ID:       claims.JWTID,
+		EntityID: claims.Subject,
+		Purpose:  claims.Purpose,
+	}
+
+	if _, err = t.tokenUc.Fetch(ctx, tokenIdentfier); err != nil {
+		return nil, err
+	}
+
+	if err := t.userUc.JoinTeam(ctx, userID, *claims.TeamID); err != nil {
+		return nil, err
+	}
+
+	user, err := t.userUc.GetByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return t.reissueAuthSession(ctx, user)
+}
+
 func (t *teamImpl) reissueAuthSession(ctx context.Context, user *userDom.User) (*authDom.Session, error) {
 	// revoke all the auth tokens
 	if err := t.tokenUc.RevokeEntityTokens(ctx, tokenDom.TokenAuth, fmt.Sprintf("%d", user.ID)); err != nil {

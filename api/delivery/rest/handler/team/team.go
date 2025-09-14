@@ -2,7 +2,9 @@ package team
 
 import (
 	"github.com/TheAlpha16/isolet/api/delivery/rest/response"
+	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
+	"github.com/TheAlpha16/isolet/api/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -55,7 +57,17 @@ func (h *teamHandler) GenerateInvite(c *fiber.Ctx) error {
 }
 
 func (h *teamHandler) AcceptInvite(c *fiber.Ctx) error {
-	return nil
+	token := c.Query(utils.TokenQueryKey)
+	if token == "" {
+		return errorDom.Raise(c.UserContext(), errorDom.ErrRestMissingToken, "", nil, nil)
+	}
+
+	session, err := h.teamUc.AcceptInvite(c.UserContext(), token)
+	if err != nil {
+		return err
+	}
+	c.Cookie(response.BuildAuthCookie(session))
+	return c.Status(fiber.StatusCreated).JSON(response.Success("team joined successfully", session))
 }
 
 func New(teamUsecase teamDom.Usecase) TeamHandler {

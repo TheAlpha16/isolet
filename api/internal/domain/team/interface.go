@@ -10,6 +10,7 @@ type Usecase interface {
 	Create(ctx context.Context, input *CreateInput) (*authDom.Session, error)
 	Join(ctx context.Context, input *JoinInput) (*authDom.Session, error)
 	GenerateInvite(ctx context.Context) (*GenerateInviteOutput, error)
+	AcceptInvite(ctx context.Context, inviteToken string) (*authDom.Session, error)
 }
 
 type Repository interface {
