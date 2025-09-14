@@ -33,6 +33,9 @@ const (
 	ErrUserNotFound        ErrorCode = "USER-03"
 	ErrUserInsufficentRole ErrorCode = "USER-04"
 
+	// Team errors
+	ErrTeamRequired ErrorCode = "TEAM-00"
+
 	// DB errors
 	ErrDBCreateError ErrorCode = "DB-00"
 	ErrDBReadError   ErrorCode = "DB-01"
@@ -90,6 +93,9 @@ var msgMap = map[ErrorCode]string{
 	ErrUserUsernameTaken:   "username is already taken",
 	ErrUserNotFound:        "user not found",
 	ErrUserInsufficentRole: "missing required role",
+
+	// Team errors
+	ErrTeamRequired: "need to be a member of a team",
 
 	// Cache errors
 	ErrCacheMiss:           "cache miss",
@@ -156,4 +162,5 @@ var ForbiddenErrors = map[ErrorCode]struct{}{
 	ErrAuthMaxSessionsReached:    {},
 	ErrAuthPasswordResetDisabled: {},
 	ErrUserInsufficentRole:       {},
+	ErrTeamRequired:              {},
 }

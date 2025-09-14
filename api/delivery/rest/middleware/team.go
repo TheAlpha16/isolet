@@ -1,0 +1,33 @@
+package middleware
+
+import (
+	"github.com/TheAlpha16/isolet/api/internal/domain/common"
+	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
+	"github.com/TheAlpha16/isolet/api/utils"
+
+	"github.com/gofiber/fiber/v2"
+)
+
+func RequireTeamMiddleware() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		userCtx := c.UserContext()
+
+		if teamID := common.GetFieldFromExtraData[int64](userCtx, utils.ContextKeyTeamID); teamID != 0 {
+			return c.Next()
+		}
+
+		return errorDom.Raise(userCtx, errorDom.ErrTeamRequired, "", nil, nil)
+	}
+}
+
+func RequireNoTeamMiddleware() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		userCtx := c.UserContext()
+
+		if teamID := common.GetFieldFromExtraData[int64](userCtx, utils.ContextKeyTeamID); teamID == 0 {
+			return c.Next()
+		}
+
+		return errorDom.Raise(userCtx, errorDom.ErrTeamRequired, "", nil, nil)
+	}
+}
