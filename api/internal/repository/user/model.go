@@ -45,12 +45,18 @@ func (u *User) ToDomain(ctx context.Context) (*userDom.User, error) {
 }
 
 func NewUserModel(u *userDom.User) (*User, error) {
-	return &User{
+	user := &User{
 		Username: u.Username,
 		Email:    u.Email,
 		Password: u.Password,
 		TeamID:   u.TeamID,
 		Role:     string(u.Role),
 		IsBanned: u.IsBanned,
-	}, nil
+	}
+
+	if u.ID != 0 {
+		user.ID = u.ID
+	}
+
+	return user, nil
 }

@@ -32,10 +32,16 @@ func (t *Team) ToDomain(ctx context.Context) (*teamDom.Team, error) {
 	}, nil
 }
 
-func NewTeamModel(team *teamDom.Team) (*Team, error) {
-	return &Team{
-		Name:      team.Name,
-		CaptainID: team.CaptainID,
-		Password:  team.Password,
-	}, nil
+func NewTeamModel(t *teamDom.Team) (*Team, error) {
+	team := &Team{
+		Name:      t.Name,
+		CaptainID: t.CaptainID,
+		Password:  t.Password,
+	}
+
+	if t.ID != 0 {
+		team.ID = t.ID
+	}
+
+	return team, nil
 }
