@@ -255,6 +255,19 @@ func (a *authImpl) GenerateAuthToken(ctx context.Context, user *userDom.User) (*
 	return &token, jwtToken, nil
 }
 
+func (a *authImpl) Logout(ctx context.Context) error {
+	userID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyUserID)
+	sessionID := common.GetFieldFromExtraData[string](ctx, utils.ContextKeySessionID)
+
+	tokenIdentifier := &tokenDom.TokenIdentifier{
+		ID:       sessionID,
+		EntityID: fmt.Sprintf("%d", userID),
+		Purpose:  tokenDom.TokenAuth,
+	}
+
+	return a.tokenUc.Delete(ctx, tokenIdentifier)
+}
+
 func (a *authImpl) generateEmailVerificationToken(ctx context.Context, email, username, password string) (*tokenDom.Token, string, error) {
 	config := utils.GetConfig()
 	token := tokenDom.Token{

@@ -45,7 +45,7 @@ func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
 	// Setup routes
 	apiRouter := app.Group(config.Rest.APIVersionPrefix)
 	routes.RegisterHealth(apiRouter, healthHandler)
-	routes.RegisterAuth(apiRouter, authHandler)
+	routes.RegisterAuth(apiRouter, authHandler, usecases.Token, infra.JWT)
 	routes.RegisterTeam(apiRouter, teamHandler, usecases.Token, infra.JWT)
 
 	return app

@@ -15,6 +15,7 @@ type AuthHandler interface {
 	Verify(c *fiber.Ctx) error
 	ForgotPassword(c *fiber.Ctx) error
 	ResetPassword(c *fiber.Ctx) error
+	Logout(c *fiber.Ctx) error
 }
 
 type authHandler struct {
@@ -86,6 +87,14 @@ func (h *authHandler) ResetPassword(c *fiber.Ctx) error {
 		return err
 	}
 	return c.Status(fiber.StatusOK).JSON(response.Success[any]("password reset successful", nil))
+}
+
+func (h *authHandler) Logout(c *fiber.Ctx) error {
+	if err := h.authUc.Logout(c.UserContext()); err != nil {
+		return err
+	}
+	c.Cookie(response.BuildAuthCookie(&authDom.Session{}))
+	return c.SendStatus(fiber.StatusNoContent)
 }
 
 func New(authUsecase authDom.Usecase) AuthHandler {

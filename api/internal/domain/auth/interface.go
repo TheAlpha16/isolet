@@ -13,6 +13,7 @@ type Usecase interface {
 	Verify(ctx context.Context, verifyToken string) error
 	ForgotPassword(ctx context.Context, input *ForgotPasswordInput) error
 	ResetPassword(ctx context.Context, input *ResetPasswordInput) error
+	Logout(context.Context) error
 
 	GenerateAuthToken(ctx context.Context, user *userDom.User) (*tokenDom.Token, string, error)
 }
