@@ -19,6 +19,7 @@ const (
 const (
 	RouteTeamCreate = "/create"
 	RouteTeamJoin   = "/join"
+	RouteTeamInvite = "/invite"
 )
 
 // misc routes

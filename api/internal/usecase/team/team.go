@@ -2,9 +2,12 @@ package team
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/TheAlpha16/isolet/api/infra/jwt"
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
+	cvDom "github.com/TheAlpha16/isolet/api/internal/domain/configvars"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
 	tokenDom "github.com/TheAlpha16/isolet/api/internal/domain/token"
@@ -17,6 +20,8 @@ type teamImpl struct {
 	authUc  authDom.Usecase
 	userUc  userDom.Usecase
 	tokenUc tokenDom.Usecase
+	cvUc    cvDom.Usecase
+	jwtSvc  jwt.JWT
 }
 
 func (t *teamImpl) Create(ctx context.Context, input *teamDom.CreateInput) (*authDom.Session, error) {
@@ -74,18 +79,49 @@ func (t *teamImpl) Join(ctx context.Context, input *teamDom.JoinInput) (*authDom
 	return t.reissueAuthSession(ctx, user)
 }
 
-func New(repo teamDom.Repository, userUc userDom.Usecase, authUc authDom.Usecase, tokenUc tokenDom.Usecase) teamDom.Usecase {
-	return &teamImpl{
-		repo:    repo,
-		authUc:  authUc,
-		userUc:  userUc,
-		tokenUc: tokenUc,
+func (t *teamImpl) GenerateInvite(ctx context.Context) (*teamDom.GenerateInviteOutput, error) {
+	config := utils.GetConfig()
+	teamID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyTeamID)
+
+	token := tokenDom.Token{
+		TokenIdentifier: tokenDom.TokenIdentifier{
+			ID:       utils.RandomUUID(),
+			EntityID: fmt.Sprintf("%d", teamID),
+			Purpose:  tokenDom.TokenTeamInvite,
+		},
 	}
+	token.UpdateTime()
+	token.ExpiresAt = token.CreatedAt.Add(config.Token.TeamInviteValidity)
+
+	err := t.tokenUc.Create(ctx, &token, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	jwtToken, err := t.jwtSvc.Sign(ctx, jwt.NewTeamInviteClaims(token.ID, teamID, token.ExpiresAt))
+	if err != nil {
+		return nil, err
+	}
+
+	publicURL := t.cvUc.GetString(ctx, cvDom.PublicURL)
+	inviteLink, err := utils.BuildLink(
+		publicURL, jwtToken,
+		[]string{
+			utils.GetConfig().Rest.APIVersionPrefix,
+			utils.RouteTeamInvite,
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	return &teamDom.GenerateInviteOutput{
+		InviteLink: inviteLink,
+	}, nil
 }
 
 func (t *teamImpl) reissueAuthSession(ctx context.Context, user *userDom.User) (*authDom.Session, error) {
 	// revoke all the auth tokens
-	if err := t.tokenUc.RevokeUserTokens(ctx, tokenDom.TokenAuth, user.ID); err != nil {
+	if err := t.tokenUc.RevokeEntityTokens(ctx, tokenDom.TokenAuth, fmt.Sprintf("%d", user.ID)); err != nil {
 		return nil, err
 	}
 
@@ -99,4 +135,15 @@ func (t *teamImpl) reissueAuthSession(ctx context.Context, user *userDom.User) (
 		Token:     jwtToken,
 		ExpiresAt: token.ExpiresAt.Unix(),
 	}, nil
+}
+
+func New(repo teamDom.Repository, userUc userDom.Usecase, authUc authDom.Usecase, tokenUc tokenDom.Usecase, cvUc cvDom.Usecase, jwtSvc jwt.JWT) teamDom.Usecase {
+	return &teamImpl{
+		repo:    repo,
+		authUc:  authUc,
+		userUc:  userUc,
+		tokenUc: tokenUc,
+		cvUc:    cvUc,
+		jwtSvc:  jwtSvc,
+	}
 }

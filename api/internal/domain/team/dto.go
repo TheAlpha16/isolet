@@ -23,3 +23,7 @@ type JoinInput struct {
 func (j *JoinInput) Validate(ctx context.Context) error {
 	return validator.Validate(ctx, j)
 }
+
+type GenerateInviteOutput struct {
+	InviteLink string `json:"invite_link"`
+}

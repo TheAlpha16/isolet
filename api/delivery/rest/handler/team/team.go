@@ -47,7 +47,11 @@ func (h *teamHandler) Join(c *fiber.Ctx) error {
 }
 
 func (h *teamHandler) GenerateInvite(c *fiber.Ctx) error {
-	return nil
+	output, err := h.teamUc.GenerateInvite(c.UserContext())
+	if err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusCreated).JSON(response.Success("invite link generated successfully", output))
 }
 
 func (h *teamHandler) AcceptInvite(c *fiber.Ctx) error {

@@ -9,6 +9,7 @@ import (
 type Usecase interface {
 	Create(ctx context.Context, input *CreateInput) (*authDom.Session, error)
 	Join(ctx context.Context, input *JoinInput) (*authDom.Session, error)
+	GenerateInvite(ctx context.Context) (*GenerateInviteOutput, error)
 }
 
 type Repository interface {
