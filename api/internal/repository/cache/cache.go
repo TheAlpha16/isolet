@@ -1,4 +1,4 @@
-package repository
+package cache
 
 import (
 	"context"
@@ -8,25 +8,9 @@ import (
 	"github.com/TheAlpha16/isolet/api/infra/cache"
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
-	challengeRepo "github.com/TheAlpha16/isolet/api/internal/repository/challenge"
-	cvRepo "github.com/TheAlpha16/isolet/api/internal/repository/configvars"
-	teamRepo "github.com/TheAlpha16/isolet/api/internal/repository/team"
-	userRepo "github.com/TheAlpha16/isolet/api/internal/repository/user"
+
 	"github.com/vmihailenco/msgpack/v5"
-
-	"gorm.io/gorm"
 )
-
-func AutoMigrate(db *gorm.DB) error {
-	return db.AutoMigrate(
-		&cvRepo.ConfigVars{},
-		&userRepo.User{},
-		&teamRepo.Team{},
-		&challengeRepo.Category{},
-		&challengeRepo.Challenge{},
-		&challengeRepo.Hint{},
-	)
-}
 
 func CachedQuery[T any](ctx context.Context, cache cache.Cache, key string, ttl time.Duration, fetchFn func() (T, error)) (T, error) {
 	var zero T
