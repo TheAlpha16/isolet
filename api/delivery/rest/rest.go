@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	authHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/auth"
+	challengeHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/challenge"
 	eventHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/event"
 	healthHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/health"
 	profileHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/profile"
@@ -45,6 +46,7 @@ func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
 	teamHandler := teamHan.New(usecases.Team)
 	eventHandler := eventHan.New(usecases.Event)
 	profileHandler := profileHan.New(usecases.Profile)
+	challengeHandler := challengeHan.New()
 
 	// Setup routes
 	apiRouter := app.Group(config.Rest.APIVersionPrefix)
@@ -53,6 +55,7 @@ func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
 	routes.RegisterTeam(apiRouter, teamHandler, usecases.Token, infra.JWT)
 	routes.RegisterEvent(apiRouter, eventHandler)
 	routes.RegisterProfile(apiRouter, profileHandler, usecases.Token, infra.JWT)
+	routes.RegisterChallenge(apiRouter, challengeHandler, usecases.Token, infra.JWT)
 	return app
 }
 
