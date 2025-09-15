@@ -1,3 +1,8 @@
+-- ### TYPES ###
+
+CREATE TYPE user_role AS ENUM ('admin', 'author', 'captain', 'player');
+CREATE TYPE challenge_type AS ENUM ('static', 'dynamic', 'on-demand');
+
 -- ### FUNCTIONS ###
 
 -- function to join a team; enforces team limit

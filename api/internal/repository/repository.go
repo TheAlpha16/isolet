@@ -4,6 +4,7 @@ import (
 	cvDom "github.com/TheAlpha16/isolet/api/internal/domain/configvars"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
+	challengeRepo "github.com/TheAlpha16/isolet/api/internal/repository/challenge"
 	cvRepo "github.com/TheAlpha16/isolet/api/internal/repository/configvars"
 	teamRepo "github.com/TheAlpha16/isolet/api/internal/repository/team"
 	userRepo "github.com/TheAlpha16/isolet/api/internal/repository/user"
@@ -30,5 +31,12 @@ func New(db *gorm.DB) *Repositories {
 }
 
 func AutoMigrate(db *gorm.DB) error {
-	return db.AutoMigrate(&userRepo.User{}, &cvRepo.ConfigVars{}, &teamRepo.Team{})
+	return db.AutoMigrate(
+		&cvRepo.ConfigVars{},
+		&userRepo.User{},
+		&teamRepo.Team{},
+		&challengeRepo.Category{},
+		&challengeRepo.Challenge{},
+		&challengeRepo.Hint{},
+	)
 }
