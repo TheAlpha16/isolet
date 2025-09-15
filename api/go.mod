@@ -17,6 +17,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/joho/godotenv v1.5.1
 	github.com/lestrrat-go/jwx/v3 v3.0.10
+	github.com/lib/pq v1.10.9
 	github.com/uptrace/opentelemetry-go-extra/otelgorm v0.3.2
 	github.com/valkey-io/valkey-go v1.0.64
 	github.com/vmihailenco/msgpack/v5 v5.4.1
