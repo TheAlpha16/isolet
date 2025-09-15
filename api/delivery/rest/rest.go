@@ -6,6 +6,7 @@ import (
 	authHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/auth"
 	eventHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/event"
 	healthHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/health"
+	profileHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/profile"
 	teamHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/team"
 	"github.com/TheAlpha16/isolet/api/delivery/rest/middleware"
 	"github.com/TheAlpha16/isolet/api/delivery/rest/routes"
@@ -13,10 +14,10 @@ import (
 	"github.com/TheAlpha16/isolet/api/internal/usecase"
 	"github.com/TheAlpha16/isolet/api/utils"
 	"github.com/TheAlpha16/isolet/api/utils/logger"
-	"go.uber.org/zap"
 
 	"github.com/gofiber/contrib/otelfiber/v2"
 	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 )
 
 func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
@@ -43,6 +44,7 @@ func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
 	authHandler := authHan.New(usecases.Auth)
 	teamHandler := teamHan.New(usecases.Team)
 	eventHandler := eventHan.New(usecases.Event)
+	profileHandler := profileHan.New(usecases.Profile)
 
 	// Setup routes
 	apiRouter := app.Group(config.Rest.APIVersionPrefix)
@@ -50,6 +52,7 @@ func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
 	routes.RegisterAuth(apiRouter, authHandler, usecases.Token, infra.JWT)
 	routes.RegisterTeam(apiRouter, teamHandler, usecases.Token, infra.JWT)
 	routes.RegisterEvent(apiRouter, eventHandler)
+	routes.RegisterProfile(apiRouter, profileHandler, usecases.Token, infra.JWT)
 	return app
 }
 

@@ -198,6 +198,10 @@ func (t *teamImpl) buildInviteLink(ctx context.Context, token string) (string, e
 	return inviteLink, nil
 }
 
+func (t *teamImpl) GetByID(ctx context.Context, id int64) (*teamDom.Team, error) {
+	return t.repo.GetByID(ctx, id)
+}
+
 func New(repo teamDom.Repository, userUc userDom.Usecase, authUc authDom.Usecase, tokenUc tokenDom.Usecase, cvUc cvDom.Usecase, jwtSvc jwt.JWT) teamDom.Usecase {
 	return &teamImpl{
 		repo:    repo,

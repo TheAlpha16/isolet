@@ -1,0 +1,29 @@
+package profile
+
+import (
+	"github.com/TheAlpha16/isolet/api/delivery/rest/response"
+	profileDom "github.com/TheAlpha16/isolet/api/internal/domain/profile"
+	"github.com/gofiber/fiber/v2"
+)
+
+type ProfileHandler interface {
+	Me(c *fiber.Ctx) error
+}
+
+type profileHandler struct {
+	profileUc profileDom.Usecase
+}
+
+func (h *profileHandler) Me(c *fiber.Ctx) error {
+	output, err := h.profileUc.Me(c.UserContext())
+	if err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusOK).JSON(response.Success("", output))
+}
+
+func New(profileUc profileDom.Usecase) ProfileHandler {
+	return &profileHandler{
+		profileUc: profileUc,
+	}
+}

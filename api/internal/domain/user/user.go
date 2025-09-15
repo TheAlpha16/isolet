@@ -12,13 +12,13 @@ const (
 )
 
 type User struct {
-	ID       int64
-	Username string
-	Email    string
-	Password string
-	TeamID   *int64
-	Role     Role
-	IsBanned bool
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"-"`
+	TeamID   *int64 `json:"-"`
+	Role     Role   `json:"role"`
+	IsBanned bool   `json:"-"`
 	domain.BaseEntity
 }
 

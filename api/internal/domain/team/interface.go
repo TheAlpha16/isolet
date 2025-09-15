@@ -11,9 +11,11 @@ type Usecase interface {
 	Join(ctx context.Context, input *JoinInput) (*authDom.Session, error)
 	GenerateInvite(ctx context.Context) (*GenerateInviteOutput, error)
 	AcceptInvite(ctx context.Context, inviteToken string) (*authDom.Session, error)
+	GetByID(ctx context.Context, id int64) (*Team, error)
 }
 
 type Repository interface {
 	Create(ctx context.Context, team *Team) (*Team, error)
 	GetByName(ctx context.Context, name string) (*Team, error)
+	GetByID(ctx context.Context, id int64) (*Team, error)
 }

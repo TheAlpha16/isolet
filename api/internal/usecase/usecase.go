@@ -10,6 +10,7 @@ import (
 	cvDom "github.com/TheAlpha16/isolet/api/internal/domain/configvars"
 	emailDom "github.com/TheAlpha16/isolet/api/internal/domain/email"
 	eventDom "github.com/TheAlpha16/isolet/api/internal/domain/event"
+	profileDom "github.com/TheAlpha16/isolet/api/internal/domain/profile"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
 	tokenDom "github.com/TheAlpha16/isolet/api/internal/domain/token"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
@@ -18,6 +19,7 @@ import (
 	cvUc "github.com/TheAlpha16/isolet/api/internal/usecase/configvars"
 	emailUc "github.com/TheAlpha16/isolet/api/internal/usecase/email"
 	eventUc "github.com/TheAlpha16/isolet/api/internal/usecase/event"
+	profileUc "github.com/TheAlpha16/isolet/api/internal/usecase/profile"
 	teamUc "github.com/TheAlpha16/isolet/api/internal/usecase/team"
 	tokenUc "github.com/TheAlpha16/isolet/api/internal/usecase/token"
 	userUc "github.com/TheAlpha16/isolet/api/internal/usecase/user"
@@ -31,6 +33,7 @@ type Usecases struct {
 	ConfigVars cvDom.Usecase
 	Email      emailDom.Usecase
 	Event      eventDom.Usecase
+	Profile    profileDom.Usecase
 }
 
 func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repository.Repositories, infra *infra.Infra) *Usecases {
@@ -44,6 +47,7 @@ func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repo
 	auth := authUc.New(user, token, cv, email, infra.JWT)
 	team := teamUc.New(repos.Team, user, auth, token, cv, infra.JWT)
 	event := eventUc.New(cv)
+	profile := profileUc.New(user, team)
 
 	return &Usecases{
 		User:       user,
@@ -53,5 +57,6 @@ func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repo
 		ConfigVars: cv,
 		Email:      email,
 		Event:      event,
+		Profile:    profile,
 	}
 }

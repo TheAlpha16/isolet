@@ -3,8 +3,8 @@ package domain
 import "time"
 
 type BaseEntity struct {
-	CreatedAt time.Time `msgpack:"created_at"`
-	UpdatedAt time.Time `msgpack:"updated_at"`
+	CreatedAt time.Time `json:"-" msgpack:"created_at"`
+	UpdatedAt time.Time `json:"-" msgpack:"updated_at"`
 }
 
 func (be *BaseEntity) UpdateTime() {

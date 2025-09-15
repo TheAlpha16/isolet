@@ -2,9 +2,10 @@ package utils
 
 // base route groups
 const (
-	RouteAuth  = "/auth"
-	RouteTeam  = "/team"
-	RouteEvent = "/event"
+	RouteAuth    = "/auth"
+	RouteTeam    = "/team"
+	RouteEvent   = "/event"
+	RouteProfile = "/profile"
 )
 
 // auth routes
@@ -22,6 +23,11 @@ const (
 	RouteTeamCreate = "/create"
 	RouteTeamJoin   = "/join"
 	RouteTeamInvite = "/invite"
+)
+
+// profile routes
+const (
+	RouteProfileMe = "/me"
 )
 
 // event routes
