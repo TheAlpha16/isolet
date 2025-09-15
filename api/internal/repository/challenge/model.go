@@ -1,7 +1,12 @@
 package challenge
 
 import (
+	"context"
+	"time"
+
 	"github.com/TheAlpha16/isolet/api/infra/database/postgres"
+	"github.com/TheAlpha16/isolet/api/internal/domain"
+	challengeDom "github.com/TheAlpha16/isolet/api/internal/domain/challenge"
 	"github.com/lib/pq"
 )
 
@@ -37,5 +42,68 @@ type Challenge struct {
 	MaxAttempts int            `gorm:"not null;default:0"`
 
 	Category Category `gorm:"foreignKey:CategoryID;references:ID"`
-	Hints []Hint `gorm:"foreignKey:ChallengeID;references:ID;constraint:OnDelete:CASCADE"`
+	Hints    []Hint   `gorm:"foreignKey:ChallengeID;references:ID;constraint:OnDelete:CASCADE"`
+}
+
+func (cat *Category) ToDomain(ctx context.Context) (*challengeDom.Category, error) {
+	return &challengeDom.Category{
+		BaseEntity: domain.BaseEntity{
+			CreatedAt: time.Unix(cat.CreatedAt, 0),
+			UpdatedAt: time.Unix(cat.UpdatedAt, 0),
+		},
+		ID:        cat.ID,
+		Name:      cat.Name,
+		IsVisible: cat.IsVisible,
+	}, nil
+}
+
+func (h *Hint) ToDomain(ctx context.Context) (*challengeDom.Hint, error) {
+	return &challengeDom.Hint{
+		BaseEntity: domain.BaseEntity{
+			CreatedAt: time.Unix(h.CreatedAt, 0),
+			UpdatedAt: time.Unix(h.UpdatedAt, 0),
+		},
+		ID:          h.ID,
+		Text:        h.Text,
+		Cost:        h.Cost,
+		IsVisible:   h.IsVisible,
+		ChallengeID: h.ChallengeID,
+	}, nil
+}
+
+func (c *Challenge) ToDomain(ctx context.Context) (*challengeDom.Challenge, error) {
+	category, err := c.Category.ToDomain(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var hints []*challengeDom.Hint
+	for _, hint := range c.Hints {
+		hintDomain, err := hint.ToDomain(ctx)
+		if err != nil {
+			return nil, err
+		}
+		hints = append(hints, hintDomain)
+	}
+
+	return &challengeDom.Challenge{
+		BaseEntity: domain.BaseEntity{
+			CreatedAt: time.Unix(c.CreatedAt, 0),
+			UpdatedAt: time.Unix(c.UpdatedAt, 0),
+		},
+		ID:          c.ID,
+		Name:        c.Name,
+		Prompt:      c.Prompt,
+		Category:    *category,
+		Flag:        c.Flag,
+		Type:        challengeDom.ChallengeType(c.Type),
+		Points:      c.Points,
+		Files:       c.Files,
+		Hints:       hints,
+		Author:      c.Author,
+		Tags:        c.Tags,
+		Links:       c.Links,
+		IsVisible:   c.IsVisible,
+		MaxAttempts: c.MaxAttempts,
+	}, nil
 }
