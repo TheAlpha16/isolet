@@ -10,6 +10,11 @@ var (
 	EventName = ConfigKey[string]{Name: "event_name", Default: "isolet"}
 	PublicURL = ConfigKey[string]{Name: "public_url", Default: "https://isolet.dev"}
 
+	// event
+	EventStart = ConfigKey[int]{Name: "event_start", Default: 1709899200}
+	EventEnd   = ConfigKey[int]{Name: "event_end", Default: 1710028800}
+	PostEvent  = ConfigKey[bool]{Name: "post_event", Default: false}
+
 	//smtp
 	SMTPHost     = ConfigKey[string]{Name: "smtp_host", Default: "smtp.isolet.dev"}
 	SMTPPort     = ConfigKey[int]{Name: "smtp_port", Default: 587}
