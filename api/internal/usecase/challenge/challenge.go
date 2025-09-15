@@ -10,8 +10,18 @@ type challengeImpl struct {
 	repo challengeDom.Repository
 }
 
-func (c *challengeImpl) List(ctx context.Context) ([]*challengeDom.Challenge, error) {
-	return c.repo.GetAll(ctx)
+func (c *challengeImpl) List(ctx context.Context) ([]*challengeDom.ChallengeDTO, error) {
+	domChallenges, err := c.repo.GetAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var challenges []*challengeDom.ChallengeDTO
+	for _, challenge := range domChallenges {
+		challenges = append(challenges, challenge.ToDTO())
+	}
+
+	return challenges, nil
 }
 
 func New(repo challengeDom.Repository) challengeDom.Usecase {
