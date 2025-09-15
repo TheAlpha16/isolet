@@ -7,6 +7,7 @@ import (
 	"github.com/TheAlpha16/isolet/api/infra"
 	"github.com/TheAlpha16/isolet/api/infra/cache"
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
+	challengeDom "github.com/TheAlpha16/isolet/api/internal/domain/challenge"
 	cvDom "github.com/TheAlpha16/isolet/api/internal/domain/configvars"
 	emailDom "github.com/TheAlpha16/isolet/api/internal/domain/email"
 	eventDom "github.com/TheAlpha16/isolet/api/internal/domain/event"
@@ -16,6 +17,7 @@ import (
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
 	"github.com/TheAlpha16/isolet/api/internal/repository"
 	authUc "github.com/TheAlpha16/isolet/api/internal/usecase/auth"
+	challengeUc "github.com/TheAlpha16/isolet/api/internal/usecase/challenge"
 	cvUc "github.com/TheAlpha16/isolet/api/internal/usecase/configvars"
 	emailUc "github.com/TheAlpha16/isolet/api/internal/usecase/email"
 	eventUc "github.com/TheAlpha16/isolet/api/internal/usecase/event"
@@ -34,6 +36,7 @@ type Usecases struct {
 	Email      emailDom.Usecase
 	Event      eventDom.Usecase
 	Profile    profileDom.Usecase
+	Challenge  challengeDom.Usecase
 }
 
 func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repository.Repositories, infra *infra.Infra) *Usecases {
@@ -48,6 +51,7 @@ func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repo
 	team := teamUc.New(repos.Team, user, auth, token, cv, infra.JWT)
 	event := eventUc.New(cv)
 	profile := profileUc.New(user, team)
+	challenge := challengeUc.New(repos.Challenge)
 
 	return &Usecases{
 		User:       user,
@@ -58,5 +62,6 @@ func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repo
 		Email:      email,
 		Event:      event,
 		Profile:    profile,
+		Challenge:  challenge,
 	}
 }

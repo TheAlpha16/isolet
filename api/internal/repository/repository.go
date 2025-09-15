@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"github.com/TheAlpha16/isolet/api/infra/cache"
+	challengeDom "github.com/TheAlpha16/isolet/api/internal/domain/challenge"
 	cvDom "github.com/TheAlpha16/isolet/api/internal/domain/configvars"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
@@ -16,17 +18,20 @@ type Repositories struct {
 	User       userDom.Repository
 	Team       teamDom.Repository
 	ConfigVars cvDom.Repository
+	Challenge  challengeDom.Repository
 }
 
-func New(db *gorm.DB) *Repositories {
+func New(db *gorm.DB, cache cache.Cache) *Repositories {
 	userRepo := userRepo.New(db)
 	teamRepo := teamRepo.New(db)
 	cvRepo := cvRepo.New(db)
+	challengeRepo := challengeRepo.New(db, cache)
 
 	return &Repositories{
 		User:       userRepo,
 		Team:       teamRepo,
 		ConfigVars: cvRepo,
+		Challenge:  challengeRepo,
 	}
 }
 

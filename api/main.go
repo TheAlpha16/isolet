@@ -70,7 +70,7 @@ func main() {
 	}
 
 	// Init repositories
-	repos := repository.New(dbPool)
+	repos := repository.New(dbPool, cache)
 
 	// Init usecases
 	usecases := usecase.New(ctx, &wg, cache, repos, infra)

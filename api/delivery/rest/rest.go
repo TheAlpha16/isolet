@@ -46,7 +46,7 @@ func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
 	teamHandler := teamHan.New(usecases.Team)
 	eventHandler := eventHan.New(usecases.Event)
 	profileHandler := profileHan.New(usecases.Profile)
-	challengeHandler := challengeHan.New()
+	challengeHandler := challengeHan.New(usecases.Challenge)
 
 	// Setup routes
 	apiRouter := app.Group(config.Rest.APIVersionPrefix)
