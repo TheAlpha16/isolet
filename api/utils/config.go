@@ -74,6 +74,10 @@ type Config struct {
 		Timeout     time.Duration `env:"SMTP_TIMEOUT" envDefault:"10s"`
 		ChannelSize int           `env:"SMTP_CHANNEL_SIZE" envDefault:"10"`
 	}
+
+	Challenges struct {
+		CacheTTL time.Duration `env:"CHALLENGE_CACHE_TTL" envDefault:"1h"`
+	}
 }
 
 func GetConfig() *Config {

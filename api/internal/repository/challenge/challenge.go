@@ -6,7 +6,14 @@ import (
 	"github.com/TheAlpha16/isolet/api/infra/cache"
 	challengeDom "github.com/TheAlpha16/isolet/api/internal/domain/challenge"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
+	repoCache "github.com/TheAlpha16/isolet/api/internal/repository/cache"
+	"github.com/TheAlpha16/isolet/api/utils"
+
 	"gorm.io/gorm"
+)
+
+const (
+	cacheKeyChallenges = "challenges"
 )
 
 type challengeRepo struct {
@@ -15,22 +22,29 @@ type challengeRepo struct {
 }
 
 func (challengeRepo *challengeRepo) GetAll(ctx context.Context) ([]*challengeDom.Challenge, error) {
-	var challenges []*Challenge
+	config := utils.GetConfig()
 
-	if err := challengeRepo.db.Preload("Category").Preload("Hints").Find(&challenges).Error; err != nil {
-		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve challenges", err, nil)
-	}
+	return repoCache.CachedQuery(
+		ctx, challengeRepo.cache, cacheKeyChallenges, config.Challenges.CacheTTL,
+		func() ([]*challengeDom.Challenge, error) {
+			var challenges []*Challenge
 
-	var domChallenges []*challengeDom.Challenge
-	for _, challenge := range challenges {
-		domChallenge, err := challenge.ToDomain(ctx)
-		if err != nil {
-			return nil, err
-		}
-		domChallenges = append(domChallenges, domChallenge)
-	}
+			if err := challengeRepo.db.Preload("Category").Preload("Hints").Find(&challenges).Error; err != nil {
+				return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve challenges", err, nil)
+			}
 
-	return domChallenges, nil
+			var domChallenges []*challengeDom.Challenge
+			for _, challenge := range challenges {
+				domChallenge, err := challenge.ToDomain(ctx)
+				if err != nil {
+					return nil, err
+				}
+				domChallenges = append(domChallenges, domChallenge)
+			}
+
+			return domChallenges, nil
+		},
+	)
 }
 
 func New(db *gorm.DB, cache cache.Cache) challengeDom.Repository {
