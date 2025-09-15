@@ -34,14 +34,3 @@ func New(db *gorm.DB, cache cache.Cache) *Repositories {
 		Challenge:  challengeRepo,
 	}
 }
-
-func AutoMigrate(db *gorm.DB) error {
-	return db.AutoMigrate(
-		&cvRepo.ConfigVars{},
-		&userRepo.User{},
-		&teamRepo.Team{},
-		&challengeRepo.Category{},
-		&challengeRepo.Challenge{},
-		&challengeRepo.Hint{},
-	)
-}
