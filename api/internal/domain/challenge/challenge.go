@@ -1,4 +1,4 @@
-package challenege
+package challenge
 
 import "github.com/TheAlpha16/isolet/api/internal/domain"
 
