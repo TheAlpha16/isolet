@@ -7,7 +7,7 @@ import (
 	"github.com/TheAlpha16/isolet/api/infra/database/postgres"
 	"github.com/TheAlpha16/isolet/api/internal/domain"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
-	userDom "github.com/TheAlpha16/isolet/api/internal/repository/user"
+	userRepo "github.com/TheAlpha16/isolet/api/internal/repository/user"
 )
 
 type Team struct {
@@ -16,7 +16,7 @@ type Team struct {
 	CaptainID int64  `gorm:"column:captain_id;not null"`
 	Password  string `gorm:"not null"`
 
-	Captain userDom.User `gorm:"foreignKey:CaptainID;references:ID"`
+	Captain userRepo.User `gorm:"foreignKey:CaptainID;references:ID"`
 }
 
 func (t *Team) ToDomain(ctx context.Context) (*teamDom.Team, error) {
