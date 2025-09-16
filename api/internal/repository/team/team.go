@@ -16,14 +16,14 @@ type teamRepo struct {
 	db *gorm.DB
 }
 
-func (t *teamRepo) Create(ctx context.Context, team *teamDom.Team) (*teamDom.Team, error) {
+func (teamRepo *teamRepo) Create(ctx context.Context, team *teamDom.Team) (*teamDom.Team, error) {
 	teamModel, err := NewTeamModel(team)
 	if err != nil {
 		return nil, err
 	}
 
 	var domainTeam *teamDom.Team
-	err = t.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	err = teamRepo.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// create the team
 		if err := tx.Create(teamModel).Error; err != nil {
 			if pgErr, ok := err.(*pgconn.PgError); ok {
@@ -55,9 +55,9 @@ func (t *teamRepo) Create(ctx context.Context, team *teamDom.Team) (*teamDom.Tea
 	return domainTeam, nil
 }
 
-func (t *teamRepo) GetByName(ctx context.Context, name string) (*teamDom.Team, error) {
+func (teamRepo *teamRepo) GetByName(ctx context.Context, name string) (*teamDom.Team, error) {
 	var team Team
-	if err := t.db.WithContext(ctx).Where("name = ?", name).First(&team).Error; err != nil {
+	if err := teamRepo.db.WithContext(ctx).Where("name = ?", name).First(&team).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, errorDom.Raise(ctx, errorDom.ErrTeamNotFound, "", err, nil)
 		}
@@ -72,9 +72,9 @@ func (t *teamRepo) GetByName(ctx context.Context, name string) (*teamDom.Team, e
 	return domainTeam, nil
 }
 
-func (t *teamRepo) GetByID(ctx context.Context, id int64) (*teamDom.Team, error) {
+func (teamRepo *teamRepo) GetByID(ctx context.Context, id int64) (*teamDom.Team, error) {
 	var team Team
-	if err := t.db.WithContext(ctx).First(&team, id).Error; err != nil {
+	if err := teamRepo.db.WithContext(ctx).First(&team, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, errorDom.Raise(ctx, errorDom.ErrTeamNotFound, "", err, nil)
 		}
