@@ -1,5 +1,11 @@
 package challenge
 
+import (
+	"context"
+
+	"github.com/TheAlpha16/isolet/api/utils/validator"
+)
+
 type CategoryDTO struct {
 	ID   int64  `json:"id"`
 	Name string `json:"name"`
@@ -61,4 +67,22 @@ func (ch *Challenge) ToDTO() *ChallengeDTO {
 		Links:       ch.Links,
 		MaxAttempts: ch.MaxAttempts,
 	}
+}
+
+type SubmitFlagInput struct {
+	ChallengeID int64  `json:"challenge_id" validate:"required"`
+	Flag        string `json:"flag" validate:"required"`
+}
+
+func (sfi *SubmitFlagInput) Validate(ctx context.Context) error {
+	return validator.Validate(ctx, sfi)
+}
+
+type SubmitFlagOutput struct {
+	IsCorrect bool `json:"is_correct"`
+}
+
+type SubmissionStats struct {
+	CorrectCount   int `json:"correct_count"`
+	IncorrectCount int `json:"incorrect_count"`
 }

@@ -13,3 +13,13 @@ func (be *BaseEntity) UpdateTime() {
 	}
 	be.UpdatedAt = time.Now()
 }
+
+type ImmutableEntity struct {
+	CreatedAt time.Time `json:"-" msgpack:"created_at"`
+}
+
+func (ie *ImmutableEntity) UpdateTime() {
+	if ie.CreatedAt.IsZero() {
+		ie.CreatedAt = time.Now()
+	}
+}

@@ -51,7 +51,7 @@ func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repo
 	team := teamUc.New(repos.Team, user, auth, token, cv, infra.JWT)
 	event := eventUc.New(cv)
 	profile := profileUc.New(user, team)
-	challenge := challengeUc.New(repos.Challenge)
+	challenge := challengeUc.New(repos.Challenge, cv)
 
 	return &Usecases{
 		User:       user,

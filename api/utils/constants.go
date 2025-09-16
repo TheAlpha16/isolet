@@ -37,7 +37,8 @@ const (
 )
 
 const (
-	RouteChallengeList = "/"
+	RouteChallengeList       = "/"
+	RouteChallengeSubmitFlag = "/submit"
 )
 
 // misc routes

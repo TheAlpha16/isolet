@@ -79,6 +79,11 @@ const (
 	ErrAuthPasswordResetDisabled ErrorCode = "AUTH-02"
 	ErrAuthMissingToken          ErrorCode = "AUTH-03"
 	ErrAuthUserBanned            ErrorCode = "AUTH-04"
+
+	// Challenge errors
+	ErrChallengeNotFound           ErrorCode = "CHALLENGE-00"
+	ErrChallengeAlreadySolved      ErrorCode = "CHALLENGE-01"
+	ErrChallengeMaxAttemptsReached ErrorCode = "CHALLENGE-02"
 )
 
 // Map of error codes to user-facing messages
@@ -138,6 +143,11 @@ var msgMap = map[ErrorCode]string{
 	ErrAuthPasswordResetDisabled: "password reset is disabled",
 	ErrAuthMissingToken:          "missing auth token",
 	ErrAuthUserBanned:            "user is banned",
+
+	// Challenge errors
+	ErrChallengeNotFound:           "challenge not found",
+	ErrChallengeAlreadySolved:      "challenge already solved",
+	ErrChallengeMaxAttemptsReached: "maximum attempts reached",
 }
 
 // Map of server-side error codes that need to be filtered

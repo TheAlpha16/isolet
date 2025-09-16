@@ -1,6 +1,8 @@
 package challenge
 
-import "github.com/TheAlpha16/isolet/api/internal/domain"
+import (
+	"github.com/TheAlpha16/isolet/api/internal/domain"
+)
 
 type ChallengeType string
 

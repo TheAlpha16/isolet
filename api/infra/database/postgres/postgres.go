@@ -17,6 +17,11 @@ type BaseModel struct {
 	UpdatedAt int64 `gorm:"autoUpdateTime"`
 }
 
+type ImmutableModel struct {
+	ID        int64 `gorm:"primaryKey;autoIncrement"`
+	CreatedAt int64 `gorm:"autoCreateTime"`
+}
+
 func NewConnection(ctx context.Context, dbURI string) (*gorm.DB, func(), error) {
 	config := utils.GetConfig()
 

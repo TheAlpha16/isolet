@@ -43,5 +43,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&challengeRepo.Category{},
 		&challengeRepo.Challenge{},
 		&challengeRepo.Hint{},
+		&challengeRepo.Submission{},
+		&challengeRepo.Solve{},
 	)
 }
