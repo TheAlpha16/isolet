@@ -1,6 +1,7 @@
 package challenge
 
 import (
+	"github.com/TheAlpha16/isolet/api/delivery/rest/handler"
 	"github.com/TheAlpha16/isolet/api/delivery/rest/response"
 	challengeDom "github.com/TheAlpha16/isolet/api/internal/domain/challenge"
 	"github.com/gofiber/fiber/v2"
@@ -25,12 +26,14 @@ func (h *challengeHandler) List(c *fiber.Ctx) error {
 }
 
 func (h *challengeHandler) SubmitFlag(c *fiber.Ctx) error {
-	input, err := decodeSubmitFlag(c)
+	var input challengeDom.SubmitFlagInput
+
+	err := handler.DecodeInput(c, &input)
 	if err != nil {
 		return err
 	}
 
-	output, err := h.challengeUc.SubmitFlag(c.UserContext(), input)
+	output, err := h.challengeUc.SubmitFlag(c.UserContext(), &input)
 	if err != nil {
 		return err
 	}

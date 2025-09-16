@@ -2,6 +2,7 @@ package challenge
 
 import (
 	"context"
+	"strings"
 
 	"github.com/TheAlpha16/isolet/api/utils/validator"
 )
@@ -75,6 +76,9 @@ type SubmitFlagInput struct {
 }
 
 func (sfi *SubmitFlagInput) Validate(ctx context.Context) error {
+	// normalize
+	sfi.Flag = strings.TrimSpace(sfi.Flag)
+
 	return validator.Validate(ctx, sfi)
 }
 

@@ -1,6 +1,7 @@
 package team
 
 import (
+	"github.com/TheAlpha16/isolet/api/delivery/rest/handler"
 	"github.com/TheAlpha16/isolet/api/delivery/rest/response"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
@@ -21,30 +22,38 @@ type teamHandler struct {
 }
 
 func (h *teamHandler) Create(c *fiber.Ctx) error {
-	input, err := decodeCreateRequest(c)
+	var input teamDom.CreateInput
+
+	err := handler.DecodeInput(c, &input)
 	if err != nil {
 		return err
 	}
 
-	session, err := h.teamUc.Create(c.UserContext(), input)
+	session, err := h.teamUc.Create(c.UserContext(), &input)
 	if err != nil {
 		return err
 	}
+
 	c.Cookie(response.BuildAuthCookie(session))
+
 	return c.Status(fiber.StatusCreated).JSON(response.Success("team created successfully", session))
 }
 
 func (h *teamHandler) Join(c *fiber.Ctx) error {
-	input, err := decodeJoinRequest(c)
+	var input teamDom.JoinInput
+
+	err := handler.DecodeInput(c, &input)
 	if err != nil {
 		return err
 	}
 
-	session, err := h.teamUc.Join(c.UserContext(), input)
+	session, err := h.teamUc.Join(c.UserContext(), &input)
 	if err != nil {
 		return err
 	}
+
 	c.Cookie(response.BuildAuthCookie(session))
+
 	return c.Status(fiber.StatusCreated).JSON(response.Success("team joined successfully", session))
 }
 
@@ -66,7 +75,9 @@ func (h *teamHandler) AcceptInvite(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+
 	c.Cookie(response.BuildAuthCookie(session))
+
 	return c.Status(fiber.StatusCreated).JSON(response.Success("team joined successfully", session))
 }
 
