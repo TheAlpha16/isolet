@@ -22,6 +22,10 @@ func (scoreImpl *scoreImpl) GetTeamSolves(ctx context.Context, teamID int64) (ma
 	return scoreImpl.repo.GetTeamSolves(ctx, teamID)
 }
 
+func (scoreImpl *scoreImpl) GetTeamScore(ctx context.Context, teamID int64) (int, error) {
+	return scoreImpl.repo.GetTeamScore(ctx, teamID)
+}
+
 func New(repo scoreDom.Repository) scoreDom.Usecase {
 	return &scoreImpl{
 		repo: repo,

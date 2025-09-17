@@ -71,6 +71,16 @@ func (scoreRepo *scoreRepo) GetTeamSolves(ctx context.Context, teamID int64) (ma
 	return result, nil
 }
 
+func (scoreRepo *scoreRepo) GetTeamScore(ctx context.Context, teamID int64) (int, error) {
+	var score int
+
+	if err := scoreRepo.db.WithContext(ctx).Raw("SELECT COALESCE((SELECT SUM(points) FROM solves WHERE team_id = ?), 0) - COALESCE((SELECT SUM(cost) FROM unlocked_hints WHERE team_id = ?), 0) AS score;", teamID, teamID).Scan(&score).Error; err != nil {
+		return 0, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve team score", err, common.ExtraData{"team_id": teamID})
+	}
+
+	return score, nil
+}
+
 func New(db *gorm.DB) scoreDom.Repository {
 	return &scoreRepo{
 		db: db,
