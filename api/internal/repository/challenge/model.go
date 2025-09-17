@@ -54,7 +54,7 @@ type Submission struct {
 	ChallengeID int64  `gorm:"not null;index:idx_submissions_team_challenge"`
 	UserID      int64  `gorm:"not null"`
 	Flag        string `gorm:"not null"`
-	IsCorrect   bool   `gorm:"not null"`
+	IsCorrect   bool   `gorm:"not null;index:idx_submissions_team_challenge"`
 	IPAddress   string `gorm:"not null"`
 
 	Challenge Challenge     `gorm:"foreignKey:ChallengeID;references:ID;constraint:OnDelete:CASCADE"`
