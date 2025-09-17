@@ -54,7 +54,14 @@ func (h *Hint) ToDTO() *HintDTO {
 func (ch *Challenge) ToDTO() *ChallengeDTO {
 	var hints []*HintDTO
 	for _, hint := range ch.Hints {
+		if !hint.IsVisible {
+			continue
+		}
 		hints = append(hints, hint.ToDTO())
+	}
+	
+	if len(hints) == 0 {
+		hints = []*HintDTO{}
 	}
 
 	return &ChallengeDTO{
@@ -87,4 +94,12 @@ func (sfi *SubmitFlagInput) Validate(ctx context.Context) error {
 
 type SubmitFlagOutput struct {
 	IsCorrect bool `json:"is_correct"`
+}
+
+type UnlockHintInput struct {
+	HintID int64 `json:"hint_id" validate:"required"`
+}
+
+func (sfi *UnlockHintInput) Validate(ctx context.Context) error {
+	return validator.Validate(ctx, sfi)
 }

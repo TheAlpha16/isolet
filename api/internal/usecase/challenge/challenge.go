@@ -33,7 +33,7 @@ func (c *challengeImpl) List(ctx context.Context) ([]*challengeDom.ChallengeDTO,
 
 	var challengeIDs []int64
 	for _, challenge := range domChallenges {
-		if !challenge.AreRequirementsMet(solves) {
+		if !challenge.AreRequirementsMet(solves) || !challenge.IsVisible || !challenge.Category.IsVisible {
 			continue
 		}
 		challengeIDs = append(challengeIDs, challenge.ID)
@@ -67,7 +67,7 @@ func (c *challengeImpl) ValidateAttempt(ctx context.Context, challengeID int64, 
 	}
 
 	// check if challenge is visible
-	if !challenge.IsVisible {
+	if !challenge.IsVisible || !challenge.Category.IsVisible {
 		return nil, errorDom.Raise(ctx, errorDom.ErrChallengeNotFound, "", nil, nil)
 	}
 
