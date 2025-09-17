@@ -46,6 +46,7 @@ func (c *challengeImpl) List(ctx context.Context) ([]*challengeDom.ChallengeDTO,
 
 		for _, hint := range challenge.Hints {
 			if hint.IsUnlocked(unlockedHints) {
+				hint.Unlocked = true
 				continue
 			}
 			hint.Text = ""

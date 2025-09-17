@@ -25,6 +25,7 @@ type Hint struct {
 	Cost        int
 	IsVisible   bool
 	ChallengeID int64
+	Unlocked    bool // this field does not exist in the database
 	domain.BaseEntity
 }
 
