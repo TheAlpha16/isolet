@@ -6,7 +6,7 @@ type Usecase interface {
 	List(ctx context.Context) ([]*ChallengeDTO, error)
 	ValidateAttempt(ctx context.Context, challengeID int64, teamID int64) (*Challenge, error)
 	SubmitFlag(ctx context.Context, input *SubmitFlagInput) (*SubmitFlagOutput, error)
-	// UnlockHint(ctx context.Context, input *UnlockHintInput) (*Hint, error)
+	UnlockHint(ctx context.Context, input *UnlockHintInput) (*Hint, error)
 }
 
 type Repository interface {

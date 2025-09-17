@@ -136,6 +136,24 @@ func (c *challengeImpl) SubmitFlag(ctx context.Context, input *challengeDom.Subm
 	}, nil
 }
 
+func (c *challengeImpl) UnlockHint(ctx context.Context, input *challengeDom.UnlockHintInput) (*challengeDom.Hint, error) {
+	/*
+		 	* 1. if already unlocked
+			* 2. does hint exist
+			* 3. is hint visible
+			* 4. is challenge visible
+			* 5. are challenge requirements met
+			* 6. does team have enough score
+			* 
+		* fetch hint
+		* fetch linked challenge
+		* fetch team solves
+		* fetch team score
+		* insert unlocked hint row
+	*/
+	return nil, nil
+}
+
 func enrichChallengeDTO(challengeDTO *challengeDom.ChallengeDTO, submissionStatsMap map[int64]*scoreDom.SubmissionStats, challengeSolveCounts map[int64]int) {
 	challengeDTO.TotalSolves = challengeSolveCounts[challengeDTO.ID]
 
