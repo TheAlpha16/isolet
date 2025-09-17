@@ -31,18 +31,19 @@ type Hint struct {
 
 type Challenge struct {
 	postgres.BaseModel
-	Name        string         `gorm:"uniqueIndex;not null"`
-	Prompt      string         `gorm:"not null"`
-	CategoryID  int64          `gorm:"column:category_id;not null"`
-	Flag        string         `gorm:"type:text"`
-	Type        string         `gorm:"type:challenge_type;not null;default:'static'"`
-	Points      int            `gorm:"not null"`
-	Files       pq.StringArray `gorm:"type:text[];default:'{}'"`
-	Author      string         `gorm:"not null;default:anonymous"`
-	Tags        pq.StringArray `gorm:"type:text[];default:'{}'"`
-	Links       pq.StringArray `gorm:"type:text[];default:'{}'"`
-	IsVisible   bool           `gorm:"not null;default:false"`
-	MaxAttempts int            `gorm:"not null;default:0"`
+	Name         string         `gorm:"uniqueIndex;not null"`
+	Prompt       string         `gorm:"not null"`
+	CategoryID   int64          `gorm:"column:category_id;not null"`
+	Flag         string         `gorm:"type:text"`
+	Type         string         `gorm:"type:challenge_type;not null;default:'static'"`
+	Points       int            `gorm:"not null"`
+	Requirements pq.Int64Array  `gorm:"type:bigint[];default:'{}'::bigint[]"`
+	Files        pq.StringArray `gorm:"type:text[];default:'{}'"`
+	Author       string         `gorm:"not null;default:anonymous"`
+	Tags         pq.StringArray `gorm:"type:text[];default:'{}'"`
+	Links        pq.StringArray `gorm:"type:text[];default:'{}'"`
+	IsVisible    bool           `gorm:"not null;default:false"`
+	MaxAttempts  int            `gorm:"not null;default:0"`
 
 	Category Category `gorm:"foreignKey:CategoryID;references:ID"`
 	Hints    []Hint   `gorm:"foreignKey:ChallengeID;references:ID;constraint:OnDelete:CASCADE"`
@@ -130,20 +131,21 @@ func (c *Challenge) ToDomain(ctx context.Context) (*challengeDom.Challenge, erro
 			CreatedAt: time.Unix(c.CreatedAt, 0),
 			UpdatedAt: time.Unix(c.UpdatedAt, 0),
 		},
-		ID:          c.ID,
-		Name:        c.Name,
-		Prompt:      c.Prompt,
-		Category:    *category,
-		Flag:        c.Flag,
-		Type:        challengeDom.ChallengeType(c.Type),
-		Points:      c.Points,
-		Files:       c.Files,
-		Hints:       hints,
-		Author:      c.Author,
-		Tags:        c.Tags,
-		Links:       c.Links,
-		IsVisible:   c.IsVisible,
-		MaxAttempts: c.MaxAttempts,
+		ID:           c.ID,
+		Name:         c.Name,
+		Prompt:       c.Prompt,
+		Category:     *category,
+		Flag:         c.Flag,
+		Type:         challengeDom.ChallengeType(c.Type),
+		Points:       c.Points,
+		Requirements: c.Requirements,
+		Files:        c.Files,
+		Hints:        hints,
+		Author:       c.Author,
+		Tags:         c.Tags,
+		Links:        c.Links,
+		IsVisible:    c.IsVisible,
+		MaxAttempts:  c.MaxAttempts,
 	}, nil
 }
 
