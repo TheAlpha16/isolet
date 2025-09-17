@@ -22,6 +22,7 @@ import (
 	emailUc "github.com/TheAlpha16/isolet/api/internal/usecase/email"
 	eventUc "github.com/TheAlpha16/isolet/api/internal/usecase/event"
 	profileUc "github.com/TheAlpha16/isolet/api/internal/usecase/profile"
+	scoreUc "github.com/TheAlpha16/isolet/api/internal/usecase/score"
 	teamUc "github.com/TheAlpha16/isolet/api/internal/usecase/team"
 	tokenUc "github.com/TheAlpha16/isolet/api/internal/usecase/token"
 	userUc "github.com/TheAlpha16/isolet/api/internal/usecase/user"
@@ -51,7 +52,8 @@ func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repo
 	team := teamUc.New(repos.Team, user, auth, token, cv, infra.JWT)
 	event := eventUc.New(cv)
 	profile := profileUc.New(user, team)
-	challenge := challengeUc.New(repos.Challenge, cv)
+	score := scoreUc.New(repos.Score)
+	challenge := challengeUc.New(repos.Challenge, cv, score)
 
 	return &Usecases{
 		User:       user,

@@ -7,12 +7,14 @@ import (
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
 	cvDom "github.com/TheAlpha16/isolet/api/internal/domain/configvars"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
+	scoreDom "github.com/TheAlpha16/isolet/api/internal/domain/score"
 	"github.com/TheAlpha16/isolet/api/utils"
 )
 
 type challengeImpl struct {
-	repo challengeDom.Repository
-	cvUc cvDom.Usecase
+	repo    challengeDom.Repository
+	cvUc    cvDom.Usecase
+	scoreUc scoreDom.Usecase
 }
 
 func (c *challengeImpl) List(ctx context.Context) ([]*challengeDom.ChallengeDTO, error) {
@@ -28,12 +30,12 @@ func (c *challengeImpl) List(ctx context.Context) ([]*challengeDom.ChallengeDTO,
 		challengeIDs = append(challengeIDs, challenge.ID)
 	}
 
-	challengeSolveCounts, err := c.repo.GetChallengeSolveCounts(ctx, challengeIDs)
+	challengeSolveCounts, err := c.scoreUc.GetChallengeSolveCounts(ctx, challengeIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	subStats, err := c.repo.GetSubmissionStats(ctx, teamID, challengeIDs)
+	subStats, err := c.scoreUc.GetSubmissionStats(ctx, teamID, challengeIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -60,13 +62,13 @@ func (c *challengeImpl) ValidateAttempt(ctx context.Context, challengeID int64, 
 	}
 
 	// fetch submission stats
-	subStats, err := c.repo.GetSubmissionStats(ctx, teamID, []int64{challengeID})
+	subStats, err := c.scoreUc.GetSubmissionStats(ctx, teamID, []int64{challengeID})
 	if err != nil {
 		return nil, err
 	}
 	challengeStats, ok := subStats[challengeID]
 	if !ok {
-		challengeStats = &challengeDom.SubmissionStats{}
+		challengeStats = &scoreDom.SubmissionStats{}
 	}
 
 	// check if already solved
@@ -112,7 +114,7 @@ func (c *challengeImpl) SubmitFlag(ctx context.Context, input *challengeDom.Subm
 	}, nil
 }
 
-func enrichChallengeDTO(challengeDTO *challengeDom.ChallengeDTO, submissionStatsMap map[int64]*challengeDom.SubmissionStats, challengeSolveCounts map[int64]int) {
+func enrichChallengeDTO(challengeDTO *challengeDom.ChallengeDTO, submissionStatsMap map[int64]*scoreDom.SubmissionStats, challengeSolveCounts map[int64]int) {
 	challengeDTO.TotalSolves = challengeSolveCounts[challengeDTO.ID]
 
 	stats := submissionStatsMap[challengeDTO.ID]
@@ -124,9 +126,10 @@ func enrichChallengeDTO(challengeDTO *challengeDom.ChallengeDTO, submissionStats
 	challengeDTO.AttemptCount = stats.IncorrectCount + stats.CorrectCount
 }
 
-func New(repo challengeDom.Repository, cvUc cvDom.Usecase) challengeDom.Usecase {
+func New(repo challengeDom.Repository, cvUc cvDom.Usecase, scoreUc scoreDom.Usecase) challengeDom.Usecase {
 	return &challengeImpl{
-		repo: repo,
-		cvUc: cvUc,
+		repo:    repo,
+		cvUc:    cvUc,
+		scoreUc: scoreUc,
 	}
 }

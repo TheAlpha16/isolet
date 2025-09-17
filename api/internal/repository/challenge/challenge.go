@@ -97,47 +97,6 @@ func (challengeRepo *challengeRepo) SubmitFlag(ctx context.Context, submission *
 	})
 }
 
-func (challengeRepo *challengeRepo) GetSubmissionStats(ctx context.Context, teamID int64, challengeIDs []int64) (map[int64]*challengeDom.SubmissionStats, error) {
-	result := make(map[int64]*challengeDom.SubmissionStats, len(challengeIDs))
-	var rows []SubmissionStatsDTO
-
-	if len(challengeIDs) == 0 {
-		return result, nil
-	}
-
-	if err := challengeRepo.db.WithContext(ctx).Raw("SELECT challenge_id, COUNT(*) FILTER (WHERE is_correct = true)  AS correct_count, COUNT(*) FILTER (WHERE is_correct = false) AS incorrect_count FROM submissions WHERE team_id = ? AND challenge_id IN ? GROUP BY challenge_id", teamID, challengeIDs).Scan(&rows).Error; err != nil {
-		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve submission stats", err, common.ExtraData{"team_id": teamID, "challenge_ids": challengeIDs})
-	}
-
-	for _, row := range rows {
-		result[row.ChallengeID] = &challengeDom.SubmissionStats{
-			CorrectCount:   int(row.CorrectCount),
-			IncorrectCount: int(row.IncorrectCount),
-		}
-	}
-
-	return result, nil
-}
-
-func (challengeRepo *challengeRepo) GetChallengeSolveCounts(ctx context.Context, challengeIDs []int64) (map[int64]int, error) {
-	result := make(map[int64]int, len(challengeIDs))
-	var rows []ChallengeSolveCountDTO
-
-	if len(challengeIDs) == 0 {
-		return result, nil
-	}
-
-	if err := challengeRepo.db.WithContext(ctx).Raw("SELECT challenge_id, COUNT(*) AS solve_count FROM solves WHERE challenge_id IN ? GROUP BY challenge_id", challengeIDs).Scan(&rows).Error; err != nil {
-		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve challenge solve counts", err, common.ExtraData{"challenge_ids": challengeIDs})
-	}
-
-	for _, row := range rows {
-		result[row.ChallengeID] = int(row.SolveCount)
-	}
-
-	return result, nil
-}
-
 func New(db *gorm.DB, cache cache.Cache) challengeDom.Repository {
 	return &challengeRepo{
 		db:    db,

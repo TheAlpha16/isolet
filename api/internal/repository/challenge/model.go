@@ -74,17 +74,6 @@ type Solve struct {
 	Submission Submission    `gorm:"foreignKey:SubmissionID;references:ID;constraint:OnDelete:CASCADE"`
 }
 
-type SubmissionStatsDTO struct {
-	ChallengeID    int64 `gorm:"column:challenge_id"`
-	CorrectCount   int64 `gorm:"column:correct_count"`
-	IncorrectCount int64 `gorm:"column:incorrect_count"`
-}
-
-type ChallengeSolveCountDTO struct {
-	ChallengeID int64 `gorm:"column:challenge_id"`
-	SolveCount  int64 `gorm:"column:solve_count"`
-}
-
 func (cat *Category) ToDomain(ctx context.Context) (*challengeDom.Category, error) {
 	return &challengeDom.Category{
 		BaseEntity: domain.BaseEntity{

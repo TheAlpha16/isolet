@@ -88,8 +88,3 @@ func (sfi *SubmitFlagInput) Validate(ctx context.Context) error {
 type SubmitFlagOutput struct {
 	IsCorrect bool `json:"is_correct"`
 }
-
-type SubmissionStats struct {
-	CorrectCount   int `json:"correct_count"`
-	IncorrectCount int `json:"incorrect_count"`
-}
