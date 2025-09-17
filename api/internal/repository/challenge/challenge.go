@@ -10,6 +10,7 @@ import (
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	repoCache "github.com/TheAlpha16/isolet/api/internal/repository/cache"
 	"github.com/TheAlpha16/isolet/api/utils"
+	"github.com/jackc/pgx/v5/pgconn"
 
 	"gorm.io/gorm"
 )
@@ -91,6 +92,11 @@ func (challengeRepo *challengeRepo) SubmitFlag(ctx context.Context, submission *
 		}
 
 		if err := tx.Create(solve).Error; err != nil {
+			if pgErr, ok := err.(*pgconn.PgError); ok {
+				if pgErr.Code == errorDom.PgErrDuplicateKey {
+					return errorDom.Raise(ctx, errorDom.ErrChallengeAlreadySolved, "", err, nil)
+				}
+			}
 			return errorDom.Raise(ctx, errorDom.ErrDBCreateError, "failed to create solve", err, common.ExtraData{"solve": solve})
 		}
 
@@ -111,6 +117,59 @@ func (challengeRepo *challengeRepo) GetUnlockedHints(ctx context.Context, teamID
 	}
 
 	return result, nil
+}
+
+func (challengeRepo *challengeRepo) GetHintByID(ctx context.Context, id int64) (*challengeDom.Hint, error) {
+	config := utils.GetConfig()
+
+	return repoCache.CachedQuery(
+		ctx, challengeRepo.cache,
+		GetHintCacheKey(id),
+		config.Hints.CacheTTL,
+		func() (*challengeDom.Hint, error) {
+			var hint Hint
+			if err := challengeRepo.db.First(&hint, id).Error; err != nil {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					return nil, errorDom.Raise(ctx, errorDom.ErrHintNotFound, "", err, nil)
+				}
+				return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve hint", err, common.ExtraData{"id": id})
+			}
+
+			return hint.ToDomain(ctx)
+		},
+	)
+}
+
+func (challengeRepo *challengeRepo) UnlockHint(ctx context.Context, uHint *challengeDom.UnlockedHint) error {
+	uHintModel, err := NewUnlockedHintModel(uHint)
+	if err != nil {
+		return err
+	}
+
+	res := challengeRepo.db.WithContext(ctx).Exec(`
+	INSERT INTO unlocked_hints (team_id, hint_id, cost, created_at)
+	SELECT ?, ?, ?, EXTRACT(EPOCH FROM NOW())::bigint
+	WHERE (
+		(SELECT COALESCE(SUM(points), 0) FROM solves WHERE team_id = ?)
+		- (SELECT COALESCE(SUM(cost), 0) FROM unlocked_hints WHERE team_id = ?)
+	) >= ?;
+	`, uHintModel.TeamID, uHintModel.HintID, uHintModel.Cost,
+		uHintModel.TeamID, uHintModel.TeamID, uHintModel.Cost)
+
+	if res.Error != nil {
+		if pgErr, ok := res.Error.(*pgconn.PgError); ok {
+			if pgErr.Code == errorDom.PgErrDuplicateKey {
+				return errorDom.Raise(ctx, errorDom.ErrHintAlreadyUnlocked, "", nil, nil)
+			}
+		}
+		return errorDom.Raise(ctx, errorDom.ErrDBExecError, "failed to unlock hint", res.Error, common.ExtraData{"team_id": uHintModel.TeamID, "hint_id": uHintModel.HintID})
+	}
+
+	if res.RowsAffected == 0 {
+		return errorDom.Raise(ctx, errorDom.ErrHintCostExceeded, "", nil, nil)
+	}
+
+	return nil
 }
 
 func New(db *gorm.DB, cache cache.Cache) challengeDom.Repository {

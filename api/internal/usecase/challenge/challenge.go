@@ -138,22 +138,57 @@ func (c *challengeImpl) SubmitFlag(ctx context.Context, input *challengeDom.Subm
 	}, nil
 }
 
-func (c *challengeImpl) UnlockHint(ctx context.Context, input *challengeDom.UnlockHintInput) (*challengeDom.Hint, error) {
-	/*
-		 	* 1. if already unlocked
-			* 2. does hint exist
-			* 3. is hint visible
-			* 4. is challenge visible
-			* 5. are challenge requirements met
-			* 6. does team have enough score
-			*
-		* fetch hint
-		* fetch linked challenge
-		* fetch team solves
-		* fetch team score
-		* insert unlocked hint row
-	*/
-	return nil, nil
+func (c *challengeImpl) UnlockHint(ctx context.Context, input *challengeDom.UnlockHintInput) (*challengeDom.HintDTO, error) {
+	teamID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyTeamID)
+	ErrHintNotFound := errorDom.Raise(ctx, errorDom.ErrHintNotFound, "", nil, nil)
+
+	hint, err := c.repo.GetHintByID(ctx, input.HintID)
+	if err != nil {
+		return nil, err
+	}
+	if !hint.IsVisible {
+		return nil, ErrHintNotFound
+	}
+
+	challenge, err := c.repo.GetByID(ctx, hint.ChallengeID)
+	if err != nil {
+		if errorDom.IsSameError(err, errorDom.ErrChallengeNotFound) {
+			return nil, ErrHintNotFound
+		}
+		return nil, err
+	}
+	if !challenge.IsVisible {
+		return nil, ErrHintNotFound
+	}
+
+	teamSolves, err := c.scoreUc.GetTeamSolves(ctx, teamID)
+	if err != nil {
+		return nil, err
+	}
+	if !challenge.AreRequirementsMet(teamSolves) {
+		return nil, ErrHintNotFound
+	}
+
+	teamScore, err := c.scoreUc.GetTeamScore(ctx, teamID)
+	if err != nil {
+		return nil, err
+	}
+	if teamScore < hint.Cost {
+		return nil, errorDom.Raise(ctx, errorDom.ErrHintCostExceeded, "", nil, nil)
+	}
+
+	uHint := &challengeDom.UnlockedHint{
+		TeamID: teamID,
+		HintID: hint.ID,
+		Cost:   hint.Cost,
+	}
+	hint.Unlocked = true
+
+	if err := c.repo.UnlockHint(ctx, uHint); err != nil {
+		return nil, err
+	}
+
+	return hint.ToDTO(), nil
 }
 
 func enrichChallengeDTO(challengeDTO *challengeDom.ChallengeDTO, submissionStatsMap map[int64]*scoreDom.SubmissionStats, challengeSolveCounts map[int64]int) {

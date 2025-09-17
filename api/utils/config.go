@@ -78,6 +78,10 @@ type Config struct {
 	Challenges struct {
 		CacheTTL time.Duration `env:"CHALLENGE_CACHE_TTL" envDefault:"1h"`
 	}
+
+	Hints struct {
+		CacheTTL time.Duration `env:"HINT_CACHE_TTL" envDefault:"1h"`
+	}
 }
 
 func GetConfig() *Config {

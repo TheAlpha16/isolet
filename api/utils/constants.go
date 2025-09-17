@@ -39,6 +39,7 @@ const (
 const (
 	RouteChallengeList       = "/"
 	RouteChallengeSubmitFlag = "/submit"
+	RouteHintUnlock          = "/hint/unlock"
 )
 
 // misc routes

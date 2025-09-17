@@ -190,3 +190,11 @@ func NewSubmissionModel(sub *challengeDom.Submission) (*Submission, error) {
 		IPAddress:   sub.IPAddress,
 	}, nil
 }
+
+func NewUnlockedHintModel(uHint *challengeDom.UnlockedHint) (*UnlockedHint, error) {
+	return &UnlockedHint{
+		TeamID: uHint.TeamID,
+		HintID: uHint.HintID,
+		Cost:   uHint.Cost,
+	}, nil
+}

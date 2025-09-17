@@ -9,3 +9,7 @@ func GetChallengeCacheKey(id int64) string {
 func GetAllChallengesCacheKey() string {
 	return "challenges"
 }
+
+func GetHintCacheKey(id int64) string {
+	return fmt.Sprintf("hint:%d", id)
+}

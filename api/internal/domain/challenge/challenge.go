@@ -29,6 +29,14 @@ type Hint struct {
 	domain.BaseEntity
 }
 
+type UnlockedHint struct {
+	ID     int64
+	TeamID int64
+	HintID int64
+	Cost   int
+	domain.ImmutableEntity
+}
+
 type Challenge struct {
 	ID           int64
 	Name         string

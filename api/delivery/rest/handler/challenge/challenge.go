@@ -49,12 +49,12 @@ func (h *challengeHandler) UnlockHint(c *fiber.Ctx) error {
 		return err
 	}
 
-	// hint, err := h.challengeUc.UnlockHint(c.UserContext(), &input)
-	// if err != nil {
-	// 	return err
-	// }
+	hint, err := h.challengeUc.UnlockHint(c.UserContext(), &input)
+	if err != nil {
+		return err
+	}
 
-	return c.Status(fiber.StatusOK).JSON(response.Success("unlocked hint", input))
+	return c.Status(fiber.StatusOK).JSON(response.Success("unlocked hint", hint))
 }
 
 func New(challengeUc challengeDom.Usecase) ChallengeHandler {

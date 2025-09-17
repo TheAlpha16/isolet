@@ -84,6 +84,11 @@ const (
 	ErrChallengeNotFound           ErrorCode = "CHALLENGE-00"
 	ErrChallengeAlreadySolved      ErrorCode = "CHALLENGE-01"
 	ErrChallengeMaxAttemptsReached ErrorCode = "CHALLENGE-02"
+
+	// Hint errors
+	ErrHintNotFound        ErrorCode = "HINT-00"
+	ErrHintCostExceeded    ErrorCode = "HINT-01"
+	ErrHintAlreadyUnlocked ErrorCode = "HINT-02"
 )
 
 // Map of error codes to user-facing messages
@@ -148,6 +153,11 @@ var msgMap = map[ErrorCode]string{
 	ErrChallengeNotFound:           "challenge not found",
 	ErrChallengeAlreadySolved:      "challenge already solved",
 	ErrChallengeMaxAttemptsReached: "maximum attempts reached",
+
+	// Hint errors
+	ErrHintNotFound:        "hint not found",
+	ErrHintCostExceeded:    "insufficient points to unlock hint",
+	ErrHintAlreadyUnlocked: "hint already unlocked",
 }
 
 // Map of server-side error codes that need to be filtered
