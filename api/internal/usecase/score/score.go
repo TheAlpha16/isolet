@@ -18,6 +18,10 @@ func (scoreImpl *scoreImpl) GetChallengeSolveCounts(ctx context.Context, challen
 	return scoreImpl.repo.GetChallengeSolveCounts(ctx, challengeIDs)
 }
 
+func (scoreImpl *scoreImpl) GetTeamSolves(ctx context.Context, teamID int64) (map[int64]struct{}, error) {
+	return scoreImpl.repo.GetTeamSolves(ctx, teamID)
+}
+
 func New(repo scoreDom.Repository) scoreDom.Usecase {
 	return &scoreImpl{
 		repo: repo,

@@ -9,9 +9,13 @@ type Usecase interface {
 
 	// returns the count of solves for challenges
 	GetChallengeSolveCounts(ctx context.Context, challengeIDs []int64) (map[int64]int, error)
+
+	// returns the solves of challenges by a team
+	GetTeamSolves(ctx context.Context, teamID int64) (map[int64]struct{}, error)
 }
 
 type Repository interface {
 	GetSubmissionStats(ctx context.Context, teamID int64, challengeIDs []int64) (map[int64]*SubmissionStats, error)
 	GetChallengeSolveCounts(ctx context.Context, challengeIDs []int64) (map[int64]int, error)
+	GetTeamSolves(ctx context.Context, teamID int64) (map[int64]struct{}, error)
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	scoreDom "github.com/TheAlpha16/isolet/api/internal/domain/score"
+	challengeRepo "github.com/TheAlpha16/isolet/api/internal/repository/challenge"
 
 	"gorm.io/gorm"
 )
@@ -50,6 +51,21 @@ func (scoreRepo *scoreRepo) GetChallengeSolveCounts(ctx context.Context, challen
 
 	for _, row := range rows {
 		result[row.ChallengeID] = int(row.SolveCount)
+	}
+
+	return result, nil
+}
+
+func (scoreRepo *scoreRepo) GetTeamSolves(ctx context.Context, teamID int64) (map[int64]struct{}, error) {
+	result := make(map[int64]struct{}, 100)
+	var rows []*challengeRepo.Solve
+
+	if err := scoreRepo.db.WithContext(ctx).Select("challenge_id").Where("team_id = ?", teamID).Find(&rows).Error; err != nil {
+		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve team solves", err, common.ExtraData{"team_id": teamID})
+	}
+
+	for _, row := range rows {
+		result[row.ChallengeID] = struct{}{}
 	}
 
 	return result, nil

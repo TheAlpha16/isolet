@@ -19,15 +19,25 @@ type challengeImpl struct {
 
 func (c *challengeImpl) List(ctx context.Context) ([]*challengeDom.ChallengeDTO, error) {
 	teamID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyTeamID)
+	filteredChallenges := make([]*challengeDom.Challenge, 0)
 
 	domChallenges, err := c.repo.GetAll(ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	solves, err := c.scoreUc.GetTeamSolves(ctx, teamID)
+	if err != nil {
+		return nil, err
+	}
+
 	var challengeIDs []int64
 	for _, challenge := range domChallenges {
+		if !challenge.AreRequirementsMet(solves) {
+			continue
+		}
 		challengeIDs = append(challengeIDs, challenge.ID)
+		filteredChallenges = append(filteredChallenges, challenge)
 	}
 
 	challengeSolveCounts, err := c.scoreUc.GetChallengeSolveCounts(ctx, challengeIDs)
@@ -40,8 +50,8 @@ func (c *challengeImpl) List(ctx context.Context) ([]*challengeDom.ChallengeDTO,
 		return nil, err
 	}
 
-	challenges := make([]*challengeDom.ChallengeDTO, 0, len(domChallenges))
-	for _, challenge := range domChallenges {
+	challenges := make([]*challengeDom.ChallengeDTO, 0, len(filteredChallenges))
+	for _, challenge := range filteredChallenges {
 		challengeDTO := challenge.ToDTO()
 		enrichChallengeDTO(challengeDTO, subStats, challengeSolveCounts)
 		challenges = append(challenges, challengeDTO)
