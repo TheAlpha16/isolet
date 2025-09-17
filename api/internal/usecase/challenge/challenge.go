@@ -84,6 +84,15 @@ func (c *challengeImpl) ValidateAttempt(ctx context.Context, challengeID int64, 
 		return nil, errorDom.Raise(ctx, errorDom.ErrChallengeNotFound, "", nil, nil)
 	}
 
+	// check if requirements are met
+	teamSolves, err := c.scoreUc.GetTeamSolves(ctx, teamID)
+	if err != nil {
+		return nil, err
+	}
+	if !challenge.AreRequirementsMet(teamSolves) {
+		return nil, errorDom.Raise(ctx, errorDom.ErrChallengeNotFound, "", nil, nil)
+	}
+
 	// fetch submission stats
 	subStats, err := c.scoreUc.GetSubmissionStats(ctx, teamID, []int64{challengeID})
 	if err != nil {
