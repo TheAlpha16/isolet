@@ -159,7 +159,7 @@ func (sub *Submission) ToDomain(ctx context.Context) (*challengeDom.Submission, 
 	}, nil
 }
 
-func (sol *Solve) ToModel(ctx context.Context) (*challengeDom.Solve, error) {
+func (sol *Solve) ToDomain(ctx context.Context) (*challengeDom.Solve, error) {
 	return &challengeDom.Solve{
 		ImmutableEntity: domain.ImmutableEntity{
 			CreatedAt: time.Unix(sol.CreatedAt, 0),
