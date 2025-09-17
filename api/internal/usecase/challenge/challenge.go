@@ -31,6 +31,11 @@ func (c *challengeImpl) List(ctx context.Context) ([]*challengeDom.ChallengeDTO,
 		return nil, err
 	}
 
+	unlockedHints, err := c.repo.GetUnlockedHints(ctx, teamID)
+	if err != nil {
+		return nil, err
+	}
+
 	var challengeIDs []int64
 	for _, challenge := range domChallenges {
 		if !challenge.AreRequirementsMet(solves) || !challenge.IsVisible || !challenge.Category.IsVisible {
@@ -38,6 +43,13 @@ func (c *challengeImpl) List(ctx context.Context) ([]*challengeDom.ChallengeDTO,
 		}
 		challengeIDs = append(challengeIDs, challenge.ID)
 		filteredChallenges = append(filteredChallenges, challenge)
+
+		for _, hint := range challenge.Hints {
+			if hint.IsUnlocked(unlockedHints) {
+				continue
+			}
+			hint.Text = ""
+		}
 	}
 
 	challengeSolveCounts, err := c.scoreUc.GetChallengeSolveCounts(ctx, challengeIDs)

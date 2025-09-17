@@ -29,6 +29,15 @@ type Hint struct {
 	Challenge Challenge `gorm:"foreignKey:ChallengeID;references:ID"`
 }
 
+type UnlockedHint struct {
+	postgres.ImmutableModel
+	TeamID int64 `gorm:"not null;index:idx_unlocked_hints_team"`
+	HintID int64 `gorm:"not null;index:idx_unlocked_hints_team"`
+
+	Team teamRepo.Team `gorm:"foreignKey:TeamID;references:ID;constraint:OnDelete:CASCADE"`
+	Hint Hint          `gorm:"foreignKey:HintID;references:ID;constraint:OnDelete:CASCADE"`
+}
+
 type Challenge struct {
 	postgres.BaseModel
 	Name         string         `gorm:"uniqueIndex;not null"`

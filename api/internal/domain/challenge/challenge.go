@@ -55,3 +55,10 @@ func (c *Challenge) AreRequirementsMet(solves map[int64]struct{}) bool {
 	}
 	return true
 }
+
+func (h *Hint) IsUnlocked(unlockedHints map[int64]struct{}) bool {
+	if _, ok := unlockedHints[h.ID]; ok {
+		return true
+	}
+	return false
+}

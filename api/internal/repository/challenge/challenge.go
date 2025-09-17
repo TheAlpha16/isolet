@@ -97,6 +97,21 @@ func (challengeRepo *challengeRepo) SubmitFlag(ctx context.Context, submission *
 	})
 }
 
+func (challengeRepo *challengeRepo) GetUnlockedHints(ctx context.Context, teamID int64) (map[int64]struct{}, error) {
+	result := make(map[int64]struct{}, 100)
+	var rows []*UnlockedHint
+
+	if err := challengeRepo.db.WithContext(ctx).Select("hint_id").Where("team_id = ?", teamID).Find(&rows).Error; err != nil {
+		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve unlocked hints", err, common.ExtraData{"team_id": teamID})
+	}
+
+	for _, row := range rows {
+		result[row.HintID] = struct{}{}
+	}
+
+	return result, nil
+}
+
 func New(db *gorm.DB, cache cache.Cache) challengeDom.Repository {
 	return &challengeRepo{
 		db:    db,

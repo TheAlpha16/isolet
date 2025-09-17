@@ -19,4 +19,6 @@ type Repository interface {
 	// adds an entry to the submissions table
 	// and an entry to solves if the submission is correct
 	SubmitFlag(ctx context.Context, submission *Submission) error
+
+	GetUnlockedHints(ctx context.Context, teamID int64) (map[int64]struct{}, error)
 }
