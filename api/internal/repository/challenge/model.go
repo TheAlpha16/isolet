@@ -31,8 +31,8 @@ type Hint struct {
 
 type UnlockedHint struct {
 	postgres.ImmutableModel
-	TeamID int64 `gorm:"not null;index:idx_unlocked_hints_team"`
-	HintID int64 `gorm:"not null;index:idx_unlocked_hints_team"`
+	TeamID int64 `gorm:"not null;uniqueIndex:idx_unlocked_hints_team"`
+	HintID int64 `gorm:"not null;uniqueIndex:idx_unlocked_hints_team"`
 
 	Team teamRepo.Team `gorm:"foreignKey:TeamID;references:ID;constraint:OnDelete:CASCADE"`
 	Hint Hint          `gorm:"foreignKey:HintID;references:ID;constraint:OnDelete:CASCADE"`
