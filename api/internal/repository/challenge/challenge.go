@@ -87,6 +87,7 @@ func (challengeRepo *challengeRepo) SubmitFlag(ctx context.Context, submission *
 			ChallengeID:  submissionModel.ChallengeID,
 			TeamID:       submissionModel.TeamID,
 			SubmissionID: submissionModel.ID,
+			Points:       submission.Points,
 		}
 
 		if err := tx.Create(solve).Error; err != nil {

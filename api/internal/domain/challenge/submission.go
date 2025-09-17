@@ -10,6 +10,7 @@ type Submission struct {
 	Flag        string
 	IsCorrect   bool
 	IPAddress   string
+	Points      int // this field does not exist in the database
 	domain.ImmutableEntity
 }
 
@@ -18,5 +19,6 @@ type Solve struct {
 	ChallengeID  int64
 	TeamID       int64
 	SubmissionID int64
+	Points       int
 	domain.ImmutableEntity
 }

@@ -121,6 +121,7 @@ func (c *challengeImpl) SubmitFlag(ctx context.Context, input *challengeDom.Subm
 		TeamID:      teamID,
 		Flag:        input.Flag,
 		IsCorrect:   input.Flag == challenge.Flag,
+		Points:      challenge.Points,
 		IPAddress:   "",
 	}
 
@@ -144,7 +145,7 @@ func (c *challengeImpl) UnlockHint(ctx context.Context, input *challengeDom.Unlo
 			* 4. is challenge visible
 			* 5. are challenge requirements met
 			* 6. does team have enough score
-			* 
+			*
 		* fetch hint
 		* fetch linked challenge
 		* fetch team solves

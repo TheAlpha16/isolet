@@ -77,6 +77,7 @@ type Solve struct {
 	ChallengeID  int64 `gorm:"not null;uniqueIndex:idx_solves_challenge_team"`
 	TeamID       int64 `gorm:"not null;uniqueIndex:idx_solves_challenge_team;index"`
 	SubmissionID int64 `gorm:"not null"`
+	Points       int   `gorm:"not null"`
 
 	Challenge  Challenge     `gorm:"foreignKey:ChallengeID;references:ID;constraint:OnDelete:CASCADE"`
 	Team       teamRepo.Team `gorm:"foreignKey:TeamID;references:ID;constraint:OnDelete:CASCADE"`
@@ -174,6 +175,7 @@ func (sol *Solve) ToDomain(ctx context.Context) (*challengeDom.Solve, error) {
 		ChallengeID:  sol.ChallengeID,
 		TeamID:       sol.TeamID,
 		SubmissionID: sol.SubmissionID,
+		Points:       sol.Points,
 	}, nil
 }
 
