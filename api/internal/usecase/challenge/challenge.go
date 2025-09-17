@@ -16,14 +16,33 @@ type challengeImpl struct {
 }
 
 func (c *challengeImpl) List(ctx context.Context) ([]*challengeDom.ChallengeDTO, error) {
+	teamID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyTeamID)
+
 	domChallenges, err := c.repo.GetAll(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var challenges []*challengeDom.ChallengeDTO
+	var challengeIDs []int64
 	for _, challenge := range domChallenges {
-		challenges = append(challenges, challenge.ToDTO())
+		challengeIDs = append(challengeIDs, challenge.ID)
+	}
+
+	challengeSolveCounts, err := c.repo.GetChallengeSolveCounts(ctx, challengeIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	subStats, err := c.repo.GetSubmissionStats(ctx, teamID, challengeIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	challenges := make([]*challengeDom.ChallengeDTO, 0, len(domChallenges))
+	for _, challenge := range domChallenges {
+		challengeDTO := challenge.ToDTO()
+		enrichChallengeDTO(challengeDTO, subStats, challengeSolveCounts)
+		challenges = append(challenges, challengeDTO)
 	}
 
 	return challenges, nil
@@ -41,18 +60,22 @@ func (c *challengeImpl) ValidateAttempt(ctx context.Context, challengeID int64, 
 	}
 
 	// fetch submission stats
-	subStats, err := c.repo.GetSubmissionStats(ctx, teamID, challengeID)
+	subStats, err := c.repo.GetSubmissionStats(ctx, teamID, []int64{challengeID})
 	if err != nil {
 		return nil, err
 	}
+	challengeStats, ok := subStats[challengeID]
+	if !ok {
+		challengeStats = &challengeDom.SubmissionStats{}
+	}
 
 	// check if already solved
-	if subStats.CorrectCount > 0 {
+	if challengeStats.CorrectCount > 0 {
 		return nil, errorDom.Raise(ctx, errorDom.ErrChallengeAlreadySolved, "", nil, nil)
 	}
 
 	// check if team has exhausted attempts
-	if challenge.MaxAttempts > 0 && subStats.IncorrectCount >= challenge.MaxAttempts {
+	if challenge.MaxAttempts > 0 && challengeStats.IncorrectCount >= challenge.MaxAttempts {
 		return nil, errorDom.Raise(ctx, errorDom.ErrChallengeMaxAttemptsReached, "", nil, nil)
 	}
 
@@ -87,6 +110,18 @@ func (c *challengeImpl) SubmitFlag(ctx context.Context, input *challengeDom.Subm
 	return &challengeDom.SubmitFlagOutput{
 		IsCorrect: input.Flag == challenge.Flag,
 	}, nil
+}
+
+func enrichChallengeDTO(challengeDTO *challengeDom.ChallengeDTO, submissionStatsMap map[int64]*challengeDom.SubmissionStats, challengeSolveCounts map[int64]int) {
+	challengeDTO.TotalSolves = challengeSolveCounts[challengeDTO.ID]
+
+	stats := submissionStatsMap[challengeDTO.ID]
+	if stats == nil {
+		return
+	}
+
+	challengeDTO.Solved = stats.CorrectCount > 0
+	challengeDTO.AttemptCount = stats.IncorrectCount + stats.CorrectCount
 }
 
 func New(repo challengeDom.Repository, cvUc cvDom.Usecase) challengeDom.Usecase {

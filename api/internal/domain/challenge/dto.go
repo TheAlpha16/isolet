@@ -19,18 +19,21 @@ type HintDTO struct {
 }
 
 type ChallengeDTO struct {
-	ID          int64         `json:"id"`
-	Name        string        `json:"name"`
-	Prompt      string        `json:"prompt"`
-	Category    CategoryDTO   `json:"category"`
-	Type        ChallengeType `json:"type"`
-	Points      int           `json:"points"`
-	Files       []string      `json:"files"`
-	Hints       []*HintDTO    `json:"hints"`
-	Author      string        `json:"author"`
-	Tags        []string      `json:"tags"`
-	Links       []string      `json:"links"`
-	MaxAttempts int           `json:"max_attempts"`
+	ID           int64         `json:"id"`
+	Name         string        `json:"name"`
+	Prompt       string        `json:"prompt"`
+	Category     CategoryDTO   `json:"category"`
+	Type         ChallengeType `json:"type"`
+	Points       int           `json:"points"`
+	Files        []string      `json:"files"`
+	Hints        []*HintDTO    `json:"hints"`
+	Author       string        `json:"author"`
+	Tags         []string      `json:"tags"`
+	Links        []string      `json:"links"`
+	MaxAttempts  int           `json:"max_attempts"`
+	TotalSolves  int           `json:"total_solves"`
+	Solved       bool          `json:"solved"`
+	AttemptCount int           `json:"attempt_count"`
 }
 
 func (cat *Category) ToDTO() *CategoryDTO {
