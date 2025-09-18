@@ -12,6 +12,7 @@ import (
 	emailDom "github.com/TheAlpha16/isolet/api/internal/domain/email"
 	eventDom "github.com/TheAlpha16/isolet/api/internal/domain/event"
 	profileDom "github.com/TheAlpha16/isolet/api/internal/domain/profile"
+	scoreDom "github.com/TheAlpha16/isolet/api/internal/domain/score"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
 	tokenDom "github.com/TheAlpha16/isolet/api/internal/domain/token"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
@@ -38,6 +39,7 @@ type Usecases struct {
 	Event      eventDom.Usecase
 	Profile    profileDom.Usecase
 	Challenge  challengeDom.Usecase
+	Score      scoreDom.Usecase
 }
 
 func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repository.Repositories, infra *infra.Infra) *Usecases {
@@ -52,7 +54,7 @@ func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repo
 	team := teamUc.New(repos.Team, user, auth, token, cv, infra.JWT)
 	event := eventUc.New(cv)
 	profile := profileUc.New(user, team)
-	score := scoreUc.New(repos.Score)
+	score := scoreUc.New(repos.Score, team, cache)
 	challenge := challengeUc.New(repos.Challenge, cv, score)
 
 	return &Usecases{
@@ -65,5 +67,6 @@ func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repo
 		Event:      event,
 		Profile:    profile,
 		Challenge:  challenge,
+		Score:      score,
 	}
 }

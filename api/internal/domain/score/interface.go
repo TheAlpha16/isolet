@@ -3,6 +3,9 @@ package score
 import "context"
 
 type Usecase interface {
+	// returns the scoreboard
+	GetScoreboard(ctx context.Context, input *GetScoreboardInput) (*Scoreboard, error)
+
 	// returns the count of correct and incorrect submissions for challenges by a team,
 	// if there are no submissions for a challenge, submission stats won't exist in the map
 	GetSubmissionStats(ctx context.Context, teamID int64, challengeIDs []int64) (map[int64]*SubmissionStats, error)
@@ -15,11 +18,17 @@ type Usecase interface {
 
 	// returns the score of a team
 	GetTeamScore(ctx context.Context, teamID int64) (int, error)
+
+	// applies delta to the score of a team
+	// if the call to cache fails, a background job is scheduled to rebuild the scoreboard in cache
+	UpdateTeamScore(ctx context.Context, teamID int64, delta int) error
 }
 
 type Repository interface {
-	GetSubmissionStats(ctx context.Context, teamID int64, challengeIDs []int64) (map[int64]*SubmissionStats, error)
+	GetScoreboard(ctx context.Context) (map[int64]int, error)
 	GetChallengeSolveCounts(ctx context.Context, challengeIDs []int64) (map[int64]int, error)
+
 	GetTeamSolves(ctx context.Context, teamID int64) (map[int64]struct{}, error)
 	GetTeamScore(ctx context.Context, teamID int64) (int, error)
+	GetSubmissionStats(ctx context.Context, teamID int64, challengeIDs []int64) (map[int64]*SubmissionStats, error)
 }

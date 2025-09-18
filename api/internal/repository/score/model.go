@@ -10,3 +10,8 @@ type ChallengeSolveCountDTO struct {
 	ChallengeID int64 `gorm:"column:challenge_id"`
 	SolveCount  int64 `gorm:"column:solve_count"`
 }
+
+type ScoreboardRow struct {
+	TeamID int64 `gorm:"column:team_id"`
+	Score  int64 `gorm:"column:score"`
+}

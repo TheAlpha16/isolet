@@ -89,6 +89,9 @@ const (
 	ErrHintNotFound        ErrorCode = "HINT-00"
 	ErrHintCostExceeded    ErrorCode = "HINT-01"
 	ErrHintAlreadyUnlocked ErrorCode = "HINT-02"
+
+	// Scoreboard errors
+	ErrScoreUpdateFailed ErrorCode = "SCORE-00"
 )
 
 // Map of error codes to user-facing messages
@@ -158,6 +161,9 @@ var msgMap = map[ErrorCode]string{
 	ErrHintNotFound:        "hint not found",
 	ErrHintCostExceeded:    "insufficient points to unlock hint",
 	ErrHintAlreadyUnlocked: "hint already unlocked",
+
+	// Score errors
+	ErrScoreUpdateFailed: "failed to update score",
 }
 
 // Map of server-side error codes that need to be filtered
@@ -180,6 +186,7 @@ var ServerSideErrors = map[ErrorCode]struct{}{
 	ErrEmailTemplateFetch:     {},
 	ErrEmailTemplateExecute:   {},
 	ErrEmailLinkBuild:         {},
+	ErrScoreUpdateFailed:      {},
 }
 
 // Map of auth error codes
