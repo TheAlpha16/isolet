@@ -1,6 +1,8 @@
 package team
 
 import (
+	"strings"
+
 	"github.com/TheAlpha16/isolet/api/delivery/rest/handler"
 	"github.com/TheAlpha16/isolet/api/delivery/rest/response"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
@@ -70,6 +72,7 @@ func (h *teamHandler) AcceptInvite(c *fiber.Ctx) error {
 	if token == "" {
 		return errorDom.Raise(c.UserContext(), errorDom.ErrRestMissingToken, "", nil, nil)
 	}
+	token = strings.TrimSpace(token)
 
 	session, err := h.teamUc.AcceptInvite(c.UserContext(), token)
 	if err != nil {

@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"strings"
+
 	"github.com/TheAlpha16/isolet/api/delivery/rest/handler"
 	"github.com/TheAlpha16/isolet/api/delivery/rest/response"
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
@@ -65,6 +67,8 @@ func (h *authHandler) Verify(c *fiber.Ctx) error {
 	if token == "" {
 		return errorDom.Raise(c.UserContext(), errorDom.ErrRestMissingToken, "", nil, nil)
 	}
+	// normalize token
+	token = strings.TrimSpace(token)
 
 	if err := h.authUc.Verify(c.UserContext(), token); err != nil {
 		return err
