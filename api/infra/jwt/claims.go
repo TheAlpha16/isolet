@@ -2,7 +2,7 @@ package jwt
 
 import (
 	"context"
-	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/TheAlpha16/isolet/api/internal/domain/errors"
@@ -137,7 +137,7 @@ func JWTTokenToClaims(ctx context.Context, token jwt.Token) (*Claims, error) {
 func NewAuthClaims(jwtID string, userID int64, teamID *int64, role userDom.Role, expiresAt time.Time) *Claims {
 	return &Claims{
 		JWTID:     jwtID,
-		Subject:   fmt.Sprintf("%d", userID),
+		Subject:   strconv.FormatInt(userID, 10),
 		UserID:    &userID,
 		TeamID:    teamID,
 		Role:      &role,
@@ -163,7 +163,7 @@ func NewEmailVerificationClaims(jwtID, verificationID string, expiresAt time.Tim
 func NewPasswordResetClaims(jwtID string, userID int64, expiresAt time.Time) *Claims {
 	return &Claims{
 		JWTID:     jwtID,
-		Subject:   fmt.Sprintf("%d", userID),
+		Subject:   strconv.FormatInt(userID, 10),
 		UserID:    &userID,
 		TeamID:    nil,
 		Role:      nil,
@@ -176,7 +176,7 @@ func NewPasswordResetClaims(jwtID string, userID int64, expiresAt time.Time) *Cl
 func NewTeamInviteClaims(jwtID string, teamID int64, expiresAt time.Time) *Claims {
 	return &Claims{
 		JWTID:     jwtID,
-		Subject:   fmt.Sprintf("%d", teamID),
+		Subject:   strconv.FormatInt(teamID, 10),
 		UserID:    nil,
 		TeamID:    &teamID,
 		Role:      nil,

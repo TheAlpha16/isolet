@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/TheAlpha16/isolet/api/infra/jwt"
@@ -236,7 +237,7 @@ func (a *authImpl) GenerateAuthToken(ctx context.Context, user *userDom.User) (*
 	token := tokenDom.Token{
 		TokenIdentifier: tokenDom.TokenIdentifier{
 			ID:       utils.RandomUUID(),
-			EntityID: fmt.Sprintf("%d", user.ID),
+			EntityID: strconv.FormatInt(user.ID, 10),
 			Purpose:  tokenDom.TokenAuth,
 		},
 	}
@@ -261,7 +262,7 @@ func (a *authImpl) Logout(ctx context.Context) error {
 
 	tokenIdentifier := &tokenDom.TokenIdentifier{
 		ID:       sessionID,
-		EntityID: fmt.Sprintf("%d", userID),
+		EntityID: strconv.FormatInt(userID, 10),
 		Purpose:  tokenDom.TokenAuth,
 	}
 

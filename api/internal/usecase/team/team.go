@@ -2,7 +2,7 @@ package team
 
 import (
 	"context"
-	"fmt"
+	"strconv"
 
 	"github.com/TheAlpha16/isolet/api/infra/jwt"
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
@@ -138,7 +138,7 @@ func (t *teamImpl) AcceptInvite(ctx context.Context, inviteToken string) (*authD
 
 func (t *teamImpl) reissueAuthSession(ctx context.Context, user *userDom.User) (*authDom.Session, error) {
 	// revoke all the auth tokens
-	if err := t.tokenUc.RevokeEntityTokens(ctx, tokenDom.TokenAuth, fmt.Sprintf("%d", user.ID)); err != nil {
+	if err := t.tokenUc.RevokeEntityTokens(ctx, tokenDom.TokenAuth, strconv.FormatInt(user.ID, 10)); err != nil {
 		return nil, err
 	}
 
@@ -158,7 +158,7 @@ func (t *teamImpl) getOrCreateInviteToken(ctx context.Context, teamID int64) (*t
 	config := utils.GetConfig()
 
 	// check if there's a token already
-	tokens, err := t.tokenUc.FetchEntityTokens(ctx, tokenDom.TokenTeamInvite, fmt.Sprintf("%d", teamID))
+	tokens, err := t.tokenUc.FetchEntityTokens(ctx, tokenDom.TokenTeamInvite, strconv.FormatInt(teamID, 10))
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +170,7 @@ func (t *teamImpl) getOrCreateInviteToken(ctx context.Context, teamID int64) (*t
 	token := tokenDom.Token{
 		TokenIdentifier: tokenDom.TokenIdentifier{
 			ID:       utils.RandomUUID(),
-			EntityID: fmt.Sprintf("%d", teamID),
+			EntityID: strconv.FormatInt(teamID, 10),
 			Purpose:  tokenDom.TokenTeamInvite,
 		},
 	}
