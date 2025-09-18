@@ -85,7 +85,7 @@ func (scoreRepo *scoreRepo) GetScoreboard(ctx context.Context) (map[int64]int, e
 	result := make(map[int64]int, 100)
 	var rows []*ScoreboardRow
 
-	if err := scoreRepo.db.WithContext(ctx).Raw("SELECT s.team_id, COALESCE(SUM(s.points), 0) - COALESCE(SUM(h.total_cost), 0) AS score FROM solves s LEFT JOIN ( SELECT team_id, SUM(cost) AS total_cost FROM unlocked_hints GROUP BY team_id ) h ON s.team_id = h.team_id GROUP BY s.team_id;").Scan(&rows).Error; err != nil {
+	if err := scoreRepo.db.WithContext(ctx).Raw("SELECT s.team_id, COALESCE(SUM(s.points), 0) - COALESCE(MAX(h.total_cost), 0) AS score FROM solves s LEFT JOIN ( SELECT team_id, SUM(cost) AS total_cost FROM unlocked_hints GROUP BY team_id ) h ON s.team_id = h.team_id GROUP BY s.team_id;").Scan(&rows).Error; err != nil {
 		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve scoreboard", err, nil)
 	}
 
