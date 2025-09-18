@@ -17,5 +17,8 @@ func (gsi *GetScoreboardInput) Validate(ctx context.Context) error {
 	if gsi.PageSize == 0 {
 		gsi.PageSize = defaultPageSize
 	}
+	if gsi.PageSize < minPageSize {
+		gsi.PageSize = minPageSize
+	}
 	return nil
 }

@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	maxPageSize     = 100
+	minPageSize     = 10
 	defaultPageSize = 50
+	maxPageSize     = 100
 
 	ScoreboardCacheKey      = "scoreboard"
 	TeamScoreCacheKeyPrefix = "score:team"
