@@ -66,7 +66,7 @@ func (scoreImpl *scoreImpl) GetScoreboard(ctx context.Context, input *scoreDom.G
 	}
 
 	start := int64((scoreboard.Page - 1) * scoreboard.PageSize)
-	stop := start + int64(scoreboard.PageSize) + 1
+	stop := start + int64(scoreboard.PageSize) - 1
 
 	// DEBUG
 	fmt.Println("start", start)
@@ -100,7 +100,7 @@ func (scoreImpl *scoreImpl) GetScoreboard(ctx context.Context, input *scoreDom.G
 		entries[i] = &scoreDom.ScoreboardEntry{
 			TeamID: teamID,
 			Score:  int(item.Score),
-			Rank:   i + 1,
+			Rank:   int(start) + i + 1,
 		}
 		teamIDs[i] = teamID
 	}
