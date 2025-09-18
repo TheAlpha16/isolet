@@ -84,6 +84,25 @@ func (teamRepo *teamRepo) GetByID(ctx context.Context, id int64) (*teamDom.Team,
 	return team.ToDomain(ctx)
 }
 
+func (teamRepo *teamRepo) GetNameByIDs(ctx context.Context, teamIDs []int64) (map[int64]string, error) {
+	var teams []Team
+
+	if len(teamIDs) == 0 {
+		return make(map[int64]string), nil
+	}
+
+	if err := teamRepo.db.WithContext(ctx).Select("id, name").Where("id IN ?", teamIDs).Find(&teams).Error; err != nil {
+		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to get team names by ids", err, nil)
+	}
+
+	names := make(map[int64]string)
+	for _, team := range teams {
+		names[team.ID] = team.Name
+	}
+
+	return names, nil
+}
+
 func New(db *gorm.DB) teamDom.Repository {
 	return &teamRepo{
 		db: db,

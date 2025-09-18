@@ -136,6 +136,10 @@ func (t *teamImpl) AcceptInvite(ctx context.Context, inviteToken string) (*authD
 	return t.reissueAuthSession(ctx, user)
 }
 
+func (t *teamImpl) GetNameByIDs(ctx context.Context, teamIDs []int64) (map[int64]string, error) {
+	return t.repo.GetNameByIDs(ctx, teamIDs)
+}
+
 func (t *teamImpl) reissueAuthSession(ctx context.Context, user *userDom.User) (*authDom.Session, error) {
 	// revoke all the auth tokens
 	if err := t.tokenUc.RevokeEntityTokens(ctx, tokenDom.TokenAuth, strconv.FormatInt(user.ID, 10)); err != nil {
