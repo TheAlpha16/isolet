@@ -33,6 +33,11 @@ type cache struct {
 	tracer trace.Tracer
 }
 
+type ZRangeItem struct {
+	Member string
+	Score  float64
+}
+
 func (c *cache) WithTrace(ctx context.Context, operation string) (context.Context, trace.Span) {
 	return c.tracer.Start(
 		ctx,

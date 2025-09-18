@@ -14,5 +14,9 @@ type Cache interface {
 	SetWithTTL(ctx context.Context, key, value string, ttl time.Duration) error
 	LoadScript(ctx context.Context, script string) (string, error)
 	SetManyWithExpiry(ctx context.Context, items map[string]string, expiresAt time.Time) error
+	ZIncrBy(ctx context.Context, key string, increment float64, member string) error
+	ZAdd(ctx context.Context, key string, members map[string]float64) error
+	ZRevRangeWithScores(ctx context.Context, key string, start, stop int64) ([]*ZRangeItem, error)
+	ZCard(ctx context.Context, key string) (int64, error)
 	Close()
 }

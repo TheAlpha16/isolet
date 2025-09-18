@@ -115,6 +115,67 @@ func (c *cache) SetManyWithExpiry(ctx context.Context, items map[string]string, 
 	return nil
 }
 
+func (c *cache) ZIncrBy(ctx context.Context, key string, increment float64, member string) error {
+	ctx, span := c.WithTrace(ctx, "zincr")
+	defer span.End()
+
+	err := c.client.Do(ctx, c.client.B().Zincrby().Key(key).Increment(increment).Member(member).Build()).Error()
+	if err != nil {
+		return errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
+	}
+
+	return nil
+}
+
+func (c *cache) ZAdd(ctx context.Context, key string, members map[string]float64) error {
+	ctx, span := c.WithTrace(ctx, "zadd")
+	defer span.End()
+
+	query := c.client.B().Zadd().Key(key).ScoreMember()
+	for member, score := range members {
+		query = query.ScoreMember(score, member)
+	}
+
+	err := c.client.Do(ctx, query.Build()).Error()
+	if err != nil {
+		return errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
+	}
+
+	return nil
+}
+
+func (c *cache) ZRevRangeWithScores(ctx context.Context, key string, start, stop int64) ([]*ZRangeItem, error) {
+	ctx, span := c.WithTrace(ctx, "zrevrange_with_scores")
+	defer span.End()
+
+	result, err := c.client.Do(ctx, c.client.B().Zrevrange().Key(key).Start(start).Stop(stop).Withscores().Build()).AsZScores()
+	if err != nil {
+		return nil, errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
+	}
+
+	items := make([]*ZRangeItem, 0, len(result))
+	for _, item := range result {
+		items = append(items, &ZRangeItem{
+			Member: item.Member,
+			Score:  item.Score,
+		})
+	}
+
+	return items, nil
+}
+
+func (c *cache) ZCard(ctx context.Context, key string) (int64, error) {
+	ctx, span := c.WithTrace(ctx, "zcard")
+	defer span.End()
+
+	result, err := c.client.Do(ctx, c.client.B().Zcard().Key(key).Build()).AsInt64()
+	if err != nil {
+		return 0, errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
+	}
+
+	return result, nil
+}
+
 func (c *cache) Close() {
 	c.client.Close()
 }
