@@ -9,6 +9,8 @@ import (
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	scoreDom "github.com/TheAlpha16/isolet/api/internal/domain/score"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
+	"github.com/TheAlpha16/isolet/api/utils/logger"
+	"go.uber.org/zap"
 )
 
 type scoreImpl struct {
@@ -122,7 +124,7 @@ func (scoreImpl *scoreImpl) GetScoreboard(ctx context.Context, input *scoreDom.G
 	return &scoreboard, nil
 }
 
-func (scoreImpl *scoreImpl) rebuildScoreboard(ctx context.Context) error {
+func (scoreImpl *scoreImpl) RefreshScoreboard(ctx context.Context) error {
 	scores, err := scoreImpl.repo.GetScoreboard(ctx)
 	if err != nil {
 		return err
@@ -138,9 +140,15 @@ func (scoreImpl *scoreImpl) rebuildScoreboard(ctx context.Context) error {
 }
 
 func New(repo scoreDom.Repository, teamUc teamDom.Usecase, cache cache.Cache) scoreDom.Usecase {
-	return &scoreImpl{
+	scoreImpl := &scoreImpl{
 		repo:   repo,
 		teamUc: teamUc,
 		cache:  cache,
 	}
+	err := scoreImpl.RefreshScoreboard(context.Background())
+	if err != nil {
+		errorDom.RaiseToSentry(context.Background(), err)
+		logger.GetAppLogger().Fatal("failed to refresh score board", zap.Error(err))
+	}
+	return scoreImpl
 }
