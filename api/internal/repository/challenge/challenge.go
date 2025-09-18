@@ -146,15 +146,7 @@ func (challengeRepo *challengeRepo) UnlockHint(ctx context.Context, uHint *chall
 		return err
 	}
 
-	res := challengeRepo.db.WithContext(ctx).Exec(`
-	INSERT INTO unlocked_hints (team_id, hint_id, cost, created_at)
-	SELECT ?, ?, ?, EXTRACT(EPOCH FROM NOW())::bigint
-	WHERE (
-		(SELECT COALESCE(SUM(points), 0) FROM solves WHERE team_id = ?)
-		- (SELECT COALESCE(SUM(cost), 0) FROM unlocked_hints WHERE team_id = ?)
-	) >= ?;
-	`, uHintModel.TeamID, uHintModel.HintID, uHintModel.Cost,
-		uHintModel.TeamID, uHintModel.TeamID, uHintModel.Cost)
+	res := challengeRepo.db.WithContext(ctx).Exec("INSERT INTO unlocked_hints (team_id, hint_id, cost, created_at) SELECT ?, ?, ?, EXTRACT(EPOCH FROM NOW())::bigint WHERE ((SELECT COALESCE(SUM(points), 0) FROM solves WHERE team_id = ?) - (SELECT COALESCE(SUM(cost), 0) FROM unlocked_hints WHERE team_id = ?)) >= ?;", uHintModel.TeamID, uHintModel.HintID, uHintModel.Cost, uHintModel.TeamID, uHintModel.TeamID, uHintModel.Cost)
 
 	if res.Error != nil {
 		if pgErr, ok := res.Error.(*pgconn.PgError); ok {
