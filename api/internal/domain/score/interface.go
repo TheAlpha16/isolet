@@ -22,6 +22,9 @@ type Usecase interface {
 	// applies delta to the score of a team
 	// if the call to cache fails, a background job is scheduled to rebuild the scoreboard in cache
 	UpdateTeamScore(ctx context.Context, teamID int64, delta int) error
+
+	// refreshes the scoreboard by fetching the latest data from the repository
+	RefreshScoreboard(ctx context.Context) error
 }
 
 type Repository interface {

@@ -2,6 +2,7 @@ package challenge
 
 import (
 	"context"
+	"sync"
 
 	challengeDom "github.com/TheAlpha16/isolet/api/internal/domain/challenge"
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
@@ -15,6 +16,7 @@ type challengeImpl struct {
 	repo    challengeDom.Repository
 	cvUc    cvDom.Usecase
 	scoreUc scoreDom.Usecase
+	wg      *sync.WaitGroup
 }
 
 func (c *challengeImpl) List(ctx context.Context) ([]*challengeDom.ChallengeDTO, error) {
@@ -136,10 +138,16 @@ func (c *challengeImpl) SubmitFlag(ctx context.Context, input *challengeDom.Subm
 	}
 
 	if !c.cvUc.GetBool(ctx, cvDom.PostEvent) {
-		err = c.repo.SubmitFlag(ctx, submission)
-		if err != nil {
+		if err := c.repo.SubmitFlag(ctx, submission); err != nil {
 			return nil, err
 		}
+
+		rCtx := context.WithoutCancel(ctx)
+		c.wg.Add(1)
+		go func() {
+			defer c.wg.Done()
+			c.updateScoreboard(rCtx, teamID, submission.Points)
+		}()
 	}
 
 	return &challengeDom.SubmitFlagOutput{
@@ -197,6 +205,14 @@ func (c *challengeImpl) UnlockHint(ctx context.Context, input *challengeDom.Unlo
 		return nil, err
 	}
 
+	// update the scoreboard
+	rCtx := context.WithoutCancel(ctx)
+	c.wg.Add(1)
+	go func() {
+		defer c.wg.Done()
+		c.updateScoreboard(rCtx, teamID, -uHint.Cost)
+	}()
+
 	return hint.ToDTO(), nil
 }
 
@@ -212,10 +228,24 @@ func enrichChallengeDTO(challengeDTO *challengeDom.ChallengeDTO, submissionStats
 	challengeDTO.AttemptCount = stats.IncorrectCount + stats.CorrectCount
 }
 
-func New(repo challengeDom.Repository, cvUc cvDom.Usecase, scoreUc scoreDom.Usecase) challengeDom.Usecase {
+func (c *challengeImpl) updateScoreboard(ctx context.Context, teamID int64, delta int) {
+	err := c.scoreUc.UpdateTeamScore(ctx, teamID, delta)
+	if err == nil {
+		return
+	}
+	errorDom.RaiseToSentry(ctx, err)
+
+	// trigger the refresh scoreboard
+	if err := c.scoreUc.RefreshScoreboard(ctx); err != nil {
+		errorDom.RaiseToSentry(ctx, err)
+	}
+}
+
+func New(repo challengeDom.Repository, cvUc cvDom.Usecase, scoreUc scoreDom.Usecase, wg *sync.WaitGroup) challengeDom.Usecase {
 	return &challengeImpl{
 		repo:    repo,
 		cvUc:    cvUc,
 		scoreUc: scoreUc,
+		wg:      wg,
 	}
 }
