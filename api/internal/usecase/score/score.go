@@ -2,7 +2,6 @@ package score
 
 import (
 	"context"
-	"fmt"
 	"math"
 
 	"github.com/TheAlpha16/isolet/api/infra/cache"
@@ -55,22 +54,12 @@ func (scoreImpl *scoreImpl) GetScoreboard(ctx context.Context, input *scoreDom.G
 		Entries:    []*scoreDom.ScoreboardEntry{},
 	}
 
-	// DEBUG
-	fmt.Println("entryLen:", entryLen)
-	fmt.Println("page", input.Page)
-	fmt.Println("pageSize", input.PageSize)
-	fmt.Println("total_pages", scoreboard.TotalPages)
-
 	if input.Page > scoreboard.TotalPages {
 		return &scoreboard, nil
 	}
 
 	start := int64((scoreboard.Page - 1) * scoreboard.PageSize)
 	stop := start + int64(scoreboard.PageSize) - 1
-
-	// DEBUG
-	fmt.Println("start", start)
-	fmt.Println("stop", stop)
 
 	items, err := scoreImpl.cache.ZRevRangeWithScores(ctx, scoreDom.ScoreboardCacheKey, start, stop)
 	if err != nil {
@@ -81,10 +70,6 @@ func (scoreImpl *scoreImpl) GetScoreboard(ctx context.Context, input *scoreDom.G
 		return &scoreboard, nil
 	}
 
-	// DEBUG
-	fmt.Println("items", items)
-	fmt.Println()
-
 	entries := make([]*scoreDom.ScoreboardEntry, len(items))
 	teamIDs := make([]int64, len(items))
 
@@ -93,9 +78,6 @@ func (scoreImpl *scoreImpl) GetScoreboard(ctx context.Context, input *scoreDom.G
 		if err != nil {
 			return nil, err
 		}
-		// DEBUG
-		fmt.Println("teamID", teamID)
-		fmt.Println("score", item.Score)
 
 		entries[i] = &scoreDom.ScoreboardEntry{
 			TeamID: teamID,
@@ -105,16 +87,10 @@ func (scoreImpl *scoreImpl) GetScoreboard(ctx context.Context, input *scoreDom.G
 		teamIDs[i] = teamID
 	}
 
-	// DEBUG
-	fmt.Println("teamIDs", teamIDs)
-
 	teamNames, err := scoreImpl.teamUc.GetNameByIDs(ctx, teamIDs)
 	if err != nil {
 		return nil, err
 	}
-
-	// DEBUG
-	fmt.Println("teamNames", teamNames)
 
 	for _, entry := range entries {
 		entry.TeamName = teamNames[entry.TeamID]
