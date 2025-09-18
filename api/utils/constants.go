@@ -7,6 +7,7 @@ const (
 	RouteEvent     = "/event"
 	RouteProfile   = "/profile"
 	RouteChallenge = "/challenge"
+	RouteScore     = "/score"
 )
 
 // auth routes
@@ -40,6 +41,10 @@ const (
 	RouteChallengeList       = "/"
 	RouteChallengeSubmitFlag = "/submit"
 	RouteHintUnlock          = "/hint/unlock"
+)
+
+const (
+	RouteScoreboard = "/"
 )
 
 // misc routes
