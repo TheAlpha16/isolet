@@ -56,6 +56,8 @@ const (
 const (
 	AuthTokenCookieName = "token"
 	TokenQueryKey       = "token"
+	PageQueryKey        = "page"
+	PageSizeQueryKey    = "page_size"
 )
 
 // front-end routes

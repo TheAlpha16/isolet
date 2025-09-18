@@ -3,8 +3,8 @@ package score
 import "context"
 
 type GetScoreboardInput struct {
-	Page     int `params:"page"`
-	PageSize int `params:"page_size"`
+	Page     int
+	PageSize int
 }
 
 func (gsi *GetScoreboardInput) Validate(ctx context.Context) error {

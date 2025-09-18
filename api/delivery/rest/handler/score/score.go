@@ -3,6 +3,7 @@ package score
 import (
 	"github.com/TheAlpha16/isolet/api/delivery/rest/response"
 	scoreDom "github.com/TheAlpha16/isolet/api/internal/domain/score"
+	"github.com/TheAlpha16/isolet/api/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -17,7 +18,8 @@ type scoreHandler struct {
 
 func (h *scoreHandler) Scoreboard(c *fiber.Ctx) error {
 	var input scoreDom.GetScoreboardInput
-	c.ParamsParser(&input)
+	input.Page = c.QueryInt(utils.PageQueryKey)
+	input.PageSize = c.QueryInt(utils.PageSizeQueryKey)
 
 	if err := input.Validate(c.UserContext()); err != nil {
 		return err
