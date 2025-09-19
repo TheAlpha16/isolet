@@ -97,7 +97,7 @@ func (scoreRepo *scoreRepo) GetScoreboard(ctx context.Context) (map[int64]int, e
 	return result, nil
 }
 
-func (scoreRepo *scoreRepo) GetTeamsSolveRecords(ctx context.Context, teamIDs []int64) (map[int64][]*scoreDom.ScoreRecord, error) {
+func (scoreRepo *scoreRepo) GetTeamsScoreRecords(ctx context.Context, teamIDs []int64) (map[int64][]*scoreDom.ScoreRecord, error) {
 	result := make(map[int64][]*scoreDom.ScoreRecord, len(teamIDs))
 	var rows []*ScoreRecordRow
 

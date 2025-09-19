@@ -93,7 +93,7 @@ func (scoreImpl *scoreImpl) GetScoreGraph(ctx context.Context) (*scoreDom.ScoreG
 		return &scoreGraph, nil
 	}
 
-	scoreRecords, err := scoreImpl.repo.GetTeamsSolveRecords(ctx, teamIDs)
+	scoreRecords, err := scoreImpl.repo.GetTeamsScoreRecords(ctx, teamIDs)
 	if err != nil {
 		return nil, err
 	}
