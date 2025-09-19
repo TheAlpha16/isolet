@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/TheAlpha16/isolet/api/internal/domain/common"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	"github.com/valkey-io/valkey-go"
 	"go.opentelemetry.io/otel/attribute"
@@ -170,6 +171,36 @@ func (c *cache) ZCard(ctx context.Context, key string) (int64, error) {
 
 	result, err := c.client.Do(ctx, c.client.B().Zcard().Key(key).Build()).AsInt64()
 	if err != nil {
+		return 0, errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
+	}
+
+	return result, nil
+}
+
+func (c *cache) ZRevRank(ctx context.Context, key string, member string) (int64, error) {
+	ctx, span := c.WithTrace(ctx, "zrevrank")
+	defer span.End()
+
+	result, err := c.client.Do(ctx, c.client.B().Zrevrank().Key(key).Member(member).Build()).AsInt64()
+	if err != nil {
+		if err == valkey.Nil {
+			return 0, errorDom.Raise(ctx, errorDom.ErrCacheZSetMissingMember, "", err, common.ExtraData{"key": key, "member": member})
+		}
+		return 0, errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
+	}
+
+	return result, nil
+}
+
+func (c *cache) ZScore(ctx context.Context, key string, member string) (float64, error) {
+	ctx, span := c.WithTrace(ctx, "zscore")
+	defer span.End()
+
+	result, err := c.client.Do(ctx, c.client.B().Zscore().Key(key).Member(member).Build()).AsFloat64()
+	if err != nil {
+		if err == valkey.Nil {
+			return 0, errorDom.Raise(ctx, errorDom.ErrCacheZSetMissingMember, "", err, common.ExtraData{"key": key, "member": member})
+		}
 		return 0, errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
 	}
 

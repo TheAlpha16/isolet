@@ -18,5 +18,7 @@ type Cache interface {
 	ZAdd(ctx context.Context, key string, members map[string]float64) error
 	ZRevRangeWithScores(ctx context.Context, key string, start, stop int64) ([]*ZRangeItem, error)
 	ZCard(ctx context.Context, key string) (int64, error)
+	ZRevRank(ctx context.Context, key string, member string) (int64, error)
+	ZScore(ctx context.Context, key string, member string) (float64, error)
 	Close()
 }
