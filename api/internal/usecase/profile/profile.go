@@ -3,18 +3,18 @@ package profile
 import (
 	"context"
 
+	challengeDom "github.com/TheAlpha16/isolet/api/internal/domain/challenge"
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
 	profileDom "github.com/TheAlpha16/isolet/api/internal/domain/profile"
-	scoreDom "github.com/TheAlpha16/isolet/api/internal/domain/score"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
 	"github.com/TheAlpha16/isolet/api/utils"
 )
 
 type profileImpl struct {
-	userUc  userDom.Usecase
-	teamUc  teamDom.Usecase
-	scoreUc scoreDom.Usecase
+	userUc      userDom.Usecase
+	teamUc      teamDom.Usecase
+	challengeUc challengeDom.Usecase
 }
 
 func (p *profileImpl) Me(ctx context.Context) (*profileDom.Me, error) {
@@ -49,21 +49,21 @@ func (p *profileImpl) Team(ctx context.Context) (*profileDom.Team, error) {
 		return nil, err
 	}
 
-	scoreRecords, err := p.scoreUc.GetTeamScoreRecords(ctx, teamID)
+	submissions, err := p.challengeUc.GetTeamSubmissions(ctx, teamID)
 	if err != nil {
 		return nil, err
 	}
 
 	return &profileDom.Team{
-		Team:    *team,
-		Records: scoreRecords,
+		Team:        *team,
+		Submissions: submissions,
 	}, nil
 }
 
-func New(userUc userDom.Usecase, teamUc teamDom.Usecase, scoreUc scoreDom.Usecase) profileDom.Usecase {
+func New(userUc userDom.Usecase, teamUc teamDom.Usecase, challengeUc challengeDom.Usecase) profileDom.Usecase {
 	return &profileImpl{
-		userUc:  userUc,
-		teamUc:  teamUc,
-		scoreUc: scoreUc,
+		userUc:      userUc,
+		teamUc:      teamUc,
+		challengeUc: challengeUc,
 	}
 }

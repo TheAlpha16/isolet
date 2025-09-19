@@ -1,7 +1,7 @@
 package profile
 
 import (
-	scoreDom "github.com/TheAlpha16/isolet/api/internal/domain/score"
+	challengeDom "github.com/TheAlpha16/isolet/api/internal/domain/challenge"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
 )
@@ -13,5 +13,5 @@ type Me struct {
 
 type Team struct {
 	teamDom.Team
-	Records []*scoreDom.ScoreRecord `json:"records"`
+	Submissions []*challengeDom.Submission `json:"submissions"`
 }
