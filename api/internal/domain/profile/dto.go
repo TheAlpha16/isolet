@@ -13,5 +13,7 @@ type Me struct {
 
 type Team struct {
 	teamDom.Team
+	Score       int                           `json:"score"`
+	Rank        *int                          `json:"rank,omitempty"`
 	Submissions []*challengeDom.SubmissionDTO `json:"submissions"`
 }
