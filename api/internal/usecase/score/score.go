@@ -84,7 +84,7 @@ func (scoreImpl *scoreImpl) GetScoreGraph(ctx context.Context) (*scoreDom.ScoreG
 	var start int64 = 0
 	stop := start + int64(scoreDom.ScoreGraphSize) - 1
 
-	entries, _, err := scoreImpl.getScoreboardEntries(ctx, start, stop)
+	entries, teamIDs, err := scoreImpl.getScoreboardEntries(ctx, start, stop)
 	if err != nil {
 		return nil, err
 	}
@@ -93,13 +93,24 @@ func (scoreImpl *scoreImpl) GetScoreGraph(ctx context.Context) (*scoreDom.ScoreG
 		return &scoreGraph, nil
 	}
 
+	scoreRecords, err := scoreImpl.repo.GetTeamsSolveRecords(ctx, teamIDs)
+	if err != nil {
+		return nil, err
+	}
+
 	rows := make([]*scoreDom.ScoreGraphEntry, len(entries))
 	for i, entry := range entries {
-		rows[i] = &scoreDom.ScoreGraphEntry{
+		graphEntry := &scoreDom.ScoreGraphEntry{
 			ScoreboardEntry: *entry,
+			Records:         scoreRecords[entry.TeamID],
 		}
+		if graphEntry.Records == nil {
+			graphEntry.Records = []*scoreDom.ScoreRecord{}
+		}
+		rows[i] = graphEntry
 	}
 	scoreGraph.Entries = rows
+	scoreGraph.Count = len(rows)
 
 	return &scoreGraph, nil
 }
