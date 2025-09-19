@@ -119,7 +119,7 @@ func (scoreRepo *scoreRepo) GetTeamsScoreRecords(ctx context.Context, teamIDs []
 func (scoreRepo *scoreRepo) GetTeamScoreRecords(ctx context.Context, teamID int64) ([]*scoreDom.ScoreRecord, error) {
 	var result []*scoreDom.ScoreRecord
 	var rows []*ScoreRecordRow
-	
+
 	if err := scoreRepo.db.WithContext(ctx).Raw("SELECT s.team_id, s.points AS points, s.created_at AS timestamp FROM solves s WHERE s.team_id = ? UNION ALL SELECT uh.team_id, -uh.cost AS points, uh.created_at AS timestamp FROM unlocked_hints uh WHERE uh.team_id = ? ORDER BY timestamp;", teamID, teamID).Scan(&rows).Error; err != nil {
 		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve solve records", err, nil)
 	}
