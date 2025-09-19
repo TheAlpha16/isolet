@@ -78,3 +78,10 @@ func BuildLink(publicURL, token string, pathSegments []string) (string, error) {
 
 	return url.String(), nil
 }
+
+func IntOrNil(i int) *int {
+	if i == 0 {
+		return nil
+	}
+	return &i
+}
