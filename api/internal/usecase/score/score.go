@@ -31,7 +31,14 @@ func (scoreImpl *scoreImpl) GetTeamSolves(ctx context.Context, teamID int64) (ma
 }
 
 func (scoreImpl *scoreImpl) GetTeamScore(ctx context.Context, teamID int64) (int, error) {
-	return scoreImpl.repo.GetTeamScore(ctx, teamID)
+	score, err := scoreImpl.cache.ZScore(ctx, scoreDom.ScoreboardCacheKey, scoreDom.ScoreboardMember(teamID))
+	if err != nil {
+		if !errorDom.IsSameError(err, errorDom.ErrCacheZSetMissingMember) {
+			return 0, err
+		}
+		return 0, nil
+	}
+	return int(score), nil
 }
 
 func (scoreImpl *scoreImpl) UpdateTeamScore(ctx context.Context, teamID int64, delta int) error {
