@@ -37,6 +37,14 @@ type ChallengeDTO struct {
 	AttemptCount int           `json:"attempt_count"`
 }
 
+type SubmissionDTO struct {
+	ChallengeID int64 `json:"challenge_id"`
+	UserID      int64 `json:"user_id"`
+	TeamID      int64 `json:"team_id,omitempty"`
+	IsCorrect   bool  `json:"is_correct"`
+	Timestamp   int64 `json:"timestamp"`
+}
+
 func (cat *Category) ToDTO() *CategoryDTO {
 	return &CategoryDTO{
 		ID:   cat.ID,
@@ -79,6 +87,16 @@ func (ch *Challenge) ToDTO() *ChallengeDTO {
 		Tags:        ch.Tags,
 		Links:       ch.Links,
 		MaxAttempts: ch.MaxAttempts,
+	}
+}
+
+func (sub *Submission) ToDTO() *SubmissionDTO {
+	return &SubmissionDTO{
+		ChallengeID: sub.ChallengeID,
+		UserID:      sub.UserID,
+		TeamID:      sub.TeamID,
+		IsCorrect:   sub.IsCorrect,
+		Timestamp:   sub.CreatedAt.Unix(),
 	}
 }
 

@@ -54,9 +54,15 @@ func (p *profileImpl) Team(ctx context.Context) (*profileDom.Team, error) {
 		return nil, err
 	}
 
+	var subDTOs []*challengeDom.SubmissionDTO
+
+	for _, sub := range submissions {
+		subDTOs = append(subDTOs, sub.ToDTO())
+	}
+
 	return &profileDom.Team{
 		Team:        *team,
-		Submissions: submissions,
+		Submissions: subDTOs,
 	}, nil
 }
 

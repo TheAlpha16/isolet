@@ -165,14 +165,23 @@ func (challengeRepo *challengeRepo) UnlockHint(ctx context.Context, uHint *chall
 }
 
 func (challengeRepo *challengeRepo) GetTeamSubmissions(ctx context.Context, teamID int64) ([]*challengeDom.Submission, error) {
-	submissions := make([]*challengeDom.Submission, 0)
+	var result []*challengeDom.Submission
+	var submissions []*Submission
 
 	err := challengeRepo.db.WithContext(ctx).Where("team_id = ?", teamID).Find(&submissions).Error
 	if err != nil {
 		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve submissions", err, common.ExtraData{"team_id": teamID})
 	}
 
-	return submissions, nil
+	for _, submission := range submissions {
+		domSubmission, err := submission.ToDomain(ctx)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, domSubmission)
+	}
+
+	return result, nil
 }
 
 func New(db *gorm.DB, cache cache.Cache) challengeDom.Repository {

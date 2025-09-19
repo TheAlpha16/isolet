@@ -13,5 +13,5 @@ type Me struct {
 
 type Team struct {
 	teamDom.Team
-	Submissions []*challengeDom.Submission `json:"submissions"`
+	Submissions []*challengeDom.SubmissionDTO `json:"submissions"`
 }
