@@ -2,7 +2,6 @@ package score
 
 import (
 	"context"
-	"time"
 
 	scoreDom "github.com/TheAlpha16/isolet/api/internal/domain/score"
 )
@@ -24,14 +23,14 @@ type ScoreboardRow struct {
 }
 
 type ScoreRecordRow struct {
-	TeamID    int64     `gorm:"column:team_id"`
-	Points    int       `gorm:"column:points"`
-	Timestamp time.Time `gorm:"column:timestamp"`
+	TeamID    int64 `gorm:"column:team_id"`
+	Points    int   `gorm:"column:points"`
+	Timestamp int64 `gorm:"column:timestamp"`
 }
 
 func (sr *ScoreRecordRow) ToDomain(ctx context.Context) *scoreDom.ScoreRecord {
 	return &scoreDom.ScoreRecord{
 		Points:    sr.Points,
-		Timestamp: sr.Timestamp.Unix(),
+		Timestamp: sr.Timestamp,
 	}
 }
