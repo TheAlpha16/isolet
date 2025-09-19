@@ -6,6 +6,9 @@ type Usecase interface {
 	// returns the scoreboard
 	GetScoreboard(ctx context.Context, input *GetScoreboardInput) (*Scoreboard, error)
 
+	// returns the scores and solve logs of top 10 teams for graph
+	GetScoreGraph(ctx context.Context) (*ScoreGraph, error)
+
 	// returns the count of correct and incorrect submissions for challenges by a team,
 	// if there are no submissions for a challenge, submission stats won't exist in the map
 	GetSubmissionStats(ctx context.Context, teamID int64, challengeIDs []int64) (map[int64]*SubmissionStats, error)

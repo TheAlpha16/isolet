@@ -45,6 +45,7 @@ const (
 
 const (
 	RouteScoreboard = "/"
+	RouteScoreGraph = "/graph"
 )
 
 // misc routes

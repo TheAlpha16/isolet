@@ -15,6 +15,7 @@ const (
 
 	ScoreboardCacheKey      = "scoreboard"
 	TeamScoreCacheKeyPrefix = "score:team"
+	ScoreGraphSize          = 10
 )
 
 type SubmissionStats struct {
@@ -46,4 +47,19 @@ type ScoreboardEntry struct {
 	TeamName string `json:"team_name"`
 	Rank     int    `json:"rank"`
 	Score    int    `json:"score"`
+}
+
+type ScoreGraph struct {
+	Count   int                `json:"count"`
+	Entries []*ScoreGraphEntry `json:"entries"`
+}
+
+type ScoreGraphEntry struct {
+	ScoreboardEntry
+	Records []*ScoreRecord `json:"records"`
+}
+
+type ScoreRecord struct {
+	Points    int   `json:"points"`
+	Timestamp int64 `json:"timestamp"`
 }

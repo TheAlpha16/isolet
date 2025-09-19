@@ -12,4 +12,5 @@ import (
 func RegisterScore(router fiber.Router, scoreHandler scoreHan.ScoreHandler, tokenUc tokenDom.Usecase, jwtSvc jwt.JWT) {
 	scoreRouter := router.Group(utils.RouteScore, middleware.AuthMiddleware(tokenUc, jwtSvc), middleware.RequireTeamMiddleware())
 	scoreRouter.Get(utils.RouteScoreboard, scoreHandler.Scoreboard)
+	scoreRouter.Get(utils.RouteScoreGraph, scoreHandler.ScoreGraph)
 }

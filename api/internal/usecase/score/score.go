@@ -70,34 +70,38 @@ func (scoreImpl *scoreImpl) GetScoreboard(ctx context.Context, input *scoreDom.G
 		return &scoreboard, nil
 	}
 
-	entries := make([]*scoreDom.ScoreboardEntry, len(items))
-	teamIDs := make([]int64, len(items))
+	entries, _, err := scoreImpl.getScoreboardEntries(ctx, start, stop)
+	scoreboard.Entries = entries
 
-	for i, item := range items {
-		teamID, err := scoreDom.ParseScoreboardMember(ctx, item.Member)
-		if err != nil {
-			return nil, err
-		}
+	return &scoreboard, nil
+}
 
-		entries[i] = &scoreDom.ScoreboardEntry{
-			TeamID: teamID,
-			Score:  int(item.Score),
-			Rank:   int(start) + i + 1,
-		}
-		teamIDs[i] = teamID
+func (scoreImpl *scoreImpl) GetScoreGraph(ctx context.Context) (*scoreDom.ScoreGraph, error) {
+	scoreGraph := scoreDom.ScoreGraph{
+		Entries: []*scoreDom.ScoreGraphEntry{},
 	}
 
-	teamNames, err := scoreImpl.teamUc.GetNameByIDs(ctx, teamIDs)
+	var start int64 = 0
+	stop := start + int64(scoreDom.ScoreGraphSize) - 1
+
+	entries, _, err := scoreImpl.getScoreboardEntries(ctx, start, stop)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, entry := range entries {
-		entry.TeamName = teamNames[entry.TeamID]
+	if len(entries) == 0 {
+		return &scoreGraph, nil
 	}
-	scoreboard.Entries = entries
 
-	return &scoreboard, nil
+	rows := make([]*scoreDom.ScoreGraphEntry, len(entries))
+	for i, entry := range entries {
+		rows[i] = &scoreDom.ScoreGraphEntry{
+			ScoreboardEntry: *entry,
+		}
+	}
+	scoreGraph.Entries = rows
+
+	return &scoreGraph, nil
 }
 
 func (scoreImpl *scoreImpl) RefreshScoreboard(ctx context.Context) error {
@@ -113,6 +117,47 @@ func (scoreImpl *scoreImpl) RefreshScoreboard(ctx context.Context) error {
 		return errorDom.Raise(ctx, errorDom.ErrScoreUpdateFailed, "", err, nil)
 	}
 	return nil
+}
+
+func (scoreImpl *scoreImpl) getScoreboardEntries(ctx context.Context, start, stop int64) ([]*scoreDom.ScoreboardEntry, []int64, error) {
+	entries := []*scoreDom.ScoreboardEntry{}
+
+	items, err := scoreImpl.cache.ZRevRangeWithScores(ctx, scoreDom.ScoreboardCacheKey, start, stop)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if len(items) == 0 {
+		return entries, nil, nil
+	}
+
+	entries = make([]*scoreDom.ScoreboardEntry, len(items))
+	teamIDs := make([]int64, len(items))
+
+	for i, item := range items {
+		teamID, err := scoreDom.ParseScoreboardMember(ctx, item.Member)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		entries[i] = &scoreDom.ScoreboardEntry{
+			TeamID: teamID,
+			Score:  int(item.Score),
+			Rank:   int(start) + i + 1,
+		}
+		teamIDs[i] = teamID
+	}
+
+	teamNames, err := scoreImpl.teamUc.GetNameByIDs(ctx, teamIDs)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for _, entry := range entries {
+		entry.TeamName = teamNames[entry.TeamID]
+	}
+
+	return entries, teamIDs, nil
 }
 
 func New(repo scoreDom.Repository, teamUc teamDom.Usecase, cache cache.Cache) scoreDom.Usecase {

@@ -10,6 +10,7 @@ import (
 
 type ScoreHandler interface {
 	Scoreboard(c *fiber.Ctx) error
+	ScoreGraph(c *fiber.Ctx) error
 }
 
 type scoreHandler struct {
@@ -31,6 +32,15 @@ func (h *scoreHandler) Scoreboard(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response.Success("", scoreboard))
+}
+
+func (h *scoreHandler) ScoreGraph(c *fiber.Ctx) error {
+	scoreGraph, err := h.scoreUc.GetScoreGraph(c.UserContext())
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.Success("", scoreGraph))
 }
 
 func New(scoreUsecase scoreDom.Usecase) ScoreHandler {
