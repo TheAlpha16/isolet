@@ -8,6 +8,7 @@ import (
 	scoreDom "github.com/TheAlpha16/isolet/api/internal/domain/score"
 	challengeRepo "github.com/TheAlpha16/isolet/api/internal/repository/challenge"
 
+	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
@@ -91,6 +92,25 @@ func (scoreRepo *scoreRepo) GetScoreboard(ctx context.Context) (map[int64]int, e
 
 	for _, row := range rows {
 		result[row.TeamID] = int(row.Score)
+	}
+
+	return result, nil
+}
+
+func (scoreRepo *scoreRepo) GetTeamsSolveRecords(ctx context.Context, teamIDs []int64) (map[int64][]*scoreDom.ScoreRecord, error) {
+	result := make(map[int64][]*scoreDom.ScoreRecord, len(teamIDs))
+	var rows []*ScoreRecordRow
+
+	if len(teamIDs) == 0 {
+		return result, nil
+	}
+
+	if err := scoreRepo.db.WithContext(ctx).Raw("SELECT s.team_id, s.points AS points, s.created_at AS timestamp FROM solves s WHERE s.team_id = ANY(?) UNION ALL SELECT uh.team_id, -uh.cost AS points, uh.created_at AS timestamp FROM unlocked_hints uh WHERE uh.team_id = ANY(?) ORDER BY timestamp;", pq.Array(teamIDs), pq.Array(teamIDs)).Scan(&rows).Error; err != nil {
+		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve solve records", err, nil)
+	}
+
+	for _, row := range rows {
+		result[row.TeamID] = append(result[row.TeamID], row.ToDomain(ctx))
 	}
 
 	return result, nil

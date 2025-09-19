@@ -37,4 +37,5 @@ type Repository interface {
 	GetTeamSolves(ctx context.Context, teamID int64) (map[int64]struct{}, error)
 	GetTeamScore(ctx context.Context, teamID int64) (int, error)
 	GetSubmissionStats(ctx context.Context, teamID int64, challengeIDs []int64) (map[int64]*SubmissionStats, error)
+	GetTeamsSolveRecords(ctx context.Context, teamIDs []int64) (map[int64][]*ScoreRecord, error)
 }
