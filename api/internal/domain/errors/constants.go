@@ -47,9 +47,10 @@ const (
 	ErrDBExecError   ErrorCode = "DB-03"
 
 	// Cache errors
-	ErrCacheCallFail       ErrorCode = "CACHE-00"
-	ErrCacheMiss           ErrorCode = "CACHE-01"
-	ErrCacheScriptLoadFail ErrorCode = "CACHE-02"
+	ErrCacheCallFail          ErrorCode = "CACHE-00"
+	ErrCacheMiss              ErrorCode = "CACHE-01"
+	ErrCacheScriptLoadFail    ErrorCode = "CACHE-02"
+	ErrCacheZSetMissingMember ErrorCode = "CACHE-03"
 
 	// Token errors
 	ErrTokenMalformed      ErrorCode = "TOKEN-00"
@@ -187,6 +188,7 @@ var ServerSideErrors = map[ErrorCode]struct{}{
 	ErrEmailTemplateExecute:   {},
 	ErrEmailLinkBuild:         {},
 	ErrScoreUpdateFailed:      {},
+	ErrCacheZSetMissingMember: {},
 }
 
 // Map of auth error codes
