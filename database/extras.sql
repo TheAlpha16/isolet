@@ -33,3 +33,5 @@ $$ LANGUAGE plpgsql;
 
 -- index for team_id in users table
 CREATE INDEX idx_users_team_id ON users(team_id) WHERE team_id IS NOT NULL;
+CREATE INDEX idx_solves_team_id_created_at ON solves(team_id, created_at);
+CREATE INDEX idx_unlocked_hints_team_id_created_at ON unlocked_hints(team_id, created_at);
