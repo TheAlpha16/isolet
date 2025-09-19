@@ -142,12 +142,14 @@ func (c *challengeImpl) SubmitFlag(ctx context.Context, input *challengeDom.Subm
 			return nil, err
 		}
 
-		rCtx := context.WithoutCancel(ctx)
-		c.wg.Add(1)
-		go func() {
-			defer c.wg.Done()
-			c.updateScoreboard(rCtx, teamID, submission.Points)
-		}()
+		if submission.IsCorrect {
+			rCtx := context.WithoutCancel(ctx)
+			c.wg.Add(1)
+			go func() {
+				defer c.wg.Done()
+				c.updateScoreboard(rCtx, teamID, submission.Points)
+			}()
+		}
 	}
 
 	return &challengeDom.SubmitFlagOutput{
