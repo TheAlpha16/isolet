@@ -9,3 +9,7 @@ type Me struct {
 	User userDom.User  `json:"user"`
 	Team *teamDom.Team `json:"team,omitempty"`
 }
+
+type Team struct {
+	teamDom.Team
+}

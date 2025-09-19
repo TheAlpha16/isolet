@@ -29,7 +29,8 @@ const (
 
 // profile routes
 const (
-	RouteProfileMe = "/me"
+	RouteProfileMe   = "/me"
+	RouteProfileTeam = "/team"
 )
 
 // event routes

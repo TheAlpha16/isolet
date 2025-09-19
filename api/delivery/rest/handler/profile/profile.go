@@ -8,6 +8,7 @@ import (
 
 type ProfileHandler interface {
 	Me(c *fiber.Ctx) error
+	Team(c *fiber.Ctx) error
 }
 
 type profileHandler struct {
@@ -16,6 +17,14 @@ type profileHandler struct {
 
 func (h *profileHandler) Me(c *fiber.Ctx) error {
 	output, err := h.profileUc.Me(c.UserContext())
+	if err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusOK).JSON(response.Success("", output))
+}
+
+func (h *profileHandler) Team(c *fiber.Ctx) error {
+	output, err := h.profileUc.Team(c.UserContext())
 	if err != nil {
 		return err
 	}

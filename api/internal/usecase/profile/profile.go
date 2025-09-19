@@ -39,6 +39,19 @@ func (p *profileImpl) Me(ctx context.Context) (*profileDom.Me, error) {
 	}, nil
 }
 
+func (p *profileImpl) Team(ctx context.Context) (*profileDom.Team, error) {
+	teamID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyTeamID)
+
+	team, err := p.teamUc.GetByID(ctx, teamID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &profileDom.Team{
+		Team: *team,
+	}, nil
+}
+
 func New(userUc userDom.Usecase, teamUc teamDom.Usecase) profileDom.Usecase {
 	return &profileImpl{
 		userUc: userUc,
