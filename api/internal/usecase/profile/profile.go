@@ -5,14 +5,16 @@ import (
 
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
 	profileDom "github.com/TheAlpha16/isolet/api/internal/domain/profile"
+	scoreDom "github.com/TheAlpha16/isolet/api/internal/domain/score"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
 	"github.com/TheAlpha16/isolet/api/utils"
 )
 
 type profileImpl struct {
-	userUc userDom.Usecase
-	teamUc teamDom.Usecase
+	userUc  userDom.Usecase
+	teamUc  teamDom.Usecase
+	scoreUc scoreDom.Usecase
 }
 
 func (p *profileImpl) Me(ctx context.Context) (*profileDom.Me, error) {
@@ -47,14 +49,21 @@ func (p *profileImpl) Team(ctx context.Context) (*profileDom.Team, error) {
 		return nil, err
 	}
 
+	scoreRecords, err := p.scoreUc.GetTeamScoreRecords(ctx, teamID)
+	if err != nil {
+		return nil, err
+	}
+
 	return &profileDom.Team{
-		Team: *team,
+		Team:    *team,
+		Records: scoreRecords,
 	}, nil
 }
 
-func New(userUc userDom.Usecase, teamUc teamDom.Usecase) profileDom.Usecase {
+func New(userUc userDom.Usecase, teamUc teamDom.Usecase, scoreUc scoreDom.Usecase) profileDom.Usecase {
 	return &profileImpl{
-		userUc: userUc,
-		teamUc: teamUc,
+		userUc:  userUc,
+		teamUc:  teamUc,
+		scoreUc: scoreUc,
 	}
 }

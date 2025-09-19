@@ -28,6 +28,9 @@ type Usecase interface {
 
 	// refreshes the scoreboard by fetching the latest data from the repository
 	RefreshScoreboard(ctx context.Context) error
+
+	// returns the score records of the team
+	GetTeamScoreRecords(ctx context.Context, teamID int64) ([]*ScoreRecord, error)
 }
 
 type Repository interface {
@@ -38,4 +41,5 @@ type Repository interface {
 	GetTeamScore(ctx context.Context, teamID int64) (int, error)
 	GetSubmissionStats(ctx context.Context, teamID int64, challengeIDs []int64) (map[int64]*SubmissionStats, error)
 	GetTeamsScoreRecords(ctx context.Context, teamIDs []int64) (map[int64][]*ScoreRecord, error)
+	GetTeamScoreRecords(ctx context.Context, teamID int64) ([]*ScoreRecord, error)
 }

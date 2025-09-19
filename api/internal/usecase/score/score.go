@@ -130,6 +130,10 @@ func (scoreImpl *scoreImpl) RefreshScoreboard(ctx context.Context) error {
 	return nil
 }
 
+func (scoreImpl *scoreImpl) GetTeamScoreRecords(ctx context.Context, teamID int64) ([]*scoreDom.ScoreRecord, error) {
+	return scoreImpl.repo.GetTeamScoreRecords(ctx, teamID)
+}
+
 func (scoreImpl *scoreImpl) getScoreboardEntries(ctx context.Context, start, stop int64) ([]*scoreDom.ScoreboardEntry, []int64, error) {
 	entries := []*scoreDom.ScoreboardEntry{}
 
