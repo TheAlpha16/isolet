@@ -216,6 +216,10 @@ func (c *challengeImpl) UnlockHint(ctx context.Context, input *challengeDom.Unlo
 	return hint.ToDTO(), nil
 }
 
+func (c *challengeImpl) GetTeamSubmissions(ctx context.Context, teamID int64) ([]*challengeDom.Submission, error) {
+	return c.repo.GetTeamSubmissions(ctx, teamID)
+}
+
 func enrichChallengeDTO(challengeDTO *challengeDom.ChallengeDTO, submissionStatsMap map[int64]*scoreDom.SubmissionStats, challengeSolveCounts map[int64]int) {
 	challengeDTO.TotalSolves = challengeSolveCounts[challengeDTO.ID]
 
