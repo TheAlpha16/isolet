@@ -26,16 +26,15 @@ export interface Session {
   expires_at: number;
 }
 
-export interface SuccessResponse<T = unknown> {
-  status: "success";
-  message: string;
-  data: T | null;
+export enum ResponseStatus {
+  Success = "success",
+  Error = "error",
 }
 
-export interface ErrorResponse {
-  status: "error";
+export interface Response<T = unknown> {
+  status: ResponseStatus;
   message: string;
-  data: unknown | null;
+  data: T | null;
 }
 
 // Team
@@ -66,11 +65,18 @@ export interface ProfileTeam extends Team {
 }
 
 // User
+export enum UserRole {
+  Admin = "admin",
+  Author = "author",
+  Captain = "captain",
+  Player = "player",
+}
+
 export interface User {
   id: number;
   username: string;
   email: string;
-  role: "admin" | "author" | "captain" | "player";
+  role: UserRole;
 }
 
 export interface ProfileMe {
@@ -100,12 +106,18 @@ export interface Hint {
   unlocked: boolean;
 }
 
+export enum ChallengeType {
+  Static = "static",
+  Dynamic = "dynamic",
+  OnDemand = "on-demand",
+}
+
 export interface Challenge {
   id: number;
   name: string;
   prompt: string;
   category: Category;
-  type: "static" | "dynamic" | "on-demand";
+  type: ChallengeType;
   points: number;
   files: string[];
   hints: Hint[];
