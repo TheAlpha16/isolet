@@ -30,7 +30,7 @@ func (challengeRepo *challengeRepo) GetAll(ctx context.Context) ([]*challengeDom
 		func() ([]*challengeDom.Challenge, error) {
 			var challenges []*Challenge
 
-			if err := challengeRepo.db.Preload("Category").Preload("Hints").Find(&challenges).Error; err != nil {
+			if err := challengeRepo.db.WithContext(ctx).Preload("Category").Preload("Hints").Find(&challenges).Error; err != nil {
 				return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve challenges", err, nil)
 			}
 
@@ -57,7 +57,7 @@ func (challengeRepo *challengeRepo) GetByID(ctx context.Context, id int64) (*cha
 		config.Challenges.CacheTTL,
 		func() (*challengeDom.Challenge, error) {
 			var challenge Challenge
-			if err := challengeRepo.db.Preload("Category").Preload("Hints").First(&challenge, id).Error; err != nil {
+			if err := challengeRepo.db.WithContext(ctx).Preload("Category").Preload("Hints").First(&challenge, id).Error; err != nil {
 				if errors.Is(err, gorm.ErrRecordNotFound) {
 					return nil, errorDom.Raise(ctx, errorDom.ErrChallengeNotFound, "", err, nil)
 				}
@@ -128,7 +128,7 @@ func (challengeRepo *challengeRepo) GetHintByID(ctx context.Context, id int64) (
 		config.Hints.CacheTTL,
 		func() (*challengeDom.Hint, error) {
 			var hint Hint
-			if err := challengeRepo.db.First(&hint, id).Error; err != nil {
+			if err := challengeRepo.db.WithContext(ctx).First(&hint, id).Error; err != nil {
 				if errors.Is(err, gorm.ErrRecordNotFound) {
 					return nil, errorDom.Raise(ctx, errorDom.ErrHintNotFound, "", err, nil)
 				}
