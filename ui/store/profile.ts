@@ -1,8 +1,10 @@
 import { Team, User } from "@/api";
-import { ProfileService } from "@/services";
+import { AuthService, ProfileService } from "@/services";
 import { create } from "zustand";
 
 interface ProfileStore {
+  meLoading: boolean;
+  teamLoading: boolean;
   user: User | null;
   team: Team | null;
   setUser: (user: ProfileStore["user"]) => void;
@@ -12,6 +14,8 @@ interface ProfileStore {
 }
 
 export const useProfileStore = create<ProfileStore>((set) => ({
+  meLoading: false,
+  teamLoading: false,
   user: null,
   team: null,
 
@@ -20,11 +24,23 @@ export const useProfileStore = create<ProfileStore>((set) => ({
   setTeam: (team) => set({ team }),
 
   fetchMe: async () => {
-    const profileMe = await ProfileService.getUserProfile();
-    set({ user: profileMe?.user, team: profileMe?.team! });
+    set({ meLoading: true });
+    try {
+      const profileMe = await ProfileService.getUserProfile();
+      set({ user: profileMe.user, team: profileMe.team });
+    } catch (error: any) {
+      console.error("fetchMe failed:", error);
+    } finally {
+      set({ meLoading: false });
+    }
   },
 
   logout: async () => {
-    set({ user: null, team: null });
+    try {
+      await AuthService.logout();
+      set({ user: null, team: null });
+    } catch (error) {
+      console.error("logout failed:", error);
+    }
   },
 }));
