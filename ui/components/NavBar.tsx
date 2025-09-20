@@ -3,7 +3,6 @@
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { useEventStore, useProfileStore } from "@/store";
-import { useAuthStore } from "@/store/authStore";
 import { Flag, LogIn, LogOut, Menu, Rocket, Trophy, UserRound, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -15,7 +14,7 @@ interface Route {
 }
 
 function NavBar() {
-  const { user, fetching } = useAuthStore();
+  const { user, meLoading } = useProfileStore();
   const { logout } = useProfileStore();
   const {
     info: { name },
@@ -36,7 +35,7 @@ function NavBar() {
             <div className="text-foreground text-2xl font-bold">{name}</div>
           </Link>
 
-          {user.userid !== -1 && (
+          {user && (
             <nav className="sm:flex items-center gap-2 hidden">
               {routes.map(({ path, name, icon }) => (
                 <Link
@@ -53,9 +52,9 @@ function NavBar() {
         </div>
 
         <div className="items-center gap-4 hidden sm:flex">
-          {!fetching && (
+          {!meLoading && (
             <>
-              {user.userid !== -1 ? (
+              {user ? (
                 <>
                   <ThemeToggle />
                   <Button variant="ghost" size="icon" onClick={logout}>
@@ -78,7 +77,7 @@ function NavBar() {
           )}
         </div>
 
-        {!fetching && (
+        {!meLoading && (
           <div className="flex sm:hidden items-center">
             <ThemeToggle />
             <Button variant="ghost" size="icon" onClick={() => setMenuOpen(!menuOpen)}>
@@ -93,7 +92,7 @@ function NavBar() {
         <div
           className={`bg-transparent font-mono border-b sm:hidden transition-all duration-300 ease-in-out `}
         >
-          {user.userid !== -1 && (
+          {user && (
             <nav className="flex flex-col gap-2 p-4">
               {routes.map(({ path, name, icon }) => (
                 <Link
@@ -115,7 +114,7 @@ function NavBar() {
               </Link>
             </nav>
           )}
-          {user.userid === -1 && (
+          {!user && (
             <nav className="flex flex-col gap-2 p-4">
               <Link
                 className="flex items-center gap-2 rounded-md p-2 transition-colors hover:bg-accent hover:text-accent-foreground"
