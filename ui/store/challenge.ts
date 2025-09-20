@@ -65,30 +65,29 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
 
     try {
       const res = await ChallengeService.submitFlag({ challenge_id, flag });
-      if (res?.is_correct) {
-        set((state) => ({
+      if (res) {
+        if (res.is_correct) {
+          showToast(ToastStatus.Success, "correct flag!");
+        } else {
+          showToast(ToastStatus.Failure, "incorrect flag!");
+        }
+      }
+      set((state) => {
+        const challenge = state.challengeIdMap[challenge_id];
+        if (!challenge) return state;
+        return {
           challengeIdMap: {
             ...state.challengeIdMap,
             [challenge_id]: {
-              ...state.challengeIdMap[challenge_id],
-              solved: true,
-              total_solves: state.challengeIdMap[challenge_id].total_solves + 1,
+              ...challenge,
+              attempt_count: challenge.attempt_count + 1,
+              ...(res?.is_correct
+                ? { solved: true, total_solves: challenge.total_solves + 1 }
+                : {}),
             },
           },
-        }));
-        showToast(ToastStatus.Success, "correct flag!");
-      } else {
-        showToast(ToastStatus.Failure, "incorrect flag!");
-      }
-      set((state) => ({
-        challengeIdMap: {
-          ...state.challengeIdMap,
-          [challenge_id]: {
-            ...state.challengeIdMap[challenge_id],
-            attempt_count: state.challengeIdMap[challenge_id].attempt_count + 1,
-          },
-        },
-      }));
+        };
+      });
     } catch {}
   },
 
@@ -109,12 +108,12 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
       if (hint) {
         const updatedHints = challenge.hints.map((h) => (h.id === hint.id ? hint : h));
         challenge.hints = updatedHints;
-        set({
+        set((state) => ({
           challengeIdMap: {
-            ...useChallengeStore.getState().challengeIdMap,
+            ...state.challengeIdMap,
             [challenge_id]: challenge,
           },
-        });
+        }));
         showHint(hint.text);
       }
     } catch {}
