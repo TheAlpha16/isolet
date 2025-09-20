@@ -9,8 +9,12 @@ export class ProfileService extends BaseService {
    * User profile
    * Returns the user's profile
    */
-  public static async getUserProfile(): Promise<ProfileMe | undefined> {
-    return this.handleResponse<ProfileMe>(ApiProfileService.getProfileMe());
+  public static async getUserProfile(): Promise<ProfileMe> {
+    const profileMe = await this.handleResponse<ProfileMe>(ApiProfileService.getProfileMe());
+    if (!profileMe) {
+      throw new Error("failed to fetch user profile");
+    }
+    return profileMe;
   }
 
   /**
@@ -18,6 +22,10 @@ export class ProfileService extends BaseService {
    * Returns the team's profile
    */
   public static async getTeamProfile(): Promise<ProfileTeam | undefined> {
-    return this.handleResponse<ProfileTeam>(ApiProfileService.getProfileTeam());
+    const profileTeam = await this.handleResponse<ProfileTeam>(ApiProfileService.getProfileTeam());
+    if (!profileTeam) {
+      throw new Error("failed to fetch team profile");
+    }
+    return profileTeam;
   }
 }
