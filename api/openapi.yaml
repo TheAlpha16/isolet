@@ -976,11 +976,16 @@ components:
         unlocked:
           type: boolean
           example: false
+        challenge_id:
+          type: integer
+          format: int64
+          example: 789
       required:
         - id
         - text
         - cost
         - unlocked
+        - challenge_id
     Challenge:
       type: object
       properties:

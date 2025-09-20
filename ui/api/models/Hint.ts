@@ -7,5 +7,6 @@ export type Hint = {
     text: string;
     cost: number;
     unlocked: boolean;
+    challenge_id: number;
 };
 
