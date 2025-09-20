@@ -6,8 +6,9 @@ export const UI_ROUTES = {
     register: "/register",
   },
 
-  onboarding: {
-    team: "/onboarding/team",
+  onboard: {
+    team: "/onboard/team",
+    user: "/onboard/user",
   },
 
   challenge: {
