@@ -4,7 +4,6 @@ import { UserType } from "@/utils/types";
 import { create } from "zustand";
 
 interface AuthState {
-  fetching: boolean;
   user: UserType;
   setUser: (user: AuthState["user"]) => void;
 }
