@@ -28,19 +28,13 @@ export const useProfileStore = create<ProfileStore>((set) => ({
     try {
       const profileMe = await ProfileService.getUserProfile();
       set({ user: profileMe.user, team: profileMe.team ?? null });
-    } catch (error: any) {
-      console.error("fetchMe failed:", error);
     } finally {
       set({ meLoading: false });
     }
   },
 
   logout: async () => {
-    try {
-      await AuthService.logout();
-      set({ user: null, team: null });
-    } catch (error) {
-      console.error("logout failed:", error);
-    }
+    await AuthService.logout();
+    set({ user: null, team: null });
   },
 }));
