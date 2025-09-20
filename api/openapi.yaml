@@ -582,8 +582,6 @@ paths:
                   - $ref: "#/components/schemas/Response"
                   - type: object
                     properties:
-                      message:
-                        example: "unlocked hint"
                       data:
                         $ref: "#/components/schemas/Hint"
         400:

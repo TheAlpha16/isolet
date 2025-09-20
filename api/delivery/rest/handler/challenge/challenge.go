@@ -54,7 +54,7 @@ func (h *challengeHandler) UnlockHint(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.Success("unlocked hint", hint))
+	return c.Status(fiber.StatusOK).JSON(response.Success("", hint))
 }
 
 func New(challengeUc challengeDom.Usecase) ChallengeHandler {
