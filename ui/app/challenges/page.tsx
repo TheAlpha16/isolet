@@ -1,65 +1,71 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useChallengeStore } from "@/store/challengeStore";
-import { useInstanceStore } from "@/store/instanceStore";
+import { Challenge } from "@/api";
 import { ChallengeCard } from "@/components/challenges/ChallengeCard";
 import { ChallengeModal } from "@/components/challenges/ChallengeModal";
+import { ChallengeSkeleton } from "@/components/skeletons/challenge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { ChallengeType } from "@/utils/types";
-import { ChallengeSkeleton } from "@/components/skeletons/challenge"
+import { useChallengeStore } from "@/store/challenge";
+import { useInstanceStore } from "@/store/instanceStore";
+import { useEffect, useState } from "react";
 
 function Challenges() {
-	const [currentChallenge, setCurrentChallenge] = useState<ChallengeType | null>(null);
-	const { challenges, fetchChallenges, loading } = useChallengeStore();
-	const { fetchInstances } = useInstanceStore();
-	const categories = Object.keys(challenges);
+  const [currentChallenge, setCurrentChallenge] = useState<Challenge | null>(null);
+  const { challengeIdMap, categoryIdMap, categoryChallengeMap, fetchChallenges, loading } =
+    useChallengeStore();
+  const { fetchInstances } = useInstanceStore();
+  const categoryIds = Object.keys(categoryIdMap).map(Number);
 
-	useEffect(() => {
-		fetchChallenges();
-		fetchInstances();
-	}, [fetchChallenges, fetchInstances]);
+  useEffect(() => {
+    fetchChallenges();
+    fetchInstances();
+  }, [fetchChallenges, fetchInstances]);
 
-	if (loading) {
-		return <ChallengeSkeleton />;
-	}
+  if (loading) {
+    return <ChallengeSkeleton />;
+  }
 
-	return (
-		<div className="container p-4 justify-start h-full flex flex-col">
-			{Object.keys(challenges).length !== 0 ? (<Tabs defaultValue={categories[0]} className="flex flex-col w-full items-center sm:items-start">
-				<TabsList className="mb-4 flex flex-wrap max-w-fit">
-					{categories.map((category) => (
-						<TabsTrigger key={category} value={category}>
-							{category}
-						</TabsTrigger>
-					))}
-				</TabsList>
-				{categories.map((category) => (
-					<TabsContent key={category} value={category}>
-						<div className="flex flex-wrap gap-4">
-							{challenges[category].map((challenge) => (
-								<ChallengeCard
-									key={challenge.chall_id}
-									challenge={challenge}
-									onClick={() => setCurrentChallenge(challenge)}
-								/>
-							))}
-						</div>
-					</TabsContent>
-				))}
-			</Tabs>) : (
-				<div className="flex justify-center items-center h-full">
-					<p className="text-2xl text-gray-500">No challenges available</p>
-				</div>
-			)}
-			{currentChallenge && (
-				<ChallengeModal
-					challenge={currentChallenge}
-					onClose={() => setCurrentChallenge(null)}
-				/>
-			)}
-		</div>
-	);
+  return (
+    <div className="container p-4 justify-start h-full flex flex-col">
+      {categoryIds.length !== 0 ? (
+        <Tabs
+          defaultValue={categoryIdMap[categoryIds[0]].name}
+          className="flex flex-col w-full items-center sm:items-start"
+        >
+          <TabsList className="mb-4 flex flex-wrap max-w-fit">
+            {categoryIds.map((categoryId) => (
+              <TabsTrigger key={categoryId} value={categoryIdMap[categoryId].name}>
+                {categoryIdMap[categoryId].name}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {categoryIds.map((categoryId) => (
+            <TabsContent key={categoryId} value={categoryIdMap[categoryId].name}>
+              <div className="flex flex-wrap gap-4">
+                {(categoryChallengeMap[categoryId] || []).map((challengeId) => {
+                  const challenge = challengeIdMap[challengeId];
+                  return (
+                    <ChallengeCard
+                      key={challenge.id}
+                      challenge={challenge}
+                      onClick={() => setCurrentChallenge(challenge)}
+                    />
+                  );
+                })}
+              </div>
+            </TabsContent>
+          ))}
+        </Tabs>
+      ) : (
+        <div className="flex justify-center items-center h-full">
+          <p className="text-2xl text-gray-500">No challenges available</p>
+        </div>
+      )}
+      {currentChallenge && (
+        <ChallengeModal challenge={currentChallenge} onClose={() => setCurrentChallenge(null)} />
+      )}
+    </div>
+  );
 }
 
 export default Challenges;

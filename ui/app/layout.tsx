@@ -5,7 +5,7 @@ import NavBar from "@/components/NavBar";
 import { NotificationContainer } from "@/components/NotificationContainer";
 import { ThemeProvider } from "@/components/theme-provider";
 import { useEventStore, useProfileStore } from "@/store";
-import { useChallengeStore } from "@/store/challengeStore";
+import { useChallengeStore } from "@/store/challenge";
 import "@/styles/globals.css";
 import "@/styles/hint-toast.css";
 import "@/styles/notification.css";

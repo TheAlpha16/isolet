@@ -1,12 +1,12 @@
-import type { Hint } from "@/api";
 import { showHint } from "@/components/hints/HintToastContainer";
 import { HintUnlockConfirmation } from "@/components/hints/HintUnlockComponent";
 import { Button } from "@/components/ui/button";
+import { HintUI } from "@/models/hint";
 import { useChallengeStore } from "@/store/challenge";
 import { Lightbulb, Lock } from "lucide-react";
 import { useState } from "react";
 
-export default function Hint(hint: Hint) {
+export default function Hint(hint: HintUI) {
   const { unlockHint } = useChallengeStore();
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
 
