@@ -1,4 +1,4 @@
-import { EventService } from "@/api";
+import { EventService } from "@/services";
 import { EventInfoUI, toEventInfoUI } from "@/models/event";
 import { create } from "zustand";
 
@@ -20,7 +20,7 @@ export const useEventStore = create<EventStore>((set) => ({
   },
 
   fetchInfo: async () => {
-    const res = await EventService.getEventInfo();
-    set({ info: toEventInfoUI(res.data!), loaded: true });
+    const info = await EventService.getEventInfo();
+    set({ info: toEventInfoUI(info!), loaded: true });
   },
 }));
