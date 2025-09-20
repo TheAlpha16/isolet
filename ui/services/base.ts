@@ -38,7 +38,7 @@ export class BaseService {
       } else {
         showToast(ToastStatus.Failure, "An unexpected error occurred");
       }
-      return undefined;
+      throw error;
     }
   }
 
