@@ -13,11 +13,10 @@ type CategoryDTO struct {
 }
 
 type HintDTO struct {
-	ID          int64  `json:"id"`
-	Text        string `json:"text"`
-	Cost        int    `json:"cost"`
-	Unlocked    bool   `json:"unlocked"`
-	ChallengeID int64  `json:"challenge_id"`
+	ID       int64  `json:"id"`
+	Text     string `json:"text"`
+	Cost     int    `json:"cost"`
+	Unlocked bool   `json:"unlocked"`
 }
 
 type ChallengeDTO struct {
@@ -53,13 +52,12 @@ func (cat *Category) ToDTO() *CategoryDTO {
 	}
 }
 
-func (h *Hint) ToDTO(challengeID int64) *HintDTO {
+func (h *Hint) ToDTO() *HintDTO {
 	return &HintDTO{
-		ID:          h.ID,
-		Text:        h.Text,
-		Cost:        h.Cost,
-		Unlocked:    h.Unlocked,
-		ChallengeID: challengeID,
+		ID:       h.ID,
+		Text:     h.Text,
+		Cost:     h.Cost,
+		Unlocked: h.Unlocked,
 	}
 }
 
@@ -69,7 +67,7 @@ func (ch *Challenge) ToDTO() *ChallengeDTO {
 		if !hint.IsVisible {
 			continue
 		}
-		hints = append(hints, hint.ToDTO(ch.ID))
+		hints = append(hints, hint.ToDTO())
 	}
 
 	if len(hints) == 0 {

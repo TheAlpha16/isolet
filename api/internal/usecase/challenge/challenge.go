@@ -215,7 +215,7 @@ func (c *challengeImpl) UnlockHint(ctx context.Context, input *challengeDom.Unlo
 		c.updateScoreboard(rCtx, teamID, -uHint.Cost)
 	}()
 
-	return hint.ToDTO(challenge.ID), nil
+	return hint.ToDTO(), nil
 }
 
 func (c *challengeImpl) GetTeamSubmissions(ctx context.Context, teamID int64) ([]*challengeDom.Submission, error) {
