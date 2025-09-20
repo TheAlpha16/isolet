@@ -9,8 +9,8 @@ interface ProfileStore {
   team: Team | null;
   setUser: (user: ProfileStore["user"]) => void;
   setTeam: (team: ProfileStore["team"]) => void;
-  fetchMe: () => void;
-  logout: () => void;
+  fetchMe: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 export const useProfileStore = create<ProfileStore>((set) => ({
@@ -27,7 +27,7 @@ export const useProfileStore = create<ProfileStore>((set) => ({
     set({ meLoading: true });
     try {
       const profileMe = await ProfileService.getUserProfile();
-      set({ user: profileMe.user, team: profileMe.team });
+      set({ user: profileMe.user, team: profileMe.team ?? null });
     } catch (error: any) {
       console.error("fetchMe failed:", error);
     } finally {

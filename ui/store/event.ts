@@ -13,7 +13,7 @@ const defaultInfo: EventInfoUI = {
 interface EventStore {
   loaded: boolean;
   info: EventInfoUI;
-  fetchInfo: () => void;
+  fetchInfo: () => Promise<void>;
 }
 
 export const useEventStore = create<EventStore>((set) => ({
