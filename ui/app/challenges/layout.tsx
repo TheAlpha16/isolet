@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   }
 
   if (!team) {
-    return redirect(UI_ROUTES.onboarding.team);
+    return redirect(UI_ROUTES.onboard.team);
   }
 
   return children;
