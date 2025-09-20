@@ -1,24 +1,24 @@
-'use client'
+"use client";
 
-import React from 'react';
-import { useAuthStore } from '@/store/authStore';
-import { redirect } from 'next/navigation';
-import { ProfilePageSkeleton } from '@/components/skeletons/profile';
+import { ProfilePageSkeleton } from "@/components/skeletons/profile";
+import { useProfileStore } from "@/store";
+import { redirect } from "next/navigation";
+import React from "react";
 
-export default function RootLayout({ children, }: { children: React.ReactNode }) {
-	const { user, fetching } = useAuthStore();
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const { user, team, meLoading } = useProfileStore();
 
-	if (fetching) {
-		return <ProfilePageSkeleton />
-	}
+  if (meLoading) {
+    return <ProfilePageSkeleton />;
+  }
 
-	if (user.userid === -1) {
-		return redirect('/login');
-	}
+  if (!user) {
+    return redirect("/login");
+  }
 
-	if (user.teamid === -1) {
-		return redirect('/teaminit');
-	}
+  if (!team) {
+    return redirect("/teaminit");
+  }
 
-	return children
+  return children;
 }

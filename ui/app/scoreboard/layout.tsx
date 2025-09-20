@@ -1,24 +1,25 @@
-'use client'
+"use client";
 
-import React from 'react';
-import { useAuthStore } from '@/store/authStore';
-import { redirect } from 'next/navigation';
-import { ScoreboardSkeleton } from '@/components/skeletons/scoreboard';
+import { ScoreboardSkeleton } from "@/components/skeletons/scoreboard";
+import { useProfileStore } from "@/store";
+import { UI_ROUTES } from "@/utils/routes";
+import { redirect } from "next/navigation";
+import React from "react";
 
-export default function RootLayout({ children, }: { children: React.ReactNode }) {
-	const { user, fetching } = useAuthStore();
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const { user, team, meLoading } = useProfileStore();
 
-	if (fetching) {
-		return <ScoreboardSkeleton />;
-	}
+  if (meLoading) {
+    return <ScoreboardSkeleton />;
+  }
 
-	if (user.userid === -1) {
-		return redirect('/login');
-	}
+  if (!user) {
+    return redirect(UI_ROUTES.auth.login);
+  }
 
-	if (user.teamid === -1) {
-		return redirect('/teaminit');
-	}
+  if (!team) {
+    return redirect(UI_ROUTES.onboarding.team);
+  }
 
-	return children
+  return children;
 }
