@@ -1,11 +1,11 @@
 "use client";
 
-import { useAuthStore } from "@/store/authStore";
-import { useEventStore } from "@/store";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { UserRound, LogOut, Trophy, Flag, Menu, X, LogIn, Rocket } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useEventStore, useProfileStore } from "@/store";
+import { useAuthStore } from "@/store/authStore";
+import { Flag, LogIn, LogOut, Menu, Rocket, Trophy, UserRound, X } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 interface Route {
@@ -15,7 +15,8 @@ interface Route {
 }
 
 function NavBar() {
-  const { user, fetching, logout } = useAuthStore();
+  const { user, fetching } = useAuthStore();
+  const { logout } = useProfileStore();
   const {
     info: { name },
   } = useEventStore();
