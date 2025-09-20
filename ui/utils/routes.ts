@@ -3,7 +3,6 @@ export const UI_ROUTES = {
 
   auth: {
     login: "/login",
-    register: "/register",
   },
 
   onboard: {
@@ -13,5 +12,13 @@ export const UI_ROUTES = {
 
   challenge: {
     home: "/challenges",
+  },
+
+  profile: {
+    home: "/profile",
+  },
+
+  score: {
+    home: "/scoreboard",
   },
 };

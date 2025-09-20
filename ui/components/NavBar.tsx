@@ -3,6 +3,7 @@
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { useEventStore, useProfileStore } from "@/store";
+import { UI_ROUTES } from "@/utils/routes";
 import { Flag, LogIn, LogOut, Menu, Rocket, Trophy, UserRound, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -22,16 +23,16 @@ function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const routes: Route[] = [
-    { path: "/profile", name: "Profile", icon: <UserRound size={18} /> },
-    { path: "/scoreboard", name: "Scoreboard", icon: <Trophy size={18} /> },
-    { path: "/challenges", name: "Challenges", icon: <Flag size={18} /> },
+    { path: UI_ROUTES.profile.home, name: "Profile", icon: <UserRound size={18} /> },
+    { path: UI_ROUTES.score.home, name: "Scoreboard", icon: <Trophy size={18} /> },
+    { path: UI_ROUTES.challenge.home, name: "Challenges", icon: <Flag size={18} /> },
   ];
 
   return (
     <>
       <div className="flex items-center justify-between bg-background p-4 font-mono border-b sm:sticky sm:top-0 z-10">
         <div className="flex items-center gap-4 min-h-[40px]">
-          <Link href="/">
+          <Link href={UI_ROUTES.home} className="flex items-center gap-2">
             <div className="text-foreground text-2xl font-bold">{name}</div>
           </Link>
 
@@ -64,10 +65,10 @@ function NavBar() {
                 </>
               ) : (
                 <>
-                  <Link href="/register">
+                  <Link href={UI_ROUTES.onboard.user}>
                     <Button variant="secondary">Register</Button>
                   </Link>
-                  <Link href="/login">
+                  <Link href={UI_ROUTES.auth.login}>
                     <Button>Login</Button>
                   </Link>
                   <ThemeToggle />
@@ -118,14 +119,14 @@ function NavBar() {
             <nav className="flex flex-col gap-2 p-4">
               <Link
                 className="flex items-center gap-2 rounded-md p-2 transition-colors hover:bg-accent hover:text-accent-foreground"
-                href="/register"
+                href={UI_ROUTES.onboard.user}
               >
                 <Rocket size={18} />
                 <span>Register</span>
               </Link>
               <Link
                 className="flex items-center gap-2 rounded-md p-2 transition-colors hover:bg-accent hover:text-accent-foreground"
-                href="/login"
+                href={UI_ROUTES.auth.login}
               >
                 <LogIn size={18} />
                 <span>Login</span>
