@@ -27,7 +27,8 @@ export const useProfileStore = create<ProfileStore>((set) => ({
     set({ meLoading: true });
     try {
       const profileMe = await ProfileService.getUserProfile();
-      set({ user: profileMe.user, team: profileMe.team ?? null });
+      set({ user: profileMe?.user, team: profileMe?.team ?? null });
+    } catch {
     } finally {
       set({ meLoading: false });
     }

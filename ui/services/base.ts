@@ -38,7 +38,24 @@ export class BaseService {
       } else {
         showToast(ToastStatus.Failure, "An unexpected error occurred");
       }
-      throw error;
+      return undefined;
+    }
+  }
+
+  /**
+   * Handles API response without any toasts
+   * @param apiCall - The API call that returns a CancelablePromise
+   * @returns Promise that resolves to the data or undefined
+   */
+  protected static async handleSilentResponse<TData>(
+    apiCall: CancelablePromise<Response & { data?: TData; message?: any }>
+  ): Promise<TData | undefined> {
+    const response = await apiCall;
+    if (response.status === Response.status.SUCCESS) {
+      // Return data if it exists
+      return response.data;
+    } else if (response.status === Response.status.ERROR) {
+      return undefined;
     }
   }
 
