@@ -7,7 +7,7 @@ import "@/styles/notification.css";
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useChallengeStore } from "@/store/challengeStore";
-import { useEventStore } from "@/store";
+import { useEventStore, useProfileStore } from "@/store";
 import NavBar from "@/components/NavBar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { HintToastContainer } from "@/components/hints/HintToastContainer";
@@ -29,19 +29,19 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { user, fetchUser } = useAuthStore();
+  // const { user, fetchUser } = useAuthStore();
+  const { meLoading, user, team, fetchMe } = useProfileStore();
   const { fetchChallenges } = useChallengeStore();
   const { loaded, fetchInfo } = useEventStore();
 
   useEffect(() => {
-    if (user.userid !== -1 && user.teamid !== -1) {
+    if (user && team) {
       fetchChallenges();
     }
-
-    if (user.userid === -1) {
-      fetchUser();
+    if (!user && !meLoading) {
+      fetchMe();
     }
-  }, [user, fetchUser, fetchChallenges]);
+  }, [user, fetchMe, fetchChallenges]);
 
   useEffect(() => {
     if (!loaded) {
