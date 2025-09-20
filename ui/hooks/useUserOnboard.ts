@@ -37,5 +37,5 @@ export default function useUserOnboard() {
     }
   };
 
-  return { loading, register };
+  return { register, loading };
 }

@@ -43,5 +43,5 @@ export default function useTeamOnboard() {
     }
   };
 
-  return { loading, teamOnboard };
+  return { teamOnboard, loading };
 }
