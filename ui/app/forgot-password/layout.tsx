@@ -1,15 +1,16 @@
-'use client'
+"use client";
 
-import React from 'react';
-import { useAuthStore } from '@/store/authStore';
-import { redirect } from 'next/navigation';
+import { useProfileStore } from "@/store";
+import { UI_ROUTES } from "@/utils/routes";
+import { redirect } from "next/navigation";
+import React from "react";
 
-export default function RootLayout({ children, }: { children: React.ReactNode }) {
-	const { user } = useAuthStore();
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const { user } = useProfileStore();
 
-	if (user.userid !== -1) {
-		return redirect('/');
-	}
+  if (user) {
+    return redirect(UI_ROUTES.home);
+  }
 
-	return children
+  return children;
 }
