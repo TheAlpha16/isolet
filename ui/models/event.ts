@@ -1,4 +1,4 @@
-import { EventInfo } from "@/api/types";
+import { EventInfo } from "@/api";
 import { fromUnixSeconds } from "@/utils/helpers";
 
 export interface EventInfoUI extends Omit<EventInfo, "event_start" | "event_end"> {
