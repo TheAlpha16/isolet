@@ -64,7 +64,6 @@ export class ChallengeService {
     public static postChallengeHintUnlock(
         requestBody: UnlockHintInput,
     ): CancelablePromise<(Response & {
-        message?: any;
         data?: Hint;
     })> {
         return __request(OpenAPI, {
