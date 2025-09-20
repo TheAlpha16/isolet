@@ -1,17 +1,16 @@
 "use client";
 
-import localFont from "next/font/local";
+import { HintToastContainer } from "@/components/hints/HintToastContainer";
+import NavBar from "@/components/NavBar";
+import { NotificationContainer } from "@/components/NotificationContainer";
+import { ThemeProvider } from "@/components/theme-provider";
+import { useEventStore, useProfileStore } from "@/store";
+import { useChallengeStore } from "@/store/challengeStore";
 import "@/styles/globals.css";
 import "@/styles/hint-toast.css";
 import "@/styles/notification.css";
+import localFont from "next/font/local";
 import { useEffect } from "react";
-import { useAuthStore } from "@/store/authStore";
-import { useChallengeStore } from "@/store/challengeStore";
-import { useEventStore, useProfileStore } from "@/store";
-import NavBar from "@/components/NavBar";
-import { ThemeProvider } from "@/components/theme-provider";
-import { HintToastContainer } from "@/components/hints/HintToastContainer";
-import { NotificationContainer } from "@/components/NotificationContainer";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -29,7 +28,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // const { user, fetchUser } = useAuthStore();
   const { meLoading, user, team, fetchMe } = useProfileStore();
   const { fetchChallenges } = useChallengeStore();
   const { loaded, fetchInfo } = useEventStore();
