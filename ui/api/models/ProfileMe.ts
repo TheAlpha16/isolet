@@ -5,7 +5,7 @@
 import type { Team } from './Team';
 import type { User } from './User';
 export type ProfileMe = {
-    user?: User;
+    user: User;
     team?: Team | null;
 };
 

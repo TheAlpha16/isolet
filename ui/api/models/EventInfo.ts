@@ -3,10 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 export type EventInfo = {
-    name?: string;
-    event_start?: number;
-    event_end?: number;
-    post_event?: boolean;
-    team_length?: number;
+    name: string;
+    event_start: number;
+    event_end: number;
+    post_event: boolean;
+    team_length: number;
 };
 

@@ -3,6 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export type GenerateInviteOutput = {
-    invite_link?: string;
+    invite_link: string;
 };
 

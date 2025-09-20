@@ -3,6 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export type SubmitFlagOutput = {
-    is_correct?: boolean;
+    is_correct: boolean;
 };
 

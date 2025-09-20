@@ -3,10 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 export type User = {
-    id?: number;
-    username?: string;
-    email?: string;
-    role?: User.role;
+    id: number;
+    username: string;
+    email: string;
+    role: User.role;
 };
 export namespace User {
     export enum role {

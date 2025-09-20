@@ -3,8 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export type Session = {
-    user_id?: number;
+    user_id: number;
     team_id?: number | null;
-    expires_at?: number;
+    expires_at: number;
 };
 

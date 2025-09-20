@@ -5,8 +5,8 @@
 import type { Submission } from './Submission';
 import type { Team } from './Team';
 export type ProfileTeam = (Team & {
-    score?: number;
+    score: number;
     rank?: number | null;
-    submissions?: Array<Submission>;
+    submissions: Array<Submission>;
 });
 

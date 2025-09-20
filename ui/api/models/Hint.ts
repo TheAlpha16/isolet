@@ -3,9 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 export type Hint = {
-    id?: number;
-    text?: string;
-    cost?: number;
-    unlocked?: boolean;
+    id: number;
+    text: string;
+    cost: number;
+    unlocked: boolean;
 };
 

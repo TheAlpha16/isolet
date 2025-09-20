@@ -3,8 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export type Team = {
-    id?: number;
-    name?: string;
-    captain_id?: number;
+    id: number;
+    name: string;
+    captain_id: number;
 };
 

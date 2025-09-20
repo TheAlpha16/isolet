@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export type ScoreRecord = {
-    points?: number;
-    timestamp?: number;
+    points: number;
+    timestamp: number;
 };
 

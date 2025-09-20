@@ -707,9 +707,6 @@ components:
         - message
     LoginInput:
       type: object
-      required:
-        - identifier
-        - password
       properties:
         identifier:
           type: string
@@ -720,12 +717,11 @@ components:
           type: string
           maxLength: 32
           example: "password123"
+      required:
+        - identifier
+        - password
     RegisterInput:
       type: object
-      required:
-        - username
-        - email
-        - password
       properties:
         username:
           type: string
@@ -741,21 +737,22 @@ components:
           minLength: 8
           maxLength: 32
           example: "password123"
+      required:
+        - username
+        - email
+        - password
     ForgotPasswordInput:
       type: object
-      required:
-        - email
       properties:
         email:
           type: string
           format: email
           maxLength: 320
           example: "user@example.com"
+      required:
+        - email
     ResetPasswordInput:
       type: object
-      required:
-        - token
-        - password
       properties:
         token:
           type: string
@@ -766,6 +763,9 @@ components:
           minLength: 8
           maxLength: 32
           example: "newPassword123"
+      required:
+        - token
+        - password
     Session:
       type: object
       properties:
@@ -782,11 +782,11 @@ components:
           type: integer
           format: int64
           example: 1615982300
+      required:
+        - user_id
+        - expires_at
     CreateTeamInput:
       type: object
-      required:
-        - team_name
-        - password
       properties:
         team_name:
           type: string
@@ -797,11 +797,11 @@ components:
           minLength: 8
           maxLength: 32
           example: "teamPassword123"
-    JoinTeamInput:
-      type: object
       required:
         - team_name
         - password
+    JoinTeamInput:
+      type: object
       properties:
         team_name:
           type: string
@@ -811,12 +811,17 @@ components:
           type: string
           maxLength: 32
           example: "teamPassword123"
+      required:
+        - team_name
+        - password
     GenerateInviteOutput:
       type: object
       properties:
         invite_link:
           type: string
           example: "https://isolet.dev/api/v1/team/invite?token=eyJhbGci..."
+      required:
+        - invite_link
     Team:
       type: object
       properties:
@@ -831,6 +836,10 @@ components:
           type: integer
           format: int64
           example: 123
+      required:
+        - id
+        - name
+        - captain_id
     User:
       type: object
       properties:
@@ -849,6 +858,11 @@ components:
           type: string
           enum: [admin, author, captain, player]
           example: "player"
+      required:
+        - id
+        - username
+        - email
+        - role
     ProfileMe:
       type: object
       properties:
@@ -857,6 +871,8 @@ components:
         team:
           $ref: "#/components/schemas/Team"
           nullable: true
+      required:
+        - user
     Submission:
       type: object
       properties:
@@ -879,6 +895,12 @@ components:
           type: integer
           format: int64
           example: 1615982300
+      required:
+        - challenge_id
+        - user_id
+        - team_id
+        - is_correct
+        - timestamp
     ProfileTeam:
       type: object
       allOf:
@@ -896,6 +918,9 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/Submission"
+          required:
+            - score
+            - submissions
     EventInfo:
       type: object
       properties:
@@ -916,6 +941,12 @@ components:
         team_length:
           type: integer
           example: 4
+      required:
+        - name
+        - event_start
+        - event_end
+        - post_event
+        - team_length
     Category:
       type: object
       properties:
@@ -926,6 +957,9 @@ components:
         name:
           type: string
           example: "Web Exploitation"
+      required:
+        - id
+        - name
     Hint:
       type: object
       properties:
@@ -942,6 +976,11 @@ components:
         unlocked:
           type: boolean
           example: false
+      required:
+        - id
+        - text
+        - cost
+        - unlocked
     Challenge:
       type: object
       properties:
@@ -998,11 +1037,24 @@ components:
         attempt_count:
           type: integer
           example: 2
+      required:
+        - id
+        - name
+        - prompt
+        - category
+        - type
+        - points
+        - files
+        - hints
+        - author
+        - tags
+        - links
+        - max_attempts
+        - total_solves
+        - solved
+        - attempt_count
     SubmitFlagInput:
       type: object
-      required:
-        - challenge_id
-        - flag
       properties:
         challenge_id:
           type: integer
@@ -1011,21 +1063,26 @@ components:
         flag:
           type: string
           example: "flag{th1s_1s_4_fl4g}"
+      required:
+        - challenge_id
+        - flag
     SubmitFlagOutput:
       type: object
       properties:
         is_correct:
           type: boolean
           example: true
+      required:
+        - is_correct
     UnlockHintInput:
       type: object
-      required:
-        - hint_id
       properties:
         hint_id:
           type: integer
           format: int64
           example: 1
+      required:
+        - hint_id
     ScoreboardEntry:
       type: object
       properties:
@@ -1042,6 +1099,11 @@ components:
         score:
           type: integer
           example: 1500
+      required:
+        - team_id
+        - team_name
+        - rank
+        - score
     Scoreboard:
       type: object
       properties:
@@ -1058,6 +1120,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ScoreboardEntry"
+      required:
+        - page
+        - page_size
+        - total_pages
+        - entries
     ScoreRecord:
       type: object
       properties:
@@ -1068,6 +1135,9 @@ components:
           type: integer
           format: int64
           example: 1615982300
+      required:
+        - points
+        - timestamp
     ScoreGraphEntry:
       type: object
       allOf:
@@ -1078,6 +1148,8 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/ScoreRecord"
+          required:
+            - records
     ScoreGraph:
       type: object
       properties:
@@ -1088,3 +1160,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ScoreGraphEntry"
+      required:
+        - count
+        - entries

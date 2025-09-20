@@ -5,6 +5,6 @@
 import type { ScoreboardEntry } from './ScoreboardEntry';
 import type { ScoreRecord } from './ScoreRecord';
 export type ScoreGraphEntry = (ScoreboardEntry & {
-    records?: Array<ScoreRecord>;
+    records: Array<ScoreRecord>;
 });
 

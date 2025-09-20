@@ -4,7 +4,7 @@
 /* eslint-disable */
 import type { ScoreGraphEntry } from './ScoreGraphEntry';
 export type ScoreGraph = {
-    count?: number;
-    entries?: Array<ScoreGraphEntry>;
+    count: number;
+    entries: Array<ScoreGraphEntry>;
 };
 

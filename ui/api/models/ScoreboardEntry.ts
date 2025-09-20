@@ -3,9 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 export type ScoreboardEntry = {
-    team_id?: number;
-    team_name?: string;
-    rank?: number;
-    score?: number;
+    team_id: number;
+    team_name: string;
+    rank: number;
+    score: number;
 };
 
