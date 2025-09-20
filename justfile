@@ -5,6 +5,7 @@ GO := "go"
 GORUN_COMMAND := GO + " run"
 GOTIDY_COMMAND := GO + " mod tidy"
 API := "api"
+UI := "ui"
 
 # Default target
 default: help
@@ -37,3 +38,11 @@ api-bump LEVEL:
 	echo "Bumped API version: $OLD → $NEW"
 	git add {{API}}/VERSION
 	git commit -m "chore(api): bump version to $NEW"
+
+# --- UI commands ---
+
+# Generate UI client from OpenAPI spec
+ui-generate:
+	dotenv -f .env -- \
+		npx openapi-typescript-codegen --input {{API}}/openapi.yaml --output {{UI}}/api
+	@echo "Generated UI client from OpenAPI spec."
