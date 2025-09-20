@@ -2,6 +2,14 @@ import { EventService } from "@/services";
 import { EventInfoUI, toEventInfoUI } from "@/models/event";
 import { create } from "zustand";
 
+const defaultInfo: EventInfoUI = {
+  name: "isolet",
+  event_start: new Date(0),
+  event_end: new Date(0),
+  post_event: false,
+  team_length: 0,
+};
+
 interface EventStore {
   loaded: boolean;
   info: EventInfoUI;
@@ -11,16 +19,9 @@ interface EventStore {
 export const useEventStore = create<EventStore>((set) => ({
   loaded: false,
   fetching: false,
-  info: {
-    name: "isolet",
-    event_start: new Date(0),
-    event_end: new Date(0),
-    post_event: false,
-    team_length: 0,
-  },
-
+  info: defaultInfo,
   fetchInfo: async () => {
-    const info = await EventService.getEventInfo();
-    set({ info: toEventInfoUI(info!), loaded: true });
+    const infoRes = await EventService.getEventInfo();
+    set({ info: infoRes ? toEventInfoUI(infoRes) : defaultInfo, loaded: true });
   },
 }));
