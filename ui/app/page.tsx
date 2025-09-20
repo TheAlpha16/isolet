@@ -1,18 +1,20 @@
 "use client";
 
-import Image from "next/image"
-import Link from "next/link"
-import { Anchor } from "lucide-react"
-import Countdown from 'react-countdown';
+import Image from "next/image";
+import Link from "next/link";
+import { Anchor } from "lucide-react";
+import Countdown from "react-countdown";
 
-import { useMetadataStore } from "@/store/metadataStore";
+import { useEventStore } from "@/store";
 
-import googleCloud from "@/icons/google-cloud.png"
-import nvcti from "@/icons/nvcti.png"
-import pearlLogo from "@/icons/pearl-logo.png"
+import googleCloud from "@/icons/google-cloud.png";
+import nvcti from "@/icons/nvcti.png";
+import pearlLogo from "@/icons/pearl-logo.png";
 
 export default function HomePage() {
-  const { eventStart, eventEnd } = useMetadataStore();
+  const {
+    info: { event_start, event_end },
+  } = useEventStore();
 
   return (
     <div className="min-h-screen text-white flex flex-col items-center">
@@ -46,25 +48,44 @@ export default function HomePage() {
           </h1>
 
           <p className="font-mono text-sm md:text-base text-center max-w-2xl text-gray-600 dark:text-blue-200/70 mb-8">
-            Dive into the uncharted waters of mystery, where every challenge is a hidden trench, every exploit a sunken treasure, and each flag captured brings you closer to triumph.
+            Dive into the uncharted waters of mystery, where every challenge is a hidden trench,
+            every exploit a sunken treasure, and each flag captured brings you closer to triumph.
           </p>
 
           {/* Event status */}
           <div className="flex flex-col sm:flex-row gap-4 mt-4">
             <div className="font-mono text-xl font-bold text-center max-w-2xl text-gray-600 dark:text-blue-200/70">
-              {
-              Date.now() < eventStart.getTime() ? 
-              <>
-              <p className="mb-3">Event Starts on {eventStart.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })}</p>
-              <Countdown className="text-4xl" date={eventStart}/>
-              </> : 
-              Date.now() > eventEnd.getTime() ? 
-              <p>Event has Ended</p> : 
-              <>
-              <p className="mb-3">Event will end on {eventEnd.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })}</p>
-              <Countdown className="text-4xl" date={eventEnd}/>
-              </>
-              }
+              {Date.now() < event_start.getTime() ? (
+                <>
+                  <p className="mb-3">
+                    Event Starts on{" "}
+                    {event_start.toLocaleString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                  <Countdown className="text-4xl" date={event_start} />
+                </>
+              ) : Date.now() > event_end.getTime() ? (
+                <p>Event has Ended</p>
+              ) : (
+                <>
+                  <p className="mb-3">
+                    Event will end on{" "}
+                    {event_end.toLocaleString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                  <Countdown className="text-4xl" date={event_end} />
+                </>
+              )}
             </div>
           </div>
         </section>
@@ -101,13 +122,16 @@ export default function HomePage() {
                     strokeLinejoin="round"
                     className="h-8 w-8"
                   >
-					<path d="M18.8943 4.34399C17.5183 3.71467 16.057 3.256 14.5317 3C14.3396 3.33067 14.1263 3.77866 13.977 4.13067C12.3546 3.89599 10.7439 3.89599 9.14391 4.13067C8.99457 3.77866 8.77056 3.33067 8.58922 3C7.05325 3.256 5.59191 3.71467 4.22552 4.34399C1.46286 8.41865 0.716188 12.3973 1.08952 16.3226C2.92418 17.6559 4.69486 18.4666 6.4346 19C6.86126 18.424 7.24527 17.8053 7.57594 17.1546C6.9466 16.92 6.34927 16.632 5.77327 16.2906C5.9226 16.184 6.07194 16.0667 6.21061 15.9493C9.68793 17.5387 13.4543 17.5387 16.889 15.9493C17.0383 16.0667 17.177 16.184 17.3263 16.2906C16.7503 16.632 16.153 16.92 15.5236 17.1546C15.8543 17.8053 16.2383 18.424 16.665 19C18.4036 18.4666 20.185 17.6559 22.01 16.3226C22.4687 11.7787 21.2836 7.83202 18.8943 4.34399ZM8.05593 13.9013C7.01058 13.9013 6.15725 12.952 6.15725 11.7893C6.15725 10.6267 6.98925 9.67731 8.05593 9.67731C9.11191 9.67731 9.97588 10.6267 9.95454 11.7893C9.95454 12.952 9.11191 13.9013 8.05593 13.9013ZM15.065 13.9013C14.0196 13.9013 13.1652 12.952 13.1652 11.7893C13.1652 10.6267 13.9983 9.67731 15.065 9.67731C16.121 9.67731 16.985 10.6267 16.9636 11.7893C16.9636 12.952 16.1317 13.9013 15.065 13.9013Z" strokeLinejoin="round"/>
-				  </svg>
+                    <path
+                      d="M18.8943 4.34399C17.5183 3.71467 16.057 3.256 14.5317 3C14.3396 3.33067 14.1263 3.77866 13.977 4.13067C12.3546 3.89599 10.7439 3.89599 9.14391 4.13067C8.99457 3.77866 8.77056 3.33067 8.58922 3C7.05325 3.256 5.59191 3.71467 4.22552 4.34399C1.46286 8.41865 0.716188 12.3973 1.08952 16.3226C2.92418 17.6559 4.69486 18.4666 6.4346 19C6.86126 18.424 7.24527 17.8053 7.57594 17.1546C6.9466 16.92 6.34927 16.632 5.77327 16.2906C5.9226 16.184 6.07194 16.0667 6.21061 15.9493C9.68793 17.5387 13.4543 17.5387 16.889 15.9493C17.0383 16.0667 17.177 16.184 17.3263 16.2906C16.7503 16.632 16.153 16.92 15.5236 17.1546C15.8543 17.8053 16.2383 18.424 16.665 19C18.4036 18.4666 20.185 17.6559 22.01 16.3226C22.4687 11.7787 21.2836 7.83202 18.8943 4.34399ZM8.05593 13.9013C7.01058 13.9013 6.15725 12.952 6.15725 11.7893C6.15725 10.6267 6.98925 9.67731 8.05593 9.67731C9.11191 9.67731 9.97588 10.6267 9.95454 11.7893C9.95454 12.952 9.11191 13.9013 8.05593 13.9013ZM15.065 13.9013C14.0196 13.9013 13.1652 12.952 13.1652 11.7893C13.1652 10.6267 13.9983 9.67731 15.065 9.67731C16.121 9.67731 16.985 10.6267 16.9636 11.7893C16.9636 12.952 16.1317 13.9013 15.065 13.9013Z"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 ),
                 name: "Discord",
                 handle: "PearlCTF",
                 color: "bg-[#5865F2]/20 border-[#5865F2]/40 hover:bg-[#5865F2]/30",
-				url: "https://discord.gg/MuUwXX9P"
+                url: "https://discord.gg/MuUwXX9P",
               },
               {
                 icon: (
@@ -131,7 +155,7 @@ export default function HomePage() {
                 name: "Instagram",
                 handle: "@cyberlabs_iitism",
                 color: "bg-[#E1306C]/20 border-[#E1306C]/40 hover:bg-[#E1306C]/30",
-				url: "https://www.instagram.com/cyberlabs_iitism?igsh=cGMzOXlxbnV4MWY3"
+                url: "https://www.instagram.com/cyberlabs_iitism?igsh=cGMzOXlxbnV4MWY3",
               },
               {
                 icon: (
@@ -154,7 +178,7 @@ export default function HomePage() {
                 name: "GitHub",
                 handle: "Cyber Labs",
                 color: "bg-gray-700/30 border-gray-500/40 hover:bg-gray-700/50",
-				url: "https://github.com/Cyber-Labs"
+                url: "https://github.com/Cyber-Labs",
               },
               {
                 icon: (
@@ -178,7 +202,7 @@ export default function HomePage() {
                 name: "LinkedIn",
                 handle: "CyberLabs IITISM",
                 color: "bg-[#0077B5]/20 border-[#0077B5]/40 hover:bg-[#0077B5]/30",
-				url: "https://in.linkedin.com/company/cyberlabs-iitism"
+                url: "https://in.linkedin.com/company/cyberlabs-iitism",
               },
             ].map((social, index) => (
               <Link
@@ -194,7 +218,9 @@ export default function HomePage() {
                 <div className="text-blue-400 mb-4 transform group-hover:scale-110 transition-transform">
                   {social.icon}
                 </div>
-                <h3 className="font-mono text-xl mb-2 text-gray-800 dark:text-blue-200">{social.name}</h3>
+                <h3 className="font-mono text-xl mb-2 text-gray-800 dark:text-blue-200">
+                  {social.name}
+                </h3>
                 <p className="text-gray-600 dark:text-blue-200/70 text-sm">{social.handle}</p>
 
                 <div className="mt-6 font-mono text-xs text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -213,15 +239,15 @@ export default function HomePage() {
 
           <div className="gap-4 flex justify-center flex-wrap">
             {[
-				{
-					name: "Google Cloud",
-					icon: googleCloud
-				},
-				{
-					name: "NVCTI",
-					icon: nvcti
-				}
-			].map((sponsor, index) => (
+              {
+                name: "Google Cloud",
+                icon: googleCloud,
+              },
+              {
+                name: "NVCTI",
+                icon: nvcti,
+              },
+            ].map((sponsor, index) => (
               <div key={index} className="w-32 h-32 md:w-40 md:h-40 relative group">
                 <div className="absolute inset-0 flex items-center justify-center p-4 flex-col gap-2">
                   <Image
@@ -231,7 +257,9 @@ export default function HomePage() {
                     height={80}
                     className="max-w-full max-h-full"
                   />
-				  <p className="font-bold text-slate-400 text-lg h-full flex items-end">{sponsor.name}</p>
+                  <p className="font-bold text-slate-400 text-lg h-full flex items-end">
+                    {sponsor.name}
+                  </p>
                 </div>
                 <div className="absolute inset-0 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400/0 via-blue-400/70 to-blue-400/0 transform translate-y-full group-hover:translate-y-0 transition-transform"></div>
@@ -242,6 +270,5 @@ export default function HomePage() {
         </section>
       </main>
     </div>
-  )
+  );
 }
-
