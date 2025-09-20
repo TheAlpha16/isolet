@@ -1,69 +1,65 @@
-import { useChallengeStore } from "@/store/challengeStore";
-import type { ScoreGraphEntryType, ScoreGraphInputType, SubmissionType, CategoryProgress } from "@/utils/types";
+import { useChallengeStore } from "@/store/challenge";
+import type {
+  CategoryProgress,
+  ScoreGraphEntryType,
+  ScoreGraphInputType,
+  SubmissionType,
+} from "@/utils/types";
 
 interface Submission {
-	label: string;
-	timestamp: string;
-	points: number;
+  label: string;
+  timestamp: string;
+  points: number;
 }
 
 function prepareSubmissions(data: ScoreGraphInputType[]): Submission[] {
-	return data.flatMap((plot) =>
-		plot.scores.map((sub) => ({
-			label: plot.label,
-			timestamp: sub.timestamp,
-			points: sub.points,
-		}))
-	);
+  return data.flatMap((plot) =>
+    plot.scores.map((sub) => ({
+      label: plot.label,
+      timestamp: sub.timestamp,
+      points: sub.points,
+    }))
+  );
 }
 
-function buildGraphData(
-	preparedData: Submission[],
-	startTime: string
+function buildGraphData(preparedData: Submission[], startTime: string): ScoreGraphEntryType[] {
+  const scoresTillNow: { [label: string]: number } = {};
+  preparedData.forEach(({ label }) => (scoresTillNow[label] = 0));
+
+  const finalData = [{ timestamp: startTime, ...scoresTillNow }];
+  preparedData.forEach((submission) => {
+    scoresTillNow[submission.label] += submission.points;
+    finalData.push({ timestamp: submission.timestamp, ...scoresTillNow });
+  });
+
+  return finalData;
+}
+
+export function processScores(
+  data: ScoreGraphInputType[],
+  startTime: string
 ): ScoreGraphEntryType[] {
-	const scoresTillNow: { [label: string]: number } = {};
-	preparedData.forEach(({ label }) => (scoresTillNow[label] = 0));
+  const preparedData = prepareSubmissions(data);
 
-	const finalData = [{ timestamp: startTime, ...scoresTillNow }];
-	preparedData.forEach((submission) => {
-		scoresTillNow[submission.label] += submission.points;
-		finalData.push({ timestamp: submission.timestamp, ...scoresTillNow });
-	});
+  preparedData.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
-	return finalData;
-}
-
-export function processScores(data: ScoreGraphInputType[], startTime: string): ScoreGraphEntryType[] {
-	const preparedData = prepareSubmissions(data);
-
-	preparedData.sort(
-		(a, b) =>
-			new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-	);
-
-	return buildGraphData(preparedData, startTime);
+  return buildGraphData(preparedData, startTime);
 }
 
 export function processCategoryData(submissions: SubmissionType[]): CategoryProgress[] {
-	const categories = Object.keys(useChallengeStore.getState().challenges);
-	const categoryProgress: CategoryProgress[] = [];
+  const { categoryIdMap, categoryChallengeMap } = useChallengeStore();
+  const categoryIds = Object.keys(categoryIdMap).map(Number);
+  const categoryProgress: CategoryProgress[] = [];
 
-	categories.forEach((category) => {
-		const total = useChallengeStore
-			.getState()
-			.challenges[category].length;
-		const solved = submissions.filter(
-			(sub) =>
-				sub.correct &&
-				useChallengeStore
-					.getState()
-					.challenges[category]
-					.map((chall) => chall.chall_id)
-					.includes(sub.chall_id)
-		).length;
+  categoryIds.forEach((categoryId) => {
+    const total = categoryChallengeMap[categoryId].length;
+    const solved = submissions.filter((sub) => {
+      const challengeIds = categoryChallengeMap[categoryId] || [];
+      return sub.correct && challengeIds.includes(sub.chall_id);
+    }).length;
 
-		categoryProgress.push({ category, solved, total });
-	});
+    categoryProgress.push({ category: categoryIdMap[categoryId].name, solved, total });
+  });
 
-	return categoryProgress;
+  return categoryProgress;
 }
