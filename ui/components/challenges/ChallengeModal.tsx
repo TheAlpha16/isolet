@@ -145,8 +145,20 @@ export function ChallengeModal({ challenge, onClose }: ChallengeModalProps) {
                 placeholder="Enter flag"
                 value={flag}
                 onChange={(e) => setFlag(e.target.value)}
+                disabled={
+                  challenge.solved ||
+                  (challenge.max_attempts > 0 && challenge.attempt_count >= challenge.max_attempts)
+                }
               />
-              <Button type="submit">Submit</Button>
+              <Button
+                type="submit"
+                disabled={
+                  challenge.solved ||
+                  (challenge.max_attempts > 0 && challenge.attempt_count >= challenge.max_attempts)
+                }
+              >
+                Submit
+              </Button>
             </div>
           </form>
         </div>
