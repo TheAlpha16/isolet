@@ -2,6 +2,7 @@
 
 import { ProfilePageSkeleton } from "@/components/skeletons/profile";
 import { useProfileStore } from "@/store";
+import { UI_ROUTES } from "@/utils/routes";
 import { redirect } from "next/navigation";
 import React from "react";
 
@@ -13,11 +14,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   }
 
   if (!user) {
-    return redirect("/login");
+    return redirect(UI_ROUTES.auth.login);
   }
 
   if (!team) {
-    return redirect("/teaminit");
+    return redirect(UI_ROUTES.onboard.team);
   }
 
   return children;
