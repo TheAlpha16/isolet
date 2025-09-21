@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { ScoreGraph } from "@/components/charts/ScoreGraph";
+import { ScoreGraphSkeleton } from "@/components/skeletons/scoreboard";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -12,44 +14,37 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Trophy, ChevronLeft, ChevronRight } from "lucide-react";
-import { useScoreboardStore } from "@/store/scoreboardStore";
-import { processScores } from "@/utils/processScores";
-import type { TeamType, ScoreGraphEntryType } from "@/utils/types";
-import { ScoreGraph } from "@/components/charts/ScoreGraph";
-import { useEventStore } from "@/store";
-import { ScoreGraphSkeleton } from "@/components/skeletons/scoreboard";
+import { ChartData } from "@/models/score";
+import { useEventStore, useScoreStore } from "@/store";
+import { toChartData } from "@/utils/scoreTransform";
+import { ChevronLeft, ChevronRight, Trophy } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Scoreboard() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [graphData, setGraphData] = useState<ScoreGraphEntryType[]>([]);
+  const [chartData, setChartData] = useState<ChartData>({ labels: [], points: [] });
 
-  const { scores, totalPages, currentPage, fetchPage, graphLoading, topScores, fetchTopScores } =
-    useScoreboardStore();
+  const { graphLoading, currentPage, totalPages, scores, graphScores, fetchPage, fetchGraph } =
+    useScoreStore();
   const {
     info: { event_start },
   } = useEventStore();
 
   useEffect(() => {
     fetchPage(currentPage);
-    fetchTopScores();
+    fetchGraph();
 
     return () => {};
   }, []);
 
   useEffect(() => {
-    const toProcess = topScores.map((team) => ({
-      label: team.teamname,
-      scores: team.submissions.map((sub) => ({
-        timestamp: sub.timestamp,
-        points: sub.points,
-      })),
-    }));
+    const transformedData = toChartData(graphScores);
+    setChartData(transformedData);
 
-    const respon = processScores(toProcess, event_start.toUTCString());
-    setGraphData(respon);
-  }, [topScores, event_start]);
+    // DEBUG
+    console.log("Transformed chart data:", transformedData);
+    return () => {};
+  }, [graphScores, event_start]);
 
   const handlePageChange = async (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
@@ -85,7 +80,7 @@ export default function Scoreboard() {
       {graphLoading ? (
         <ScoreGraphSkeleton />
       ) : (
-        topScores.length !== 0 && <ScoreGraph plots={graphData} />
+        graphScores.length !== 0 && <ScoreGraph data={chartData} />
       )}
 
       <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
@@ -110,31 +105,31 @@ export default function Scoreboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {scores.map((team: TeamType) => (
-                <TableRow key={team.teamid}>
+              {scores.map((entry) => (
+                <TableRow key={entry.team_id}>
                   <TableCell className="text-center">
                     <div className="flex justify-center items-center">
-                      {team.rank <= 3 ? (
+                      {entry.rank <= 3 ? (
                         <Trophy
                           className={`w-6 h-6 ${
-                            team.rank === 1
+                            entry.rank === 1
                               ? "text-yellow-500"
-                              : team.rank === 2
+                              : entry.rank === 2
                                 ? "text-gray-400"
                                 : "text-orange-500"
                           }`}
                         />
                       ) : (
                         <Badge variant="secondary" className="w-8 flex justify-center">
-                          #{team.rank}
+                          #{entry.rank}
                         </Badge>
                       )}
                     </div>
                   </TableCell>
                   <TableCell className="font-medium text-center">
-                    <span className="truncate block max-w-xs mx-auto">{team.teamname}</span>
+                    <span className="truncate block max-w-xs mx-auto">{entry.team_name}</span>
                   </TableCell>
-                  <TableCell className="text-center">{team.score}</TableCell>
+                  <TableCell className="text-center">{entry.score}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
