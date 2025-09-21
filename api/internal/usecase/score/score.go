@@ -127,6 +127,12 @@ func (scoreImpl *scoreImpl) RefreshScoreboard(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	// exit early if there are no scores
+	if len(scores) == 0 {
+		return nil
+	}
+
 	serializedScores := make(map[string]float64, len(scores))
 	for teamID, score := range scores {
 		serializedScores[scoreDom.ScoreboardMember(teamID)] = float64(score)
