@@ -1,0 +1,139 @@
++----------------+          +-----------------+
+|   categories   |          |   config_vars   |
+|----------------|          |-----------------|
+| PK: id         |          | PK: id          |
+| name (UNIQUE)  |          | key (UNIQUE)    |
+| is_visible     |          | value           |
+| created_at     |          | created_at      |
+| updated_at     |          | updated_at      |
++----------------+          +-----------------+
+         ^                            
+         | fk_challenges_category        
+         |                              
++------------------+                  
+|    challenges    |                  
+|------------------|                  
+| PK: id           |                  
+| name (UNIQUE)    |                  
+| category_id      |                  
+| prompt           |                  
+| flag             |                  
+| type             | ENUM(challenge_type)
+| points           |                  
+| files[]          |                  
+| author           |                  
+| tags[]           |                  
+| links[]          |                  
+| is_visible       |                  
+| max_attempts     |                  
+| requirements[]   |                  
+| created_at       |                  
+| updated_at       |                  
++------------------+                  
+         |                              
+         | fk_challenges_hints (CASCADE)
+         v
++---------------+
+|     hints     |
+|---------------|
+| PK: id        |
+| challenge_id  |
+| text          |
+| cost          |
+| is_visible    |
+| created_at    |
+| updated_at    |
++---------------+
+         ^
+         |
+         | fk_unlocked_hints_hint (CASCADE)
+         |
++--------------------+
+|   unlocked_hints   |
+|--------------------|
+| PK: id             |
+| team_id            | --> fk_unlocked_hints_team (CASCADE)
+| hint_id            |
+| cost               |
+| created_at         |
++--------------------+
+         ^
+         |
+         | fk_solves_team (CASCADE)
+         | fk_submissions_team (CASCADE)
+         |
++-----------------+
+|      teams      |
+|-----------------|
+| PK: id          |
+| name (UNIQUE)   |
+| captain_id      | --> fk_teams_captain
+| password        |
+| created_at      |
+| updated_at      |
++-----------------+
+         ^
+         |
+         | fk_submissions_user (CASCADE)
+         | fk_teams_members
+         |
++-------------------+
+|       users       |
+|-------------------|
+| PK: id            |
+| username (UNIQUE) |
+| email (UNIQUE)    |
+| password          |
+| team_id           |
+| role              | ENUM(user_role)
+| is_banned         |
+| created_at        |
+| updated_at        |
++-------------------+
+
+Other tables:
+
++-----------------+
+|   submissions   |
+|-----------------|
+| PK: id          |
+| team_id         |
+| challenge_id    |
+| user_id         |
+| flag            |
+| is_correct      |
+| ip_address      |
+| created_at      |
++-----------------+
+
++------------------+
+|      solves      |
+|------------------|
+| PK: id           |
+| challenge_id     |
+| team_id          |
+| submission_id    |
+| points           |
+| created_at       |
++------------------+
+
+Functions:
+
++----------------------+
+|      join_team()     |
+|----------------------|
+| user_id, teamid,     |
+| user_limit           |
+| Enforces team limit  |
++----------------------+
+
+Enums:
+
++-----------------+   +------------------+
+|    user_role    |   |  challenge_type  |
+|-----------------|   |------------------|
+| admin           |   | static           |
+| author          |   | dynamic          |
+| captain         |   | on-demand        |
+| player          |   +------------------+
++-----------------+

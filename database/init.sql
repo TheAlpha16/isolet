@@ -1,609 +1,716 @@
--- Create types
-CREATE TYPE chall_type AS ENUM ('static', 'dynamic', 'on-demand');
-CREATE TYPE deployment_type AS ENUM ('ssh', 'nc', 'http');
-CREATE TYPE token_type AS ENUM ('password_reset', 'invite_token');
+--
+-- PostgreSQL database dump
+--
 
--- Create config table
-CREATE TABLE IF NOT EXISTS config(
-    key text PRIMARY KEY,
-    value text
+-- Dumped from database version 14.18 (Homebrew)
+-- Dumped by pg_dump version 14.18 (Homebrew)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: challenge_type; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.challenge_type AS ENUM (
+    'static',
+    'dynamic',
+    'on-demand'
 );
 
--- Create categories table
-CREATE TABLE IF NOT EXISTS categories(
-    category_id serial PRIMARY KEY,
-    category_name text NOT NULL UNIQUE
+
+--
+-- Name: user_role; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.user_role AS ENUM (
+    'admin',
+    'author',
+    'captain',
+    'player'
 );
 
--- Create users table
-CREATE TABLE IF NOT EXISTS users(
-    userid bigserial PRIMARY KEY,
-    email text NOT NULL UNIQUE,
-    username text NOT NULL UNIQUE,
-    rank integer DEFAULT 3,
-    password VARCHAR(100) NOT NULL,
-    teamid bigint DEFAULT -1
-);
 
--- Create teams table
-CREATE TABLE IF NOT EXISTS teams(
-    teamid bigserial PRIMARY KEY,
-    teamname text NOT NULL UNIQUE,
-    captain bigint NOT NULL REFERENCES users(userid),
-    password VARCHAR(100) NOT NULL,
-    cost int DEFAULT 0,
-    last_submission bigint DEFAULT EXTRACT(EPOCH FROM NOW())
-);
+--
+-- Name: join_team(bigint, bigint, integer); Type: FUNCTION; Schema: public; Owner: -
+--
 
--- Create trigger function to rank up captains
-CREATE OR REPLACE FUNCTION rank_up_captain()
-RETURNS TRIGGER AS $$
-BEGIN
-    UPDATE users SET rank = 2, teamid = NEW.teamid WHERE userid = NEW.captain;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create trigger to update captain's rank
-CREATE OR REPLACE TRIGGER rank_up_captain_trigger
-AFTER INSERT ON teams
-FOR EACH ROW
-EXECUTE FUNCTION rank_up_captain();
-
--- Create toverify table
-CREATE TABLE IF NOT EXISTS toverify(
-    vid bigserial PRIMARY KEY,
-    email text NOT NULL UNIQUE,
-    username text NOT NULL UNIQUE,
-    password VARCHAR(100) NOT NULL,
-    timestamp timestamp NOT NULL DEFAULT NOW()
-);
-
--- Function to delete old toverify entries
-CREATE OR REPLACE FUNCTION toverify_delete_old_rows() RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    DELETE FROM toverify WHERE timestamp < NOW() - INTERVAL '10 minutes';
-    RETURN NEW;
-END;
-$$;
-
--- Trigger to delete old toverify entries
-CREATE OR REPLACE TRIGGER toverify_delete_old_rows_trigger
-BEFORE INSERT ON toverify
-EXECUTE PROCEDURE toverify_delete_old_rows();
-
--- Create a table for tokens
-CREATE TABLE IF NOT EXISTS tokens (
-    tid SERIAL PRIMARY KEY,
-    token UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-    type token_type NOT NULL,
-    userid BIGINT NOT NULL REFERENCES users(userid) ON DELETE CASCADE,
-    expiry TIMESTAMP NOT NULL DEFAULT (NOW() + INTERVAL '30 minutes')
-);
-
--- Function to delete old tokens
-CREATE OR REPLACE FUNCTION tokens_delete_old_rows() RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    DELETE FROM tokens WHERE expiry < NOW();
-    RETURN NEW;
-END;
-$$;
-
--- Trigger to delete old tokens
-CREATE OR REPLACE TRIGGER tokens_delete_old_rows_trigger
-BEFORE INSERT ON tokens
-EXECUTE PROCEDURE tokens_delete_old_rows();
-
--- Create challenges table
-CREATE TABLE IF NOT EXISTS challenges(
-    chall_id serial PRIMARY KEY,
-    chall_name text NOT NULL UNIQUE,
-    category_id integer NOT NULL REFERENCES categories(category_id),
-    prompt text,
-    flag text,
-    type chall_type NOT NULL DEFAULT 'static',
-    points integer NOT NULL DEFAULT 100,
-    files text[] DEFAULT ARRAY[]::text[],
-    requirements int[] DEFAULT '{}',
-    hints int[] NOT NULL DEFAULT '{}',
-    solves integer DEFAULT 0,
-    author text DEFAULT 'anonymous',
-    visible boolean DEFAULT false,
-    tags text[] DEFAULT ARRAY[]::text[],
-    links text[] DEFAULT ARRAY[]::text[],
-    deployment deployment_type DEFAULT 'http',
-    port integer DEFAULT 80,
-    subd text DEFAULT '',
-    attempts integer DEFAULT 500
-);
-
--- Create flags table
-CREATE TABLE IF NOT EXISTS flags(
-    flagid bigserial,
-    teamid bigint NOT NULL REFERENCES teams(teamid),
-    chall_id integer NOT NULL REFERENCES challenges(chall_id),
-    password text,
-    flag text NOT NULL,
-    port integer,
-    hostname text,
-    deadline bigint DEFAULT 2526249600,
-    extended integer DEFAULT 1
-);
-
--- Create sublogs table
-CREATE TABLE IF NOT EXISTS sublogs(
-    sid bigserial PRIMARY KEY,
-    chall_id integer NOT NULL REFERENCES challenges(chall_id),
-    userid bigint NOT NULL REFERENCES users(userid),
-    teamid bigint NOT NULL REFERENCES teams(teamid),
-    flag text NOT NULL,
-    correct boolean NOT NULL,
-    ip inet NOT NULL,
-    timestamp timestamp NOT NULL DEFAULT NOW()
-);
-
--- Hints table
-CREATE TABLE IF NOT EXISTS hints(
-    hid serial PRIMARY KEY,
-    chall_id integer NOT NULL REFERENCES challenges(chall_id),
-    hint text NOT NULL,
-    cost integer NOT NULL DEFAULT 0,
-    visible boolean DEFAULT false
-);
-
--- Function to update hints in challenges table
-CREATE OR REPLACE FUNCTION update_hints() RETURNS TRIGGER
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    UPDATE challenges SET hints = array_append(hints, NEW.hid) WHERE chall_id = NEW.chall_id;
-    RETURN NEW;
-END;
-$$;
-
--- Trigger to update hints in challenges table
-CREATE OR REPLACE TRIGGER update_hints_trigger
-AFTER INSERT ON hints
-FOR EACH ROW EXECUTE PROCEDURE update_hints();
-
--- Create solves table
-CREATE TABLE IF NOT EXISTS solves(
-    chall_id integer NOT NULL REFERENCES challenges(chall_id),
-    teamid bigint NOT NULL REFERENCES teams(teamid),
-    timestamp timestamp NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (teamid, chall_id)
-);
-
--- Create unlocked hints table
-CREATE TABLE IF NOT EXISTS uhints(
-    hid integer NOT NULL REFERENCES hints(hid),
-    teamid bigint NOT NULL REFERENCES teams(teamid),
-    timestamp timestamp NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (teamid, hid)
-);
-
--- Function to update cost in teams when a new hint is unlocked
-CREATE OR REPLACE FUNCTION update_team_cost()
-RETURNS TRIGGER AS $$
-DECLARE
-    hint_cost int;
-BEGIN
-    SELECT cost INTO hint_cost
-    FROM hints
-    WHERE hid = NEW.hid;
-
-    UPDATE teams
-    SET cost = cost + hint_cost
-    WHERE teamid = NEW.teamid;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Trigger to initiate hint cost update function
-CREATE OR REPLACE TRIGGER update_team_cost_trigger
-AFTER INSERT
-ON uhints
-FOR EACH ROW
-EXECUTE FUNCTION update_team_cost();
-
--- Table to store buffer for running on-demand challenges
-CREATE TABLE IF NOT EXISTS running(
-    runid bigserial,
-    teamid bigint NOT NULL REFERENCES teams(teamid),
-    chall_id integer
-);
-
--- Function to enforce instance count
-CREATE OR REPLACE FUNCTION enforce_instance_count() RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-DECLARE
-    max_instance_count INTEGER := 0;
-    instance_count INTEGER := 0;
-    config_value TEXT;
-BEGIN
-    SELECT value INTO config_value
-    FROM config
-    WHERE key = 'CONCURRENT_INSTANCES';
-    
-    IF config_value IS NOT NULL THEN
-        max_instance_count := config_value::INTEGER;
-    END IF;
-
-    -- Count current instances
-    WITH locked_rows AS (
-        SELECT 1 FROM running 
-        WHERE teamid = NEW.teamid
-        FOR UPDATE
-    )
-    SELECT COUNT(*) INTO instance_count FROM locked_rows;
-
-    IF instance_count >= max_instance_count THEN
-        RAISE EXCEPTION 'Cannot start more instances for the team. Maximum allowed: %', max_instance_count;
-    END IF;
-
-    RETURN NEW;
-END;
-$$;
-
--- Trigger to enforce instance count
-CREATE OR REPLACE TRIGGER enforce_instance_count_trigger
-BEFORE INSERT ON running
-FOR EACH ROW EXECUTE PROCEDURE enforce_instance_count();
-
--- Function to add entry to solves table on correct submission
-CREATE OR REPLACE FUNCTION add_solve_entry()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.correct = TRUE THEN
-        INSERT INTO solves (chall_id, teamid, timestamp)
-        VALUES (NEW.chall_id, NEW.teamid, NOW());
-
-        UPDATE challenges
-        SET solves = solves + 1
-        WHERE chall_id = NEW.chall_id;
-
-        UPDATE teams
-        SET last_submission = EXTRACT(EPOCH FROM NOW())
-        WHERE teamid = NEW.teamid;
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Trigger to add entry to solves table on correct submission
-CREATE OR REPLACE TRIGGER add_solve_entry_trigger
-AFTER INSERT ON sublogs
-FOR EACH ROW
-EXECUTE FUNCTION add_solve_entry();
-
--- Create a GIN index on the requirements column
-CREATE INDEX IF NOT EXISTS idx_requirements_gin ON challenges USING gin (requirements);
-
--- Create a function to retrieve the challenge data for a team
-CREATE OR REPLACE FUNCTION get_challenges(team_id bigint)
-RETURNS TABLE (
-    chall_id integer,
-    chall_name text,
-    prompt text,
-    type chall_type,
-    points integer,
-    files text[],
-    hints json,
-    solves integer,
-    author text,
-    tags text[],
-    links text[],
-    category_name text,
-    deployment deployment_type,
-    port integer,
-    subd text,
-    done boolean,
-    attempts integer,
-    sub_count integer
-) AS $$
-BEGIN
-    RETURN QUERY 
-    WITH solved_challenges AS (
-        SELECT ARRAY_AGG(solves.chall_id) AS solved_array
-        FROM solves
-        WHERE teamid = team_id
-    )
-    SELECT 
-        ch.chall_id,
-        ch.chall_name,
-        ch.prompt,
-        ch.type,
-        ch.points,
-        ch.files,
-        COALESCE((
-            SELECT json_agg(
-                jsonb_build_object(
-                    'hid', h.hid,
-                    'hint', CASE WHEN uh.hid IS NOT NULL THEN h.hint ELSE '' END,
-                    'cost', h.cost,
-                    'unlocked', uh.hid IS NOT NULL
-                )
-            ) 
-            FROM hints h
-            LEFT JOIN uhints uh ON uh.teamid = team_id AND uh.hid = h.hid 
-            WHERE h.visible = true 
-            AND h.hid = any(ch.hints)
-        ), '[]'::json) AS hints,
-        ch.solves,
-        ch.author,
-        ch.tags,
-        ch.links,
-        cat.category_name,
-        ch.deployment,
-        ch.port,
-        ch.subd,
-        ch.chall_id = any(solved_array) AS done,
-        ch.attempts,
-        COALESCE((
-            SELECT COUNT(*)::integer
-            FROM sublogs
-            WHERE sublogs.chall_id = ch.chall_id AND sublogs.teamid = team_id
-        ), 0) AS sub_count
-    FROM challenges ch
-    JOIN categories cat 
-        ON ch.category_id = cat.category_id
-    CROSS JOIN solved_challenges
-    WHERE ch.visible = true
-    AND (
-        ch.requirements = '{}' 
-        OR ch.requirements <@ solved_array
-    );
-END;
-$$ LANGUAGE plpgsql;
-
--- Create a function to calculate score for a team
-CREATE OR REPLACE FUNCTION calculate_score(team_id bigint)
-RETURNS integer AS $$
-DECLARE
-    score integer := 0;
-BEGIN
-    SELECT INTO score COALESCE(SUM(ch.points), 0) - t.cost
-    FROM teams t
-    LEFT JOIN solves s
-        ON s.teamid = t.teamid
-    LEFT JOIN challenges ch
-        ON ch.chall_id = s.chall_id
-    WHERE t.teamid = team_id
-    GROUP BY t.teamid;
-
-    RETURN score;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create a function to unlock a hint for a team
-CREATE OR REPLACE FUNCTION unlock_hint(team_id bigint, hint_id integer)
-RETURNS text AS $$
-DECLARE
-    hint_cost integer;
-    hint_hint text;
-    challid integer;
-    challname text;
-    team_score integer;
-BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM uhints
-        WHERE teamid = team_id AND hid = hint_id
-    ) THEN
-        RAISE EXCEPTION 'hint already unlocked';
-    END IF;
-
-    SELECT cost, hint, chall_id 
-    INTO hint_cost, hint_hint, challid
-    FROM hints
-    WHERE hid = hint_id AND visible = true;
-
-    IF NOT FOUND THEN
-        RAISE EXCEPTION 'hint does not exist';
-    END IF;
-
-    WITH solved_challenges AS (
-        SELECT ARRAY_AGG(solves.chall_id) AS solved_array
-        FROM solves
-        WHERE teamid = team_id
-    )
-
-    SELECT challenges.chall_name 
-    INTO challname
-    FROM challenges
-    CROSS JOIN solved_challenges
-    WHERE challenges.chall_id = challid
-    AND challenges.visible = true
-    AND (
-        challenges.requirements = '{}' 
-        OR challenges.requirements <@ solved_array
-    );
-
-    IF challname IS NULL THEN
-        RAISE EXCEPTION 'hint does not exist';
-    END IF;
-
-    SELECT calculate_score(team_id) INTO team_score;
-
-    IF team_score < hint_cost THEN
-        RAISE EXCEPTION 'insufficient points';
-    END IF;
-
-    INSERT INTO uhints (hid, teamid)
-    VALUES (hint_id, team_id);
-
-    RETURN hint_hint;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create a function to retrieve scoreboard data
-CREATE OR REPLACE FUNCTION get_scoreboard(perPage integer, pageOffset integer)
-RETURNS TABLE (
-    teamid bigint,
-    teamname text,
-    rank bigint,
-    score bigint
-) AS $$
-BEGIN
-    RETURN QUERY 
-    SELECT 
-        teams.teamid AS teamid,
-        teams.teamname AS teamname,
-        RANK() OVER (ORDER BY COALESCE(SUM(challenges.points), 0) - teams.cost DESC, teams.last_submission ASC) AS rank,
-        COALESCE(SUM(challenges.points), 0) - teams.cost AS score
-    FROM teams
-    LEFT JOIN solves
-        ON solves.teamid = teams.teamid
-    LEFT JOIN challenges
-        ON challenges.chall_id = solves.chall_id
-    GROUP BY teams.teamid, teams.teamname, teams.cost, teams.last_submission
-    ORDER BY rank ASC
-    LIMIT perPage
-    OFFSET pageOffset;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create a function to retrieve top teams submissions
-CREATE OR REPLACE FUNCTION get_top_teams_submissions()
-RETURNS TABLE (
-    teamid bigint,
-    teamname text,
-    rank bigint,
-    submissions json
-) AS $$
-BEGIN
-    RETURN QUERY
-    WITH top_teams AS (
-        SELECT 
-            get_scoreboard.teamid,
-            get_scoreboard.teamname,
-            get_scoreboard.rank
-        FROM get_scoreboard(10, 0)
-    ),
-    combined_events AS (
-        SELECT 
-            t.teamid,
-            t.teamname,
-            t.rank,
-            jsonb_build_object(
-                'points', c.points,
-                'timestamp', to_char(s.timestamp AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')
-            ) AS event
-        FROM top_teams t
-        LEFT JOIN solves s ON s.teamid = t.teamid
-        LEFT JOIN challenges c ON c.chall_id = s.chall_id
-        WHERE c.points IS NOT NULL AND s.timestamp IS NOT NULL
-
-        UNION ALL
-
-        SELECT 
-            t.teamid,
-            t.teamname,
-            t.rank,
-            jsonb_build_object(
-                'points', -h.cost,
-                'timestamp', to_char(uh.timestamp AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')
-            ) AS event
-        FROM top_teams t
-        LEFT JOIN uhints uh ON uh.teamid = t.teamid
-        LEFT JOIN hints h ON h.hid = uh.hid
-        WHERE h.cost IS NOT NULL AND uh.timestamp IS NOT NULL
-    )
-    SELECT 
-        combined_events.teamid,
-        combined_events.teamname,
-        combined_events.rank,
-        COALESCE(json_agg(event), '[]'::json) AS submissions
-    FROM combined_events
-    GROUP BY combined_events.teamid, combined_events.teamname, combined_events.rank
-    ORDER BY combined_events.rank ASC;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create a function to join a team
-CREATE OR REPLACE FUNCTION join_team(team_id bigint, user_id bigint, user_limit integer)
-RETURNS void AS $$
+CREATE FUNCTION public.join_team(user_id bigint, teamid bigint, user_limit integer) RETURNS void
+    LANGUAGE plpgsql
+    AS $$
 DECLARE
     user_count integer;
 BEGIN
+    -- Lock the team row to prevent concurrent modifications
+    PERFORM 1 FROM teams WHERE id = teamid FOR UPDATE;
+
     SELECT INTO user_count COUNT(*)
     FROM users
-    WHERE teamid = team_id;
+    WHERE team_id = teamid;
 
     IF user_count >= user_limit THEN
-        RAISE EXCEPTION 'team is full';
+        RAISE EXCEPTION 'TEAM-04';
     END IF;
 
     UPDATE users
-    SET teamid = team_id
-    WHERE userid = user_id;
+    SET team_id = teamid
+    WHERE id = user_id;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
--- Create a function to send instance update notifications
-CREATE OR REPLACE FUNCTION notify_instance_update()
-RETURNS TRIGGER AS $$
-DECLARE
-    payload TEXT;
-    deployment deployment_type;
-BEGIN
-    SELECT INTO deployment challenges.deployment
-    FROM challenges
-    WHERE challenges.chall_id = NEW.chall_id;
 
-    payload := json_build_object(
-        'teamid', NEW.teamid,
-        'chall_id', NEW.chall_id,
-        'password', NEW.password,
-        'port', NEW.port,
-        'hostname', NEW.hostname,
-        'deadline', NEW.deadline,
-        'deployment', deployment
-    )::TEXT;
+SET default_tablespace = '';
 
-    PERFORM pg_notify('notify_instance_update', payload);
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+SET default_table_access_method = heap;
 
--- Attach trigger for start updates
-CREATE OR REPLACE TRIGGER notify_instance_update_trigger
-AFTER INSERT OR UPDATE ON flags
-FOR EACH ROW EXECUTE FUNCTION
-notify_instance_update();
+--
+-- Name: categories; Type: TABLE; Schema: public; Owner: -
+--
 
--- Create a function to send instance stop notifications
-CREATE OR REPLACE FUNCTION notify_instance_stop()
-RETURNS TRIGGER AS $$
-DECLARE
-    payload TEXT;
-BEGIN
-    payload := json_build_object(
-        'teamid', OLD.teamid,
-        'chall_id', OLD.chall_id
-    )::TEXT;
+CREATE TABLE public.categories (
+    id bigint NOT NULL,
+    created_at bigint,
+    updated_at bigint,
+    name text NOT NULL,
+    is_visible boolean DEFAULT false NOT NULL
+);
 
-    PERFORM pg_notify('notify_instance_stop', payload);
-    RETURN OLD;
-END;
-$$ LANGUAGE plpgsql;
 
--- Attach trigger for stop updates
-CREATE OR REPLACE TRIGGER notify_instance_stop_trigger
-BEFORE DELETE ON flags
-FOR EACH ROW EXECUTE FUNCTION
-notify_instance_stop();
+--
+-- Name: categories_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
 
--- Add some indices for better scaling
-CREATE INDEX idx_sublogs_chall ON sublogs(chall_id);
-CREATE INDEX idx_sublogs_user ON sublogs(userid);
-CREATE INDEX idx_solves_team ON solves(teamid);
-CREATE INDEX idx_solves_chall ON solves(chall_id);
-CREATE INDEX idx_hints_chall ON hints(chall_id);
+CREATE SEQUENCE public.categories_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: categories_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.categories_id_seq OWNED BY public.categories.id;
+
+
+--
+-- Name: challenges; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.challenges (
+    id bigint NOT NULL,
+    created_at bigint,
+    updated_at bigint,
+    name text NOT NULL,
+    prompt text NOT NULL,
+    category_id bigint NOT NULL,
+    flag text,
+    type public.challenge_type DEFAULT 'static'::public.challenge_type NOT NULL,
+    points bigint NOT NULL,
+    files text[] DEFAULT '{}'::text[],
+    author text DEFAULT 'anonymous'::text NOT NULL,
+    tags text[] DEFAULT '{}'::text[],
+    links text[] DEFAULT '{}'::text[],
+    is_visible boolean DEFAULT false NOT NULL,
+    max_attempts bigint DEFAULT 0 NOT NULL,
+    requirements bigint[] DEFAULT '{}'::bigint[]
+);
+
+
+--
+-- Name: challenges_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.challenges_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: challenges_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.challenges_id_seq OWNED BY public.challenges.id;
+
+
+--
+-- Name: config_vars; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.config_vars (
+    id bigint NOT NULL,
+    created_at bigint,
+    updated_at bigint,
+    key text NOT NULL,
+    value text NOT NULL
+);
+
+
+--
+-- Name: config_vars_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.config_vars_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: config_vars_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.config_vars_id_seq OWNED BY public.config_vars.id;
+
+
+--
+-- Name: hints; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.hints (
+    id bigint NOT NULL,
+    created_at bigint,
+    updated_at bigint,
+    text text NOT NULL,
+    cost bigint DEFAULT 0 NOT NULL,
+    is_visible boolean DEFAULT false NOT NULL,
+    challenge_id bigint NOT NULL
+);
+
+
+--
+-- Name: hints_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.hints_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: hints_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.hints_id_seq OWNED BY public.hints.id;
+
+
+--
+-- Name: solves; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.solves (
+    id bigint NOT NULL,
+    created_at bigint,
+    challenge_id bigint NOT NULL,
+    team_id bigint NOT NULL,
+    submission_id bigint NOT NULL,
+    points bigint NOT NULL
+);
+
+
+--
+-- Name: solves_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.solves_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: solves_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.solves_id_seq OWNED BY public.solves.id;
+
+
+--
+-- Name: submissions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.submissions (
+    id bigint NOT NULL,
+    created_at bigint,
+    team_id bigint NOT NULL,
+    challenge_id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    flag text NOT NULL,
+    is_correct boolean NOT NULL,
+    ip_address text NOT NULL
+);
+
+
+--
+-- Name: submissions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.submissions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: submissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.submissions_id_seq OWNED BY public.submissions.id;
+
+
+--
+-- Name: teams; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.teams (
+    id bigint NOT NULL,
+    created_at bigint,
+    updated_at bigint,
+    name text NOT NULL,
+    captain_id bigint NOT NULL,
+    password text NOT NULL
+);
+
+
+--
+-- Name: teams_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.teams_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: teams_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.teams_id_seq OWNED BY public.teams.id;
+
+
+--
+-- Name: unlocked_hints; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.unlocked_hints (
+    id bigint NOT NULL,
+    created_at bigint,
+    team_id bigint NOT NULL,
+    hint_id bigint NOT NULL,
+    cost bigint NOT NULL
+);
+
+
+--
+-- Name: unlocked_hints_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.unlocked_hints_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: unlocked_hints_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.unlocked_hints_id_seq OWNED BY public.unlocked_hints.id;
+
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.users (
+    id bigint NOT NULL,
+    created_at bigint,
+    updated_at bigint,
+    username text NOT NULL,
+    email text NOT NULL,
+    password text NOT NULL,
+    team_id bigint,
+    role public.user_role DEFAULT 'player'::public.user_role NOT NULL,
+    is_banned boolean DEFAULT false NOT NULL
+);
+
+
+--
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.users_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
+
+
+--
+-- Name: categories id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.categories ALTER COLUMN id SET DEFAULT nextval('public.categories_id_seq'::regclass);
+
+
+--
+-- Name: challenges id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.challenges ALTER COLUMN id SET DEFAULT nextval('public.challenges_id_seq'::regclass);
+
+
+--
+-- Name: config_vars id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.config_vars ALTER COLUMN id SET DEFAULT nextval('public.config_vars_id_seq'::regclass);
+
+
+--
+-- Name: hints id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hints ALTER COLUMN id SET DEFAULT nextval('public.hints_id_seq'::regclass);
+
+
+--
+-- Name: solves id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.solves ALTER COLUMN id SET DEFAULT nextval('public.solves_id_seq'::regclass);
+
+
+--
+-- Name: submissions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.submissions ALTER COLUMN id SET DEFAULT nextval('public.submissions_id_seq'::regclass);
+
+
+--
+-- Name: teams id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.teams ALTER COLUMN id SET DEFAULT nextval('public.teams_id_seq'::regclass);
+
+
+--
+-- Name: unlocked_hints id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.unlocked_hints ALTER COLUMN id SET DEFAULT nextval('public.unlocked_hints_id_seq'::regclass);
+
+
+--
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- Name: categories categories_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.categories
+    ADD CONSTRAINT categories_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: challenges challenges_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.challenges
+    ADD CONSTRAINT challenges_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: config_vars config_vars_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.config_vars
+    ADD CONSTRAINT config_vars_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: hints hints_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hints
+    ADD CONSTRAINT hints_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: solves solves_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.solves
+    ADD CONSTRAINT solves_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: submissions submissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.submissions
+    ADD CONSTRAINT submissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: teams teams_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.teams
+    ADD CONSTRAINT teams_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: unlocked_hints unlocked_hints_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.unlocked_hints
+    ADD CONSTRAINT unlocked_hints_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: idx_categories_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_categories_name ON public.categories USING btree (name);
+
+
+--
+-- Name: idx_challenges_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_challenges_name ON public.challenges USING btree (name);
+
+
+--
+-- Name: idx_config_vars_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_config_vars_key ON public.config_vars USING btree (key);
+
+
+--
+-- Name: idx_hints_challenge_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_hints_challenge_id ON public.hints USING btree (challenge_id);
+
+
+--
+-- Name: idx_solves_challenge_team; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_solves_challenge_team ON public.solves USING btree (challenge_id, team_id);
+
+
+--
+-- Name: idx_solves_team_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_solves_team_id ON public.solves USING btree (team_id);
+
+
+--
+-- Name: idx_solves_team_id_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_solves_team_id_created_at ON public.solves USING btree (team_id, created_at);
+
+
+--
+-- Name: idx_submissions_team_challenge; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_submissions_team_challenge ON public.submissions USING btree (team_id, challenge_id);
+
+
+--
+-- Name: idx_teams_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_teams_name ON public.teams USING btree (name);
+
+
+--
+-- Name: idx_unlocked_hints_team; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_unlocked_hints_team ON public.unlocked_hints USING btree (team_id, hint_id);
+
+
+--
+-- Name: idx_unlocked_hints_team_id_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_unlocked_hints_team_id_created_at ON public.unlocked_hints USING btree (team_id, created_at);
+
+
+--
+-- Name: idx_users_email; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_users_email ON public.users USING btree (email);
+
+
+--
+-- Name: idx_users_team_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_users_team_id ON public.users USING btree (team_id) WHERE (team_id IS NOT NULL);
+
+
+--
+-- Name: idx_users_username; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_users_username ON public.users USING btree (username);
+
+
+--
+-- Name: challenges fk_challenges_category; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.challenges
+    ADD CONSTRAINT fk_challenges_category FOREIGN KEY (category_id) REFERENCES public.categories(id);
+
+
+--
+-- Name: hints fk_challenges_hints; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hints
+    ADD CONSTRAINT fk_challenges_hints FOREIGN KEY (challenge_id) REFERENCES public.challenges(id) ON DELETE CASCADE;
+
+
+--
+-- Name: solves fk_solves_challenge; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.solves
+    ADD CONSTRAINT fk_solves_challenge FOREIGN KEY (challenge_id) REFERENCES public.challenges(id) ON DELETE CASCADE;
+
+
+--
+-- Name: solves fk_solves_submission; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.solves
+    ADD CONSTRAINT fk_solves_submission FOREIGN KEY (submission_id) REFERENCES public.submissions(id) ON DELETE CASCADE;
+
+
+--
+-- Name: solves fk_solves_team; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.solves
+    ADD CONSTRAINT fk_solves_team FOREIGN KEY (team_id) REFERENCES public.teams(id) ON DELETE CASCADE;
+
+
+--
+-- Name: submissions fk_submissions_challenge; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.submissions
+    ADD CONSTRAINT fk_submissions_challenge FOREIGN KEY (challenge_id) REFERENCES public.challenges(id) ON DELETE CASCADE;
+
+
+--
+-- Name: submissions fk_submissions_team; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.submissions
+    ADD CONSTRAINT fk_submissions_team FOREIGN KEY (team_id) REFERENCES public.teams(id) ON DELETE CASCADE;
+
+
+--
+-- Name: submissions fk_submissions_user; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.submissions
+    ADD CONSTRAINT fk_submissions_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: teams fk_teams_captain; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.teams
+    ADD CONSTRAINT fk_teams_captain FOREIGN KEY (captain_id) REFERENCES public.users(id);
+
+
+--
+-- Name: users fk_teams_members; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT fk_teams_members FOREIGN KEY (team_id) REFERENCES public.teams(id);
+
+
+--
+-- Name: unlocked_hints fk_unlocked_hints_hint; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.unlocked_hints
+    ADD CONSTRAINT fk_unlocked_hints_hint FOREIGN KEY (hint_id) REFERENCES public.hints(id) ON DELETE CASCADE;
+
+
+--
+-- Name: unlocked_hints fk_unlocked_hints_team; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.unlocked_hints
+    ADD CONSTRAINT fk_unlocked_hints_team FOREIGN KEY (team_id) REFERENCES public.teams(id) ON DELETE CASCADE;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
