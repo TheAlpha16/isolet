@@ -53,12 +53,12 @@ export function ScoreGraph({ data }: ScoreGraphProps) {
               cursor={false}
               content={
                 <ChartTooltipContent
-                  labelFormatter={(value: number) => {
-                    // DEBUG
-                    console.log("Tooltip label value:", value);
-                    console.log("type", typeof value);
-                    const current_date = fromUnixSeconds(value);
-                    console.log("Converted date:", current_date);
+                  labelFormatter={(value: any, payload: any) => {
+                    // Get timestamp from the payload data
+                    const timestamp = payload?.[0]?.payload?.timestamp;
+                    if (!timestamp) return "";
+
+                    const current_date = fromUnixSeconds(timestamp);
                     return current_date.toLocaleString("en-US", {
                       month: "short",
                       day: "numeric",

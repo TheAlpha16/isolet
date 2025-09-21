@@ -41,8 +41,6 @@ export default function Scoreboard() {
     const transformedData = toChartData(graphScores);
     setChartData(transformedData);
 
-    // DEBUG
-    console.log("Transformed chart data:", transformedData);
     return () => {};
   }, [graphScores, event_start]);
 
