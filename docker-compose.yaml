@@ -1,0 +1,71 @@
+version: "3.7"
+
+x-common-variables: &common-variables
+  ENVIRONMENT: dev
+  DB_USER: postgres
+  DB_PASSWORD: postgres
+  DB_NAME: isolet
+  SENTRY_DSN: https://f0e1d2c3b4a5968776655443322110ff@o1928374650912837.ingest.de.sentry.io/8273649182736450
+  SENTRY_TRACE_SAMPLE_RATE: 1.0
+  TOKEN_SIGNING_KEY: trustmebro
+
+services:
+  database:
+    container_name: database
+    build: ./database
+    environment:
+      POSTGRES_DB: isolet
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - backend
+    restart: always
+
+  api:
+    container_name: api
+    build: ./api
+    environment:
+      <<: *common-variables
+      DB_HOST: database
+      VALKEY_ADDRESS: valkey://cache:6379
+    depends_on:
+      - database
+      - cache
+
+  cache:
+    container_name: cache
+    image: valkey/valkey:9.0
+    networks:
+      - backend
+    restart: always
+
+  ui:
+    container_name: ui
+    build: ./ui
+    networks:
+      - backend
+    depends_on:
+      - api
+    restart: always
+
+  proxy:
+    container_name: proxy
+    build: ./proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      UI_URL: ui:3000
+      API_URL: api:8000
+      SOCKY_URL: ""
+      PHOROS_URL: ""
+      PROXY_SERVER_NAME: "isolet.dev localhost"
+    networks:
+      - backend
+    depends_on:
+      - api
+      - ui
+    restart: always
+
+networks:
+  backend: {}
