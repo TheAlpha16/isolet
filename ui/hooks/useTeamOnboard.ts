@@ -34,7 +34,10 @@ export default function useTeamOnboard() {
 
     setLoading(true);
     try {
-      await apiService({ team_name: teamName, password });
+      const session = await apiService({ team_name: teamName, password });
+      if (!session) {
+        return false;
+      }
       return true;
     } catch (err: any) {
       return false;

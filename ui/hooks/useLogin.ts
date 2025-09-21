@@ -17,7 +17,10 @@ export default function useLogin() {
 
     setLoading(true);
     try {
-      await AuthService.login({ identifier, password });
+      const session = await AuthService.login({ identifier, password });
+      if (!session) {
+        return false;
+      }
       return true;
     } catch (err: any) {
       return false;

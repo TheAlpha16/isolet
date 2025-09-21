@@ -28,7 +28,10 @@ export default function useUserOnboard() {
 
     setLoading(true);
     try {
-      await AuthService.register({ username, email, password });
+      const res = await AuthService.register({ username, email, password });
+      if (!res) {
+        return false;
+      }
       return true;
     } catch (err: any) {
       return false;
