@@ -74,7 +74,7 @@ func (teamRepo *teamRepo) GetByName(ctx context.Context, name string) (*teamDom.
 
 func (teamRepo *teamRepo) GetByID(ctx context.Context, id int64) (*teamDom.Team, error) {
 	var team Team
-	if err := teamRepo.db.WithContext(ctx).First(&team, id).Error; err != nil {
+	if err := teamRepo.db.WithContext(ctx).Preload("Members").First(&team, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, errorDom.Raise(ctx, errorDom.ErrTeamNotFound, "", err, nil)
 		}

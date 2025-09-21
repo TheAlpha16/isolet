@@ -15,5 +15,6 @@ type Team struct {
 	teamDom.Team
 	Score       int                           `json:"score"`
 	Rank        *int                          `json:"rank,omitempty"`
+	Members     []*userDom.User               `json:"members"`
 	Submissions []*challengeDom.SubmissionDTO `json:"submissions"`
 }

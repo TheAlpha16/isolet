@@ -73,6 +73,7 @@ func (p *profileImpl) Team(ctx context.Context) (*profileDom.Team, error) {
 		Submissions: subDTOs,
 		Score:       score,
 		Rank:        utils.IntOrNil(rank),
+		Members:     team.Members,
 	}, nil
 }
 
