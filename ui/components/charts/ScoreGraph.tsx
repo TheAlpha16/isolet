@@ -53,7 +53,7 @@ export function ScoreGraph({ data }: ScoreGraphProps) {
               cursor={false}
               content={
                 <ChartTooltipContent
-                  labelFormatter={(value: any, payload: any) => {
+                  labelFormatter={(value, payload) => {
                     // Get timestamp from the payload data
                     const timestamp = payload?.[0]?.payload?.timestamp;
                     if (!timestamp) return "";
