@@ -6,14 +6,14 @@ import { ChallengeModal } from "@/components/challenges/ChallengeModal";
 import { ChallengeSkeleton } from "@/components/skeletons/challenge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useChallengeStore } from "@/store";
-import { useInstanceStore } from "@/store/instanceStore";
+// import { useInstanceStore } from "@/store/instanceStore";
 import { useEffect, useState } from "react";
 
 function Challenges() {
   const [currentChallenge, setCurrentChallenge] = useState<Challenge | null>(null);
   const { challengeIdMap, categoryIdMap, categoryChallengeMap, fetchChallenges, loading } =
     useChallengeStore();
-  const { fetchInstances } = useInstanceStore();
+  // const { fetchInstances } = useInstanceStore();
   const categoryIds = Object.keys(categoryIdMap).map(Number);
 
   useEffect(() => {
