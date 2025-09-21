@@ -1,9 +1,11 @@
-import { Submission } from "@/api";
+import { Category, Submission } from "@/api";
 import { CategoryProgress } from "@/models/score";
-import { useChallengeStore } from "@/store/challenge";
 
-export function processCategoryData(submissions: Submission[]): CategoryProgress[] {
-  const { categoryIdMap, categoryChallengeMap } = useChallengeStore();
+export function processCategoryData(
+  submissions: Submission[],
+  categoryIdMap: Record<number, Category>,
+  categoryChallengeMap: Record<number, number[]>
+): CategoryProgress[] {
   const categoryIds = Object.keys(categoryIdMap).map(Number);
   const categoryProgress: CategoryProgress[] = [];
 

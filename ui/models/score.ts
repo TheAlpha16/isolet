@@ -15,3 +15,8 @@ export interface CategoryProgress {
   solved: number;
   total: number;
 }
+
+export interface SubmissionStats {
+  correct: number;
+  incorrect: number;
+}

@@ -1,18 +1,18 @@
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import type { TeamType, UserType } from "@/utils/types";
-import { UserPlus2, Crown } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { User } from "@/api";
 import { TeamInvite } from "@/components/profile/TeamInvite";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEventStore } from "@/store";
+import { Crown, UserPlus2 } from "lucide-react";
+import { useState } from "react";
 
 interface TeamManagementProps {
-  user: UserType;
-  team: TeamType;
+  user: User;
+  members: User[];
 }
 
-export function TeamManagement({ team, user }: TeamManagementProps) {
+export function TeamManagement({ user, members }: TeamManagementProps) {
   const {
     info: { team_length },
   } = useEventStore();
@@ -27,7 +27,7 @@ export function TeamManagement({ team, user }: TeamManagementProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">Members</CardTitle>
-          {user.rank === 2 && (
+          {user.role === User.role.CAPTAIN && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -49,8 +49,8 @@ export function TeamManagement({ team, user }: TeamManagementProps) {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {team.members.map((member, index) => (
-              <Card key={member.userid} className="bg-card">
+            {members.map((member, index) => (
+              <Card key={member.id} className="bg-card">
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-4">
                     <div
@@ -64,7 +64,7 @@ export function TeamManagement({ team, user }: TeamManagementProps) {
                       <p className="text-sm text-muted-foreground">{member.email}</p>
                     </div>
                     <div className="flex items-center">
-                      {member.rank === 2 && (
+                      {member.role === User.role.CAPTAIN && (
                         <span className="bg-yellow-500/20 dark:bg-yellow-600/30 text-yellow-700 dark:text-yellow-300 text-xs font-medium px-2.5 py-0.5 rounded-full flex items-center gap-1">
                           <Crown size={12} className="" />
                           <div className="hidden sm:block">Captain</div>
