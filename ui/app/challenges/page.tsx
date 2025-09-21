@@ -18,8 +18,9 @@ function Challenges() {
 
   useEffect(() => {
     fetchChallenges();
-    fetchInstances();
-  }, [fetchChallenges, fetchInstances]);
+    // DEBUG temporarily disable instance fetching
+    // fetchInstances();
+  }, [fetchChallenges]);
 
   if (loading) {
     return <ChallengeSkeleton />;
