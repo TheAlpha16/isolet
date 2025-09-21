@@ -70,11 +70,7 @@ export interface SubmissionType {
 	points: number;
 }
 
-export interface CategoryProgress {
-	category: string;
-	solved: number;
-	total: number;
-}
+
 
 export interface ScoreGraphPointType {
 	timestamp: string;

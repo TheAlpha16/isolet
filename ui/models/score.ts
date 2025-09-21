@@ -9,3 +9,9 @@ export interface ChartData {
   labels: string[]; // e.g. ["Team A", "Team B"]
   points: ChartPoint[];
 }
+
+export interface CategoryProgress {
+  category: string;
+  solved: number;
+  total: number;
+}

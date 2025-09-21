@@ -1,9 +1,6 @@
-import { useChallengeStore } from "@/store/challenge";
 import type {
-  CategoryProgress,
   ScoreGraphEntryType,
-  ScoreGraphInputType,
-  SubmissionType,
+  ScoreGraphInputType
 } from "@/utils/types";
 
 interface Submission {
@@ -44,22 +41,4 @@ export function processScores(
   preparedData.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
   return buildGraphData(preparedData, startTime);
-}
-
-export function processCategoryData(submissions: SubmissionType[]): CategoryProgress[] {
-  const { categoryIdMap, categoryChallengeMap } = useChallengeStore();
-  const categoryIds = Object.keys(categoryIdMap).map(Number);
-  const categoryProgress: CategoryProgress[] = [];
-
-  categoryIds.forEach((categoryId) => {
-    const total = categoryChallengeMap[categoryId].length;
-    const solved = submissions.filter((sub) => {
-      const challengeIds = categoryChallengeMap[categoryId] || [];
-      return sub.correct && challengeIds.includes(sub.chall_id);
-    }).length;
-
-    categoryProgress.push({ category: categoryIdMap[categoryId].name, solved, total });
-  });
-
-  return categoryProgress;
 }
