@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { CopyButton } from "@/components/utils/copy-button";
-import { useChallengeStore } from "@/store/challenge";
+import { useChallengeStore } from "@/store";
 import showToast, { ToastStatus } from "@/utils/toastHelper";
 import { Check, Download, ExternalLink, Users } from "lucide-react";
 import React, { useState } from "react";

@@ -2,7 +2,7 @@ import { showHint } from "@/components/hints/HintToastContainer";
 import { HintUnlockConfirmation } from "@/components/hints/HintUnlockComponent";
 import { Button } from "@/components/ui/button";
 import { HintUI } from "@/models/hint";
-import { useChallengeStore } from "@/store/challenge";
+import { useChallengeStore } from "@/store";
 import { Lightbulb, Lock } from "lucide-react";
 import { useState } from "react";
 

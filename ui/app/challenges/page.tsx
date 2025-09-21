@@ -5,7 +5,7 @@ import { ChallengeCard } from "@/components/challenges/ChallengeCard";
 import { ChallengeModal } from "@/components/challenges/ChallengeModal";
 import { ChallengeSkeleton } from "@/components/skeletons/challenge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useChallengeStore } from "@/store/challenge";
+import { useChallengeStore } from "@/store";
 import { useInstanceStore } from "@/store/instanceStore";
 import { useEffect, useState } from "react";
 
