@@ -14,7 +14,7 @@ interface ChallengeStore {
   unlockHint: (challenge_id: number, hint_id: number) => Promise<void>;
 }
 
-export const useChallengeStore = create<ChallengeStore>((set) => ({
+export const useChallengeStore = create<ChallengeStore>((set, get) => ({
   loading: false,
   challengeIdMap: {},
   categoryIdMap: {},
@@ -92,7 +92,7 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
   },
 
   unlockHint: async (challenge_id: number, hint_id: number) => {
-    const challenge = useChallengeStore.getState().challengeIdMap[challenge_id];
+    const challenge = get().challengeIdMap[challenge_id];
     const localHint = challenge.hints.find((h) => h.id === hint_id);
     if (!localHint) {
       showToast(ToastStatus.Failure, "hint not found!");
