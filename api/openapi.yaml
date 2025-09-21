@@ -912,6 +912,10 @@ components:
               type: integer
               nullable: true
               example: 3
+            members:
+              type: array
+              items:
+                $ref: "#/components/schemas/User"
             submissions:
               type: array
               items:
@@ -919,6 +923,7 @@ components:
           required:
             - score
             - submissions
+            - members
     EventInfo:
       type: object
       properties:
