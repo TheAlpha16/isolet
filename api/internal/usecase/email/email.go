@@ -36,7 +36,7 @@ var configs = map[emailDom.Type]config{
 	emailDom.TypeVerification: {
 		Subject:      "Verify your email",
 		Template:     "templates/verification.html",
-		PathSegments: []string{utils.GetConfig().Rest.APIVersionPrefix, utils.RouteAuthVerify},
+		PathSegments: []string{utils.GetConfig().Rest.APIVersionPrefix, utils.RouteAuth, utils.RouteAuthVerify},
 	},
 	emailDom.TypePasswordReset: {
 		Subject:      "Password Reset",

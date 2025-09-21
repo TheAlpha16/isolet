@@ -14,7 +14,7 @@ func RegisterAuth(router fiber.Router, authHandler authHan.AuthHandler, tokenUc 
 	authRouter := router.Group(utils.RouteAuth)
 	authRouter.Post(utils.RouteAuthLogin, authHandler.Login)
 	authRouter.Post(utils.RouteAuthRegister, authHandler.Register)
-	authRouter.Post(utils.RouteAuthVerify, authHandler.Verify)
+	authRouter.Get(utils.RouteAuthVerify, authHandler.Verify)
 	authRouter.Post(utils.RouteAuthForgotPassword, authHandler.ForgotPassword)
 	authRouter.Post(utils.RouteAuthResetPassword, authHandler.ResetPassword)
 	authRouter.Get(utils.RouteAuthLogout, middleware.AuthMiddleware(tokenUc, jwtSvc), authHandler.Logout)

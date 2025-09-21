@@ -194,6 +194,7 @@ func (t *teamImpl) buildInviteLink(ctx context.Context, token string) (string, e
 		publicURL, token,
 		[]string{
 			utils.GetConfig().Rest.APIVersionPrefix,
+			utils.RouteTeam,
 			utils.RouteTeamInvite,
 		})
 	if err != nil {
