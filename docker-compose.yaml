@@ -60,8 +60,8 @@ services:
     environment:
       UI_URL: ui:3000
       API_URL: api:8000
-      SOCKY_URL: ""
-      PHOROS_URL: ""
+      SOCKY_URL: ui:3000
+      PHOROS_URL: ui:3000
       PROXY_SERVER_NAME: "isolet.dev localhost"
     networks:
       - backend
