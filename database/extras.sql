@@ -31,7 +31,11 @@ $$ LANGUAGE plpgsql;
 
 -- ### INDEXES ###
 
--- index for team_id in users table
+-- partial index for team_id in users table
 CREATE INDEX idx_users_team_id ON users(team_id) WHERE team_id IS NOT NULL;
+
+-- index for (challenge_id, team_id) in solves table
 CREATE INDEX idx_solves_team_id_created_at ON solves(team_id, created_at);
+
+-- index for (team_id, created_at) in unlocked_hints table
 CREATE INDEX idx_unlocked_hints_team_id_created_at ON unlocked_hints(team_id, created_at);
