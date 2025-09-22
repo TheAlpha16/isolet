@@ -12,7 +12,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import useTeamOnboard, { ActionType } from "@/hooks/useTeamOnboard";
+import { UI_ROUTES } from "@/utils/routes";
 import { Eye, EyeClosed, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function TeamInit() {
@@ -20,9 +22,13 @@ export default function TeamInit() {
   const [password, setPassword] = useState("");
   const { loading, teamOnboard } = useTeamOnboard();
   const [showPasswd, setShowPasswd] = useState(false);
+  const router = useRouter();
 
   async function onSubmit(action: ActionType) {
-    await teamOnboard(teamname, password, action);
+    const res = await teamOnboard(teamname, password, action);
+    if (res) {
+      router.replace(UI_ROUTES.home);
+    }
   }
 
   return (
