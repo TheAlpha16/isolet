@@ -24,6 +24,7 @@ export default function useTeamOnboard() {
     switch (action) {
       case ActionType.JOIN:
         apiService = TeamService.joinTeam;
+        break;
       case ActionType.CREATE:
         apiService = TeamService.createTeam;
         break;
