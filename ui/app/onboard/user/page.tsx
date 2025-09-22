@@ -12,7 +12,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import useUserOnboard from "@/hooks/useUserOnboard";
+import { useProfileStore } from "@/store";
+import { UI_ROUTES } from "@/utils/routes";
 import { Eye, EyeClosed, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function Register() {
@@ -23,10 +26,16 @@ export default function Register() {
   const { loading, register } = useUserOnboard();
   const [showPasswd, setShowPasswd] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const { fetchMe } = useProfileStore();
+  const router = useRouter();
 
   async function onSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
-    await register(username, email, password, confirm);
+    const res = await register(username, email, password, confirm);
+    if (res) {
+      await fetchMe();
+      router.replace(UI_ROUTES.onboard.team); // redirect to team onboarding
+    }
   }
 
   return (
