@@ -1,5 +1,6 @@
 "use client";
 
+import { FormSkeleton } from "@/components/skeletons/form";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfileStore } from "@/store";
 import { UI_ROUTES } from "@/utils/routes";
@@ -7,7 +8,11 @@ import { redirect } from "next/navigation";
 import React, { Suspense } from "react";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useProfileStore();
+  const { user, meLoading, hydrated } = useProfileStore();
+
+  if (meLoading || !hydrated) {
+    return <FormSkeleton />;
+  }
 
   if (user) {
     return redirect(UI_ROUTES.home);
