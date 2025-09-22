@@ -4,8 +4,7 @@ import { HintToastContainer } from "@/components/hints/HintToastContainer";
 import NavBar from "@/components/NavBar";
 import { NotificationContainer } from "@/components/NotificationContainer";
 import { ThemeProvider } from "@/components/theme-provider";
-import { useEventStore, useProfileStore } from "@/store";
-import { useChallengeStore } from "@/store";
+import { useChallengeStore, useEventStore, useProfileStore } from "@/store";
 import "@/styles/globals.css";
 import "@/styles/hint-toast.css";
 import "@/styles/notification.css";
@@ -28,7 +27,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { meLoading, user, team, fetchMe } = useProfileStore();
+  const { user, team, fetchMe } = useProfileStore();
   const { fetchChallenges } = useChallengeStore();
   const { loaded, fetchInfo } = useEventStore();
 
