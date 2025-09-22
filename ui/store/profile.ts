@@ -11,15 +11,17 @@ interface ProfileStore {
   rank: number | null;
   members: User[];
   submissions: Submission[];
+  hydrated: boolean;
   setUser: (user: ProfileStore["user"]) => void;
   setTeam: (team: ProfileStore["team"]) => void;
+  setHydrated: (hydrated: boolean) => void;
   fetchMe: () => Promise<void>;
   fetchTeam: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
 export const useProfileStore = create<ProfileStore>((set) => ({
-  meLoading: false,
+  meLoading: true, // Start with loading true to prevent hydration mismatch
   teamLoading: false,
   user: null,
   team: null,
@@ -27,17 +29,25 @@ export const useProfileStore = create<ProfileStore>((set) => ({
   rank: null,
   members: [],
   submissions: [],
+  hydrated: false,
 
   setUser: (user) => set({ user }),
 
   setTeam: (team) => set({ team }),
 
+  setHydrated: (hydrated) => set({ hydrated }),
+
   fetchMe: async () => {
     set({ meLoading: true });
     try {
       const profileMe = await ProfileService.getUserProfile();
-      set({ user: profileMe?.user, team: profileMe?.team ?? null });
+      set({ 
+        user: profileMe?.user || null, 
+        team: profileMe?.team ?? null,
+        hydrated: true 
+      });
     } catch {
+      set({ hydrated: true });
     } finally {
       set({ meLoading: false });
     }

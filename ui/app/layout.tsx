@@ -32,14 +32,18 @@ export default function RootLayout({
   const { fetchChallenges } = useChallengeStore();
   const { loaded, fetchInfo } = useEventStore();
 
+  // always fetch user profile on mount to ensure proper authentication state
+  useEffect(() => {
+    fetchMe();
+  }, [fetchMe, fetchChallenges]);
+
+  // pre-fetch challenges when user and team are available
+  // might need challenges in profile and scoreboard pages
   useEffect(() => {
     if (user && team) {
       fetchChallenges();
     }
-    if (!user && !meLoading) {
-      fetchMe();
-    }
-  }, [user, fetchMe, fetchChallenges]);
+  }, [user, team, fetchChallenges]);
 
   useEffect(() => {
     if (!loaded) {

@@ -7,9 +7,9 @@ import { redirect } from "next/navigation";
 import React from "react";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const { user, team, meLoading } = useProfileStore();
+  const { user, team, meLoading, hydrated } = useProfileStore();
 
-  if (meLoading) {
+  if (meLoading || !hydrated) {
     return <ChallengeSkeleton />;
   }
 

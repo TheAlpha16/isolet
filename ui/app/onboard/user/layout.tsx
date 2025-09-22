@@ -7,9 +7,9 @@ import { redirect } from "next/navigation";
 import React from "react";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const { user, meLoading } = useProfileStore();
+  const { user, meLoading, hydrated } = useProfileStore();
 
-  if (meLoading) {
+  if (meLoading || !hydrated) {
     return <FormSkeleton />;
   }
 
