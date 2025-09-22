@@ -20,22 +20,21 @@ export default function useTeamOnboard() {
       return false;
     }
 
-    let apiService;
-    switch (action) {
-      case ActionType.JOIN:
-        apiService = TeamService.joinTeam;
-        break;
-      case ActionType.CREATE:
-        apiService = TeamService.createTeam;
-        break;
-      default:
-        showToast(ToastStatus.Failure, "invalid action!");
-        return false;
-    }
-
     setLoading(true);
     try {
-      const session = await apiService({ team_name: teamName, password });
+      let session;
+      switch (action) {
+        case ActionType.JOIN:
+          session = await TeamService.joinTeam({ team_name: teamName, password });
+          break;
+        case ActionType.CREATE:
+          session = await TeamService.createTeam({ team_name: teamName, password });
+          break;
+        default:
+          showToast(ToastStatus.Failure, "invalid action!");
+          return false;
+      }
+      
       if (!session) {
         return false;
       }
