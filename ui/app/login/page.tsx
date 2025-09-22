@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import useLogin from "@/hooks/useLogin";
+import { useProfileStore } from "@/store";
 import { UI_ROUTES } from "@/utils/routes";
 import { Eye, EyeClosed, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -24,11 +25,13 @@ export default function Login() {
   const { loading, login } = useLogin();
   const router = useRouter();
   const [showPasswd, setShowPasswd] = useState(false);
+  const { fetchMe } = useProfileStore();
 
   async function onSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
     const result = await login(identifier, password);
     if (result) {
+      await fetchMe();
       router.replace(UI_ROUTES.home);
     }
   }
