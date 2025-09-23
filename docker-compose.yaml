@@ -1,3 +1,5 @@
+name: isolet
+
 x-common-variables: &common-variables
   ENVIRONMENT: dev
   DB_USER: postgres
