@@ -1,5 +1,3 @@
-version: "3.7"
-
 x-common-variables: &common-variables
   ENVIRONMENT: dev
   DB_USER: postgres
