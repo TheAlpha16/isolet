@@ -65,6 +65,10 @@ services:
       SOCKY_URL: ui:3000
       PHOROS_URL: ui:3000
       PROXY_SERVER_NAME: "isolet.dev localhost"
+      # In case there're no trusted proxies, pass these as empty strings
+      TRUSTED_IPS: |
+        set_real_ip_from 173.245.48.0/20;
+      TRUSTED_HEADER: "real_ip_header CF-Connecting-IP;"
     networks:
       - backend
     depends_on:
