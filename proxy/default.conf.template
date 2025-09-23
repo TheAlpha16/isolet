@@ -1,3 +1,23 @@
+# If the request is coming from a trusted IP, set X-Real-IP with the IP from trusted header
+# You can set the headers using `set_real_ip_from` directive. example:
+# ```
+# TRUSTED_IPS: |
+#     set_real_ip_from 173.245.48.0/20;
+#     set_real_ip_from 10.0.0.0/8;
+# ```
+${TRUSTED_IPS}
+
+# Specifies the request header field whose value will be used to replace the client address
+# Set it using `real_ip_header` directive. example:
+# ```
+# TRUSTED_HEADER: "real_ip_header CF-Connecting-IP;";
+# ```
+#
+# Note: There can only be one header specified.
+${TRUSTED_HEADER}
+
+real_ip_recursive on;
+
 server {
     listen       80;
     listen  [::]:80;
