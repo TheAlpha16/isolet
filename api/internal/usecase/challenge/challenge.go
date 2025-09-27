@@ -121,6 +121,7 @@ func (c *challengeImpl) ValidateAttempt(ctx context.Context, challengeID int64, 
 func (c *challengeImpl) SubmitFlag(ctx context.Context, input *challengeDom.SubmitFlagInput) (*challengeDom.SubmitFlagOutput, error) {
 	userID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyUserID)
 	teamID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyTeamID)
+	ipAddress := common.GetFieldFromExtraData[string](ctx, utils.ContextKeyIP)
 
 	challenge, err := c.ValidateAttempt(ctx, input.ChallengeID, teamID)
 	if err != nil {
@@ -134,7 +135,7 @@ func (c *challengeImpl) SubmitFlag(ctx context.Context, input *challengeDom.Subm
 		Flag:        input.Flag,
 		IsCorrect:   input.Flag == challenge.Flag,
 		Points:      challenge.Points,
-		IPAddress:   "",
+		IPAddress:   ipAddress,
 	}
 
 	if !c.cvUc.GetBool(ctx, cvDom.PostEvent) {
