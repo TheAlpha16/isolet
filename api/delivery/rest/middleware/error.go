@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
 	"github.com/TheAlpha16/isolet/api/delivery/rest/response"
@@ -35,6 +37,13 @@ func ErrorMiddleware() fiber.Handler {
 		}()
 		err = c.Next()
 		if err != nil {
+			// handle context deadline exceeded error
+			if errors.Is(err, context.DeadlineExceeded) {
+				err = errorDom.Raise(c.UserContext(), errorDom.ErrRestTimedOut, "", err, nil)
+				logger.GetLogger(c.UserContext()).Error("request timed out", zap.Error(err))
+				errorDom.RaiseToSentry(c.UserContext(), err)
+			}
+
 			ae, ok := errorDom.AsAppError(err)
 			if !ok {
 				// let fiber handle unrecognized errors
