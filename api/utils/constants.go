@@ -60,6 +60,7 @@ const (
 	TokenQueryKey       = "token"
 	PageQueryKey        = "page"
 	PageSizeQueryKey    = "page_size"
+	IPHeaderKey         = "X-Real-IP"
 )
 
 // front-end routes
@@ -73,4 +74,5 @@ const (
 	ContextKeyTeamID    = "team_id"
 	ContextKeyRole      = "role"
 	ContextKeySessionID = "session_id"
+	ContextKeyIP        = "ip"
 )

@@ -3,6 +3,8 @@ package middleware
 import (
 	"time"
 
+	"github.com/TheAlpha16/isolet/api/internal/domain/common"
+	"github.com/TheAlpha16/isolet/api/utils"
 	"github.com/TheAlpha16/isolet/api/utils/logger"
 
 	"github.com/gofiber/fiber/v2"
@@ -29,6 +31,7 @@ func LoggingMiddleware() fiber.Handler {
 		childLogger.Info("received request",
 			zap.String("method", c.Method()),
 			zap.String("path", c.Path()),
+			zap.String("ip", common.GetFieldFromExtraData[string](ctx, utils.ContextKeyIP)),
 		)
 
 		err := c.Next()
@@ -40,6 +43,7 @@ func LoggingMiddleware() fiber.Handler {
 			zap.String("method", c.Method()),
 			zap.String("path", c.Path()),
 			zap.Int("status", c.Response().StatusCode()),
+			zap.String("ip", common.GetFieldFromExtraData[string](ctx, utils.ContextKeyIP)),
 			zap.Duration("latency", time.Since(start)),
 		)
 

@@ -37,6 +37,7 @@ func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
 			return c.Path() == utils.RoutePing
 		}),
 	))
+	app.Use(middleware.IPMiddleware())
 	app.Use(middleware.SentryMiddleware())
 	app.Use(middleware.LoggingMiddleware())
 	app.Use(middleware.ErrorMiddleware())
