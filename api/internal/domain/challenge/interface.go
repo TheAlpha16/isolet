@@ -4,7 +4,7 @@ import "context"
 
 type Usecase interface {
 	List(ctx context.Context) ([]*ChallengeDTO, error)
-	ValidateAttempt(ctx context.Context, challengeID int64, teamID int64) (*Challenge, error)
+	ValidateAccess(ctx context.Context, challengeID int64, teamID int64) (*Challenge, error)
 	SubmitFlag(ctx context.Context, input *SubmitFlagInput) (*SubmitFlagOutput, error)
 	UnlockHint(ctx context.Context, input *UnlockHintInput) (*HintDTO, error)
 	GetTeamSubmissions(ctx context.Context, teamID int64) ([]*Submission, error)

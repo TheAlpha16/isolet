@@ -75,7 +75,7 @@ func (c *challengeImpl) List(ctx context.Context) ([]*challengeDom.ChallengeDTO,
 	return challenges, nil
 }
 
-func (c *challengeImpl) ValidateAttempt(ctx context.Context, challengeID int64, teamID int64) (*challengeDom.Challenge, error) {
+func (c *challengeImpl) ValidateAccess(ctx context.Context, challengeID, teamID int64) (*challengeDom.Challenge, error) {
 	challenge, err := c.repo.GetByID(ctx, challengeID)
 	if err != nil {
 		return nil, err
@@ -95,26 +95,6 @@ func (c *challengeImpl) ValidateAttempt(ctx context.Context, challengeID int64, 
 		return nil, errorDom.Raise(ctx, errorDom.ErrChallengeNotFound, "", nil, nil)
 	}
 
-	// fetch submission stats
-	subStats, err := c.scoreUc.GetSubmissionStats(ctx, teamID, []int64{challengeID})
-	if err != nil {
-		return nil, err
-	}
-	challengeStats, ok := subStats[challengeID]
-	if !ok {
-		challengeStats = &scoreDom.SubmissionStats{}
-	}
-
-	// check if already solved
-	if challengeStats.CorrectCount > 0 {
-		return nil, errorDom.Raise(ctx, errorDom.ErrChallengeAlreadySolved, "", nil, nil)
-	}
-
-	// check if team has exhausted attempts
-	if challenge.MaxAttempts > 0 && challengeStats.IncorrectCount >= challenge.MaxAttempts {
-		return nil, errorDom.Raise(ctx, errorDom.ErrChallengeMaxAttemptsReached, "", nil, nil)
-	}
-
 	return challenge, nil
 }
 
@@ -123,7 +103,7 @@ func (c *challengeImpl) SubmitFlag(ctx context.Context, input *challengeDom.Subm
 	teamID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyTeamID)
 	ipAddress := common.GetFieldFromExtraData[string](ctx, utils.ContextKeyIP)
 
-	challenge, err := c.ValidateAttempt(ctx, input.ChallengeID, teamID)
+	challenge, err := c.validateAttempt(ctx, input.ChallengeID, teamID)
 	if err != nil {
 		return nil, err
 	}
@@ -217,6 +197,35 @@ func (c *challengeImpl) UnlockHint(ctx context.Context, input *challengeDom.Unlo
 	}()
 
 	return hint.ToDTO(), nil
+}
+
+func (c *challengeImpl) validateAttempt(ctx context.Context, challengeID int64, teamID int64) (*challengeDom.Challenge, error) {
+	challenge, err := c.ValidateAccess(ctx, challengeID, teamID)
+	if err != nil {
+		return nil, err
+	}
+
+	// fetch submission stats
+	subStats, err := c.scoreUc.GetSubmissionStats(ctx, teamID, []int64{challengeID})
+	if err != nil {
+		return nil, err
+	}
+	challengeStats, ok := subStats[challengeID]
+	if !ok {
+		challengeStats = &scoreDom.SubmissionStats{}
+	}
+
+	// check if already solved
+	if challengeStats.CorrectCount > 0 {
+		return nil, errorDom.Raise(ctx, errorDom.ErrChallengeAlreadySolved, "", nil, nil)
+	}
+
+	// check if team has exhausted attempts
+	if challenge.MaxAttempts > 0 && challengeStats.IncorrectCount >= challenge.MaxAttempts {
+		return nil, errorDom.Raise(ctx, errorDom.ErrChallengeMaxAttemptsReached, "", nil, nil)
+	}
+
+	return challenge, nil
 }
 
 func (c *challengeImpl) GetTeamSubmissions(ctx context.Context, teamID int64) ([]*challengeDom.Submission, error) {
