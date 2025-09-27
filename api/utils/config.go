@@ -82,6 +82,11 @@ type Config struct {
 	Hints struct {
 		CacheTTL time.Duration `env:"HINT_CACHE_TTL" envDefault:"1h"`
 	}
+
+	Instances struct {
+		CacheTTL time.Duration `env:"INSTANCE_CACHE_TTL" envDefault:"10m"`
+		Lifetime time.Duration `env:"INSTANCE_LIFETIME" envDefault:"30m"`
+	}
 }
 
 func GetConfig() *Config {

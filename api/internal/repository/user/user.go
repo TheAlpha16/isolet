@@ -5,8 +5,8 @@ import (
 
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
-	"github.com/jackc/pgx/v5/pgconn"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 )
 

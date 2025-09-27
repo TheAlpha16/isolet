@@ -95,7 +95,10 @@ const (
 	ErrScoreUpdateFailed ErrorCode = "SCORE-00"
 
 	// Instance errors
-	ErrInstanceNotOnDemand ErrorCode = "INSTANCE-00"
+	ErrInstanceNotOnDemand     ErrorCode = "INSTANCE-00"
+	ErrInstanceNotFound        ErrorCode = "INSTANCE-01"
+	ErrInstanceAlreadyStarting ErrorCode = "INSTANCE-02"
+	ErrInstanceAlreadyRunning  ErrorCode = "INSTANCE-03"
 )
 
 // Map of error codes to user-facing messages
@@ -170,7 +173,10 @@ var msgMap = map[ErrorCode]string{
 	ErrScoreUpdateFailed: "failed to update score",
 
 	// Instance errors
-	ErrInstanceNotOnDemand: "instances are not available for this challenge",
+	ErrInstanceNotOnDemand:     "instances are not available for this challenge",
+	ErrInstanceNotFound:        "instance not found",
+	ErrInstanceAlreadyStarting: "instance is already starting",
+	ErrInstanceAlreadyRunning:  "instance is already running",
 }
 
 // Map of server-side error codes that need to be filtered

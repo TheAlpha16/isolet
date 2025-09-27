@@ -21,8 +21,8 @@ type Instance struct {
 	Team      teamRepo.Team           `gorm:"foreignKey:TeamID;references:ID;constraint:OnDelete:CASCADE"`
 }
 
-func (in *Instance) ToDomain(ctx context.Context) (instanceDom.Instance, error) {
-	return instanceDom.Instance{
+func (in *Instance) ToDomain(ctx context.Context) (*instanceDom.Instance, error) {
+	return &instanceDom.Instance{
 		BaseEntity: domain.BaseEntity{
 			CreatedAt: time.Unix(in.CreatedAt, 0),
 			UpdatedAt: time.Unix(in.UpdatedAt, 0),

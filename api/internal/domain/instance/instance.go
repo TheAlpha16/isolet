@@ -1,6 +1,14 @@
 package instance
 
-import "github.com/TheAlpha16/isolet/api/internal/domain"
+import (
+	"fmt"
+
+	"github.com/TheAlpha16/isolet/api/internal/domain"
+)
+
+const (
+	InstanceCachePrefix = "instance"
+)
 
 type Instance struct {
 	ID          int64
@@ -8,4 +16,8 @@ type Instance struct {
 	TeamID      int64
 	ExpiresAt   int64
 	domain.BaseEntity
+}
+
+func InstanceCacheKey(teamID, challengeID int64) string {
+	return fmt.Sprintf("%s:team:%d:challenge:%d", InstanceCachePrefix, teamID, challengeID)
 }

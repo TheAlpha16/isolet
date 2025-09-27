@@ -33,8 +33,7 @@ func (c *cache) Set(ctx context.Context, key, value string) error {
 	ctx, span := c.WithTrace(ctx, "set")
 	defer span.End()
 
-	err := c.client.Do(ctx, c.client.B().Set().Key(key).Value(value).Build()).Error()
-	if err != nil {
+	if err := c.client.Do(ctx, c.client.B().Set().Key(key).Value(value).Build()).Error(); err != nil {
 		return errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
 	}
 	return nil
@@ -44,8 +43,7 @@ func (c *cache) Delete(ctx context.Context, key string) error {
 	ctx, span := c.WithTrace(ctx, "delete")
 	defer span.End()
 
-	err := c.client.Do(ctx, c.client.B().Del().Key(key).Build()).Error()
-	if err != nil {
+	if err := c.client.Do(ctx, c.client.B().Del().Key(key).Build()).Error(); err != nil {
 		return errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
 	}
 	return nil
@@ -67,8 +65,7 @@ func (c *cache) SetWithExpiry(ctx context.Context, key, value string, expiresAt 
 	ctx, span := c.WithTrace(ctx, "set_with_expiry")
 	defer span.End()
 
-	err := c.client.Do(ctx, c.client.B().Set().Key(key).Value(value).Exat(expiresAt).Build()).Error()
-	if err != nil {
+	if err := c.client.Do(ctx, c.client.B().Set().Key(key).Value(value).Exat(expiresAt).Build()).Error(); err != nil {
 		return errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
 	}
 	return nil
@@ -78,11 +75,24 @@ func (c *cache) SetWithTTL(ctx context.Context, key, value string, ttl time.Dura
 	ctx, span := c.WithTrace(ctx, "set_with_ttl")
 	defer span.End()
 
-	err := c.client.Do(ctx, c.client.B().Set().Key(key).Value(value).Ex(ttl).Build()).Error()
-	if err != nil {
+	if err := c.client.Do(ctx, c.client.B().Set().Key(key).Value(value).Ex(ttl).Build()).Error(); err != nil {
 		return errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
 	}
 	return nil
+}
+
+func (c *cache) SetNXWithTTL(ctx context.Context, key, value string, ttl time.Duration) (bool, error) {
+	ctx, span := c.WithTrace(ctx, "set_nx_with_ttl")
+	defer span.End()
+
+	set, err := c.client.Do(ctx, c.client.B().Set().Key(key).Value(value).Nx().Ex(ttl).Build()).AsBool()
+	if err != nil {
+		if valkey.IsValkeyNil(err) {
+			return false, nil
+		}
+		return false, errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
+	}
+	return set, nil
 }
 
 func (c *cache) LoadScript(ctx context.Context, script string) (string, error) {
@@ -108,8 +118,7 @@ func (c *cache) SetManyWithExpiry(ctx context.Context, items map[string]string, 
 	}
 	args = append(args, strconv.FormatInt(expiresAt.Unix(), 10))
 
-	err := c.client.Do(ctx, c.client.B().Evalsha().Sha1(setManyScriptHash).Numkeys(int64(len(keys))).Key(keys...).Arg(args...).Build()).Error()
-	if err != nil {
+	if err := c.client.Do(ctx, c.client.B().Evalsha().Sha1(setManyScriptHash).Numkeys(int64(len(keys))).Key(keys...).Arg(args...).Build()).Error(); err != nil {
 		return errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
 	}
 
@@ -120,8 +129,7 @@ func (c *cache) ZIncrBy(ctx context.Context, key string, increment float64, memb
 	ctx, span := c.WithTrace(ctx, "zincr")
 	defer span.End()
 
-	err := c.client.Do(ctx, c.client.B().Zincrby().Key(key).Increment(increment).Member(member).Build()).Error()
-	if err != nil {
+	if err := c.client.Do(ctx, c.client.B().Zincrby().Key(key).Increment(increment).Member(member).Build()).Error(); err != nil {
 		return errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
 	}
 
@@ -137,8 +145,7 @@ func (c *cache) ZAdd(ctx context.Context, key string, members map[string]float64
 		query = query.ScoreMember(score, member)
 	}
 
-	err := c.client.Do(ctx, query.Build()).Error()
-	if err != nil {
+	if err := c.client.Do(ctx, query.Build()).Error(); err != nil {
 		return errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
 	}
 
