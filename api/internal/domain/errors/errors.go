@@ -130,18 +130,23 @@ func RaiseToSentry(ctx context.Context, err error) {
 	}
 }
 
-func GetHTTPStatusCode(err error) int {
-	_, isDomErr := ExtractErrorCode(err)
-	if !isDomErr {
-		return -1 // return -1 if not a domain error
+// AsAppError tries to cast the given error to an AppError
+func AsAppError(err error) (*AppError, bool) {
+	var ae *AppError
+	if errors.As(err, &ae) {
+		return ae, true
 	}
-	if isServerSideErr := IsServerSideError(err); isServerSideErr {
+	return nil, false
+}
+
+func GetHTTPStatusCode(code ErrorCode) int {
+	if isServerErr := IsServerErrorCode(code); isServerErr {
 		return fiber.StatusInternalServerError
 	}
-	if isAuthErr := IsAuthError(err); isAuthErr {
+	if isAuthErr := IsAuthErrorCode(code); isAuthErr {
 		return fiber.StatusUnauthorized
 	}
-	if isForbiddenErr := IsForbiddenError(err); isForbiddenErr {
+	if isForbiddenErr := IsForbiddenErrorCode(code); isForbiddenErr {
 		return fiber.StatusForbidden
 	}
 	return fiber.StatusBadRequest

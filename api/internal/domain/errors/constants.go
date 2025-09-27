@@ -93,6 +93,9 @@ const (
 
 	// Scoreboard errors
 	ErrScoreUpdateFailed ErrorCode = "SCORE-00"
+
+	// Instance errors
+	ErrInstanceNotOnDemand ErrorCode = "INSTANCE-00"
 )
 
 // Map of error codes to user-facing messages
@@ -165,10 +168,13 @@ var msgMap = map[ErrorCode]string{
 
 	// Score errors
 	ErrScoreUpdateFailed: "failed to update score",
+
+	// Instance errors
+	ErrInstanceNotOnDemand: "instances are not available for this challenge",
 }
 
 // Map of server-side error codes that need to be filtered
-var ServerSideErrors = map[ErrorCode]struct{}{
+var ServerErrorCodes = map[ErrorCode]struct{}{
 	ErrInternalError:          {},
 	ErrCacheCallFail:          {},
 	ErrMarshalError:           {},
@@ -192,14 +198,14 @@ var ServerSideErrors = map[ErrorCode]struct{}{
 }
 
 // Map of auth error codes
-var AuthErrors = map[ErrorCode]struct{}{
+var AuthErrorCodes = map[ErrorCode]struct{}{
 	ErrTokenExpiredInvalid:    {},
 	ErrAuthInvalidCredentials: {},
 	ErrAuthMissingToken:       {},
 }
 
 // Map of forbidden error codes
-var ForbiddenErrors = map[ErrorCode]struct{}{
+var ForbiddenErrorCodes = map[ErrorCode]struct{}{
 	ErrAuthMaxSessionsReached:    {},
 	ErrAuthPasswordResetDisabled: {},
 	ErrUserInsufficentRole:       {},

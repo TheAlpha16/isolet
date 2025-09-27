@@ -35,14 +35,16 @@ func ErrorMiddleware() fiber.Handler {
 		}()
 		err = c.Next()
 		if err != nil {
-			code := errorDom.GetHTTPStatusCode(err)
-			if code == -1 {
+			ae, ok := errorDom.AsAppError(err)
+			if !ok {
 				// let fiber handle unrecognized errors
 				return defaultHandler(c, err)
 			}
 
+			code := errorDom.GetHTTPStatusCode(ae.ErrorCode)
+
 			// filter out internal errors
-			message := err.Error()
+			message := ae.GetMessage()
 			if code == fiber.StatusInternalServerError {
 				message = "Internal Server Error"
 				logger.GetLogger(c.UserContext()).Error(message, zap.Error(err))

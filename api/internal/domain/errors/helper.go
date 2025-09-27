@@ -2,7 +2,6 @@ package errors
 
 import (
 	"context"
-	"errors"
 
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
 
@@ -12,10 +11,10 @@ import (
 
 // ExtractErrorCode extracts the ErrorCode from an error, if it is an AppError
 func ExtractErrorCode(err error) (ErrorCode, bool) {
-	var ae *AppError
-	if errors.As(err, &ae) {
+	if ae, ok := AsAppError(err); ok {
 		return ae.ErrorCode, true
 	}
+
 	return "", false
 }
 
@@ -27,33 +26,21 @@ func IsSameError(err error, code ErrorCode) bool {
 	return false
 }
 
-// IsServerSideError checks if the error is a server-side error
-func IsServerSideError(err error) bool {
-	errCode, ok := ExtractErrorCode(err)
-	if !ok {
-		return false
-	}
-	_, isServerSide := ServerSideErrors[errCode]
+// IsServerErrorCode checks if the error is a server-side error
+func IsServerErrorCode(code ErrorCode) bool {
+	_, isServerSide := ServerErrorCodes[code]
 	return isServerSide
 }
 
-// IsAuthError checks if the error is an auth error
-func IsAuthError(err error) bool {
-	errCode, ok := ExtractErrorCode(err)
-	if !ok {
-		return false
-	}
-	_, isAuth := AuthErrors[errCode]
+// IsAuthErrorCode checks if the error is an auth error
+func IsAuthErrorCode(code ErrorCode) bool {
+	_, isAuth := AuthErrorCodes[code]
 	return isAuth
 }
 
-// IsForbiddenError checks if the error is a forbidden error
-func IsForbiddenError(err error) bool {
-	errCode, ok := ExtractErrorCode(err)
-	if !ok {
-		return false
-	}
-	_, isForbidden := ForbiddenErrors[errCode]
+// IsForbiddenErrorCode checks if the error is a forbidden error
+func IsForbiddenErrorCode(code ErrorCode) bool {
+	_, isForbidden := ForbiddenErrorCodes[code]
 	return isForbidden
 }
 
