@@ -84,8 +84,10 @@ type Config struct {
 	}
 
 	Instances struct {
-		CacheTTL time.Duration `env:"INSTANCE_CACHE_TTL" envDefault:"10m"`
-		Lifetime time.Duration `env:"INSTANCE_LIFETIME" envDefault:"30m"`
+		StartTimeout  time.Duration `env:"INSTANCE_START_TIMEOUT" envDefault:"5m"`
+		StopTimeout   time.Duration `env:"INSTANCE_STOP_TIMEOUT" envDefault:"2m"`
+		ExtendTimeout time.Duration `env:"INSTANCE_EXTEND_TIMEOUT" envDefault:"5s"`
+		Lifetime      time.Duration `env:"INSTANCE_LIFETIME" envDefault:"30m"`
 	}
 }
 

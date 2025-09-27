@@ -35,9 +35,14 @@ func (in *Instance) ToDomain(ctx context.Context) (*instanceDom.Instance, error)
 }
 
 func NewInstanceModel(in *instanceDom.Instance) (*Instance, error) {
-	return &Instance{
+	instance := &Instance{
 		ChallengeID: in.ChallengeID,
 		TeamID:      in.TeamID,
 		ExpiresAt:   in.ExpiresAt,
-	}, nil
+	}
+	if in.ID != 0 {
+		instance.ID = in.ID
+	}
+
+	return instance, nil
 }

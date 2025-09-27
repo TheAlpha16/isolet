@@ -25,6 +25,7 @@ const (
 	// Rest errors
 	ErrRestInvalidPayload ErrorCode = "REST-00"
 	ErrRestMissingToken   ErrorCode = "REST-01"
+	ErrRestTimedOut       ErrorCode = "REST-02"
 
 	// User errors
 	ErrUserInvalidRole     ErrorCode = "USER-00"
@@ -45,6 +46,7 @@ const (
 	ErrDBReadError   ErrorCode = "DB-01"
 	ErrDBUpdateError ErrorCode = "DB-02"
 	ErrDBExecError   ErrorCode = "DB-03"
+	ErrDBDeleteError ErrorCode = "DB-04"
 
 	// Cache errors
 	ErrCacheCallFail          ErrorCode = "CACHE-00"
@@ -95,10 +97,10 @@ const (
 	ErrScoreUpdateFailed ErrorCode = "SCORE-00"
 
 	// Instance errors
-	ErrInstanceNotOnDemand     ErrorCode = "INSTANCE-00"
-	ErrInstanceNotFound        ErrorCode = "INSTANCE-01"
-	ErrInstanceAlreadyStarting ErrorCode = "INSTANCE-02"
-	ErrInstanceAlreadyRunning  ErrorCode = "INSTANCE-03"
+	ErrInstanceNotOnDemand    ErrorCode = "INSTANCE-00"
+	ErrInstanceNotFound       ErrorCode = "INSTANCE-01"
+	ErrInstanceWIP            ErrorCode = "INSTANCE-02"
+	ErrInstanceAlreadyRunning ErrorCode = "INSTANCE-03"
 )
 
 // Map of error codes to user-facing messages
@@ -112,6 +114,7 @@ var msgMap = map[ErrorCode]string{
 	// Rest errors
 	ErrRestInvalidPayload: "invalid request payload",
 	ErrRestMissingToken:   "token required for verification",
+	ErrRestTimedOut:       "request timed out, please try again later",
 
 	// User errors
 	ErrUserInvalidRole:     "invalid user role",
@@ -173,10 +176,10 @@ var msgMap = map[ErrorCode]string{
 	ErrScoreUpdateFailed: "failed to update score",
 
 	// Instance errors
-	ErrInstanceNotOnDemand:     "instances are not available for this challenge",
-	ErrInstanceNotFound:        "instance not found",
-	ErrInstanceAlreadyStarting: "instance is already starting",
-	ErrInstanceAlreadyRunning:  "instance is already running",
+	ErrInstanceNotOnDemand:    "instances are not available for this challenge",
+	ErrInstanceNotFound:       "instance not found",
+	ErrInstanceWIP:            "instance work in progress, please wait a few seconds before retrying",
+	ErrInstanceAlreadyRunning: "instance is already running",
 }
 
 // Map of server-side error codes that need to be filtered
@@ -189,6 +192,7 @@ var ServerErrorCodes = map[ErrorCode]struct{}{
 	ErrDBReadError:            {},
 	ErrDBUpdateError:          {},
 	ErrDBExecError:            {},
+	ErrDBDeleteError:          {},
 	ErrCacheScriptLoadFail:    {},
 	ErrTokenSigningFailed:     {},
 	ErrConfigVarInvalid:       {},
