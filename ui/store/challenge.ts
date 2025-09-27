@@ -62,6 +62,15 @@ export const useChallengeStore = create<ChallengeStore>((set, get) => ({
       showToast(ToastStatus.Warning, "flag cannot be empty");
       return;
     }
+    const challenge = get().challengeIdMap[challenge_id];
+    if (!challenge) {
+      showToast(ToastStatus.Failure, "challenge not found!");
+      return;
+    }
+    if (challenge.solved) {
+      showToast(ToastStatus.Failure, "challenge already solved!");
+      return;
+    }
 
     try {
       const res = await ChallengeService.submitFlag({ challenge_id, flag });
@@ -72,22 +81,20 @@ export const useChallengeStore = create<ChallengeStore>((set, get) => ({
           showToast(ToastStatus.Failure, "incorrect flag!");
         }
       }
-      set((state) => {
-        const challenge = state.challengeIdMap[challenge_id];
-        if (!challenge) return state;
-        return {
-          challengeIdMap: {
-            ...state.challengeIdMap,
-            [challenge_id]: {
-              ...challenge,
-              attempt_count: challenge.attempt_count + 1,
-              ...(res?.is_correct
-                ? { solved: true, total_solves: challenge.total_solves + 1 }
-                : {}),
-            },
-          },
-        };
-      });
+
+      // update attempts and solved status
+      challenge.attempt_count++;
+      if (res?.is_correct) {
+        challenge.solved = true;
+        challenge.total_solves++;
+      }
+
+      set((state) => ({
+        challengeIdMap: {
+          ...state.challengeIdMap,
+          [challenge_id]: challenge,
+        },
+      }));
     } catch {}
   },
 
