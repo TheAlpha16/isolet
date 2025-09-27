@@ -54,7 +54,9 @@ const (
 
 // instance routes
 const (
-	RouteInstanceStart = "/start"
+	RouteInstanceStart  = "/start"
+	RouteInstanceStop   = "/stop"
+	RouteInstanceExtend = "/extend"
 )
 
 // misc routes

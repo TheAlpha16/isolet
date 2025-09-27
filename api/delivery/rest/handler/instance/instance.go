@@ -9,6 +9,8 @@ import (
 
 type InstanceHandler interface {
 	Start(c *fiber.Ctx) error
+	Stop(c *fiber.Ctx) error
+	Extend(c *fiber.Ctx) error
 }
 
 type instanceHandler struct {
@@ -28,6 +30,36 @@ func (h *instanceHandler) Start(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response.Success("instance started successfully", output))
+}
+
+func (h *instanceHandler) Stop(c *fiber.Ctx) error {
+	var input instanceDom.StopInput
+
+	if err := handler.DecodeInput(c, &input); err != nil {
+		return err
+	}
+
+	err := h.instanceUc.Stop(c.UserContext(), &input)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.Success[any]("instance stopped successfully", nil))
+}
+
+func (h *instanceHandler) Extend(c *fiber.Ctx) error {
+	var input instanceDom.ExtendInput
+
+	if err := handler.DecodeInput(c, &input); err != nil {
+		return err
+	}
+
+	output, err := h.instanceUc.Extend(c.UserContext(), &input)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.Success("instance extended successfully", output))
 }
 
 func New(instanceUc instanceDom.Usecase) InstanceHandler {

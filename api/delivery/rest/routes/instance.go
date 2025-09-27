@@ -10,6 +10,26 @@ import (
 )
 
 func RegisterInstance(router fiber.Router, instanceHandler instanceHan.InstanceHandler, tokenUc tokenDom.Usecase, jwtSvc jwt.JWT) {
-	instanceRouter := router.Group(utils.RouteInstance, middleware.AuthMiddleware(tokenUc, jwtSvc), middleware.RequireTeamMiddleware())
-	instanceRouter.Post(utils.RouteInstanceStart, instanceHandler.Start)
+	config := utils.GetConfig()
+
+	instanceRouter := router.Group(
+		utils.RouteInstance,
+		middleware.AuthMiddleware(tokenUc, jwtSvc),
+		middleware.RequireTeamMiddleware(),
+	)
+	instanceRouter.Post(
+		utils.RouteInstanceStart,
+		middleware.ContextDeadlineMiddleware(config.Instances.StartTimeout),
+		instanceHandler.Start,
+	)
+	instanceRouter.Post(
+		utils.RouteInstanceStop,
+		middleware.ContextDeadlineMiddleware(config.Instances.StopTimeout),
+		instanceHandler.Stop,
+	)
+	instanceRouter.Post(
+		utils.RouteInstanceExtend,
+		middleware.ContextDeadlineMiddleware(config.Instances.ExtendTimeout),
+		instanceHandler.Extend,
+	)
 }
