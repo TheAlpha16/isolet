@@ -7,6 +7,7 @@ import (
 	challengeHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/challenge"
 	eventHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/event"
 	healthHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/health"
+	instanceHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/instance"
 	profileHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/profile"
 	scoreHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/score"
 	teamHan "github.com/TheAlpha16/isolet/api/delivery/rest/handler/team"
@@ -50,6 +51,7 @@ func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
 	profileHandler := profileHan.New(usecases.Profile)
 	challengeHandler := challengeHan.New(usecases.Challenge)
 	scoreHandler := scoreHan.New(usecases.Score)
+	instanceHandler := instanceHan.New(usecases.Instance)
 
 	// Setup routes
 	apiRouter := app.Group(config.Rest.APIVersionPrefix)
@@ -60,6 +62,8 @@ func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
 	routes.RegisterProfile(apiRouter, profileHandler, usecases.Token, infra.JWT)
 	routes.RegisterChallenge(apiRouter, challengeHandler, usecases.Token, infra.JWT)
 	routes.RegisterScore(apiRouter, scoreHandler, usecases.Token, infra.JWT)
+	routes.RegisterInstance(apiRouter, instanceHandler, usecases.Token, infra.JWT)
+
 	return app
 }
 

@@ -8,6 +8,7 @@ const (
 	RouteProfile   = "/profile"
 	RouteChallenge = "/challenge"
 	RouteScore     = "/score"
+	RouteInstance  = "/instance"
 )
 
 // auth routes
@@ -38,15 +39,22 @@ const (
 	RouteEventInfo = "/info"
 )
 
+// challenge routes
 const (
 	RouteChallengeList       = "/"
 	RouteChallengeSubmitFlag = "/submit"
 	RouteHintUnlock          = "/hint/unlock"
 )
 
+// score routes
 const (
 	RouteScoreboard = "/"
 	RouteScoreGraph = "/graph"
+)
+
+// instance routes
+const (
+	RouteInstanceStart = "/start"
 )
 
 // misc routes

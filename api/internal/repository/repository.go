@@ -4,11 +4,13 @@ import (
 	"github.com/TheAlpha16/isolet/api/infra/cache"
 	challengeDom "github.com/TheAlpha16/isolet/api/internal/domain/challenge"
 	cvDom "github.com/TheAlpha16/isolet/api/internal/domain/configvars"
+	instanceDom "github.com/TheAlpha16/isolet/api/internal/domain/instance"
 	scoreDom "github.com/TheAlpha16/isolet/api/internal/domain/score"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
 	challengeRepo "github.com/TheAlpha16/isolet/api/internal/repository/challenge"
 	cvRepo "github.com/TheAlpha16/isolet/api/internal/repository/configvars"
+	instanceRepo "github.com/TheAlpha16/isolet/api/internal/repository/instance"
 	scoreRepo "github.com/TheAlpha16/isolet/api/internal/repository/score"
 	teamRepo "github.com/TheAlpha16/isolet/api/internal/repository/team"
 	userRepo "github.com/TheAlpha16/isolet/api/internal/repository/user"
@@ -22,6 +24,7 @@ type Repositories struct {
 	ConfigVars cvDom.Repository
 	Challenge  challengeDom.Repository
 	Score      scoreDom.Repository
+	Instance   instanceDom.Repository
 }
 
 func New(db *gorm.DB, cache cache.Cache) *Repositories {
@@ -30,6 +33,7 @@ func New(db *gorm.DB, cache cache.Cache) *Repositories {
 	cvRepo := cvRepo.New(db)
 	challengeRepo := challengeRepo.New(db, cache)
 	scoreRepo := scoreRepo.New(db)
+	instanceRepo := instanceRepo.New(db)
 
 	return &Repositories{
 		User:       userRepo,
@@ -37,6 +41,7 @@ func New(db *gorm.DB, cache cache.Cache) *Repositories {
 		ConfigVars: cvRepo,
 		Challenge:  challengeRepo,
 		Score:      scoreRepo,
+		Instance:   instanceRepo,
 	}
 }
 
@@ -51,5 +56,6 @@ func AutoMigrate(db *gorm.DB) error {
 		&challengeRepo.Submission{},
 		&challengeRepo.Solve{},
 		&challengeRepo.UnlockedHint{},
+		&instanceRepo.Instance{},
 	)
 }
