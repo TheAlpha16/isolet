@@ -1,11 +1,32 @@
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  labels:
-    app.kubernetes.io/name: tide
-    app.kubernetes.io/managed-by: kustomize
   name: manager-role
 rules:
-- apiGroups: [""]
-  resources: ["pods"]
-  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - challenges.isolet.dev
+  resources:
+  - instances
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - challenges.isolet.dev
+  resources:
+  - instances/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - challenges.isolet.dev
+  resources:
+  - instances/status
+  verbs:
+  - get
+  - patch
+  - update

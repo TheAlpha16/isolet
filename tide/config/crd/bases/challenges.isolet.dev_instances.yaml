@@ -1,0 +1,318 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.19.0
+  name: instances.challenges.isolet.dev
+spec:
+  group: challenges.isolet.dev
+  names:
+    kind: Instance
+    listKind: InstanceList
+    plural: instances
+    singular: instance
+  scope: Namespaced
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: Instance is the Schema for the instances API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: spec defines the desired state of Instance
+            properties:
+              challenge:
+                description: challenge is the challenge for which this instance is
+                  created
+                properties:
+                  flag:
+                    description: |-
+                      A custom and unique flag can be passed per instance
+                      If set, it will be injected as an environment variable into the container
+                    type: string
+                  id:
+                    description: ID of the challenge
+                    format: int64
+                    minimum: 1
+                    type: integer
+                  image:
+                    description: Docker image to use for the challenge instance
+                    type: string
+                  name:
+                    description: |-
+                      DNS-safe slug derived from challenge name
+                      ex: Alice's Adventure -> alices-adventure
+                    type: string
+                  type:
+                    description: type indicates the provisioning type of the challenge
+                    enum:
+                    - dynamic
+                    - on-demand
+                    type: string
+                required:
+                - id
+                - image
+                - name
+                - type
+                type: object
+              endpoints:
+                description: Endpoints represents the network endpoints for the instance
+                items:
+                  description: Endpoint represents a network endpoint for an instance
+                  properties:
+                    hostname:
+                      description: |-
+                        Hostname of the endpoint
+                        Controller genarates a DNS-safe hostname if not provided
+                        e.g., <instance-uuid>.<challenge-name>.<tide-domain>
+
+                        Example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890.alices-adventure.isolet.dev"
+                      type: string
+                    name:
+                      description: Name of the endpoint (e.g., "app", "metrics")
+                      type: string
+                    port:
+                      description: |-
+                        Port of the endpoint
+                        This is resolved by the controller based on the service configuration
+                      format: int32
+                      type: integer
+                    protocol:
+                      description: Protocol of the endpoint (e.g., "http", "ssh")
+                      enum:
+                      - http
+                      - https
+                      - nc
+                      - ssh
+                      type: string
+                    ready:
+                      description: Ready indicates whether the endpoint is ready to
+                        accept traffic
+                      type: boolean
+                    targetPort:
+                      description: |-
+                        TargetPort of the endpoint
+                        Port on which the application inside the container is listening
+                      format: int32
+                      type: integer
+                  required:
+                  - protocol
+                  - targetPort
+                  type: object
+                type: array
+              lifecycle:
+                description: lifecycle defines the lifecycle configuration for the
+                  instance
+                properties:
+                  allowExtension:
+                    default: true
+                    description: |-
+                      allowExtension indicates whether the instance's expiry time can be extended by the user
+                      Default is true
+                    type: boolean
+                  availableAt:
+                    description: |-
+                      timestamp of the time when the instance should be available
+                      If not set, the instance will be available immediately after provisioning
+                    format: date-time
+                    type: string
+                  expiresAt:
+                    description: |-
+                      timestamp of the time when the instance should be terminated
+                      If not set, the instance will run indefinitely until manually terminated
+                    format: date-time
+                    type: string
+                  restartPolicy:
+                    default: Never
+                    description: |-
+                      restartPolicy defines the restart policy for all containers within the instance
+                      One of Always, OnFailure, Never
+                      Default is Never
+                    type: string
+                type: object
+              limits:
+                additionalProperties:
+                  anyOf:
+                  - type: integer
+                  - type: string
+                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                  x-kubernetes-int-or-string: true
+                description: limits is the resource limits for the instance
+                type: object
+              requests:
+                additionalProperties:
+                  anyOf:
+                  - type: integer
+                  - type: string
+                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                  x-kubernetes-int-or-string: true
+                description: requests is the resource requests for the instance
+                type: object
+              team:
+                description: |-
+                  team is the team for which this instance is created
+                  dynamic challenges may not have a team associated
+                properties:
+                  id:
+                    description: ID of the team
+                    format: int64
+                    minimum: 1
+                    type: integer
+                required:
+                - id
+                type: object
+            required:
+            - challenge
+            type: object
+          status:
+            description: status defines the observed state of Instance
+            properties:
+              conditions:
+                description: |-
+                  conditions represent the current state of the Instance resource.
+                  Each condition has a unique type and reflects the status of a specific aspect of the resource.
+
+                  Standard condition types include:
+                  - "Available": the resource is fully functional
+                  - "Progressing": the resource is being created or updated
+                  - "Degraded": the resource failed to reach or maintain its desired state
+
+                  The status of each condition is one of True, False, or Unknown.
+                items:
+                  description: Condition contains details for one aspect of the current
+                    state of this API Resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+              endpoints:
+                description: endpoints are the resolved network endpoints for the
+                  instance
+                items:
+                  description: Endpoint represents a network endpoint for an instance
+                  properties:
+                    hostname:
+                      description: |-
+                        Hostname of the endpoint
+                        Controller genarates a DNS-safe hostname if not provided
+                        e.g., <instance-uuid>.<challenge-name>.<tide-domain>
+
+                        Example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890.alices-adventure.isolet.dev"
+                      type: string
+                    name:
+                      description: Name of the endpoint (e.g., "app", "metrics")
+                      type: string
+                    port:
+                      description: |-
+                        Port of the endpoint
+                        This is resolved by the controller based on the service configuration
+                      format: int32
+                      type: integer
+                    protocol:
+                      description: Protocol of the endpoint (e.g., "http", "ssh")
+                      enum:
+                      - http
+                      - https
+                      - nc
+                      - ssh
+                      type: string
+                    ready:
+                      description: Ready indicates whether the endpoint is ready to
+                        accept traffic
+                      type: boolean
+                    targetPort:
+                      description: |-
+                        TargetPort of the endpoint
+                        Port on which the application inside the container is listening
+                      format: int32
+                      type: integer
+                  required:
+                  - protocol
+                  - targetPort
+                  type: object
+                type: array
+              phase:
+                description: phase indicates the current phase of the instance
+                enum:
+                - Pending
+                - Staged
+                - Running
+                - Failed
+                type: string
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
