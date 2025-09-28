@@ -20,6 +20,8 @@ tags:
     description: Challenge management and interactions
   - name: score
     description: Scoreboard and scoring information
+  - name: instance
+    description: Challenge instance management (on-demand challenges)
   - name: health
     description: Health check endpoints
 paths:
@@ -680,6 +682,162 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Response"
+  /instance/start:
+    post: 
+      tags:
+        - instance
+      summary: Start instance
+      description: Starts a new instance for an on-demand challenge
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InstanceStartInput"
+      responses:
+        201:
+          description: Instance started
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      message:
+                        example: "instance started successfully"
+                      data:
+                        $ref: "#/components/schemas/Instance"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        408:
+          description: Request timeout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /instance/stop:
+    post:
+      tags:
+        - instance
+      summary: Stop instance
+      description: Stops a running instance
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InstanceStopInput"
+      responses:
+        200:
+          description: Instance stopped
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      message:
+                        example: "instance stopped successfully"
+                      data:
+                        nullable: true
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        408:
+          description: Request timeout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /instance/extend:
+    post:
+      tags:
+        - instance
+      summary: Extend instance
+      description: Extends the lifetime of a running instance
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InstanceExtendInput"
+      responses:
+        200:
+          description: Instance extended
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      message:
+                        example: "instance extended successfully"
+                      data:
+                        $ref: "#/components/schemas/Instance"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        408:
+          description: Request timeout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
 components:
   securitySchemes:
     cookieAuth:
@@ -1166,3 +1324,54 @@ components:
       required:
         - count
         - entries
+    Instance:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        challenge_id:
+          type: integer
+          format: int64
+          example: 789
+        team_id:
+          type: integer
+          format: int64
+          example: 456
+        expires_at:
+          type: integer
+          format: int64
+          example: 1615985900
+      required:
+        - id
+        - challenge_id
+        - team_id
+        - expires_at
+    InstanceStartInput:
+      type: object
+      properties:
+        challenge_id:
+          type: integer
+          format: int64
+          example: 789
+      required:
+        - challenge_id
+    InstanceStopInput:
+      type: object
+      properties:
+        instance_id:
+          type: integer
+          format: int64
+          example: 1
+      required:
+        - instance_id
+    InstanceExtendInput:
+      type: object
+      properties:
+        instance_id:
+          type: integer
+          format: int64
+          example: 1
+      required:
+        - instance_id
