@@ -42,6 +42,9 @@ func ErrorMiddleware() fiber.Handler {
 				err = errorDom.Raise(c.UserContext(), errorDom.ErrRestTimedOut, "", err, nil)
 				logger.GetLogger(c.UserContext()).Error("request timed out", zap.Error(err))
 				errorDom.RaiseToSentry(c.UserContext(), err)
+				return c.Status(fiber.StatusRequestTimeout).JSON(
+					response.Error[any]("request timed out", nil),
+				)
 			}
 
 			ae, ok := errorDom.AsAppError(err)
