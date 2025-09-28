@@ -29,7 +29,7 @@ func (h *instanceHandler) Start(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.Success("instance started successfully", output))
+	return c.Status(fiber.StatusCreated).JSON(response.Success("instance started successfully", output))
 }
 
 func (h *instanceHandler) Stop(c *fiber.Ctx) error {
