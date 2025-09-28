@@ -17,7 +17,7 @@ spec:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: Instance is the Schema for the instances API
+        description: Instance is the Schema for the instances API.
         properties:
           apiVersion:
             description: |-
@@ -37,32 +37,33 @@ spec:
           metadata:
             type: object
           spec:
-            description: spec defines the desired state of Instance
+            description: Desired configuration.
             properties:
               challenge:
-                description: challenge is the challenge for which this instance is
-                  created
+                description: Challenge backing this instance.
                 properties:
                   flag:
-                    description: |-
-                      A custom and unique flag can be passed per instance
-                      If set, it will be injected as an environment variable into the container
+                    description: Optional flag injected into the instance as an environment
+                      variable.
                     type: string
                   id:
-                    description: ID of the challenge
+                    description: Unique ID of the challenge.
                     format: int64
                     minimum: 1
                     type: integer
                   image:
-                    description: Docker image to use for the challenge instance
+                    description: Container image used to run the challenge.
                     type: string
                   name:
                     description: |-
-                      DNS-safe slug derived from challenge name
-                      ex: Alice's Adventure -> alices-adventure
+                      DNS-safe slug derived from the challenge name.
+                      Example: "Alice's Adventure" -> "alices-adventure".
+                    maxLength: 63
+                    minLength: 1
+                    pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
                     type: string
                   type:
-                    description: type indicates the provisioning type of the challenge
+                    description: How this challenge is provisioned (dynamic or on-demand).
                     enum:
                     - dynamic
                     - on-demand
@@ -74,78 +75,65 @@ spec:
                 - type
                 type: object
               endpoints:
-                description: Endpoints represents the network endpoints for the instance
+                description: Network endpoints exposed by this instance.
                 items:
-                  description: Endpoint represents a network endpoint for an instance
+                  description: EndpointSpec defines a single network entrypoint for
+                    an Instance.
                   properties:
-                    hostname:
-                      description: |-
-                        Hostname of the endpoint
-                        Controller genarates a DNS-safe hostname if not provided
-                        e.g., <instance-uuid>.<challenge-name>.<tide-domain>
-
-                        Example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890.alices-adventure.isolet.dev"
-                      type: string
                     name:
-                      description: Name of the endpoint (e.g., "app", "metrics")
+                      description: Logical name for the endpoint (e.g., "app", "metrics").
+                      maxLength: 63
+                      minLength: 1
+                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
                       type: string
-                    port:
-                      description: |-
-                        Port of the endpoint
-                        This is resolved by the controller based on the service configuration
-                      format: int32
-                      type: integer
                     protocol:
-                      description: Protocol of the endpoint (e.g., "http", "ssh")
+                      description: Network protocol for this endpoint (e.g., http,
+                        ssh).
                       enum:
                       - http
                       - https
                       - nc
                       - ssh
                       type: string
-                    ready:
-                      description: Ready indicates whether the endpoint is ready to
-                        accept traffic
-                      type: boolean
                     targetPort:
-                      description: |-
-                        TargetPort of the endpoint
-                        Port on which the application inside the container is listening
+                      description: Port on which the application inside the container
+                        is listening.
                       format: int32
                       type: integer
                   required:
+                  - name
                   - protocol
                   - targetPort
                   type: object
                 type: array
+                x-kubernetes-list-map-keys:
+                - name
+                x-kubernetes-list-type: map
               lifecycle:
-                description: lifecycle defines the lifecycle configuration for the
-                  instance
+                description: Lifecycle configuration (availability and expiry).
                 properties:
                   allowExtension:
                     default: true
-                    description: |-
-                      allowExtension indicates whether the instance's expiry time can be extended by the user
-                      Default is true
+                    description: 'Whether expiry can be extended by the user (default:
+                      true).'
                     type: boolean
                   availableAt:
                     description: |-
-                      timestamp of the time when the instance should be available
-                      If not set, the instance will be available immediately after provisioning
+                      Time when the Instance should first become available.
+                      If unset, the instance is available immediately after provisioning.
                     format: date-time
                     type: string
                   expiresAt:
                     description: |-
-                      timestamp of the time when the instance should be terminated
-                      If not set, the instance will run indefinitely until manually terminated
+                      Time when the Instance should be terminated.
+                      If unset, the instance will run until manually deleted.
                     format: date-time
                     type: string
                   restartPolicy:
                     default: Never
                     description: |-
-                      restartPolicy defines the restart policy for all containers within the instance
-                      One of Always, OnFailure, Never
-                      Default is Never
+                      Restart policy applied to all containers in the instance.
+                      One of Always, OnFailure, Never (default: Never).
                     type: string
                 type: object
               limits:
@@ -155,7 +143,7 @@ spec:
                   - type: string
                   pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                   x-kubernetes-int-or-string: true
-                description: limits is the resource limits for the instance
+                description: Resource limits for CPU/memory.
                 type: object
               requests:
                 additionalProperties:
@@ -164,15 +152,14 @@ spec:
                   - type: string
                   pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                   x-kubernetes-int-or-string: true
-                description: requests is the resource requests for the instance
+                description: Resource requests for CPU/memory.
                 type: object
               team:
-                description: |-
-                  team is the team for which this instance is created
-                  dynamic challenges may not have a team associated
+                description: Team this instance belongs to (not required for dynamic
+                  challenges).
                 properties:
                   id:
-                    description: ID of the team
+                    description: Unique ID of the team.
                     format: int64
                     minimum: 1
                     type: integer
@@ -183,19 +170,11 @@ spec:
             - challenge
             type: object
           status:
-            description: status defines the observed state of Instance
+            description: Current status.
             properties:
               conditions:
-                description: |-
-                  conditions represent the current state of the Instance resource.
-                  Each condition has a unique type and reflects the status of a specific aspect of the resource.
-
-                  Standard condition types include:
-                  - "Available": the resource is fully functional
-                  - "Progressing": the resource is being created or updated
-                  - "Degraded": the resource failed to reach or maintain its desired state
-
-                  The status of each condition is one of True, False, or Unknown.
+                description: Standard set of conditions describing resource health
+                  and transitions.
                 items:
                   description: Condition contains details for one aspect of the current
                     state of this API Resource.
@@ -255,30 +234,29 @@ spec:
                 - type
                 x-kubernetes-list-type: map
               endpoints:
-                description: endpoints are the resolved network endpoints for the
-                  instance
+                description: Resolved endpoints after provisioning.
                 items:
-                  description: Endpoint represents a network endpoint for an instance
+                  description: EndpointStatus defines a resolved network entrypoint
+                    for an Instance.
                   properties:
                     hostname:
                       description: |-
-                        Hostname of the endpoint
-                        Controller genarates a DNS-safe hostname if not provided
-                        e.g., <instance-uuid>.<challenge-name>.<tide-domain>
-
-                        Example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890.alices-adventure.isolet.dev"
+                        Fully-qualified domain name. If not provided, the controller will generate one.
+                        Example: "<instance-uuid>.<challenge-name>.isolet.dev".
                       type: string
                     name:
-                      description: Name of the endpoint (e.g., "app", "metrics")
+                      description: Logical name for the endpoint (e.g., "app", "metrics").
+                      maxLength: 63
+                      minLength: 1
+                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
                       type: string
                     port:
-                      description: |-
-                        Port of the endpoint
-                        This is resolved by the controller based on the service configuration
+                      description: Exposed service port assigned by controller (cluster-facing).
                       format: int32
                       type: integer
                     protocol:
-                      description: Protocol of the endpoint (e.g., "http", "ssh")
+                      description: Network protocol for this endpoint (e.g., http,
+                        ssh).
                       enum:
                       - http
                       - https
@@ -286,22 +264,25 @@ spec:
                       - ssh
                       type: string
                     ready:
-                      description: Ready indicates whether the endpoint is ready to
-                        accept traffic
+                      default: false
+                      description: Whether this endpoint is ready to receive traffic.
                       type: boolean
                     targetPort:
-                      description: |-
-                        TargetPort of the endpoint
-                        Port on which the application inside the container is listening
+                      description: Port on which the application inside the container
+                        is listening.
                       format: int32
                       type: integer
                   required:
+                  - name
                   - protocol
                   - targetPort
                   type: object
                 type: array
+                x-kubernetes-list-map-keys:
+                - name
+                x-kubernetes-list-type: map
               phase:
-                description: phase indicates the current phase of the instance
+                description: Current lifecycle phase.
                 enum:
                 - Pending
                 - Staged
