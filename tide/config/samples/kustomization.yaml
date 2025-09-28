@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- challenges_v1_instance.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples
