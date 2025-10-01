@@ -37,6 +37,7 @@ import (
 
 	challengesv1 "github.com/TheAlpha16/isolet/tide/api/v1"
 	"github.com/TheAlpha16/isolet/tide/internal/controller"
+	webhookv1 "github.com/TheAlpha16/isolet/tide/internal/webhook/v1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -184,6 +185,13 @@ func main() {
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Instance")
 		os.Exit(1)
+	}
+	// nolint:goconst
+	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
+		if err := webhookv1.SetupInstanceWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Instance")
+			os.Exit(1)
+		}
 	}
 	// +kubebuilder:scaffold:builder
 
