@@ -4,6 +4,10 @@ metadata:
   labels:
     app.kubernetes.io/name: tide
     app.kubernetes.io/managed-by: kustomize
-  name: instance-sample
+  name: sample-instance
 spec:
-  # TODO(user): Add fields here
+  challenge:
+    id: 1
+    name: nginx-server
+    image: nginx:latest
+    type: dynamic

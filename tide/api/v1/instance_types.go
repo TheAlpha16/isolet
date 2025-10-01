@@ -160,6 +160,11 @@ type Lifecycle struct {
 	RestartPolicy corev1.RestartPolicy `json:"restartPolicy,omitempty"`
 }
 
+func (l *Lifecycle) SetDefaults() {
+	l.AllowExtension = true
+	l.RestartPolicy = corev1.RestartPolicyNever
+}
+
 // InstanceSpec defines the desired state of the Instance.
 type InstanceSpec struct {
 	// Challenge backing this instance.

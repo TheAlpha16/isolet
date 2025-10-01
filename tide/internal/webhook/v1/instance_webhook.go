@@ -65,7 +65,11 @@ func (d *InstanceCustomDefaulter) Default(_ context.Context, obj runtime.Object)
 	}
 	instancelog.Info("Defaulting for Instance", "name", instance.GetName())
 
-	// TODO(user): fill in your defaulting logic.
+	// make sure default lifecycle is set
+	if instance.Spec.Lifecycle == nil {
+		instance.Spec.Lifecycle = &challengesv1.Lifecycle{}
+		instance.Spec.Lifecycle.SetDefaults()
+	}
 
 	return nil
 }
