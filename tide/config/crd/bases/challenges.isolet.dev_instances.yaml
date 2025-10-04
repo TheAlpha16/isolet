@@ -11,10 +11,38 @@ spec:
     kind: Instance
     listKind: InstanceList
     plural: instances
+    shortNames:
+    - inst
     singular: instance
   scope: Namespaced
   versions:
-  - name: v1
+  - additionalPrinterColumns:
+    - description: Challenge Name
+      jsonPath: .spec.challenge.name
+      name: Challenge
+      type: string
+    - description: Team ID
+      jsonPath: .spec.team.id
+      name: Team
+      type: string
+    - description: Challenge Type
+      jsonPath: .spec.challenge.type
+      name: Type
+      type: string
+    - description: Instance Phase
+      jsonPath: .status.phase
+      name: Phase
+      priority: 1
+      type: string
+    - description: Instance expiry time
+      jsonPath: .spec.lifecycle.expiresAt
+      name: ExpiresAt
+      type: string
+    - description: Time since creation
+      jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1
     schema:
       openAPIV3Schema:
         description: Instance is the Schema for the instances API.

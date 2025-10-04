@@ -210,6 +210,13 @@ type InstanceStatus struct {
 // +kubebuilder:subresource:status
 
 // Instance is the Schema for the instances API.
+// +kubebuilder:resource:shortName=inst
+// +kubebuilder:printcolumn:name="Challenge",type=string,JSONPath=`.spec.challenge.name`,description="Challenge Name"
+// +kubebuilder:printcolumn:name="Team",type=string,JSONPath=`.spec.team.id`,description="Team ID"
+// +kubebuilder:printcolumn:name="Type",type=string,JSONPath=`.spec.challenge.type`,description="Challenge Type"
+// +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`,description="Instance Phase",priority=1
+// +kubebuilder:printcolumn:name="ExpiresAt",type=string,JSONPath=`.spec.lifecycle.expiresAt`,description="Instance expiry time"
+// +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`,description="Time since creation"
 type Instance struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty,omitzero"`

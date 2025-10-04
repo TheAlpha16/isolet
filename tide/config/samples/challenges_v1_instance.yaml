@@ -26,3 +26,5 @@ spec:
   requests:
     cpu: "50m"
     memory: "64Mi"
+  lifecycle:
+    expiresAt: "2025-12-31T23:59:59Z"
