@@ -105,30 +105,40 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	deploymentReady, err := r.reconcileDeployment(ctx, &instance)
 	if err != nil {
 		log.Error(err, "failed to reconcile Deployment for Instance", "instance", req.NamespacedName)
-		r.setCondition(&instance, "DeploymentReady", metav1.ConditionFalse, "ReconciliationFailed", err.Error())
-		statusChanged = true
+		if r.setCondition(&instance, "DeploymentReady", metav1.ConditionFalse, "ReconciliationFailed", err.Error()) {
+			statusChanged = true
+		}
 	} else {
 		if deploymentReady {
-			r.setCondition(&instance, "DeploymentReady", metav1.ConditionTrue, "DeploymentAvailable", "Deployment is ready and available")
+			log.Info("Deployment is ready", "instance", req.NamespacedName)
+			if r.setCondition(&instance, "DeploymentReady", metav1.ConditionTrue, "DeploymentAvailable", "Deployment is ready and available") {
+				statusChanged = true
+			}
 		} else {
-			r.setCondition(&instance, "DeploymentReady", metav1.ConditionFalse, "DeploymentNotReady", "Deployment is not yet ready")
+			log.Info("Deployment is not ready yet", "instance", req.NamespacedName)
+			if r.setCondition(&instance, "DeploymentReady", metav1.ConditionFalse, "DeploymentNotReady", "Deployment is not yet ready") {
+				statusChanged = true
+			}
 		}
-		statusChanged = true
 	}
 
 	// 2. Reconcile Service
 	serviceReady, err := r.reconcileService(ctx, &instance)
 	if err != nil {
 		log.Error(err, "failed to reconcile Service for Instance", "instance", req.NamespacedName)
-		r.setCondition(&instance, "ServiceReady", metav1.ConditionFalse, "ReconciliationFailed", err.Error())
-		statusChanged = true
+		if r.setCondition(&instance, "ServiceReady", metav1.ConditionFalse, "ReconciliationFailed", err.Error()) {
+			statusChanged = true
+		}
 	} else {
 		if serviceReady {
-			r.setCondition(&instance, "ServiceReady", metav1.ConditionTrue, "ServiceAvailable", "Service is ready and available")
+			if r.setCondition(&instance, "ServiceReady", metav1.ConditionTrue, "ServiceAvailable", "Service is ready and available") {
+				statusChanged = true
+			}
 		} else {
-			r.setCondition(&instance, "ServiceReady", metav1.ConditionFalse, "ServiceNotReady", "Service is not yet ready or not needed")
+			if r.setCondition(&instance, "ServiceReady", metav1.ConditionFalse, "ServiceNotReady", "Service is not yet ready or not needed") {
+				statusChanged = true
+			}
 		}
-		statusChanged = true
 	}
 
 	// Update Instance phase based on child resource status
@@ -286,6 +296,10 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 
 	// ensure the deployment spec is up to date
 	if !equalDeploymentSpec(&foundDeployment.Spec, &deployment.Spec) {
+		log.Info("Deployment spec differs, updating",
+			"deployment", foundDeployment.Name,
+			"currentReplicas", foundDeployment.Spec.Replicas,
+			"desiredReplicas", deployment.Spec.Replicas)
 		foundDeployment.Spec = deployment.Spec
 		log.Info("Updating Deployment for Instance", "deployment", foundDeployment.Name, "instance", instance.Name)
 		if err := r.Update(ctx, foundDeployment); err != nil {
@@ -299,6 +313,13 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 
 	// Check if Deployment is ready
 	ready := r.isDeploymentReady(foundDeployment)
+	log.Info("Deployment readiness check",
+		"deployment", foundDeployment.Name,
+		"ready", ready,
+		"readyReplicas", foundDeployment.Status.ReadyReplicas,
+		"replicas", foundDeployment.Status.Replicas,
+		"availableReplicas", foundDeployment.Status.AvailableReplicas,
+		"updatedReplicas", foundDeployment.Status.UpdatedReplicas)
 	return ready, nil
 }
 
@@ -406,12 +427,16 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 }
 
 func equalDeploymentSpec(a, b *appsv1.DeploymentSpec) bool {
-	// replicas
-	if a.Replicas == nil || b.Replicas == nil {
-		if a.Replicas != b.Replicas {
-			return false
-		}
-	} else if *a.Replicas != *b.Replicas {
+	// replicas (treat nil as 1, which is Kubernetes default)
+	aReplicas := int32(1)
+	if a.Replicas != nil {
+		aReplicas = *a.Replicas
+	}
+	bReplicas := int32(1)
+	if b.Replicas != nil {
+		bReplicas = *b.Replicas
+	}
+	if aReplicas != bReplicas {
 		return false
 	}
 
@@ -532,10 +557,16 @@ func equalServiceSpec(a, b *corev1.ServiceSpec) bool {
 
 // isDeploymentReady checks if a Deployment is available and ready.
 func (r *InstanceReconciler) isDeploymentReady(deployment *appsv1.Deployment) bool {
-	// Check if at least one replica is ready
-	if deployment.Status.ReadyReplicas > 0 &&
-		deployment.Status.ReadyReplicas == deployment.Status.Replicas &&
-		deployment.Status.AvailableReplicas > 0 {
+	// Get desired replica count (default to 1 if not specified)
+	desiredReplicas := int32(1)
+	if deployment.Spec.Replicas != nil {
+		desiredReplicas = *deployment.Spec.Replicas
+	}
+
+	// Check if all desired replicas are ready and available
+	if deployment.Status.ReadyReplicas >= desiredReplicas &&
+		deployment.Status.AvailableReplicas >= desiredReplicas &&
+		deployment.Status.UpdatedReplicas >= desiredReplicas {
 		return true
 	}
 	return false
@@ -565,21 +596,23 @@ func (r *InstanceReconciler) determinePhase(instance *challengesv1.Instance, dep
 }
 
 // setCondition adds or updates a condition in the Instance status.
-func (r *InstanceReconciler) setCondition(instance *challengesv1.Instance, conditionType string, status metav1.ConditionStatus, reason, message string) {
+// Returns true if the condition was changed.
+func (r *InstanceReconciler) setCondition(instance *challengesv1.Instance, conditionType string, status metav1.ConditionStatus, reason, message string) bool {
 	now := metav1.Now()
 
 	// Find existing condition
 	for i, condition := range instance.Status.Conditions {
 		if condition.Type == conditionType {
-			// Update existing condition
+			// Update existing condition only if it changed
 			if condition.Status != status || condition.Reason != reason || condition.Message != message {
 				instance.Status.Conditions[i].Status = status
 				instance.Status.Conditions[i].Reason = reason
 				instance.Status.Conditions[i].Message = message
 				instance.Status.Conditions[i].LastTransitionTime = now
 				instance.Status.Conditions[i].ObservedGeneration = instance.Generation
+				return true // Condition changed
 			}
-			return
+			return false // Condition unchanged
 		}
 	}
 
@@ -592,6 +625,7 @@ func (r *InstanceReconciler) setCondition(instance *challengesv1.Instance, condi
 		LastTransitionTime: now,
 		ObservedGeneration: instance.Generation,
 	})
+	return true // New condition added
 }
 
 // SetupWithManager sets up the controller with the Manager.
