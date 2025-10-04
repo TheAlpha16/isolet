@@ -185,7 +185,11 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 	err := r.Get(ctx, client.ObjectKey{Name: service.Name, Namespace: service.Namespace}, foundService)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			// Service doesn't exist, create it
+			// Service doesn't exist, create it if there are endpoints defined
+			if len(service.Spec.Ports) == 0 {
+				log.Info("No endpoints defined for Instance, skipping Service creation", "instance", instance.Name)
+				return nil
+			}
 			log.Info("Creating Service for Instance", "service", service.Name, "instance", instance.Name)
 			if err := r.Create(ctx, service); err != nil {
 				log.Error(err, "failed to create Service", "service", service.Name)
@@ -198,11 +202,18 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 		return err
 	}
 
-	// Service exists, update it if needed
-	log.Info("Service already exists for Instance", "service", foundService.Name, "instance", instance.Name)
-
 	// ensure the service spec is up to date
 	if !equalServiceSpec(&foundService.Spec, &service.Spec) {
+		// if new endpoints are empty, delete the service
+		if len(service.Spec.Ports) == 0 {
+			log.Info("No endpoints defined for Instance, deleting Service", "service", foundService.Name, "instance", instance.Name)
+			if err := r.Delete(ctx, foundService); err != nil {
+				log.Error(err, "failed to delete Service", "service", foundService.Name)
+				return err
+			}
+			log.Info("Successfully deleted Service for Instance", "service", foundService.Name, "instance", instance.Name)
+			return nil
+		}
 		foundService.Spec = service.Spec
 		log.Info("Updating Service for Instance", "service", foundService.Name, "instance", instance.Name)
 		if err := r.Update(ctx, foundService); err != nil {
