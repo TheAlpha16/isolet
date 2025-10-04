@@ -82,6 +82,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{}, nil
 	}
 
+	// handle deletion
 	if !instance.ObjectMeta.DeletionTimestamp.IsZero() {
 		return ctrl.Result{}, nil
 	}
