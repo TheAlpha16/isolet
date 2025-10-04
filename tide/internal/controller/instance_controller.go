@@ -111,12 +111,10 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	} else {
 		if deploymentReady {
-			log.Info("Deployment is ready", "instance", req.NamespacedName)
 			if r.setCondition(&instance, "DeploymentReady", metav1.ConditionTrue, "DeploymentAvailable", "Deployment is ready and available") {
 				statusChanged = true
 			}
 		} else {
-			log.Info("Deployment is not ready yet", "instance", req.NamespacedName)
 			if r.setCondition(&instance, "DeploymentReady", metav1.ConditionFalse, "DeploymentNotReady", "Deployment is not yet ready") {
 				statusChanged = true
 			}
@@ -147,7 +145,6 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if instance.Status.Phase != newPhase {
 		instance.Status.Phase = newPhase
 		statusChanged = true
-		log.Info("Instance phase changed", "instance", req.NamespacedName, "oldPhase", instance.Status.Phase, "newPhase", newPhase)
 	}
 
 	// Update status if anything changed
@@ -156,16 +153,17 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		// This prevents "object has been modified" conflicts
 		latestInstance := &challengesv1.Instance{}
 		if err := r.Get(ctx, req.NamespacedName, latestInstance); err != nil {
-			log.Error(err, "unable to refetch Instance before status update", "instance", req.NamespacedName)
+			log.Error(err, "unable to refetch Instance before status patch", "instance", req.NamespacedName)
 			return ctrl.Result{}, err
 		}
 
 		// Apply our status changes to the latest version
+		patch := client.MergeFrom(latestInstance.DeepCopy())
 		latestInstance.Status.Phase = instance.Status.Phase
 		latestInstance.Status.Conditions = instance.Status.Conditions
 
-		if err := r.Status().Update(ctx, latestInstance); err != nil {
-			log.Error(err, "unable to update Instance status", "instance", req.NamespacedName, "error", err)
+		if err := r.Status().Patch(ctx, latestInstance, patch); err != nil {
+			log.Error(err, "unable to patch Instance status", "instance", req.NamespacedName, "error", err)
 			// Don't return error - let it requeue naturally and retry
 			return ctrl.Result{RequeueAfter: time.Second * 2}, nil
 		}
@@ -312,16 +310,7 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 		return false, nil
 	}
 
-	// Check if Deployment is ready
-	ready := r.isDeploymentReady(foundDeployment)
-	log.Info("Deployment readiness check",
-		"deployment", foundDeployment.Name,
-		"ready", ready,
-		"readyReplicas", foundDeployment.Status.ReadyReplicas,
-		"replicas", foundDeployment.Status.Replicas,
-		"availableReplicas", foundDeployment.Status.AvailableReplicas,
-		"updatedReplicas", foundDeployment.Status.UpdatedReplicas)
-	return ready, nil
+	return r.isDeploymentReady(foundDeployment), nil
 }
 
 // reconcileService ensures the Service for the Instance exists and is up-to-date.
