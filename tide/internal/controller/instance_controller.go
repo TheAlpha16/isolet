@@ -18,12 +18,13 @@ package controller
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -79,11 +80,6 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	if !instance.ObjectMeta.DeletionTimestamp.IsZero() {
-		// TODO evaluate if k8s automatically deletes the insatnce here or we need to manually call delete
-		// if err := r.Delete(ctx, &instance); err != nil {
-		// 	log.Error(err, "unable to delete Instance", "instance", req.NamespacedName, "error", err)
-		// 	return ctrl.Result{}, err
-		// }
 		return ctrl.Result{}, nil
 	}
 
@@ -121,35 +117,12 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}, nil
 	}
 
-	// handle deletion if deletionTimestamp is set
-	// TODO evaluate if we need to manually delete child resources, or if we can rely on owner references
-	// if !instance.ObjectMeta.DeletionTimestamp.IsZero() {
-	// 	// TODO handle finalizers and cleanup of cluster resources
-
-	// 	// remove finalizer if present
-	// 	if containsString(instance.ObjectMeta.Finalizers, "instance.finalizers.challenges.isolet.dev") {
-	// 		instance.ObjectMeta.Finalizers = removeString(instance.ObjectMeta.Finalizers, "instance.finalizers.challenges.isolet.dev")
-	// 		if err := r.Update(ctx, &instance); err != nil {
-	// 			log.Error(err, "unable to remove finalizer from Instance", "instance", req.NamespacedName, "error", err)
-	// 			return ctrl.Result{}, err
-	// 		}
-	// 	}
-	// 	return ctrl.Result{}, nil
-	// }
-
-	// TODO handle deletion if deletionTimestamp is set
-	// handle all finalizers and their removal
-
-	// TODO insert finalizers if missing
-
 	// TODO reconsile cluster resources
 	// TODO check if Deployment exists, create/update if needed
 	// TODO check if Service exists, create/update if needed
 	// TODO check if IngressRoute exists, create/update if needed
 	// TODO resolve Hostnames for endpoints, update instance.Status.Endpoints
 	// TODO update Phase to Staged / Running / Failed based on Pod readiness
-
-	// TODO delete expired instances
 
 	return ctrl.Result{}, nil
 }
@@ -161,30 +134,44 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 	// Define the desired Service
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      instance.Name,
+			Name:      fmt.Sprintf("svc-%s", instance.Name),
 			Namespace: instance.Namespace,
 			Labels: map[string]string{
-				"app.kubernetes.io/name":       "instance",
-				"app.kubernetes.io/instance":   instance.Name,
+				// standard labels
+				"app.kubernetes.io/name":       instance.Name,
+				"app.kubernetes.io/part-of":    "instance",
 				"app.kubernetes.io/managed-by": "tide-controller",
-				"challenges.isolet.dev/id":     instance.Name,
+				"app.kubernetes.io/component":  "service",
+
+				// tide specific labels
+				"challenges.isolet.dev/id":           instance.Name,
+				"challenges.isolet.dev/challenge":    instance.Spec.Challenge.Name,
+				"challenges.isolet.dev/challenge-id": strconv.FormatInt(instance.Spec.Challenge.ID, 10),
+				"challenges.isolet.dev/type":         string(instance.Spec.Challenge.Type),
+				"challenges.isolet.dev/team": func() string {
+					if instance.Spec.Team != nil {
+						return strconv.FormatInt(instance.Spec.Team.ID, 10)
+					}
+					return "dynamic"
+				}(),
 			},
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
-				"app.kubernetes.io/name":     "instance",
-				"app.kubernetes.io/instance": instance.Name,
-			},
-			Ports: []corev1.ServicePort{
-				{
-					Name:       "http",
-					Protocol:   corev1.ProtocolTCP,
-					Port:       80,
-					TargetPort: intstr.FromInt(80),
-				},
+				"app.kubernetes.io/name":      instance.Name,
+				"app.kubernetes.io/component": "deployment",
 			},
 			Type: corev1.ServiceTypeClusterIP,
 		},
+	}
+
+	// add enpoints as service ports
+	for _, endpoint := range instance.Spec.Endpoints {
+		servicePort := corev1.ServicePort{
+			Name: endpoint.Name,
+			Port: endpoint.TargetPort,
+		}
+		service.Spec.Ports = append(service.Spec.Ports, servicePort)
 	}
 
 	// Set Instance as the owner of the Service
@@ -214,8 +201,44 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 	// Service exists, update it if needed
 	log.Info("Service already exists for Instance", "service", foundService.Name, "instance", instance.Name)
 
-	// TODO ensure the service spec is up to date
+	// ensure the service spec is up to date
+	if !equalServiceSpec(&foundService.Spec, &service.Spec) {
+		foundService.Spec = service.Spec
+		log.Info("Updating Service for Instance", "service", foundService.Name, "instance", instance.Name)
+		if err := r.Update(ctx, foundService); err != nil {
+			log.Error(err, "failed to update Service", "service", foundService.Name)
+			return err
+		}
+		log.Info("Successfully updated Service for Instance", "service", foundService.Name, "instance", instance.Name)
+	}
 	return nil
+}
+
+func equalServiceSpec(a, b *corev1.ServiceSpec) bool {
+	if a.Type != b.Type {
+		return false
+	}
+	if len(a.Ports) != len(b.Ports) {
+		return false
+	}
+	portMap := make(map[string]corev1.ServicePort)
+	for _, port := range a.Ports {
+		portMap[port.Name] = port
+	}
+	for _, port := range b.Ports {
+		if p, exists := portMap[port.Name]; !exists || p.Port != port.Port {
+			return false
+		}
+	}
+	if len(a.Selector) != len(b.Selector) {
+		return false
+	}
+	for k, v := range a.Selector {
+		if bv, exists := b.Selector[k]; !exists || bv != v {
+			return false
+		}
+	}
+	return true
 }
 
 // SetupWithManager sets up the controller with the Manager.
