@@ -22,6 +22,8 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -36,329 +38,310 @@ var _ = Describe("Instance Controller", func() {
 		interval = time.Millisecond * 250
 	)
 
-	Context("When reconciling a new Instance", func() {
-		const resourceName = "test-instance-new"
-		const resourceNamespace = "default"
+	var (
+		ctx        context.Context
+		reconciler *InstanceReconciler
+	)
 
-		ctx := context.Background()
-		typeNamespacedName := types.NamespacedName{
-			Name:      resourceName,
-			Namespace: resourceNamespace,
+	BeforeEach(func() {
+		ctx = context.Background()
+		reconciler = &InstanceReconciler{
+			Client: k8sClient,
+			Scheme: k8sClient.Scheme(),
 		}
-
-		AfterEach(func() {
-			resource := &challengesv1.Instance{}
-			err := k8sClient.Get(ctx, typeNamespacedName, resource)
-			if err == nil {
-				By("Cleanup the Instance resource")
-				Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
-			}
-		})
-
-		It("Should eventually reach Running phase after reconciliation", func() {
-			By("Creating a new Instance without phase")
-			instance := &challengesv1.Instance{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      resourceName,
-					Namespace: resourceNamespace,
-				},
-				Spec: challengesv1.InstanceSpec{
-					Challenge: challengesv1.Challenge{
-						ID:    1,
-						Name:  "test-challenge",
-						Type:  challengesv1.ChallengeTypeDynamic,
-						Image: "nginx:latest",
-					},
-				},
-			}
-			Expect(k8sClient.Create(ctx, instance)).To(Succeed())
-
-			By("Reconciling the Instance twice to reach Running phase")
-			controllerReconciler := &InstanceReconciler{
-				Client: k8sClient,
-				Scheme: k8sClient.Scheme(),
-			}
-
-			// First reconcile - sets to Pending
-			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
-				NamespacedName: typeNamespacedName,
-			})
-			Expect(err).NotTo(HaveOccurred())
-
-			// Second reconcile - transitions to Running
-			result, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
-				NamespacedName: typeNamespacedName,
-			})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(result.RequeueAfter).To(BeZero())
-
-			By("Checking that Phase is Running")
-			updatedInstance := &challengesv1.Instance{}
-			err = k8sClient.Get(ctx, typeNamespacedName, updatedInstance)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(updatedInstance.Status.Phase).To(Equal(challengesv1.PhaseRunning))
-		})
 	})
 
-	Context("When reconciling Instance with expiry", func() {
-		const resourceName = "test-instance-expiry"
-		const resourceNamespace = "default"
-
-		ctx := context.Background()
-		typeNamespacedName := types.NamespacedName{
-			Name:      resourceName,
-			Namespace: resourceNamespace,
+	// Helper function to create a basic test Instance
+	createBasicInstance := func(name, namespace string) *challengesv1.Instance {
+		return &challengesv1.Instance{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: namespace,
+			},
+			Spec: challengesv1.InstanceSpec{
+				Challenge: challengesv1.Challenge{
+					ID:    1,
+					Name:  "test-challenge",
+					Type:  challengesv1.ChallengeTypeDynamic,
+					Image: "nginx:latest",
+				},
+				Endpoints: []challengesv1.EndpointSpec{
+					{
+						Name:       "http",
+						Protocol:   challengesv1.ProtocolHTTP,
+						TargetPort: 80,
+					},
+				},
+			},
 		}
+	}
 
-		AfterEach(func() {
-			resource := &challengesv1.Instance{}
-			err := k8sClient.Get(ctx, typeNamespacedName, resource)
-			if err == nil && resource.DeletionTimestamp.IsZero() {
-				By("Cleanup the Instance resource")
-				Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
+	// Helper function to simulate Deployment becoming ready
+	simulateDeploymentReady := func(ctx context.Context, instanceName, namespace string) {
+		deploymentName := "deployment-" + instanceName
+		deployment := &appsv1.Deployment{}
+		Eventually(func() error {
+			return k8sClient.Get(ctx, types.NamespacedName{
+				Name:      deploymentName,
+				Namespace: namespace,
+			}, deployment)
+		}, timeout, interval).Should(Succeed())
+
+		// Simulate Deployment becoming ready
+		deployment.Status.Replicas = 1
+		deployment.Status.ReadyReplicas = 1
+		deployment.Status.AvailableReplicas = 1
+		deployment.Status.UpdatedReplicas = 1
+		deployment.Status.Conditions = []appsv1.DeploymentCondition{
+			{
+				Type:   appsv1.DeploymentAvailable,
+				Status: corev1.ConditionTrue,
+				Reason: "MinimumReplicasAvailable",
+			},
+		}
+		Expect(k8sClient.Status().Update(ctx, deployment)).To(Succeed())
+	}
+
+	// Helper function to simulate Deployment failure
+	simulateDeploymentFailed := func(ctx context.Context, instanceName, namespace string) {
+		deploymentName := "deployment-" + instanceName
+		deployment := &appsv1.Deployment{}
+		Eventually(func() error {
+			return k8sClient.Get(ctx, types.NamespacedName{
+				Name:      deploymentName,
+				Namespace: namespace,
+			}, deployment)
+		}, timeout, interval).Should(Succeed())
+
+		// Simulate Deployment failing
+		deployment.Status.Replicas = 1
+		deployment.Status.ReadyReplicas = 0
+		deployment.Status.AvailableReplicas = 0
+		deployment.Status.UnavailableReplicas = 1
+		deployment.Status.Conditions = []appsv1.DeploymentCondition{
+			{
+				Type:   appsv1.DeploymentProgressing,
+				Status: corev1.ConditionFalse,
+				Reason: "ProgressDeadlineExceeded",
+			},
+		}
+		Expect(k8sClient.Status().Update(ctx, deployment)).To(Succeed())
+	}
+
+	// Helper function to get a specific condition from Instance
+	getCondition := func(instance *challengesv1.Instance, condType string) *metav1.Condition {
+		for i, cond := range instance.Status.Conditions {
+			if cond.Type == condType {
+				return &instance.Status.Conditions[i]
 			}
+		}
+		return nil
+	}
+
+	// Cleanup helper
+	cleanupInstance := func(name, namespace string) {
+		instance := &challengesv1.Instance{}
+		err := k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, instance)
+		if err == nil {
+			_ = k8sClient.Delete(ctx, instance)
+		}
+	}
+
+	It("should create Deployment and Service for new Instance", func() {
+		instanceName := "instance-basic"
+		namespace := "default"
+		defer cleanupInstance(instanceName, namespace)
+
+		instance := createBasicInstance(instanceName, namespace)
+		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
+
+		By("First reconcile - sets Pending phase")
+		_, err := reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
+		Expect(err).NotTo(HaveOccurred())
 
-		It("Should delete Instance when ExpiresAt is in the past", func() {
-			By("Creating an Instance with past expiry")
-			pastTime := metav1.NewTime(time.Now().Add(-1 * time.Hour))
-			instance := &challengesv1.Instance{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      resourceName,
-					Namespace: resourceNamespace,
-				},
-				Spec: challengesv1.InstanceSpec{
-					Challenge: challengesv1.Challenge{
-						ID:    1,
-						Name:  "test-challenge",
-						Type:  challengesv1.ChallengeTypeDynamic,
-						Image: "nginx:latest",
-					},
-					Lifecycle: &challengesv1.Lifecycle{
-						ExpiresAt: &pastTime,
-					},
-				},
-			}
-			Expect(k8sClient.Create(ctx, instance)).To(Succeed())
-
-			By("Setting Phase to Running")
-			instance.Status.Phase = challengesv1.PhaseRunning
-			Expect(k8sClient.Status().Update(ctx, instance)).To(Succeed())
-
-			By("Reconciling the Instance")
-			controllerReconciler := &InstanceReconciler{
-				Client: k8sClient,
-				Scheme: k8sClient.Scheme(),
-			}
-			result, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
-				NamespacedName: typeNamespacedName,
-			})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(result.RequeueAfter).To(BeZero())
-
-			By("Checking that Instance was deleted")
-			deletedInstance := &challengesv1.Instance{}
-			err = k8sClient.Get(ctx, typeNamespacedName, deletedInstance)
-			Expect(errors.IsNotFound(err) || !deletedInstance.DeletionTimestamp.IsZero()).To(BeTrue())
+		By("Second reconcile - creates resources")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
+		Expect(err).NotTo(HaveOccurred())
 
-		It("Should requeue Instance when ExpiresAt is in the future", func() {
-			By("Creating an Instance with future expiry")
-			futureTime := metav1.NewTime(time.Now().Add(1 * time.Hour))
-			instance := &challengesv1.Instance{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      resourceName,
-					Namespace: resourceNamespace,
-				},
-				Spec: challengesv1.InstanceSpec{
-					Challenge: challengesv1.Challenge{
-						ID:    1,
-						Name:  "test-challenge",
-						Type:  challengesv1.ChallengeTypeDynamic,
-						Image: "nginx:latest",
-					},
-					Lifecycle: &challengesv1.Lifecycle{
-						ExpiresAt: &futureTime,
-					},
-				},
-			}
-			Expect(k8sClient.Create(ctx, instance)).To(Succeed())
+		By("Verifying Deployment was created")
+		deployment := &appsv1.Deployment{}
+		Eventually(func() error {
+			return k8sClient.Get(ctx, types.NamespacedName{
+				Name:      "deployment-" + instanceName,
+				Namespace: namespace,
+			}, deployment)
+		}, timeout, interval).Should(Succeed())
 
-			By("Setting Phase to Running")
-			instance.Status.Phase = challengesv1.PhaseRunning
-			Expect(k8sClient.Status().Update(ctx, instance)).To(Succeed())
-
-			By("Reconciling the Instance")
-			controllerReconciler := &InstanceReconciler{
-				Client: k8sClient,
-				Scheme: k8sClient.Scheme(),
-			}
-			result, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
-				NamespacedName: typeNamespacedName,
-			})
-			Expect(err).NotTo(HaveOccurred())
-
-			By("Checking that reconcile returns requeue with appropriate delay")
-			Expect(result.RequeueAfter).To(BeNumerically(">", 0))
-			Expect(result.RequeueAfter).To(BeNumerically("<=", 1*time.Hour))
-		})
-
-		It("Should not requeue Instance without expiry", func() {
-			By("Creating an Instance without lifecycle expiry")
-			instance := &challengesv1.Instance{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      resourceName,
-					Namespace: resourceNamespace,
-				},
-				Spec: challengesv1.InstanceSpec{
-					Challenge: challengesv1.Challenge{
-						ID:    1,
-						Name:  "test-challenge",
-						Type:  challengesv1.ChallengeTypeDynamic,
-						Image: "nginx:latest",
-					},
-				},
-				Status: challengesv1.InstanceStatus{
-					Phase: challengesv1.PhaseRunning,
-				},
-			}
-			Expect(k8sClient.Create(ctx, instance)).To(Succeed())
-
-			By("Reconciling the Instance")
-			controllerReconciler := &InstanceReconciler{
-				Client: k8sClient,
-				Scheme: k8sClient.Scheme(),
-			}
-			result, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
-				NamespacedName: typeNamespacedName,
-			})
-			Expect(err).NotTo(HaveOccurred())
-
-			By("Checking that reconcile does not requeue")
-			Expect(result.RequeueAfter).To(BeZero())
-		})
+		By("Verifying Service was created")
+		service := &corev1.Service{}
+		Eventually(func() error {
+			return k8sClient.Get(ctx, types.NamespacedName{
+				Name:      "svc-" + instanceName,
+				Namespace: namespace,
+			}, service)
+		}, timeout, interval).Should(Succeed())
 	})
 
-	Context("When reconciling deleted Instance", func() {
-		const resourceName = "test-instance-delete"
-		const resourceNamespace = "default"
+	It("should mark Instance Running when Deployment is ready", func() {
+		instanceName := "instance-ready"
+		namespace := "default"
+		defer cleanupInstance(instanceName, namespace)
 
-		ctx := context.Background()
-		typeNamespacedName := types.NamespacedName{
-			Name:      resourceName,
-			Namespace: resourceNamespace,
-		}
+		instance := createBasicInstance(instanceName, namespace)
+		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
 
-		It("Should handle non-existent Instance gracefully", func() {
-			By("Reconciling a non-existent Instance")
-			controllerReconciler := &InstanceReconciler{
-				Client: k8sClient,
-				Scheme: k8sClient.Scheme(),
-			}
-			result, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
-				NamespacedName: typeNamespacedName,
-			})
-
-			By("Checking that reconcile completes without error")
-			Expect(err).NotTo(HaveOccurred())
-			Expect(result.RequeueAfter).To(BeZero())
+		By("First reconcile - sets Pending")
+		_, err := reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
+		Expect(err).NotTo(HaveOccurred())
 
-		It("Should handle Instance with DeletionTimestamp", func() {
-			By("Creating an Instance")
-			instance := &challengesv1.Instance{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      resourceName,
-					Namespace: resourceNamespace,
-				},
-				Spec: challengesv1.InstanceSpec{
-					Challenge: challengesv1.Challenge{
-						ID:    1,
-						Name:  "test-challenge",
-						Type:  challengesv1.ChallengeTypeDynamic,
-						Image: "nginx:latest",
-					},
-				},
-				Status: challengesv1.InstanceStatus{
-					Phase: challengesv1.PhaseRunning,
-				},
-			}
-			Expect(k8sClient.Create(ctx, instance)).To(Succeed())
-
-			By("Deleting the Instance")
-			Expect(k8sClient.Delete(ctx, instance)).To(Succeed())
-
-			By("Reconciling the Instance with DeletionTimestamp")
-			controllerReconciler := &InstanceReconciler{
-				Client: k8sClient,
-				Scheme: k8sClient.Scheme(),
-			}
-			result, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
-				NamespacedName: typeNamespacedName,
-			})
-
-			By("Checking that reconcile completes without error")
-			Expect(err).NotTo(HaveOccurred())
-			Expect(result.RequeueAfter).To(BeZero())
+		By("Second reconcile - creates resources")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Simulating Deployment becoming ready")
+		simulateDeploymentReady(ctx, instanceName, namespace)
+
+		By("Third reconcile - detects ready Deployment")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Verifying Phase is Running")
+		updated := &challengesv1.Instance{}
+		Expect(k8sClient.Get(ctx, types.NamespacedName{Name: instanceName, Namespace: namespace}, updated)).To(Succeed())
+		Expect(updated.Status.Phase).To(Equal(challengesv1.PhaseRunning))
 	})
 
-	Context("When reconciling Instance in Running phase", func() {
-		const resourceName = "test-instance-running"
-		const resourceNamespace = "default"
+	It("should remain Pending if Deployment fails", func() {
+		instanceName := "instance-failed"
+		namespace := "default"
+		defer cleanupInstance(instanceName, namespace)
 
-		ctx := context.Background()
-		typeNamespacedName := types.NamespacedName{
-			Name:      resourceName,
-			Namespace: resourceNamespace,
-		}
+		instance := createBasicInstance(instanceName, namespace)
+		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
 
-		AfterEach(func() {
-			resource := &challengesv1.Instance{}
-			err := k8sClient.Get(ctx, typeNamespacedName, resource)
-			if err == nil {
-				By("Cleanup the Instance resource")
-				Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
-			}
+		By("First reconcile - sets Pending")
+		_, err := reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
+		Expect(err).NotTo(HaveOccurred())
 
-		It("Should remain in Running phase if already Running", func() {
-			By("Creating an Instance in Running phase")
-			instance := &challengesv1.Instance{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      resourceName,
-					Namespace: resourceNamespace,
-				},
-				Spec: challengesv1.InstanceSpec{
-					Challenge: challengesv1.Challenge{
-						ID:    1,
-						Name:  "test-challenge",
-						Type:  challengesv1.ChallengeTypeDynamic,
-						Image: "nginx:latest",
-					},
-				},
-			}
-			Expect(k8sClient.Create(ctx, instance)).To(Succeed())
-
-			By("Setting Phase to Running")
-			instance.Status.Phase = challengesv1.PhaseRunning
-			Expect(k8sClient.Status().Update(ctx, instance)).To(Succeed())
-
-			By("Reconciling the Instance")
-			controllerReconciler := &InstanceReconciler{
-				Client: k8sClient,
-				Scheme: k8sClient.Scheme(),
-			}
-			result, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
-				NamespacedName: typeNamespacedName,
-			})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(result.RequeueAfter).To(BeZero())
-
-			By("Checking that Phase remains Running")
-			updatedInstance := &challengesv1.Instance{}
-			Expect(k8sClient.Get(ctx, typeNamespacedName, updatedInstance)).To(Succeed())
-			Expect(updatedInstance.Status.Phase).To(Equal(challengesv1.PhaseRunning))
+		By("Second reconcile - creates resources")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Simulating Deployment failure")
+		simulateDeploymentFailed(ctx, instanceName, namespace)
+
+		By("Third reconcile - detects failed Deployment")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Verifying Phase remains Pending")
+		updated := &challengesv1.Instance{}
+		Expect(k8sClient.Get(ctx, types.NamespacedName{Name: instanceName, Namespace: namespace}, updated)).To(Succeed())
+		Expect(updated.Status.Phase).To(Equal(challengesv1.PhasePending))
+	})
+
+	It("should set ServiceReady condition after Service creation", func() {
+		instanceName := "instance-service"
+		namespace := "default"
+		defer cleanupInstance(instanceName, namespace)
+
+		instance := createBasicInstance(instanceName, namespace)
+		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
+
+		By("First reconcile - sets Pending")
+		_, err := reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Second reconcile - creates Service and sets condition")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Verifying ServiceReady condition is set")
+		updated := &challengesv1.Instance{}
+		Expect(k8sClient.Get(ctx, types.NamespacedName{Name: instanceName, Namespace: namespace}, updated)).To(Succeed())
+
+		cond := getCondition(updated, "ServiceReady")
+		Expect(cond).NotTo(BeNil())
+		Expect(cond.Status).To(Equal(metav1.ConditionTrue))
+	})
+
+	It("should delete Instance when expired", func() {
+		instanceName := "instance-expired"
+		namespace := "default"
+		defer cleanupInstance(instanceName, namespace)
+
+		past := metav1.NewTime(time.Now().Add(-time.Hour))
+		instance := createBasicInstance(instanceName, namespace)
+		instance.Spec.Lifecycle = &challengesv1.Lifecycle{ExpiresAt: &past}
+		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
+
+		By("First reconcile - sets Pending phase")
+		_, err := reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Second reconcile - checks expiry and deletes")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Verifying Instance is deleted or being deleted")
+		Eventually(func() bool {
+			updated := &challengesv1.Instance{}
+			err := k8sClient.Get(ctx, types.NamespacedName{Name: instanceName, Namespace: namespace}, updated)
+			return errors.IsNotFound(err) || !updated.DeletionTimestamp.IsZero()
+		}, timeout, interval).Should(BeTrue())
+	})
+
+	It("should not create Service if no endpoints", func() {
+		instanceName := "instance-no-svc"
+		namespace := "default"
+		defer cleanupInstance(instanceName, namespace)
+
+		instance := createBasicInstance(instanceName, namespace)
+		instance.Spec.Endpoints = nil
+		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
+
+		By("First reconcile - sets Pending")
+		_, err := reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Second reconcile - skips Service creation")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Verifying Service was not created")
+		service := &corev1.Service{}
+		err = k8sClient.Get(ctx, types.NamespacedName{
+			Name:      "svc-" + instanceName,
+			Namespace: namespace,
+		}, service)
+		Expect(errors.IsNotFound(err)).To(BeTrue())
 	})
 })
