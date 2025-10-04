@@ -72,22 +72,6 @@ var _ = Describe("Instance Webhook", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(obj.Spec.Lifecycle).NotTo(BeNil())
 			Expect(obj.Spec.Lifecycle.AllowExtension).To(BeTrue())
-			Expect(obj.Spec.Lifecycle.RestartPolicy).To(Equal(corev1.RestartPolicyNever))
-		})
-
-		It("Should set default restart policy when empty", func() {
-			By("Creating an instance with lifecycle but empty restart policy")
-			obj := createValidInstance()
-			obj.Spec.Lifecycle = &challengesv1.Lifecycle{
-				AllowExtension: false,
-			}
-
-			By("Calling the Default method to apply defaults")
-			err := defaulter.Default(ctx, obj)
-
-			By("Checking that restart policy is set to default")
-			Expect(err).NotTo(HaveOccurred())
-			Expect(obj.Spec.Lifecycle.RestartPolicy).To(Equal(corev1.RestartPolicyNever))
 		})
 
 		It("Should not override existing lifecycle values", func() {
@@ -96,7 +80,6 @@ var _ = Describe("Instance Webhook", func() {
 			obj := createValidInstance()
 			obj.Spec.Lifecycle = &challengesv1.Lifecycle{
 				AllowExtension: false,
-				RestartPolicy:  corev1.RestartPolicyAlways,
 				ExpiresAt:      &futureTime,
 			}
 
@@ -106,7 +89,6 @@ var _ = Describe("Instance Webhook", func() {
 			By("Checking that custom values are preserved")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(obj.Spec.Lifecycle.AllowExtension).To(BeFalse())
-			Expect(obj.Spec.Lifecycle.RestartPolicy).To(Equal(corev1.RestartPolicyAlways))
 			Expect(obj.Spec.Lifecycle.ExpiresAt).To(Equal(&futureTime))
 		})
 
@@ -276,8 +258,7 @@ var _ = Describe("Instance Webhook", func() {
 			futureTime := metav1.NewTime(time.Now().Add(1 * time.Hour))
 			obj := createValidInstance()
 			obj.Spec.Lifecycle = &challengesv1.Lifecycle{
-				ExpiresAt:     &futureTime,
-				RestartPolicy: corev1.RestartPolicyNever,
+				ExpiresAt: &futureTime,
 			}
 
 			By("Validating the instance")
@@ -315,9 +296,8 @@ var _ = Describe("Instance Webhook", func() {
 			expiresTime := metav1.NewTime(now.Add(2 * time.Hour))
 			obj := createValidInstance()
 			obj.Spec.Lifecycle = &challengesv1.Lifecycle{
-				AvailableAt:   &availableTime,
-				ExpiresAt:     &expiresTime,
-				RestartPolicy: corev1.RestartPolicyNever,
+				AvailableAt: &availableTime,
+				ExpiresAt:   &expiresTime,
 			}
 
 			By("Validating the instance")
@@ -326,29 +306,6 @@ var _ = Describe("Instance Webhook", func() {
 			By("Checking that validation passes")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(warnings).To(BeNil())
-		})
-
-		It("Should accept all valid restart policies", func() {
-			policies := []corev1.RestartPolicy{
-				corev1.RestartPolicyAlways,
-				corev1.RestartPolicyNever,
-				corev1.RestartPolicyOnFailure,
-			}
-
-			for _, policy := range policies {
-				By("Creating instance with restart policy: " + string(policy))
-				obj := createValidInstance()
-				obj.Spec.Lifecycle = &challengesv1.Lifecycle{
-					RestartPolicy: policy,
-				}
-
-				By("Validating the instance")
-				warnings, err := validator.ValidateCreate(ctx, obj)
-
-				By("Checking that validation passes")
-				Expect(err).NotTo(HaveOccurred())
-				Expect(warnings).To(BeNil())
-			}
 		})
 
 		It("Should return error for wrong object type", func() {
@@ -370,14 +327,12 @@ var _ = Describe("Instance Webhook", func() {
 			By("Creating old and new instances with same immutable fields")
 			oldObj := createValidInstance()
 			oldObj.Spec.Lifecycle = &challengesv1.Lifecycle{
-				RestartPolicy:  corev1.RestartPolicyNever,
 				AllowExtension: true,
 			}
 			newObj := createValidInstance()
 			futureTime := metav1.NewTime(time.Now().Add(1 * time.Hour))
 			newObj.Spec.Lifecycle = &challengesv1.Lifecycle{
 				ExpiresAt:      &futureTime,
-				RestartPolicy:  corev1.RestartPolicyNever,
 				AllowExtension: true,
 			}
 
@@ -509,14 +464,12 @@ var _ = Describe("Instance Webhook", func() {
 			oldObj.Spec.Lifecycle = &challengesv1.Lifecycle{
 				ExpiresAt:      &oldExpiry,
 				AllowExtension: true,
-				RestartPolicy:  corev1.RestartPolicyNever,
 			}
 
 			newObj := createValidInstance()
 			newObj.Spec.Lifecycle = &challengesv1.Lifecycle{
 				ExpiresAt:      &newExpiry,
 				AllowExtension: true,
-				RestartPolicy:  corev1.RestartPolicyNever,
 			}
 
 			By("Validating the update")
@@ -537,14 +490,12 @@ var _ = Describe("Instance Webhook", func() {
 			oldObj.Spec.Lifecycle = &challengesv1.Lifecycle{
 				ExpiresAt:      &oldExpiry,
 				AllowExtension: false,
-				RestartPolicy:  corev1.RestartPolicyNever,
 			}
 
 			newObj := createValidInstance()
 			newObj.Spec.Lifecycle = &challengesv1.Lifecycle{
 				ExpiresAt:      &newExpiry,
 				AllowExtension: false,
-				RestartPolicy:  corev1.RestartPolicyNever,
 			}
 
 			By("Validating the update")
@@ -564,14 +515,12 @@ var _ = Describe("Instance Webhook", func() {
 			oldObj.Spec.Lifecycle = &challengesv1.Lifecycle{
 				ExpiresAt:      &oldExpiry,
 				AllowExtension: false,
-				RestartPolicy:  corev1.RestartPolicyNever,
 			}
 
 			newObj := createValidInstance()
 			newObj.Spec.Lifecycle = &challengesv1.Lifecycle{
 				ExpiresAt:      nil,
 				AllowExtension: false,
-				RestartPolicy:  corev1.RestartPolicyNever,
 			}
 
 			By("Validating the update")
@@ -589,14 +538,12 @@ var _ = Describe("Instance Webhook", func() {
 			oldObj := createValidInstance()
 			oldObj.Spec.Lifecycle = &challengesv1.Lifecycle{
 				AllowExtension: true,
-				RestartPolicy:  corev1.RestartPolicyNever,
 			}
 
 			newObj := createValidInstance()
 			newObj.Spec.Lifecycle = &challengesv1.Lifecycle{
 				ExpiresAt:      &newExpiry,
 				AllowExtension: true,
-				RestartPolicy:  corev1.RestartPolicyNever,
 			}
 
 			By("Validating the update")
@@ -615,14 +562,12 @@ var _ = Describe("Instance Webhook", func() {
 			oldObj.Spec.Lifecycle = &challengesv1.Lifecycle{
 				ExpiresAt:      &expiry,
 				AllowExtension: false,
-				RestartPolicy:  corev1.RestartPolicyNever,
 			}
 
 			newObj := createValidInstance()
 			newObj.Spec.Lifecycle = &challengesv1.Lifecycle{
 				ExpiresAt:      &expiry,
 				AllowExtension: false,
-				RestartPolicy:  corev1.RestartPolicyNever,
 			}
 
 			By("Validating the update")

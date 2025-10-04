@@ -22,7 +22,6 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -136,8 +135,7 @@ var _ = Describe("Instance Controller", func() {
 						Image: "nginx:latest",
 					},
 					Lifecycle: &challengesv1.Lifecycle{
-						ExpiresAt:     &pastTime,
-						RestartPolicy: corev1.RestartPolicyNever,
+						ExpiresAt: &pastTime,
 					},
 				},
 			}
@@ -180,8 +178,7 @@ var _ = Describe("Instance Controller", func() {
 						Image: "nginx:latest",
 					},
 					Lifecycle: &challengesv1.Lifecycle{
-						ExpiresAt:     &futureTime,
-						RestartPolicy: corev1.RestartPolicyNever,
+						ExpiresAt: &futureTime,
 					},
 				},
 			}

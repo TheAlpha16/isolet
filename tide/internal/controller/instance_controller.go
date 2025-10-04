@@ -218,11 +218,6 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 		},
 	}
 
-	// If lifecycle restart policy is set, apply it
-	if instance.Spec.Lifecycle.RestartPolicy == corev1.RestartPolicyAlways {
-		deployment.Spec.Template.Spec.RestartPolicy = corev1.RestartPolicyAlways
-	}
-
 	// Set Instance as the owner of the Deployment
 	if err := controllerutil.SetControllerReference(instance, deployment, r.Scheme); err != nil {
 		log.Error(err, "failed to set controller reference for Deployment")
@@ -458,10 +453,6 @@ func equalDeploymentSpec(a, b *appsv1.DeploymentSpec) bool {
 		}
 	}
 
-	// restart policy
-	if a.Template.Spec.RestartPolicy != b.Template.Spec.RestartPolicy {
-		return false
-	}
 	return true
 }
 

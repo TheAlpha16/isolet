@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -71,10 +70,6 @@ func (d *InstanceCustomDefaulter) Default(_ context.Context, obj runtime.Object)
 	if instance.Spec.Lifecycle == nil {
 		instance.Spec.Lifecycle = &challengesv1.Lifecycle{}
 		instance.Spec.Lifecycle.SetDefaults()
-	}
-
-	if instance.Spec.Lifecycle != nil && instance.Spec.Lifecycle.RestartPolicy == "" {
-		instance.Spec.Lifecycle.RestartPolicy = corev1.RestartPolicyNever
 	}
 
 	return nil
@@ -226,13 +221,6 @@ func (v *InstanceCustomValidator) validateLifecycle(l *challengesv1.Lifecycle) e
 		return fmt.Errorf("lifecycle.availableAt must be before lifecycle.expiresAt")
 	}
 
-	// validate restart policy
-	switch l.RestartPolicy {
-	case corev1.RestartPolicyAlways, corev1.RestartPolicyNever, corev1.RestartPolicyOnFailure:
-		// valid
-	default:
-		return fmt.Errorf("lifecycle.restartPolicy must be one of Always, OnFailure, Never")
-	}
 	return nil
 }
 

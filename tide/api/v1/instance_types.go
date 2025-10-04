@@ -152,17 +152,10 @@ type Lifecycle struct {
 	// +optional
 	// +kubebuilder:default=true
 	AllowExtension bool `json:"allowExtension"`
-
-	// Restart policy applied to all containers in the instance.
-	// One of Always, OnFailure, Never (default: Never).
-	// +optional
-	// +kubebuilder:default="Never"
-	RestartPolicy corev1.RestartPolicy `json:"restartPolicy,omitempty"`
 }
 
 func (l *Lifecycle) SetDefaults() {
 	l.AllowExtension = true
-	l.RestartPolicy = corev1.RestartPolicyNever
 }
 
 // InstanceSpec defines the desired state of the Instance.

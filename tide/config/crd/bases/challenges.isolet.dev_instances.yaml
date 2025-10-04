@@ -129,12 +129,6 @@ spec:
                       If unset, the instance will run until manually deleted.
                     format: date-time
                     type: string
-                  restartPolicy:
-                    default: Never
-                    description: |-
-                      Restart policy applied to all containers in the instance.
-                      One of Always, OnFailure, Never (default: Never).
-                    type: string
                 type: object
               limits:
                 additionalProperties:
