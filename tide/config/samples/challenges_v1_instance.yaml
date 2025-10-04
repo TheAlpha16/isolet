@@ -17,3 +17,12 @@ spec:
   - name: web
     targetPort: 80
     protocol: http
+  - name: websecure
+    targetPort: 443
+    protocol: https
+  limits:
+    cpu: "100m"
+    memory: "128Mi"
+  requests:
+    cpu: "50m"
+    memory: "64Mi"
