@@ -165,7 +165,7 @@ func (v *InstanceCustomValidator) ValidateUpdate(_ context.Context, oldObj, newO
 		return nil, err
 	}
 
-	// enforce extention rules
+	// enforce extension rules
 	if err := v.enforceExtensionRules(oldInstance, newInstance); err != nil {
 		return nil, err
 	}
@@ -248,7 +248,7 @@ func (v *InstanceCustomValidator) enforceExtensionRules(oldInstance, newInstance
 		return nil
 	}
 
-	// if extention is not allowed, reject
+	// if extension is not allowed, reject
 	if newInstance.Spec.Lifecycle == nil || !newInstance.Spec.Lifecycle.AllowExtension {
 		if oldExpiry == nil || newExpiry.After(oldExpiry.Time) {
 			return fmt.Errorf("lifecycle.expiresAt cannot be changed, as lifecycle.allowExtension is false")
