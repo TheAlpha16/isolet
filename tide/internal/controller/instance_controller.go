@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -97,27 +98,66 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
-	if instance.Status.Phase != challengesv1.PhaseRunning {
-		instance.Status.Phase = challengesv1.PhaseRunning
-		if err := r.Status().Update(ctx, &instance); err != nil {
-			log.Error(err, "unable to update Instance status", "instance", req.NamespacedName, "error", err)
+	// ensure child objects are in desired state
+	statusChanged := false
+
+	// 1. Reconcile Deployment
+	deploymentReady, err := r.reconcileDeployment(ctx, &instance)
+	if err != nil {
+		log.Error(err, "failed to reconcile Deployment for Instance", "instance", req.NamespacedName)
+		r.setCondition(&instance, "DeploymentReady", metav1.ConditionFalse, "ReconciliationFailed", err.Error())
+		statusChanged = true
+	} else {
+		if deploymentReady {
+			r.setCondition(&instance, "DeploymentReady", metav1.ConditionTrue, "DeploymentAvailable", "Deployment is ready and available")
+		} else {
+			r.setCondition(&instance, "DeploymentReady", metav1.ConditionFalse, "DeploymentNotReady", "Deployment is not yet ready")
+		}
+		statusChanged = true
+	}
+
+	// 2. Reconcile Service
+	serviceReady, err := r.reconcileService(ctx, &instance)
+	if err != nil {
+		log.Error(err, "failed to reconcile Service for Instance", "instance", req.NamespacedName)
+		r.setCondition(&instance, "ServiceReady", metav1.ConditionFalse, "ReconciliationFailed", err.Error())
+		statusChanged = true
+	} else {
+		if serviceReady {
+			r.setCondition(&instance, "ServiceReady", metav1.ConditionTrue, "ServiceAvailable", "Service is ready and available")
+		} else {
+			r.setCondition(&instance, "ServiceReady", metav1.ConditionFalse, "ServiceNotReady", "Service is not yet ready or not needed")
+		}
+		statusChanged = true
+	}
+
+	// Update Instance phase based on child resource status
+	newPhase := r.determinePhase(&instance, deploymentReady, serviceReady)
+	if instance.Status.Phase != newPhase {
+		instance.Status.Phase = newPhase
+		statusChanged = true
+		log.Info("Instance phase changed", "instance", req.NamespacedName, "oldPhase", instance.Status.Phase, "newPhase", newPhase)
+	}
+
+	// Update status if anything changed
+	if statusChanged {
+		// Refetch the Instance to get the latest resourceVersion before updating status
+		// This prevents "object has been modified" conflicts
+		latestInstance := &challengesv1.Instance{}
+		if err := r.Get(ctx, req.NamespacedName, latestInstance); err != nil {
+			log.Error(err, "unable to refetch Instance before status update", "instance", req.NamespacedName)
 			return ctrl.Result{}, err
 		}
-		return ctrl.Result{}, nil
-	}
 
-	// ensure child objects are in desired state
+		// Apply our status changes to the latest version
+		latestInstance.Status.Phase = instance.Status.Phase
+		latestInstance.Status.Conditions = instance.Status.Conditions
 
-	// 1. Deployment
-	if err := r.reconcileDeployment(ctx, &instance); err != nil {
-		log.Error(err, "failed to reconcile Deployment for Instance", "instance", req.NamespacedName)
-		return ctrl.Result{}, err
-	}
-
-	// 2. Service
-	if err := r.reconcileService(ctx, &instance); err != nil {
-		log.Error(err, "failed to reconcile Service for Instance", "instance", req.NamespacedName)
-		return ctrl.Result{}, err
+		if err := r.Status().Update(ctx, latestInstance); err != nil {
+			log.Error(err, "unable to update Instance status", "instance", req.NamespacedName, "error", err)
+			// Don't return error - let it requeue naturally and retry
+			return ctrl.Result{RequeueAfter: time.Second * 2}, nil
+		}
 	}
 
 	// requeue in case expiry is set
@@ -138,7 +178,8 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 }
 
 // reconcileDeployment ensures the Deployment for the Instance exists and is up-to-date.
-func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *challengesv1.Instance) error {
+// Returns (ready bool, error) where ready indicates if the Deployment is available.
+func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *challengesv1.Instance) (bool, error) {
 	log := logf.FromContext(ctx)
 
 	// Define the desired Deployment
@@ -207,11 +248,11 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 								}
 								return ports
 							}(),
+							Resources: corev1.ResourceRequirements{
+								Requests: instance.Spec.Requests,
+								Limits:   instance.Spec.Limits,
+							},
 						},
-					},
-					Resources: &corev1.ResourceRequirements{
-						Requests: instance.Spec.Requests,
-						Limits:   instance.Spec.Limits,
 					},
 				},
 			},
@@ -221,7 +262,7 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 	// Set Instance as the owner of the Deployment
 	if err := controllerutil.SetControllerReference(instance, deployment, r.Scheme); err != nil {
 		log.Error(err, "failed to set controller reference for Deployment")
-		return err
+		return false, err
 	}
 
 	// Check if the Deployment already exists
@@ -233,13 +274,14 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 			log.Info("Creating Deployment for Instance", "deployment", deployment.Name, "instance", instance.Name)
 			if err := r.Create(ctx, deployment); err != nil {
 				log.Error(err, "failed to create Deployment", "deployment", deployment.Name)
-				return err
+				return false, err
 			}
-			return nil
+			// Deployment created but not yet ready
+			return false, nil
 		}
 		// Error reading the Deployment
 		log.Error(err, "failed to get Deployment", "deployment", deployment.Name)
-		return err
+		return false, err
 	}
 
 	// ensure the deployment spec is up to date
@@ -248,15 +290,21 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 		log.Info("Updating Deployment for Instance", "deployment", foundDeployment.Name, "instance", instance.Name)
 		if err := r.Update(ctx, foundDeployment); err != nil {
 			log.Error(err, "failed to update Deployment", "deployment", foundDeployment.Name)
-			return err
+			return false, err
 		}
 		log.Info("Successfully updated Deployment for Instance", "deployment", foundDeployment.Name, "instance", instance.Name)
+		// Deployment updated but may not be ready yet
+		return false, nil
 	}
-	return nil
+
+	// Check if Deployment is ready
+	ready := r.isDeploymentReady(foundDeployment)
+	return ready, nil
 }
 
 // reconcileService ensures the Service for the Instance exists and is up-to-date.
-func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *challengesv1.Instance) error {
+// Returns (ready bool, error) where ready indicates if the Service is available.
+func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *challengesv1.Instance) (bool, error) {
 	log := logf.FromContext(ctx)
 
 	// Define the desired Service
@@ -305,7 +353,7 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 	// Set Instance as the owner of the Service
 	if err := controllerutil.SetControllerReference(instance, service, r.Scheme); err != nil {
 		log.Error(err, "failed to set controller reference for Service")
-		return err
+		return false, err
 	}
 
 	// Check if the Service already exists
@@ -316,18 +364,20 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 			// Service doesn't exist, create it if there are endpoints defined
 			if len(service.Spec.Ports) == 0 {
 				log.Info("No endpoints defined for Instance, skipping Service creation", "instance", instance.Name)
-				return nil
+				// No service needed, so consider it "ready"
+				return true, nil
 			}
 			log.Info("Creating Service for Instance", "service", service.Name, "instance", instance.Name)
 			if err := r.Create(ctx, service); err != nil {
 				log.Error(err, "failed to create Service", "service", service.Name)
-				return err
+				return false, err
 			}
-			return nil
+			// Service created and is ready (Services are immediately available)
+			return true, nil
 		}
 		// Error reading the Service
 		log.Error(err, "failed to get Service", "service", service.Name)
-		return err
+		return false, err
 	}
 
 	// ensure the service spec is up to date
@@ -337,20 +387,22 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 			log.Info("No endpoints defined for Instance, deleting Service", "service", foundService.Name, "instance", instance.Name)
 			if err := r.Delete(ctx, foundService); err != nil {
 				log.Error(err, "failed to delete Service", "service", foundService.Name)
-				return err
+				return false, err
 			}
 			log.Info("Successfully deleted Service for Instance", "service", foundService.Name, "instance", instance.Name)
-			return nil
+			return true, nil
 		}
 		foundService.Spec = service.Spec
 		log.Info("Updating Service for Instance", "service", foundService.Name, "instance", instance.Name)
 		if err := r.Update(ctx, foundService); err != nil {
 			log.Error(err, "failed to update Service", "service", foundService.Name)
-			return err
+			return false, err
 		}
 		log.Info("Successfully updated Service for Instance", "service", foundService.Name, "instance", instance.Name)
 	}
-	return nil
+
+	// Service exists and is ready
+	return true, nil
 }
 
 func equalDeploymentSpec(a, b *appsv1.DeploymentSpec) bool {
@@ -425,29 +477,24 @@ func equalDeploymentSpec(a, b *appsv1.DeploymentSpec) bool {
 				return false
 			}
 		}
-	}
 
-	// resources
-	if (a.Template.Spec.Resources == nil) != (b.Template.Spec.Resources == nil) {
-		return false
-	}
-	if a.Template.Spec.Resources != nil && b.Template.Spec.Resources != nil {
+		// resources (on container level)
 		// requests
-		if len(a.Template.Spec.Resources.Requests) != len(b.Template.Spec.Resources.Requests) {
+		if len(ac.Resources.Requests) != len(c.Resources.Requests) {
 			return false
 		}
-		for k, v := range a.Template.Spec.Resources.Requests {
-			if bv, exists := b.Template.Spec.Resources.Requests[k]; !exists || bv.Cmp(v) != 0 {
+		for k, v := range ac.Resources.Requests {
+			if cv, exists := c.Resources.Requests[k]; !exists || cv.Cmp(v) != 0 {
 				return false
 			}
 		}
 
 		// limits
-		if len(a.Template.Spec.Resources.Limits) != len(b.Template.Spec.Resources.Limits) {
+		if len(ac.Resources.Limits) != len(c.Resources.Limits) {
 			return false
 		}
-		for k, v := range a.Template.Spec.Resources.Limits {
-			if bv, exists := b.Template.Spec.Resources.Limits[k]; !exists || bv.Cmp(v) != 0 {
+		for k, v := range ac.Resources.Limits {
+			if cv, exists := c.Resources.Limits[k]; !exists || cv.Cmp(v) != 0 {
 				return false
 			}
 		}
@@ -481,6 +528,70 @@ func equalServiceSpec(a, b *corev1.ServiceSpec) bool {
 		}
 	}
 	return true
+}
+
+// isDeploymentReady checks if a Deployment is available and ready.
+func (r *InstanceReconciler) isDeploymentReady(deployment *appsv1.Deployment) bool {
+	// Check if at least one replica is ready
+	if deployment.Status.ReadyReplicas > 0 &&
+		deployment.Status.ReadyReplicas == deployment.Status.Replicas &&
+		deployment.Status.AvailableReplicas > 0 {
+		return true
+	}
+	return false
+}
+
+// determinePhase determines the Instance phase based on child resource status.
+func (r *InstanceReconciler) determinePhase(instance *challengesv1.Instance, deploymentReady, serviceReady bool) challengesv1.Phase {
+	// If Deployment is not ready, Instance is Pending
+	if !deploymentReady {
+		return challengesv1.PhasePending
+	}
+
+	// Check if we should be in Staged phase (availableAt in the future)
+	if instance.Spec.Lifecycle != nil && instance.Spec.Lifecycle.AvailableAt != nil {
+		if instance.Spec.Lifecycle.AvailableAt.After(metav1.Now().Time) {
+			return challengesv1.PhaseStaged
+		}
+	}
+
+	// If Deployment is ready and Service is ready (or not needed), Instance is Running
+	if deploymentReady && serviceReady {
+		return challengesv1.PhaseRunning
+	}
+
+	// Default to Pending if we can't determine
+	return challengesv1.PhasePending
+}
+
+// setCondition adds or updates a condition in the Instance status.
+func (r *InstanceReconciler) setCondition(instance *challengesv1.Instance, conditionType string, status metav1.ConditionStatus, reason, message string) {
+	now := metav1.Now()
+
+	// Find existing condition
+	for i, condition := range instance.Status.Conditions {
+		if condition.Type == conditionType {
+			// Update existing condition
+			if condition.Status != status || condition.Reason != reason || condition.Message != message {
+				instance.Status.Conditions[i].Status = status
+				instance.Status.Conditions[i].Reason = reason
+				instance.Status.Conditions[i].Message = message
+				instance.Status.Conditions[i].LastTransitionTime = now
+				instance.Status.Conditions[i].ObservedGeneration = instance.Generation
+			}
+			return
+		}
+	}
+
+	// Add new condition
+	instance.Status.Conditions = append(instance.Status.Conditions, metav1.Condition{
+		Type:               conditionType,
+		Status:             status,
+		Reason:             reason,
+		Message:            message,
+		LastTransitionTime: now,
+		ObservedGeneration: instance.Generation,
+	})
 }
 
 // SetupWithManager sets up the controller with the Manager.
