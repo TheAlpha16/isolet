@@ -180,6 +180,7 @@ func (v *InstanceCustomValidator) ValidateDelete(ctx context.Context, _ runtime.
 
 func (v *InstanceCustomValidator) validateEndpoints(endpoints []challengesv1.EndpointSpec) error {
 	namesMap := make(map[string]struct{})
+	targetPortsMap := make(map[int32]struct{})
 
 	for _, ep := range endpoints {
 		// check for duplicate names
@@ -192,6 +193,12 @@ func (v *InstanceCustomValidator) validateEndpoints(endpoints []challengesv1.End
 		if ep.TargetPort < 1 || ep.TargetPort > 65535 {
 			return fmt.Errorf("endpoint port must be between 1 and 65535, got %d", ep.TargetPort)
 		}
+
+		// check for duplicate target ports
+		if _, exists := targetPortsMap[ep.TargetPort]; exists {
+			return fmt.Errorf("duplicate endpoint targetPort: %d", ep.TargetPort)
+		}
+		targetPortsMap[ep.TargetPort] = struct{}{}
 
 		// validate protocol
 		switch ep.Protocol {
