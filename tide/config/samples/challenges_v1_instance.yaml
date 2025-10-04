@@ -10,4 +10,10 @@ spec:
     id: 1
     name: nginx-server
     image: nginx:latest
-    type: dynamic
+    type: on-demand
+  team:
+    id: 1
+  lifecycle:
+    expiresAt: "2025-10-04T10:03:37Z"
+    availableAt: "2025-10-04T09:53:37Z"
+    allowExtension: false
