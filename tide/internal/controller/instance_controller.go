@@ -93,11 +93,6 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			}
 			return ctrl.Result{}, nil
 		}
-
-		// requeue the request to check for expiry
-		return ctrl.Result{
-			RequeueAfter: instance.Spec.Lifecycle.ExpiresAt.Sub(timeNow.Time),
-		}, nil
 	}
 
 	if instance.Status.Phase != challengesv1.PhaseRunning {
@@ -107,6 +102,13 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			return ctrl.Result{}, err
 		}
 		return ctrl.Result{}, nil
+	}
+
+	// requeue in case expiry is set
+	if instance.Spec.Lifecycle != nil && instance.Spec.Lifecycle.ExpiresAt != nil {
+		return ctrl.Result{
+			RequeueAfter: instance.Spec.Lifecycle.ExpiresAt.Sub(timeNow.Time),
+		}, nil
 	}
 	// handle deletion if deletionTimestamp is set
 	// TODO evaluate if we need to manually delete child resources, or if we can rely on owner references
