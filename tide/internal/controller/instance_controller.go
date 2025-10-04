@@ -85,7 +85,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{}, nil
 	}
 
-	if instance.Spec.Lifecycle.ExpiresAt != nil {
+	if instance.Spec.Lifecycle != nil && instance.Spec.Lifecycle.ExpiresAt != nil {
 		// delete the instance if expired
 		if instance.Spec.Lifecycle.ExpiresAt.Before(&timeNow) {
 			// instance is expired, delete it
@@ -121,7 +121,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// requeue in case expiry is set
-	if instance.Spec.Lifecycle.ExpiresAt != nil {
+	if instance.Spec.Lifecycle != nil && instance.Spec.Lifecycle.ExpiresAt != nil {
 		return ctrl.Result{
 			RequeueAfter: instance.Spec.Lifecycle.ExpiresAt.Sub(timeNow.Time),
 		}, nil
