@@ -166,7 +166,7 @@ func (v *InstanceCustomValidator) ValidateUpdate(_ context.Context, oldObj, newO
 	}
 
 	// enforce extention rules
-	if err := v.enforceExtentionRules(oldInstance, newInstance); err != nil {
+	if err := v.enforceExtensionRules(oldInstance, newInstance); err != nil {
 		return nil, err
 	}
 
@@ -229,7 +229,7 @@ func (v *InstanceCustomValidator) validateLifecycle(l *challengesv1.Lifecycle) e
 	return nil
 }
 
-func (v *InstanceCustomValidator) enforceExtentionRules(oldInstance, newInstance *challengesv1.Instance) error {
+func (v *InstanceCustomValidator) enforceExtensionRules(oldInstance, newInstance *challengesv1.Instance) error {
 	var oldExpiry, newExpiry *metav1.Time
 	if oldInstance.Spec.Lifecycle != nil {
 		oldExpiry = oldInstance.Spec.Lifecycle.ExpiresAt
