@@ -13,3 +13,7 @@ spec:
     type: on-demand
   team:
     id: 1
+  endpoints:
+  - name: web
+    targetPort: 80
+    protocol: http

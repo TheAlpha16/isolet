@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"strconv"
 
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -42,6 +43,7 @@ type InstanceReconciler struct {
 // +kubebuilder:rbac:groups=challenges.isolet.dev,resources=instances,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=challenges.isolet.dev,resources=instances/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=challenges.isolet.dev,resources=instances/finalizers,verbs=update
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
@@ -83,7 +85,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{}, nil
 	}
 
-	if instance.Spec.Lifecycle != nil && instance.Spec.Lifecycle.ExpiresAt != nil {
+	if instance.Spec.Lifecycle.ExpiresAt != nil {
 		// delete the instance if expired
 		if instance.Spec.Lifecycle.ExpiresAt.Before(&timeNow) {
 			// instance is expired, delete it
@@ -105,13 +107,21 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// ensure child objects are in desired state
+
+	// 1. Deployment
+	if err := r.reconcileDeployment(ctx, &instance); err != nil {
+		log.Error(err, "failed to reconcile Deployment for Instance", "instance", req.NamespacedName)
+		return ctrl.Result{}, err
+	}
+
+	// 2. Service
 	if err := r.reconcileService(ctx, &instance); err != nil {
 		log.Error(err, "failed to reconcile Service for Instance", "instance", req.NamespacedName)
 		return ctrl.Result{}, err
 	}
 
 	// requeue in case expiry is set
-	if instance.Spec.Lifecycle != nil && instance.Spec.Lifecycle.ExpiresAt != nil {
+	if instance.Spec.Lifecycle.ExpiresAt != nil {
 		return ctrl.Result{
 			RequeueAfter: instance.Spec.Lifecycle.ExpiresAt.Sub(timeNow.Time),
 		}, nil
@@ -125,6 +135,129 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// TODO update Phase to Staged / Running / Failed based on Pod readiness
 
 	return ctrl.Result{}, nil
+}
+
+// reconcileDeployment ensures the Deployment for the Instance exists and is up-to-date.
+func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *challengesv1.Instance) error {
+	log := logf.FromContext(ctx)
+
+	// Define the desired Deployment
+	deployment := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("deployment-%s", instance.Name),
+			Namespace: instance.Namespace,
+			Labels: map[string]string{
+				// standard labels
+				"app.kubernetes.io/name":       instance.Name,
+				"app.kubernetes.io/part-of":    "instance",
+				"app.kubernetes.io/managed-by": "tide-controller",
+				"app.kubernetes.io/component":  "deployment",
+
+				// tide specific labels
+				"challenges.isolet.dev/id":           instance.Name,
+				"challenges.isolet.dev/challenge":    instance.Spec.Challenge.Name,
+				"challenges.isolet.dev/challenge-id": strconv.FormatInt(instance.Spec.Challenge.ID, 10),
+				"challenges.isolet.dev/type":         string(instance.Spec.Challenge.Type),
+				"challenges.isolet.dev/team": func() string {
+					if instance.Spec.Team != nil {
+						return strconv.FormatInt(instance.Spec.Team.ID, 10)
+					}
+					return "dynamic"
+				}(),
+			},
+		},
+		Spec: appsv1.DeploymentSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"app.kubernetes.io/name":      instance.Name,
+					"app.kubernetes.io/component": "deployment",
+					"challenges.isolet.dev/id":    instance.Name,
+				},
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"app.kubernetes.io/name":      instance.Name,
+						"app.kubernetes.io/component": "deployment",
+						"challenges.isolet.dev/id":    instance.Name,
+					},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name:  "challenge",
+							Image: instance.Spec.Challenge.Image,
+							Env: func() []corev1.EnvVar {
+								var envs []corev1.EnvVar
+								if instance.Spec.Challenge.Flag != nil {
+									envs = append(envs, corev1.EnvVar{
+										Name:  "FLAG",
+										Value: *instance.Spec.Challenge.Flag,
+									})
+								}
+								return envs
+							}(),
+							Ports: func() []corev1.ContainerPort {
+								var ports []corev1.ContainerPort
+								for _, ep := range instance.Spec.Endpoints {
+									ports = append(ports, corev1.ContainerPort{
+										Name:          ep.Name,
+										ContainerPort: ep.TargetPort,
+									})
+								}
+								return ports
+							}(),
+						},
+					},
+					Resources: &corev1.ResourceRequirements{
+						Requests: instance.Spec.Requests,
+						Limits:   instance.Spec.Limits,
+					},
+				},
+			},
+		},
+	}
+
+	// If lifecycle restart policy is set, apply it
+	if instance.Spec.Lifecycle.RestartPolicy == corev1.RestartPolicyAlways {
+		deployment.Spec.Template.Spec.RestartPolicy = corev1.RestartPolicyAlways
+	}
+
+	// Set Instance as the owner of the Deployment
+	if err := controllerutil.SetControllerReference(instance, deployment, r.Scheme); err != nil {
+		log.Error(err, "failed to set controller reference for Deployment")
+		return err
+	}
+
+	// Check if the Deployment already exists
+	foundDeployment := &appsv1.Deployment{}
+	err := r.Get(ctx, client.ObjectKey{Name: deployment.Name, Namespace: deployment.Namespace}, foundDeployment)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			// Deployment doesn't exist, create it
+			log.Info("Creating Deployment for Instance", "deployment", deployment.Name, "instance", instance.Name)
+			if err := r.Create(ctx, deployment); err != nil {
+				log.Error(err, "failed to create Deployment", "deployment", deployment.Name)
+				return err
+			}
+			return nil
+		}
+		// Error reading the Deployment
+		log.Error(err, "failed to get Deployment", "deployment", deployment.Name)
+		return err
+	}
+
+	// ensure the deployment spec is up to date
+	if !equalDeploymentSpec(&foundDeployment.Spec, &deployment.Spec) {
+		foundDeployment.Spec = deployment.Spec
+		log.Info("Updating Deployment for Instance", "deployment", foundDeployment.Name, "instance", instance.Name)
+		if err := r.Update(ctx, foundDeployment); err != nil {
+			log.Error(err, "failed to update Deployment", "deployment", foundDeployment.Name)
+			return err
+		}
+		log.Info("Successfully updated Deployment for Instance", "deployment", foundDeployment.Name, "instance", instance.Name)
+	}
+	return nil
 }
 
 // reconcileService ensures the Service for the Instance exists and is up-to-date.
@@ -225,6 +358,113 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 	return nil
 }
 
+func equalDeploymentSpec(a, b *appsv1.DeploymentSpec) bool {
+	// replicas
+	if a.Replicas == nil || b.Replicas == nil {
+		if a.Replicas != b.Replicas {
+			return false
+		}
+	} else if *a.Replicas != *b.Replicas {
+		return false
+	}
+
+	// selector match labels
+	if len(a.Selector.MatchLabels) != len(b.Selector.MatchLabels) {
+		return false
+	}
+	for k, v := range a.Selector.MatchLabels {
+		if bv, exists := b.Selector.MatchLabels[k]; !exists || bv != v {
+			return false
+		}
+	}
+
+	// labels
+	if len(a.Template.Labels) != len(b.Template.Labels) {
+		return false
+	}
+	for k, v := range a.Template.Labels {
+		if bv, exists := b.Template.Labels[k]; !exists || bv != v {
+			return false
+		}
+	}
+
+	// containers
+	if len(a.Template.Spec.Containers) != len(b.Template.Spec.Containers) {
+		return false
+	}
+	containerMap := make(map[string]corev1.Container)
+	for _, c := range a.Template.Spec.Containers {
+		containerMap[c.Name] = c
+	}
+	for _, c := range b.Template.Spec.Containers {
+		// name, image
+		ac, exists := containerMap[c.Name]
+		if !exists || ac.Image != c.Image {
+			return false
+		}
+
+		// env
+		if len(ac.Env) != len(c.Env) {
+			return false
+		}
+		envMap := make(map[string]corev1.EnvVar)
+		for _, e := range ac.Env {
+			envMap[e.Name] = e
+		}
+		for _, e := range c.Env {
+			if ae, exists := envMap[e.Name]; !exists || ae.Value != e.Value {
+				return false
+			}
+		}
+
+		// ports
+		if len(ac.Ports) != len(c.Ports) {
+			return false
+		}
+		portMap := make(map[string]corev1.ContainerPort)
+		for _, p := range ac.Ports {
+			portMap[p.Name] = p
+		}
+		for _, p := range c.Ports {
+			if ap, exists := portMap[p.Name]; !exists || ap.ContainerPort != p.ContainerPort {
+				return false
+			}
+		}
+	}
+
+	// resources
+	if (a.Template.Spec.Resources == nil) != (b.Template.Spec.Resources == nil) {
+		return false
+	}
+	if a.Template.Spec.Resources != nil && b.Template.Spec.Resources != nil {
+		// requests
+		if len(a.Template.Spec.Resources.Requests) != len(b.Template.Spec.Resources.Requests) {
+			return false
+		}
+		for k, v := range a.Template.Spec.Resources.Requests {
+			if bv, exists := b.Template.Spec.Resources.Requests[k]; !exists || bv.Cmp(v) != 0 {
+				return false
+			}
+		}
+
+		// limits
+		if len(a.Template.Spec.Resources.Limits) != len(b.Template.Spec.Resources.Limits) {
+			return false
+		}
+		for k, v := range a.Template.Spec.Resources.Limits {
+			if bv, exists := b.Template.Spec.Resources.Limits[k]; !exists || bv.Cmp(v) != 0 {
+				return false
+			}
+		}
+	}
+
+	// restart policy
+	if a.Template.Spec.RestartPolicy != b.Template.Spec.RestartPolicy {
+		return false
+	}
+	return true
+}
+
 func equalServiceSpec(a, b *corev1.ServiceSpec) bool {
 	if a.Type != b.Type {
 		return false
@@ -256,6 +496,7 @@ func equalServiceSpec(a, b *corev1.ServiceSpec) bool {
 func (r *InstanceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&challengesv1.Instance{}).
+		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.Service{}).
 		Named("instance").
 		Complete(r)
