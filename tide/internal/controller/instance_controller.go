@@ -19,11 +19,14 @@ package controller
 import (
 	"context"
 
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	challengesv1 "github.com/TheAlpha16/isolet/tide/api/v1"
@@ -38,6 +41,7 @@ type InstanceReconciler struct {
 // +kubebuilder:rbac:groups=challenges.isolet.dev,resources=instances,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=challenges.isolet.dev,resources=instances/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=challenges.isolet.dev,resources=instances/finalizers,verbs=update
+// +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -104,12 +108,19 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{}, nil
 	}
 
+	// ensure child objects are in desired state
+	if err := r.reconcileService(ctx, &instance); err != nil {
+		log.Error(err, "failed to reconcile Service for Instance", "instance", req.NamespacedName)
+		return ctrl.Result{}, err
+	}
+
 	// requeue in case expiry is set
 	if instance.Spec.Lifecycle != nil && instance.Spec.Lifecycle.ExpiresAt != nil {
 		return ctrl.Result{
 			RequeueAfter: instance.Spec.Lifecycle.ExpiresAt.Sub(timeNow.Time),
 		}, nil
 	}
+
 	// handle deletion if deletionTimestamp is set
 	// TODO evaluate if we need to manually delete child resources, or if we can rely on owner references
 	// if !instance.ObjectMeta.DeletionTimestamp.IsZero() {
@@ -143,10 +154,75 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	return ctrl.Result{}, nil
 }
 
+// reconcileService ensures the Service for the Instance exists and is up-to-date.
+func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *challengesv1.Instance) error {
+	log := logf.FromContext(ctx)
+
+	// Define the desired Service
+	service := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      instance.Name,
+			Namespace: instance.Namespace,
+			Labels: map[string]string{
+				"app.kubernetes.io/name":       "instance",
+				"app.kubernetes.io/instance":   instance.Name,
+				"app.kubernetes.io/managed-by": "tide-controller",
+				"challenges.isolet.dev/id":     instance.Name,
+			},
+		},
+		Spec: corev1.ServiceSpec{
+			Selector: map[string]string{
+				"app.kubernetes.io/name":     "instance",
+				"app.kubernetes.io/instance": instance.Name,
+			},
+			Ports: []corev1.ServicePort{
+				{
+					Name:       "http",
+					Protocol:   corev1.ProtocolTCP,
+					Port:       80,
+					TargetPort: intstr.FromInt(80),
+				},
+			},
+			Type: corev1.ServiceTypeClusterIP,
+		},
+	}
+
+	// Set Instance as the owner of the Service
+	if err := controllerutil.SetControllerReference(instance, service, r.Scheme); err != nil {
+		log.Error(err, "failed to set controller reference for Service")
+		return err
+	}
+
+	// Check if the Service already exists
+	foundService := &corev1.Service{}
+	err := r.Get(ctx, client.ObjectKey{Name: service.Name, Namespace: service.Namespace}, foundService)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			// Service doesn't exist, create it
+			log.Info("Creating Service for Instance", "service", service.Name, "instance", instance.Name)
+			if err := r.Create(ctx, service); err != nil {
+				log.Error(err, "failed to create Service", "service", service.Name)
+				return err
+			}
+			return nil
+		}
+		// Error reading the Service
+		log.Error(err, "failed to get Service", "service", service.Name)
+		return err
+	}
+
+	// Service exists, update it if needed
+	log.Info("Service already exists for Instance", "service", foundService.Name, "instance", instance.Name)
+
+	// TODO ensure the service spec is up to date
+	return nil
+}
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *InstanceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&challengesv1.Instance{}).
+		Owns(&corev1.Service{}).
 		Named("instance").
 		Complete(r)
 }
