@@ -276,7 +276,8 @@ var _ = Describe("Instance Webhook", func() {
 			futureTime := metav1.NewTime(time.Now().Add(1 * time.Hour))
 			obj := createValidInstance()
 			obj.Spec.Lifecycle = &challengesv1.Lifecycle{
-				ExpiresAt: &futureTime,
+				ExpiresAt:     &futureTime,
+				RestartPolicy: corev1.RestartPolicyNever,
 			}
 
 			By("Validating the instance")
@@ -314,8 +315,9 @@ var _ = Describe("Instance Webhook", func() {
 			expiresTime := metav1.NewTime(now.Add(2 * time.Hour))
 			obj := createValidInstance()
 			obj.Spec.Lifecycle = &challengesv1.Lifecycle{
-				AvailableAt: &availableTime,
-				ExpiresAt:   &expiresTime,
+				AvailableAt:   &availableTime,
+				ExpiresAt:     &expiresTime,
+				RestartPolicy: corev1.RestartPolicyNever,
 			}
 
 			By("Validating the instance")
@@ -586,14 +588,14 @@ var _ = Describe("Instance Webhook", func() {
 
 			oldObj := createValidInstance()
 			oldObj.Spec.Lifecycle = &challengesv1.Lifecycle{
-				AllowExtension: false,
+				AllowExtension: true,
 				RestartPolicy:  corev1.RestartPolicyNever,
 			}
 
 			newObj := createValidInstance()
 			newObj.Spec.Lifecycle = &challengesv1.Lifecycle{
 				ExpiresAt:      &newExpiry,
-				AllowExtension: false,
+				AllowExtension: true,
 				RestartPolicy:  corev1.RestartPolicyNever,
 			}
 
