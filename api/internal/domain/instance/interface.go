@@ -15,3 +15,9 @@ type Repository interface {
 	Delete(ctx context.Context, id int64) error
 	GetByTeamAndChallenge(ctx context.Context, teamID, challengeID int64) (*Instance, error)
 }
+
+type Service interface {
+	Start(ctx context.Context) error
+	Stop(ctx context.Context) error
+	Extend(ctx context.Context) error
+}

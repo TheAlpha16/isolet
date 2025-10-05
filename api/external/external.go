@@ -1,7 +1,18 @@
 package external
 
-type Services struct{}
+import (
+	instanceExt "github.com/TheAlpha16/isolet/api/external/instance"
+	instanceDom "github.com/TheAlpha16/isolet/api/internal/domain/instance"
+)
+
+type Services struct {
+	Instance instanceDom.Service
+}
 
 func New() *Services {
-	return &Services{}
+	instance := instanceExt.New()
+
+	return &Services{
+		Instance: instance,
+	}
 }
