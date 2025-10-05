@@ -136,13 +136,9 @@ certManager:
 # base64 encoded secrets
 ## PLEASE DO NOT USE DEFAULT VALUES FOR PRODUCTION
 secrets:
+  tokenSigningKey: dHJ1c3RtZWJybw==
   dns:
     token: MTQyNGU2ZjBhMTQ2MzM5Yjc0YWYyNzlkNjRhOTIzNjI== # cloudflare token
-  signing:
-    sessionSecret: ODE1NWIyODgwOWQ2MGJlMDQxNjM4N2E5OWM5NDI5NzU=
-    tokenSecret: MTQyNGU2ZjBhMTQ2MzM5Yjc0YWYyNzlkNjRhOTIzNjI=
-    instanceNameSecret: N2Q2YzllOGY2ODcwZWZhNGU1YmJiYzU3YjdiY2JmZDM=
-    adminSecret: YTE1ZTMwNDk2Mzg3YTcyNzgzMjIzNDg3ZjU5NjljZmY=
 
   smtp:
     host: c210cC5nbWFpbC5jb20=
@@ -160,5 +156,5 @@ secrets:
     dsn: "" # base64 encoded Sentry DSN (optional, leave empty to disable)
 
   valkey:
-    user: ""
+    username: ""
     password: "" # base64 encoded Valkey/Redis password (optional, leave empty if no auth) 
