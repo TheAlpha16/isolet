@@ -24,6 +24,7 @@ platform:
   namespace: platform
 
   database:
+    enabled: true
     image: docker.io/thealpha16/isolet-database
     version: 2.0.0
     name: isolet
