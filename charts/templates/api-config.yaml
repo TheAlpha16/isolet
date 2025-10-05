@@ -6,20 +6,41 @@ metadata:
   labels: 
     app.kubernetes.io/component: config
     app.kubernetes.io/part-of: api
-    {{- include "charts.labels" . | nindent 4 }}
+    {{- include "charts.labels" . | nindent 2 }}
 data:
-  INSTANCE_NAMESPACE: {{ .Values.isolet.namespace }}
-  IMAGE_REGISTRY: {{ .Values.challenges.registry.url }}
-  CONCURRENT_INSTANCES: {{ .Values.isolet.concurrentInstances | quote }}
-  CTF_NAME: {{ .Values.event.name }}
-  APP_PORT: "80"
-  KUBECONFIG_FILE_PATH: "/root/.kube/config"
-  PUBLIC_URL: {{ .Values.event.url }}
-  INSTANCE_HOSTNAME: {{ .Values.challenges.url }}
-  INSTANCE_TIME: {{ .Values.isolet.defaultInstanceTime | quote }}
-  MAX_INSTANCE_TIME: {{ .Values.isolet.maxInstanceTime | quote }}
-  ALLOWED_DOMAINS: "{{ .Values.event.allowedDomains | join "," }}"
-  EVENT_START: {{ .Values.event.startTime | quote }}
-  EVENT_END: {{ .Values.event.endTime | quote }}
-  POST_EVENT: {{ .Values.event.postEvent | quote }}
-  REDIS_URL: "redis://redis-svc:6379"
+  # Application
+  LOG_LEVEL: "INFO"
+  ENVIRONMENT: "prod"
+  VERSION: {{ .Values.platform.api.version | quote }}
+
+  # Database
+  DB_NAME: {{ .Values.platform.database.name | quote }}
+  DB_HOST: "pgbouncer-svc"
+  DB_PORT: "5432"
+  DB_MAX_OPEN_CONNECTIONS: {{ .Values.platform.database.maxOpenConnections | quote }}
+  DB_MAX_IDLE_CONNECTIONS: {{ .Values.platform.database.maxIdleConnections | quote }}
+  DB_MAX_CONNECTION_LIFETIME: {{ .Values.platform.database.maxConnectionLifetime | quote }}
+
+  # Sentry
+  SENTRY_SAMPLE_RATE: {{ .Values.platform.api.sentry.sampleRate | quote }}
+  SENTRY_TRACE_SAMPLE_RATE: {{ .Values.platform.api.sentry.traceSampleRate | quote }}
+
+  # Valkey/Redis
+  VALKEY_ADDRESS: {{ .Values.platform.valkey.address | quote }}
+  VALKEY_USE_TLS: {{ .Values.platform.valkey.useTLS | quote }}
+
+  # Token Configuration
+  TOKEN_EMAIL_VERIFICATION_VALIDITY: {{ .Values.platform.api.token.emailVerificationValidity | quote }}
+  TOKEN_AUTH_VALIDITY: {{ .Values.platform.api.token.authValidity | quote }}
+  TOKEN_PASSWORD_RESET_VALIDITY: {{ .Values.platform.api.token.passwordResetValidity | quote }}
+  TOKEN_TEAM_INVITE_VALIDITY: {{ .Values.platform.api.token.teamInviteValidity | quote }}
+
+  # Config Vars
+  CONFIG_VARS_REFRESH_INTERVAL: {{ .Values.platform.api.configVars.refreshInterval | quote }}
+
+  # SMTP
+  SMTP_RETRIES: {{ .Values.platform.api.smtp.retries | quote }}
+  SMTP_TIMEOUT: {{ .Values.platform.api.smtp.timeout | quote }}
+  SMTP_CHANNEL_SIZE: {{ .Values.platform.api.smtp.channelSize | quote }}
+
+  INSTANCE_LIFETIME: {{ .Values.isolet.defaultInstanceTime | quote }}
