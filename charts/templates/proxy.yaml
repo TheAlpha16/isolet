@@ -21,13 +21,9 @@ spec:
         app.kubernetes.io/component: deployment
         app.kubernetes.io/part-of: proxy
     spec:
-      {{- if eq .Values.registry.type "private" }}
-      imagePullSecrets:
-      - name: build-registry-secret
-      {{- end }}
       containers:
         - name: proxy
-          image: "{{ .Values.registry.url }}/{{ .Values.platform.proxy.image }}:{{ .Values.platform.proxy.tag | default "latest" }}"
+          image: "{{ .Values.platform.proxy.image }}:{{ .Values.platform.proxy.version | default "latest" }}"
           imagePullPolicy: Always
           resources:
             limits:
@@ -40,10 +36,7 @@ spec:
             - containerPort: 80
           env:
             - name: PROXY_SERVER_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: api-config
-                  key: PUBLIC_URL
+              value: {{ .Values.event.publicURL }}
             - name: UI_URL
               value: ui-svc
             - name: API_URL
