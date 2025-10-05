@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: valkey-deployment
   namespace: {{ .Values.platform.namespace }}
-  labels: 
+  labels:
     app.kubernetes.io/component: deployment
     app.kubernetes.io/part-of: valkey
     {{- include "charts.labels" . | nindent 4 }}
@@ -40,7 +40,7 @@ kind: Service
 metadata:
   name: valkey-svc
   namespace: {{ .Values.platform.namespace }}
-  labels: 
+  labels:
     app.kubernetes.io/component: service
     app.kubernetes.io/part-of: valkey
     {{- include "charts.labels" . | nindent 4 }}

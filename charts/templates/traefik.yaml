@@ -166,6 +166,6 @@ spec:
       port: 443
       targetPort: 443
       protocol: TCP
-  selector: 
+  selector:
     app.kubernetes.io/component: deployment
     app.kubernetes.io/part-of: traefik
