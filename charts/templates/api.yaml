@@ -24,7 +24,7 @@ spec:
       serviceAccountName: api-service-account
       containers:
         - name: api
-          image: "{{ .Values.platform.api.image }}:{{ .Values.platform.api.version | quote }}"
+          image: "{{ .Values.platform.api.image }}:{{ .Values.platform.api.version }}"
           imagePullPolicy: Always
           resources:
             limits:
