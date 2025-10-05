@@ -1,28 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redis-deployment
+  name: valkey-deployment
   namespace: {{ .Values.platform.namespace }}
   labels: 
     app.kubernetes.io/component: deployment
-    app.kubernetes.io/part-of: redis
+    app.kubernetes.io/part-of: valkey
     {{- include "charts.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/component: deployment
-      app.kubernetes.io/part-of: redis
+      app.kubernetes.io/part-of: valkey
   template:
     metadata:
-      name: redis-deployment
+      name: valkey-deployment
       labels:
         app.kubernetes.io/component: deployment
-        app.kubernetes.io/part-of: redis
+        app.kubernetes.io/part-of: valkey
     spec:
       containers:
-        - name: redis
-          image: redis:7
+        - name: valkey
+          image: valkey/valkey:8
           ports:
             - containerPort: 6379
           resources:
@@ -32,21 +32,21 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "150m"
-          command: ["redis-server", "--save", ""]
+          command: ["valkey-server", "--save", ""]
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis-svc
+  name: valkey-svc
   namespace: {{ .Values.platform.namespace }}
   labels: 
     app.kubernetes.io/component: service
-    app.kubernetes.io/part-of: redis
+    app.kubernetes.io/part-of: valkey
     {{- include "charts.labels" . | nindent 4 }}
 spec:
   selector:
     app.kubernetes.io/component: deployment
-    app.kubernetes.io/part-of: redis
+    app.kubernetes.io/part-of: valkey
   ports:
     - port: 6379
