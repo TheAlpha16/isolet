@@ -2,227 +2,110 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: isolet-manager
-  namespace: {{ .Values.isolet.namespace }}
-  labels:
-    app.kubernetes.io/component: role
-    app.kubernetes.io/part-of: isolet
-    {{- include "charts.labels" . | nindent 4 }}
+	name: isolet-manager
+	namespace: {{ .Values.isolet.namespace }}
+	labels:
+		app.kubernetes.io/component: role
+		app.kubernetes.io/part-of: isolet
+		{{- include "charts.labels" . | nindent 4 }}
 rules:
-  - apiGroups: 
-      - ""
-      - apps
-      - traefik.io
-    resources: 
-      - pods
-      - services
-      - deployments
-      - ingressroutetcps
-      - ingressroutes
-    verbs: 
-      - get
-      - list
-      - watch
-      - create
-      - update
-      - patch
-      - delete
+	- apiGroups:
+		- isolet.dev
+		resources:
+		- instances
+		verbs:
+		- get
+		- list
+		- watch
+		- create
+		- update
+		- patch
+		- delete
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: dynamic-manager
-  namespace: {{ .Values.dynamic.namespace }}
-  labels:
-    app.kubernetes.io/component: role
-    app.kubernetes.io/part-of: dynamic
-    {{- include "charts.labels" . | nindent 4 }}
+	name: cert-reader
+	namespace: cert-manager
+	labels:
+		app.kubernetes.io/component: role
+		app.kubernetes.io/part-of: cert-manager
+		{{- include "charts.labels" . | nindent 4 }}
 rules:
-  - apiGroups: 
-      - ""
-      - apps
-      - traefik.io
-    resources: 
-      - pods
-      - services
-      - deployments
-      - ingressroutetcps
-      - ingressroutes
-    verbs: 
-      - get
-      - list
-      - watch
-      - create
-      - update
-      - patch
-      - delete
+	- apiGroups:
+		- cert-manager.io
+		resources:
+		- certificates
+		verbs:
+		- get
+		- list
+		- watch
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: traefik-manager
-  namespace: traefik
-  labels:
-    app.kubernetes.io/component: role
-    app.kubernetes.io/part-of: traefik
-    {{- include "charts.labels" . | nindent 4 }}
+	name: isolet-cert-copier
+	namespace: {{ .Values.isolet.namespace }}
+	labels:
+		app.kubernetes.io/component: role
+		app.kubernetes.io/part-of: isolet
+		{{- include "charts.labels" . | nindent 4 }}
 rules:
-  - apiGroups: 
-      - ""
-      - apps
-    resources: 
-      - configmaps
-      - deployments
-      - services
-    verbs: 
-      - get
-      - list
-      - watch
-      - create
-      - update
-      - patch
-      - delete
+	- apiGroups:
+		- ""
+		resources:
+		- secrets
+		verbs:
+		- get
+		- list
+		- watch
+		- create
+		- update
+		- patch
+		- delete
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: automation-manager
-  namespace: {{ .Values.automation.namespace }}
-  labels:
-    app.kubernetes.io/component: role
-    app.kubernetes.io/part-of: automation
-    {{- include "charts.labels" . | nindent 4 }}
+	name: dynamic-cert-copier
+	namespace: {{ .Values.dynamic.namespace }}
+	labels:
+		app.kubernetes.io/component: role
+		app.kubernetes.io/part-of: dynamic
+		{{- include "charts.labels" . | nindent 4 }}
 rules:
-  - apiGroups: 
-      - ""
-      - apps
-    resources: 
-      - pods
-      - services
-      - deployments
-      - configmaps
-      - secrets
-    verbs: 
-      - get
-      - list
-      - watch
-      - create
-      - update
-      - patch
-      - delete
+	- apiGroups:
+		- ""
+		resources:
+		- secrets
+		verbs:
+		- get
+		- list
+		- watch
+		- create
+		- update
+		- patch
+		- delete
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: store-manager
-  namespace: store
-  labels:
-    app.kubernetes.io/component: role
-    app.kubernetes.io/part-of: store
-    {{- include "charts.labels" . | nindent 4 }}
+	name: cert-secret-reader
+	namespace: cert-manager
+	labels:
+		app.kubernetes.io/component: role
+		app.kubernetes.io/part-of: cert-manager
+		{{- include "charts.labels" . | nindent 4 }}
 rules:
-  - apiGroups: 
-      - ""
-    resources: 
-      - configmaps
-      - secrets
-    verbs: 
-      - get
-      - list
-      - watch
-      - create
-      - update
-      - patch
-      - delete
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: cert-reader
-  namespace: cert-manager
-  labels:
-    app.kubernetes.io/component: role
-    app.kubernetes.io/part-of: cert-manager
-    {{- include "charts.labels" . | nindent 4 }}
-rules:
-  - apiGroups:
-    - cert-manager.io
-    resources:
-    - certificates
-    verbs:
-    - get
-    - list
-    - watch
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: isolet-cert-copier
-  namespace: {{ .Values.isolet.namespace }}
-  labels:
-    app.kubernetes.io/component: role
-    app.kubernetes.io/part-of: isolet
-    {{- include "charts.labels" . | nindent 4 }}
-rules:
-  - apiGroups:
-    - ""
-    resources:
-    - secrets
-    verbs:
-    - get
-    - list
-    - watch
-    - create
-    - update
-    - patch
-    - delete
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: dynamic-cert-copier
-  namespace: {{ .Values.dynamic.namespace }}
-  labels:
-    app.kubernetes.io/component: role
-    app.kubernetes.io/part-of: dynamic
-    {{- include "charts.labels" . | nindent 4 }}
-rules:
-  - apiGroups:
-    - ""
-    resources:
-    - secrets
-    verbs:
-    - get
-    - list
-    - watch
-    - create
-    - update
-    - patch
-    - delete
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: cert-secret-reader
-  namespace: cert-manager
-  labels:
-    app.kubernetes.io/component: role
-    app.kubernetes.io/part-of: cert-manager
-    {{- include "charts.labels" . | nindent 4 }}
-rules:
-  - apiGroups:
-    - ""
-    resources:
-    - secrets
-    verbs:
-    - get
-    - list
-    - watch
+	- apiGroups:
+		- ""
+		resources:
+		- secrets
+		verbs:
+		- get
+		- list
+		- watch
