@@ -136,7 +136,10 @@ certManager:
 # base64 encoded secrets
 ## PLEASE DO NOT USE DEFAULT VALUES FOR PRODUCTION
 secrets:
-  tokenSigningKey: dHJ1c3RtZWJybw==
+  signing:
+    token: dHJ1c3RtZWJybw==
+    instance: dHJ1c3RtZWJybw==
+
   dns:
     token: MTQyNGU2ZjBhMTQ2MzM5Yjc0YWYyNzlkNjRhOTIzNjI== # cloudflare token
 
