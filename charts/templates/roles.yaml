@@ -3,7 +3,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: isolet-manager
-  namespace: {{ .Values.isolet.namespace }}
+  namespace: isolet
   labels:
     app.kubernetes.io/component: role
     app.kubernetes.io/part-of: isolet
@@ -47,7 +47,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: isolet-cert-copier
-  namespace: {{ .Values.isolet.namespace }}
+  namespace: isolet
   labels:
     app.kubernetes.io/component: role
     app.kubernetes.io/part-of: isolet

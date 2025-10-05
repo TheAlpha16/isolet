@@ -15,7 +15,7 @@ data:
       kubernetesCRD:
         namespaces:
           - dynamic
-          - {{ .Values.isolet.namespace }}
+          - isolet
     entryPoints:
       web:
         address: ":80"

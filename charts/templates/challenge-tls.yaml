@@ -38,7 +38,7 @@ spec:
 
                           CERT_NAME="challenge-certs"
                           CERT_NAMESPACE="cert-manager"
-                          TARGET_NAMESPACES="{{ .Values.isolet.namespace }} dynamic"
+                          TARGET_NAMESPACES="isolet dynamic"
 
                           echo "[#] Waiting for certificate $CERT_NAME to be Ready..."
 

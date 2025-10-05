@@ -83,8 +83,6 @@ platform:
 
 # isolated challenges unit
 isolet:
-  namespace: isolet
-
   concurrentInstances: 2
   defaultCPU: 15m
   defaultMemory: 32Mi

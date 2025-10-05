@@ -18,7 +18,7 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ .Values.isolet.namespace }}
+  name: isolet
   labels:
     {{- include "charts.labels" . | nindent 4 }}
 
