@@ -35,6 +35,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	challengesv1 "github.com/TheAlpha16/isolet/tide/api/v1"
+	"github.com/TheAlpha16/isolet/tide/utils"
 )
 
 // InstanceReconciler reconciles a Instance object
@@ -655,6 +656,7 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 	// For each HTTP/HTTPS endpoint, create/update an IngressRoute
 	ingressRouteName := fmt.Sprintf("ir-%s", instance.Name)
 	serviceName := fmt.Sprintf("svc-%s", instance.Name)
+	resolvedEndpoints := []challengesv1.EndpointStatus{}
 
 	// Define the desired IngressRoute using Traefik SDK
 	ingressRoute := &traefikv1alpha1.IngressRoute{
@@ -693,10 +695,16 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 	var routes []traefikv1alpha1.Route
 	if len(httpEndpoints) == 1 {
 		// Single endpoint, route directly
+		resEndpoint := challengesv1.EndpointStatus{
+			EndpointSpec: httpEndpoints[0],
+			Hostname:     utils.Ptr(fmt.Sprintf("%s.%s.isolet.dev", instance.Name, instance.Spec.Challenge.Name)), // using the match rule as hostname
+			Ready:        true,
+		}
+		resolvedEndpoints = append(resolvedEndpoints, resEndpoint)
 		routes = []traefikv1alpha1.Route{
 			{
 				Kind:  "Rule",
-				Match: fmt.Sprintf("Host(`%s.%s.isolet.dev`)", instance.Name, instance.Spec.Challenge.Name),
+				Match: fmt.Sprintf("Host(`%s`)", *resEndpoint.Hostname),
 				Services: []traefikv1alpha1.Service{
 					{LoadBalancerSpec: traefikv1alpha1.LoadBalancerSpec{
 						Name: serviceName,
@@ -708,6 +716,12 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 	} else {
 		// Multiple endpoints, include endpoint name in path
 		for _, ep := range httpEndpoints {
+			resEP := challengesv1.EndpointStatus{
+				EndpointSpec: ep,
+				Hostname:     utils.Ptr(fmt.Sprintf("%s-%s.%s.isolet.dev", ep.Name, instance.Name, instance.Spec.Challenge.Name)),
+				Ready:        true,
+			}
+			resolvedEndpoints = append(resolvedEndpoints, resEP)
 			route := traefikv1alpha1.Route{
 				Kind:  "Rule",
 				Match: fmt.Sprintf("Host(`%s-%s.%s.isolet.dev`)", ep.Name, instance.Name, instance.Spec.Challenge.Name),
@@ -759,6 +773,15 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 		}
 	}
 
+	// Update resolved endpoints in status if changed
+	if !equalEndpointStatus(instance.Status.Endpoints, resolvedEndpoints) {
+		instance.Status.Endpoints = resolvedEndpoints
+		if err := r.Status().Update(ctx, instance); err != nil {
+			log.Error(err, "failed to update Instance status with resolved endpoints", "instance", instance.Name)
+			return false, err
+		}
+	}
+
 	return true, nil
 }
 
@@ -803,6 +826,26 @@ func equalIngressRouteSpec(a, b *traefikv1alpha1.IngressRouteSpec) bool {
 		}
 	}
 
+	return true
+}
+
+func equalEndpointStatus(a, b []challengesv1.EndpointStatus) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	aMap := make(map[string]challengesv1.EndpointStatus)
+	for _, ep := range a {
+		aMap[ep.Name] = ep
+	}
+	for _, ep := range b {
+		if aep, exists := aMap[ep.Name]; !exists ||
+			aep.Protocol != ep.Protocol ||
+			aep.TargetPort != ep.TargetPort ||
+			aep.Hostname == nil || ep.Hostname == nil || *aep.Hostname != *ep.Hostname ||
+			aep.Ready != ep.Ready {
+			return false
+		}
+	}
 	return true
 }
 
