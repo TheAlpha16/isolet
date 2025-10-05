@@ -22,7 +22,7 @@ type Config struct {
 	Name        string      `env:"NAME"        envDefault:"api"`
 	LogLevel    string      `env:"LOG_LEVEL"   envDefault:"DEBUG"`
 	Environment Environment `env:"ENVIRONMENT" envDefault:"local"`
-	Version     string      `env:"VERSION"     envDefault:"v2.0.0"`
+	Version     string      `env:"VERSION"     envDefault:"2.0.0"`
 
 	Database struct {
 		Name                  string        `env:"DB_NAME" envDefault:"isolet"`
