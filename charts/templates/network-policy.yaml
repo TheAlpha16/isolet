@@ -19,7 +19,7 @@ kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
   name: default-deny-requests
-  namespace: {{ .Values.dynamic.namespace }}
+  namespace: dynamic
   labels:
     app.kubernetes.io/component: network-policy
     app.kubernetes.io/part-of: dynamic

@@ -81,10 +81,6 @@ platform:
     address: valkey://valkey-svc:6379
     useTLS: false
 
-# dynamic challenges unit
-dynamic:
-  namespace: dynamic
-
 # isolated challenges unit
 isolet:
   namespace: isolet

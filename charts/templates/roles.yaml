@@ -71,7 +71,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: dynamic-cert-copier
-  namespace: {{ .Values.dynamic.namespace }}
+  namespace: dynamic
   labels:
     app.kubernetes.io/component: role
     app.kubernetes.io/part-of: dynamic

@@ -60,7 +60,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
     name: dynamic-cert-copier-binding
-    namespace: {{ .Values.dynamic.namespace }}
+    namespace: dynamic
     labels:
         app.kubernetes.io/component: role-binding
         app.kubernetes.io/part-of: dynamic

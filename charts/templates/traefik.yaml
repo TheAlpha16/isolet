@@ -14,7 +14,7 @@ data:
     providers:
       kubernetesCRD:
         namespaces:
-          - {{ .Values.dynamic.namespace }}
+          - dynamic
           - {{ .Values.isolet.namespace }}
     entryPoints:
       web:
