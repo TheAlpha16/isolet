@@ -675,7 +675,7 @@ spec:
     spec:
       containers:
         - name: postgres-database
-          image: "{{ .Values.platform.database.image }}:{{ .Values.platform.database.tag | default "latest" }}"
+          image: "{{ .Values.platform.database.image }}:{{ .Values.platform.database.version | default "latest" }}"
           imagePullPolicy: Always
           resources:
             limits:
@@ -689,17 +689,17 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: api-secrets
-                  key: POSTGRES_PASSWORD
+                  key: DB_PASSWORD
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
                   name: api-secrets
-                  key: POSTGRES_USER
+                  key: DB_USER
             - name: POSTGRES_DB
               valueFrom:
-                secretKeyRef:
-                  name: api-secrets
-                  key: POSTGRES_DATABASE
+                configMapKeyRef:
+                  name: api-config
+                  key: DB_NAME
           ports:
             - name: db-container
               containerPort: 5432
@@ -718,7 +718,7 @@ spec:
               command:
                 - sh
                 - -c
-                - pg_isready -U {{ .Values.secrets.database.dbUser | b64dec }} -d {{ .Values.secrets.database.dbName | b64dec }}
+                - pg_isready -U {{ .Values.secrets.database.user | b64dec }} -d {{ .Values.platform.database.name }}
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
@@ -728,7 +728,7 @@ spec:
               command:
                 - sh
                 - -c
-                - pg_isready -U {{ .Values.secrets.database.dbUser | b64dec }} -d {{ .Values.secrets.database.dbName | b64dec }}
+                - pg_isready -U {{ .Values.secrets.database.user | b64dec }} -d {{ .Values.platform.database.name }}
             initialDelaySeconds: 5
             periodSeconds: 5
             timeoutSeconds: 3
