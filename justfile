@@ -21,26 +21,36 @@ help:
 # --- Common commands ---
 
 # Build the docker image
-docker-build RESOURCE TAG=$(shell cat {{RESOURCE}}/VERSION):
+docker-build RESOURCE TAG="":
 	#!/usr/bin/env bash
 	cd {{RESOURCE}}
-	echo "[#] building docker image for {{RESOURCE}} with tag {{TAG}}"
-	docker build -t {{REGISTRY}}/isolet-{{RESOURCE}}:{{TAG}} .
+	if [ -z "{{TAG}}" ]; then
+		TAG=$(cat VERSION)
+	else
+		TAG="{{TAG}}"
+	fi
+	echo "[#] building docker image for {{RESOURCE}} with tag $TAG"
+	docker build -t {{REGISTRY}}/isolet-{{RESOURCE}}:$TAG .
 	docker build -t {{REGISTRY}}/isolet-{{RESOURCE}}:latest .
-	echo "[#] built docker image for {{RESOURCE}} with tag {{TAG}}"
+	echo "[#] built docker image for {{RESOURCE}} with tag $TAG"
 
 # Push the docker image to the registry
-docker-push RESOURCE TAG=$(shell cat {{RESOURCE}}/VERSION):
+docker-push RESOURCE TAG="":
 	#!/usr/bin/env bash
 	cd {{RESOURCE}}
-	if ! docker image inspect {{REGISTRY}}/isolet-{{RESOURCE}}:{{TAG}} > /dev/null 2>&1; then
-		echo "[!] docker image for {{RESOURCE}} with tag {{TAG}} not found locally. Building it first..."
-		just docker-build {{RESOURCE}} {{TAG}}
+	if [ -z "{{TAG}}" ]; then
+		TAG=$(cat VERSION)
+	else
+		TAG="{{TAG}}"
 	fi
-	echo "[#] pushing docker image for {{RESOURCE}} with tag {{TAG}} to registry"
-	docker push {{REGISTRY}}/isolet-{{RESOURCE}}:{{TAG}}
+	if ! docker image inspect {{REGISTRY}}/isolet-{{RESOURCE}}:$TAG > /dev/null 2>&1; then
+		echo "[!] docker image for {{RESOURCE}} with tag $TAG not found locally. Building it first..."
+		just docker-build {{RESOURCE}} $TAG
+	fi
+	echo "[#] pushing docker image for {{RESOURCE}} with tag $TAG to registry"
+	docker push {{REGISTRY}}/isolet-{{RESOURCE}}:$TAG
 	docker push {{REGISTRY}}/isolet-{{RESOURCE}}:latest
-	echo "[#] pushed docker image for {{RESOURCE}} with tag {{TAG}} to registry"
+	echo "[#] pushed docker image for {{RESOURCE}} with tag $TAG to registry"
 
 # Bump version (usage: just bump RESOURCE patch | minor | major)
 bump RESOURCE LEVEL:
