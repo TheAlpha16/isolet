@@ -22,11 +22,13 @@ import (
 	"strconv"
 	"time"
 
+	traefikv1alpha1 "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -46,6 +48,7 @@ type InstanceReconciler struct {
 // +kubebuilder:rbac:groups=challenges.isolet.dev,resources=instances/finalizers,verbs=update
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=traefik.io,resources=ingressroutes,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -136,8 +139,27 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
+	// 3. Reconcile Ingress
+	ingressReady, err := r.reconcileIngressRoute(ctx, &instance)
+	if err != nil {
+		log.Error(err, "failed to reconcile Ingress for Instance", "instance", req.NamespacedName)
+		if r.setCondition(&instance, "IngressReady", metav1.ConditionFalse, "ReconciliationFailed", err.Error()) {
+			statusChanged = true
+		}
+	} else {
+		if ingressReady {
+			if r.setCondition(&instance, "IngressReady", metav1.ConditionTrue, "IngressAvailable", "Ingress is ready and available") {
+				statusChanged = true
+			}
+		} else {
+			if r.setCondition(&instance, "IngressReady", metav1.ConditionFalse, "IngressNotReady", "Ingress is not yet ready or not needed") {
+				statusChanged = true
+			}
+		}
+	}
+
 	// Update Instance phase based on child resource status
-	newPhase := r.determinePhase(&instance, deploymentReady, serviceReady)
+	newPhase := r.determinePhase(&instance, deploymentReady, serviceReady, ingressReady)
 	if instance.Status.Phase != newPhase {
 		instance.Status.Phase = newPhase
 		statusChanged = true
@@ -172,7 +194,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}, nil
 	}
 
-	// TODO check if IngressRoute exists, create/update if needed
+	// TODO check if Ingress exists, create/update if needed
 	// TODO resolve Hostnames for endpoints, update instance.Status.Endpoints
 	// TODO update Phase to Staged / Running / Failed based on Pod readiness
 
@@ -556,7 +578,7 @@ func (r *InstanceReconciler) isDeploymentReady(deployment *appsv1.Deployment) bo
 }
 
 // determinePhase determines the Instance phase based on child resource status.
-func (r *InstanceReconciler) determinePhase(instance *challengesv1.Instance, deploymentReady, serviceReady bool) challengesv1.Phase {
+func (r *InstanceReconciler) determinePhase(instance *challengesv1.Instance, deploymentReady, serviceReady, ingressReady bool) challengesv1.Phase {
 	// If Deployment is not ready, Instance is Pending
 	if !deploymentReady {
 		return challengesv1.PhasePending
@@ -569,8 +591,8 @@ func (r *InstanceReconciler) determinePhase(instance *challengesv1.Instance, dep
 		}
 	}
 
-	// If Deployment is ready and Service is ready (or not needed), Instance is Running
-	if deploymentReady && serviceReady {
+	// If Deployment, Service and Ingress are ready (or not needed), Instance is Running
+	if deploymentReady && serviceReady && ingressReady {
 		return challengesv1.PhaseRunning
 	}
 
@@ -609,6 +631,179 @@ func (r *InstanceReconciler) setCondition(instance *challengesv1.Instance, condi
 		ObservedGeneration: instance.Generation,
 	})
 	return true // New condition added
+}
+
+// reconcileIngressRoute ensures IngressRoute resources exist for HTTP/HTTPS endpoints.
+// Returns (ready bool, error) where ready indicates if IngressRoutes are properly configured.
+func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance *challengesv1.Instance) (bool, error) {
+	log := logf.FromContext(ctx)
+
+	// Filter endpoints that need IngressRoute (only HTTP/HTTPS)
+	var httpEndpoints []challengesv1.EndpointSpec
+	for _, endpoint := range instance.Spec.Endpoints {
+		if endpoint.Protocol == challengesv1.ProtocolHTTP || endpoint.Protocol == challengesv1.ProtocolHTTPS {
+			httpEndpoints = append(httpEndpoints, endpoint)
+		}
+	}
+
+	// If no HTTP/HTTPS endpoints, ensure no IngressRoute exists and return ready
+	if len(httpEndpoints) == 0 {
+		log.Info("No HTTP/HTTPS endpoints defined for Instance, skipping IngressRoute creation", "instance", instance.Name)
+		return true, nil
+	}
+
+	// For each HTTP/HTTPS endpoint, create/update an IngressRoute
+	ingressRouteName := fmt.Sprintf("ir-%s", instance.Name)
+	serviceName := fmt.Sprintf("svc-%s", instance.Name)
+
+	// Define the desired IngressRoute using Traefik SDK
+	ingressRoute := &traefikv1alpha1.IngressRoute{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      ingressRouteName,
+			Namespace: instance.Namespace,
+			Labels: map[string]string{
+				// standard labels
+				"app.kubernetes.io/name":       instance.Name,
+				"app.kubernetes.io/part-of":    "instance",
+				"app.kubernetes.io/managed-by": "tide-controller",
+				"app.kubernetes.io/component":  "ingress",
+
+				// tide specific labels
+				"challenges.isolet.dev/id":           instance.Name,
+				"challenges.isolet.dev/challenge":    instance.Spec.Challenge.Name,
+				"challenges.isolet.dev/challenge-id": strconv.FormatInt(instance.Spec.Challenge.ID, 10),
+				"challenges.isolet.dev/type":         string(instance.Spec.Challenge.Type),
+				"challenges.isolet.dev/team": func() string {
+					if instance.Spec.Team != nil {
+						return strconv.FormatInt(instance.Spec.Team.ID, 10)
+					}
+					return "dynamic"
+				}(),
+			},
+		},
+		Spec: traefikv1alpha1.IngressRouteSpec{
+			EntryPoints: []string{"web", "websecure"},
+			TLS: &traefikv1alpha1.TLS{
+				SecretName: "challenge-certs",
+			},
+		},
+	}
+
+	// Traefik routes
+	var routes []traefikv1alpha1.Route
+	if len(httpEndpoints) == 1 {
+		// Single endpoint, route directly
+		routes = []traefikv1alpha1.Route{
+			{
+				Kind:  "Rule",
+				Match: fmt.Sprintf("Host(`%s.%s.isolet.dev`)", instance.Name, instance.Spec.Challenge.Name),
+				Services: []traefikv1alpha1.Service{
+					{LoadBalancerSpec: traefikv1alpha1.LoadBalancerSpec{
+						Name: serviceName,
+						Port: intstr.FromInt32(httpEndpoints[0].TargetPort),
+					}},
+				},
+			},
+		}
+	} else {
+		// Multiple endpoints, include endpoint name in path
+		for _, ep := range httpEndpoints {
+			route := traefikv1alpha1.Route{
+				Kind:  "Rule",
+				Match: fmt.Sprintf("Host(`%s-%s.%s.isolet.dev`)", ep.Name, instance.Name, instance.Spec.Challenge.Name),
+				Services: []traefikv1alpha1.Service{
+					{
+						LoadBalancerSpec: traefikv1alpha1.LoadBalancerSpec{
+							Name: serviceName,
+							Port: intstr.FromInt32(ep.TargetPort),
+						},
+					},
+				},
+			}
+			routes = append(routes, route)
+		}
+	}
+	ingressRoute.Spec.Routes = routes
+
+	// Set the Instance as the owner
+	if err := controllerutil.SetControllerReference(instance, ingressRoute, r.Scheme); err != nil {
+		log.Error(err, "failed to set controller reference on IngressRoute", "ingressRoute", ingressRouteName)
+		return false, err
+	}
+
+	// Check if IngressRoute already exists
+	foundIngressRoute := &traefikv1alpha1.IngressRoute{}
+	err := r.Get(ctx, client.ObjectKey{Name: ingressRouteName, Namespace: instance.Namespace}, foundIngressRoute)
+	if err != nil && apierrors.IsNotFound(err) {
+		// Create the IngressRoute
+		log.Info("Creating IngressRoute for Instance", "ingressRoute", ingressRouteName, "instance", instance.Name)
+		if err := r.Create(ctx, ingressRoute); err != nil {
+			log.Error(err, "failed to create IngressRoute", "ingressRoute", ingressRouteName)
+			return false, err
+		}
+		log.Info("Successfully created IngressRoute for Instance", "ingressRoute", ingressRouteName, "instance", instance.Name)
+	} else if err != nil {
+		log.Error(err, "failed to get IngressRoute", "ingressRoute", ingressRouteName)
+		return false, err
+	} else {
+		// IngressRoute exists, check if update is needed
+		if !equalIngressRouteSpec(&foundIngressRoute.Spec, &ingressRoute.Spec) {
+			log.Info("Updating IngressRoute for Instance", "ingressRoute", ingressRouteName, "instance", instance.Name)
+			foundIngressRoute.Spec = ingressRoute.Spec
+			foundIngressRoute.Labels = ingressRoute.Labels
+			if err := r.Update(ctx, foundIngressRoute); err != nil {
+				log.Error(err, "failed to update IngressRoute", "ingressRoute", ingressRouteName)
+				return false, err
+			}
+			log.Info("Successfully updated IngressRoute for Instance", "ingressRoute", ingressRouteName, "instance", instance.Name)
+		}
+	}
+
+	return true, nil
+}
+
+// equalIngressRouteSpec compares two IngressRouteSpec for equality
+func equalIngressRouteSpec(a, b *traefikv1alpha1.IngressRouteSpec) bool {
+	// Compare entry points
+	if len(a.EntryPoints) != len(b.EntryPoints) {
+		return false
+	}
+	for i := range a.EntryPoints {
+		if a.EntryPoints[i] != b.EntryPoints[i] {
+			return false
+		}
+	}
+
+	// Compare routes
+	if len(a.Routes) != len(b.Routes) {
+		return false
+	}
+	for i := range a.Routes {
+		if a.Routes[i].Match != b.Routes[i].Match || a.Routes[i].Kind != b.Routes[i].Kind {
+			return false
+		}
+		if len(a.Routes[i].Services) != len(b.Routes[i].Services) {
+			return false
+		}
+		for j := range a.Routes[i].Services {
+			if a.Routes[i].Services[j].Name != b.Routes[i].Services[j].Name ||
+				a.Routes[i].Services[j].Port != b.Routes[i].Services[j].Port {
+				return false
+			}
+		}
+	}
+
+	// Compare TLS
+	if (a.TLS == nil) != (b.TLS == nil) {
+		return false
+	}
+	if a.TLS != nil && b.TLS != nil {
+		if a.TLS.SecretName != b.TLS.SecretName {
+			return false
+		}
+	}
+
+	return true
 }
 
 // SetupWithManager sets up the controller with the Manager.
