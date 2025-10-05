@@ -97,13 +97,9 @@ isolet:
   limitMemory: 128Mi
   defaultInstanceTime: 30m
 
-challenges:
-  registry:
-    type: private
-    url: asia-south1-docker.pkg.dev/greek-proxy-814691-q2/isolet-dev # if you are using external registry, then provide the url here
-    storageClass: standard # if you are using default registry, then you can use the same storage class as database
-    capacity: 5Gi
-    dockerconfig: ewoJImF1dGhzIjogew...ydWUiCgl9Cn0= # base64 encoded docker config json file (required for private registry)
+registry:
+  type: private
+  url: asia-south1-docker.pkg.dev/greek-proxy-814691-q2/isolet-dev # if you are using external registry, then provide the url here
 
 # automation task unit
 automation:
@@ -161,3 +157,6 @@ secrets:
   valkey:
     username: ""
     password: "" # base64 encoded Valkey/Redis password (optional, leave empty if no auth) 
+
+  registry:
+    dockerconfig: ewoJImF1dGhzIjogew...ydWUiCgl9Cn0= # base64 encoded docker config json file (required for private registry)
