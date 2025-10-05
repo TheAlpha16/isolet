@@ -102,10 +102,6 @@ automation:
     image: isolet-tide
     version: 1.0.0
 
-# admin unit
-admin:
-  namespace: admin
-
 users:
   - email: menoone@gmail.com
     username: noone
