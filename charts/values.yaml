@@ -96,8 +96,6 @@ registry:
 
 # automation task unit
 automation:
-  namespace: automation
-
   tide:
     image: isolet-tide
     version: 1.0.0
