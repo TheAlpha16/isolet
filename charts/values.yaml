@@ -21,8 +21,6 @@ event:
 
 # platform unit
 platform:
-  namespace: platform
-
   database:
     enabled: true
     image: postgres

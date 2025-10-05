@@ -15,7 +15,7 @@ roleRef:
 subjects:
     - kind: ServiceAccount
         name: api-service-account
-        namespace: {{ .Values.platform.namespace }}
+        namespace: platform
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1

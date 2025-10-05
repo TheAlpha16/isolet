@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: pgbouncer-deployment
-  namespace: {{ .Values.platform.namespace }}
+  namespace: platform
   labels: 
     app.kubernetes.io/component: deployment
     app.kubernetes.io/part-of: pgbouncer
@@ -63,7 +63,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: pgbouncer-svc
-  namespace: {{ .Values.platform.namespace }}
+  namespace: platform
   labels: 
     app.kubernetes.io/component: service
     app.kubernetes.io/part-of: pgbouncer
@@ -81,7 +81,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: pgbouncer-hpa
-  namespace: {{ .Values.platform.namespace }}
+  namespace: platform
   labels: 
     app.kubernetes.io/component: hpa
     app.kubernetes.io/part-of: pgbouncer

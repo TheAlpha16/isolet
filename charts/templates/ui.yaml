@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ui-deployment
-  namespace: {{ .Values.platform.namespace }}
+  namespace: platform
   labels:
     app.kubernetes.io/component: deployment
     app.kubernetes.io/part-of: ui
@@ -40,7 +40,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: ui-svc
-  namespace: {{ .Values.platform.namespace }}
+  namespace: platform
   labels:
     app.kubernetes.io/component: service
     app.kubernetes.io/part-of: ui
@@ -58,7 +58,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: ui-hpa
-  namespace: {{ .Values.platform.namespace }}
+  namespace: platform
   labels:
     app.kubernetes.io/component: hpa
     app.kubernetes.io/part-of: ui
