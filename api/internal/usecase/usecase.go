@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/TheAlpha16/isolet/api/external"
 	"github.com/TheAlpha16/isolet/api/infra"
 	"github.com/TheAlpha16/isolet/api/infra/cache"
 	authDom "github.com/TheAlpha16/isolet/api/internal/domain/auth"
@@ -45,7 +46,7 @@ type Usecases struct {
 	Instance   instanceDom.Usecase
 }
 
-func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repository.Repositories, infra *infra.Infra) *Usecases {
+func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repository.Repositories, infra *infra.Infra, external *external.Services) *Usecases {
 	// helpers
 	cv := cvUc.New(ctx, repos.ConfigVars, infra.CNC)
 	token := tokenUc.New(cache)
@@ -59,7 +60,7 @@ func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repo
 	score := scoreUc.New(repos.Score, team, cache)
 	challenge := challengeUc.New(repos.Challenge, cv, score, wg)
 	profile := profileUc.New(cache, user, team, challenge)
-	instance := instanceUc.New(repos.Instance, cache, challenge)
+	instance := instanceUc.New(repos.Instance, external.Instance, cache, challenge)
 
 	return &Usecases{
 		User:       user,

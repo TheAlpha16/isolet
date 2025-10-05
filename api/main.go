@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	restDel "github.com/TheAlpha16/isolet/api/delivery/rest"
+	"github.com/TheAlpha16/isolet/api/external"
 	"github.com/TheAlpha16/isolet/api/infra"
 	"github.com/TheAlpha16/isolet/api/infra/cache"
 	"github.com/TheAlpha16/isolet/api/infra/database/postgres"
@@ -69,11 +70,14 @@ func main() {
 		appLogger.Fatal("failed to initialize infra services", zap.Error(err))
 	}
 
+	// External services
+	external := external.New()
+
 	// Init repositories
 	repos := repository.New(dbPool, cache)
 
 	// Init usecases
-	usecases := usecase.New(ctx, &wg, cache, repos, infra)
+	usecases := usecase.New(ctx, &wg, cache, repos, infra, external)
 
 	// Start the rest server
 	StartRestServer(ctx, usecases, infra)

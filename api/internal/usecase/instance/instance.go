@@ -14,6 +14,7 @@ import (
 
 type instanceImpl struct {
 	repo        instanceDom.Repository
+	service     instanceDom.Service
 	cache       cache.Cache
 	challengeUc challengeDom.Usecase
 }
@@ -142,9 +143,10 @@ func (i *instanceImpl) releaseInstanceLock(ctx context.Context, teamID, challeng
 	return i.cache.Delete(ctx, instanceDom.InstanceCacheKey(teamID, challengeID))
 }
 
-func New(repo instanceDom.Repository, cache cache.Cache, challengeUc challengeDom.Usecase) instanceDom.Usecase {
+func New(repo instanceDom.Repository, service instanceDom.Service, cache cache.Cache, challengeUc challengeDom.Usecase) instanceDom.Usecase {
 	return &instanceImpl{
 		repo:        repo,
+		service:     service,
 		cache:       cache,
 		challengeUc: challengeUc,
 	}
