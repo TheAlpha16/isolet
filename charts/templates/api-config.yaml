@@ -6,7 +6,7 @@ metadata:
   labels: 
     app.kubernetes.io/component: config
     app.kubernetes.io/part-of: api
-    {{- include "charts.labels" . | nindent 2 }}
+    {{- include "charts.labels" . | nindent 4 }}
 data:
   # Application
   LOG_LEVEL: "INFO"
