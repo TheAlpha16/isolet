@@ -628,7 +628,7 @@ data:
     ('TEAM_LEN', '{{ .Values.event.teamLength }}'),
     ('CTF_NAME', '{{ .Values.event.name }}'),
     ('CONCURRENT_INSTANCES', '{{ .Values.isolet.concurrentInstances }}'),
-    ('INSTANCE_HOSTNAME', '{{ .Values.challenges.url }}'),
+    ('INSTANCE_HOSTNAME', '{{ .Values.event.domain }}'),
     ('INSTANCE_TIME', '{{ .Values.isolet.defaultInstanceTime }}'),
     ('MAX_INSTANCE_TIME', '{{ .Values.isolet.maxInstanceTime }}'),
     ('EMAIL_ID', '{{ .Values.secrets.smtp.emailID | b64dec }}'),

@@ -36,7 +36,7 @@ spec:
             - containerPort: 80
           env:
             - name: PROXY_SERVER_NAME
-              value: {{ .Values.event.publicURL }}
+              value: {{ .Values.event.domain }}
             - name: UI_URL
               value: ui-svc
             - name: API_URL

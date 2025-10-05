@@ -5,6 +5,7 @@ event:
   end: "1741564800" # unix timestamp in seconds
   postEvent: false
   publicURL: https://isolet.dev
+  domain: isolet.dev
   teamSize: 4 # max number of users in a team
   allowedDomains: 
     - gmail.com

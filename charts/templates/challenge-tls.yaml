@@ -11,8 +11,8 @@ spec:
         name: letsencrypt
         kind: ClusterIssuer
     dnsNames:
-        - { { .Values.event.publicURL } }
-        - "*.{{ .Values.event.publicURL }}"
+        - { { .Values.event.domain } }
+        - "*.{{ .Values.event.domain }}"
 
 ---
 apiVersion: batch/v1
