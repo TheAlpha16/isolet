@@ -14,7 +14,7 @@ data:
   VERSION: {{ .Values.platform.api.version | quote }}
 
   # Database
-  DB_NAME: {{ .Values.platform.database.name | quote }}
+  DB_NAME: {{ .Values.platform.database.name }}
   DB_HOST: "pgbouncer-svc"
   DB_PORT: "5432"
   DB_MAX_OPEN_CONNECTIONS: {{ .Values.platform.database.maxOpenConnections | quote }}
@@ -26,21 +26,21 @@ data:
   SENTRY_TRACE_SAMPLE_RATE: {{ .Values.platform.api.sentry.traceSampleRate | quote }}
 
   # Valkey/Redis
-  VALKEY_ADDRESS: {{ .Values.platform.valkey.address | quote }}
+  VALKEY_ADDRESS: {{ .Values.platform.valkey.address }}
   VALKEY_USE_TLS: {{ .Values.platform.valkey.useTLS | quote }}
 
   # Token Configuration
-  TOKEN_EMAIL_VERIFICATION_VALIDITY: {{ .Values.platform.api.token.emailVerificationValidity | quote }}
-  TOKEN_AUTH_VALIDITY: {{ .Values.platform.api.token.authValidity | quote }}
-  TOKEN_PASSWORD_RESET_VALIDITY: {{ .Values.platform.api.token.passwordResetValidity | quote }}
-  TOKEN_TEAM_INVITE_VALIDITY: {{ .Values.platform.api.token.teamInviteValidity | quote }}
+  TOKEN_EMAIL_VERIFICATION_VALIDITY: {{ .Values.platform.api.token.emailVerificationValidity }}
+  TOKEN_AUTH_VALIDITY: {{ .Values.platform.api.token.authValidity }}
+  TOKEN_PASSWORD_RESET_VALIDITY: {{ .Values.platform.api.token.passwordResetValidity }}
+  TOKEN_TEAM_INVITE_VALIDITY: {{ .Values.platform.api.token.teamInviteValidity }}
 
   # Config Vars
-  CONFIG_VARS_REFRESH_INTERVAL: {{ .Values.platform.api.configVars.refreshInterval | quote }}
+  CONFIG_VARS_REFRESH_INTERVAL: {{ .Values.platform.api.configVars.refreshInterval }}
 
   # SMTP
   SMTP_RETRIES: {{ .Values.platform.api.smtp.retries | quote }}
-  SMTP_TIMEOUT: {{ .Values.platform.api.smtp.timeout | quote }}
+  SMTP_TIMEOUT: {{ .Values.platform.api.smtp.timeout }}
   SMTP_CHANNEL_SIZE: {{ .Values.platform.api.smtp.channelSize | quote }}
 
-  INSTANCE_LIFETIME: {{ .Values.isolet.defaultInstanceTime | quote }}
+  INSTANCE_LIFETIME: {{ .Values.isolet.defaultInstanceTime }}
