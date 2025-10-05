@@ -22,13 +22,9 @@ spec:
         app.kubernetes.io/part-of: api
     spec:
       serviceAccountName: api-service-account
-      {{- if eq .Values.registry.type "private" }}
-      imagePullSecrets:
-      - name: build-registry-secret
-      {{- end }}
       containers:
         - name: api
-          image: "{{ .Values.registry.url }}/{{ .Values.platform.api.image }}:{{ .Values.platform.api.tag | default "latest" }}"
+          image: "{{ .Values.platform.api.image }}:{{ .Values.platform.api.version | quote }}"
           imagePullPolicy: Always
           resources:
             limits:
@@ -46,7 +42,7 @@ spec:
                 name: api-secrets
           readinessProbe:
             httpGet:
-              path: /ping
+              path: /api/v1/ping
               port: 80
             initialDelaySeconds: 30
             periodSeconds: 10
