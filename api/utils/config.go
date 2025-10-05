@@ -88,6 +88,12 @@ type Config struct {
 		StopTimeout   time.Duration `env:"INSTANCE_STOP_TIMEOUT" envDefault:"2m"`
 		ExtendTimeout time.Duration `env:"INSTANCE_EXTEND_TIMEOUT" envDefault:"5s"`
 		Lifetime      time.Duration `env:"INSTANCE_LIFETIME" envDefault:"30m"`
+		Namespace     string        `env:"INSTANCE_NAMESPACE" envDefault:"isolet"`
+		DefaultCPU    string        `env:"INSTANCE_DEFAULT_CPU" envDefault:"100m"`
+		DefaultMemory string        `env:"INSTANCE_DEFAULT_MEMORY" envDefault:"128Mi"`
+		LimitCPU      string        `env:"INSTANCE_LIMIT_CPU" envDefault:"500m"`
+		LimitMemory   string        `env:"INSTANCE_LIMIT_MEMORY" envDefault:"512Mi"`
+		MaxLifetime   time.Duration `env:"INSTANCE_MAX_LIFETIME" envDefault:"2h"`
 	}
 }
 
