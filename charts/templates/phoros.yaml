@@ -32,7 +32,7 @@ spec:
             - name: ADMIN_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: platform-secrets
+                  name: api-secrets
                   key: TOKEN_SIGNING_KEY
             - name: EVENT_START
               value: {{ .Values.event.start }}
