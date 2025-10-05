@@ -19,40 +19,27 @@ spec:
         app.kubernetes.io/component: deployment
         app.kubernetes.io/part-of: fileserver
     spec:
-      {{- if eq .Values.registry.type "private" }}
-      imagePullSecrets:
-      - name: build-registry-secret
-      {{- end }}
       containers:
         - name: phoros-fileserver
-          image: "{{ .Values.registry.url }}/{{ .Values.platform.fileserver.image }}:{{ .Values.platform.fileserver.tag | default "latest" }}"
+          image: "{{ .Values.platform.fileserver.image }}:{{ .Values.platform.fileserver.version | default "latest" }}"
           imagePullPolicy: Always
           env:
             - name: SESSION_SECRET
               valueFrom:
                 secretKeyRef:
                   name: api-secrets
-                  key: SESSION_SECRET
+                  key: TOKEN_SIGNING_KEY
             - name: ADMIN_SECRET
               valueFrom:
                 secretKeyRef:
                   name: platform-secrets
-                  key: ADMIN_SECRET
+                  key: TOKEN_SIGNING_KEY
             - name: EVENT_START
-              valueFrom:
-                configMapKeyRef:
-                  name: api-config
-                  key: EVENT_START
+              value: {{ .Values.event.start }}
             - name: EVENT_END
-              valueFrom:
-                configMapKeyRef:
-                  name: api-config
-                  key: EVENT_END
+              value: {{ .Values.event.end }}
             - name: POST_EVENT
-              valueFrom:
-                configMapKeyRef:
-                  name: api-config
-                  key: POST_EVENT
+              value: {{ .Values.event.postEvent | quote }}
             - name: OBJECT_STORE
               valueFrom:
                 configMapKeyRef:
