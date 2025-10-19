@@ -134,7 +134,7 @@ func (v *InstanceCustomValidator) ValidateUpdate(_ context.Context, oldObj, newO
 	if oldInstance.Spec.Challenge.ID != newInstance.Spec.Challenge.ID {
 		return nil, fmt.Errorf("challenge.id is immutable")
 	}
-	if oldInstance.Spec.Challenge.Name != newInstance.Spec.Challenge.Name {
+	if oldInstance.Spec.Challenge.Slug != newInstance.Spec.Challenge.Slug {
 		return nil, fmt.Errorf("challenge.name is immutable")
 	}
 	if oldInstance.Spec.Challenge.Image != newInstance.Spec.Challenge.Image {

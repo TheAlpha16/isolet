@@ -61,7 +61,7 @@ var _ = Describe("Instance Controller", func() {
 			Spec: challengesv1.InstanceSpec{
 				Challenge: challengesv1.Challenge{
 					ID:    1,
-					Name:  "test-challenge",
+					Slug:  "test-challenge",
 					Type:  challengesv1.ChallengeTypeDynamic,
 					Image: "nginx:latest",
 				},

@@ -221,7 +221,7 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 
 				// tide specific labels
 				"challenges.isolet.dev/id":           instance.Name,
-				"challenges.isolet.dev/challenge":    instance.Spec.Challenge.Name,
+				"challenges.isolet.dev/challenge":    instance.Spec.Challenge.Slug,
 				"challenges.isolet.dev/challenge-id": strconv.FormatInt(instance.Spec.Challenge.ID, 10),
 				"challenges.isolet.dev/type":         string(instance.Spec.Challenge.Type),
 				"challenges.isolet.dev/team": func() string {
@@ -348,7 +348,7 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 
 				// tide specific labels
 				"challenges.isolet.dev/id":           instance.Name,
-				"challenges.isolet.dev/challenge":    instance.Spec.Challenge.Name,
+				"challenges.isolet.dev/challenge":    instance.Spec.Challenge.Slug,
 				"challenges.isolet.dev/challenge-id": strconv.FormatInt(instance.Spec.Challenge.ID, 10),
 				"challenges.isolet.dev/type":         string(instance.Spec.Challenge.Type),
 				"challenges.isolet.dev/team": func() string {
@@ -672,7 +672,7 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 
 				// tide specific labels
 				"challenges.isolet.dev/id":           instance.Name,
-				"challenges.isolet.dev/challenge":    instance.Spec.Challenge.Name,
+				"challenges.isolet.dev/challenge":    instance.Spec.Challenge.Slug,
 				"challenges.isolet.dev/challenge-id": strconv.FormatInt(instance.Spec.Challenge.ID, 10),
 				"challenges.isolet.dev/type":         string(instance.Spec.Challenge.Type),
 				"challenges.isolet.dev/team": func() string {
@@ -697,7 +697,7 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 		// Single endpoint, route directly
 		resEndpoint := challengesv1.EndpointStatus{
 			EndpointSpec: httpEndpoints[0],
-			Hostname:     utils.Ptr(fmt.Sprintf("%s.%s.isolet.dev", instance.Name, instance.Spec.Challenge.Name)), // using the match rule as hostname
+			Hostname:     utils.Ptr(fmt.Sprintf("%s.%s.isolet.dev", instance.Name, instance.Spec.Challenge.Slug)), // using the match rule as hostname
 			Ready:        true,
 		}
 		resolvedEndpoints = append(resolvedEndpoints, resEndpoint)
@@ -718,13 +718,13 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 		for _, ep := range httpEndpoints {
 			resEP := challengesv1.EndpointStatus{
 				EndpointSpec: ep,
-				Hostname:     utils.Ptr(fmt.Sprintf("%s-%s.%s.isolet.dev", ep.Name, instance.Name, instance.Spec.Challenge.Name)),
+				Hostname:     utils.Ptr(fmt.Sprintf("%s-%s.%s.isolet.dev", ep.Name, instance.Name, instance.Spec.Challenge.Slug)),
 				Ready:        true,
 			}
 			resolvedEndpoints = append(resolvedEndpoints, resEP)
 			route := traefikv1alpha1.Route{
 				Kind:  "Rule",
-				Match: fmt.Sprintf("Host(`%s-%s.%s.isolet.dev`)", ep.Name, instance.Name, instance.Spec.Challenge.Name),
+				Match: fmt.Sprintf("Host(`%s-%s.%s.isolet.dev`)", ep.Name, instance.Name, instance.Spec.Challenge.Slug),
 				Services: []traefikv1alpha1.Service{
 					{
 						LoadBalancerSpec: traefikv1alpha1.LoadBalancerSpec{

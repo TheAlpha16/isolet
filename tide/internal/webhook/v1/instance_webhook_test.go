@@ -44,7 +44,7 @@ var _ = Describe("Instance Webhook", func() {
 			Spec: challengesv1.InstanceSpec{
 				Challenge: challengesv1.Challenge{
 					ID:    1,
-					Name:  "test-challenge",
+					Slug:  "test-challenge",
 					Type:  challengesv1.ChallengeTypeDynamic,
 					Image: "nginx:latest",
 				},
@@ -363,7 +363,7 @@ var _ = Describe("Instance Webhook", func() {
 			By("Creating instances with different challenge names")
 			oldObj := createValidInstance()
 			newObj := createValidInstance()
-			newObj.Spec.Challenge.Name = "different-challenge"
+			newObj.Spec.Challenge.Slug = "different-challenge"
 
 			By("Validating the update")
 			warnings, err := validator.ValidateUpdate(ctx, oldObj, newObj)

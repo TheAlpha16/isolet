@@ -75,7 +75,7 @@ type Challenge struct {
 	// +kubebuilder:validation:MaxLength=63
 	// +kubebuilder:validation:Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`
 	// +required
-	Name string `json:"name"`
+	Slug string `json:"slug"`
 
 	// Optional flag injected into the instance as an environment variable.
 	// +optional

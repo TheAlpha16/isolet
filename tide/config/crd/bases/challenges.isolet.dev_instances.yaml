@@ -82,7 +82,7 @@ spec:
                   image:
                     description: Container image used to run the challenge.
                     type: string
-                  name:
+                  slug:
                     description: |-
                       DNS-safe slug derived from the challenge name.
                       Example: "Alice's Adventure" -> "alices-adventure".
@@ -99,7 +99,7 @@ spec:
                 required:
                 - id
                 - image
-                - name
+                - slug
                 - type
                 type: object
               endpoints:
