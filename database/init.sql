@@ -213,6 +213,39 @@ ALTER SEQUENCE public.hints_id_seq OWNED BY public.hints.id;
 
 
 --
+-- Name: instances; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.instances (
+    id bigint NOT NULL,
+    created_at bigint,
+    updated_at bigint,
+    team_id bigint NOT NULL,
+    challenge_id bigint NOT NULL,
+    expires_at bigint NOT NULL
+);
+
+
+--
+-- Name: instances_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.instances_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: instances_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.instances_id_seq OWNED BY public.instances.id;
+
+
+--
 -- Name: solves; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -410,6 +443,13 @@ ALTER TABLE ONLY public.hints ALTER COLUMN id SET DEFAULT nextval('public.hints_
 
 
 --
+-- Name: instances id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.instances ALTER COLUMN id SET DEFAULT nextval('public.instances_id_seq'::regclass);
+
+
+--
 -- Name: solves id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -474,6 +514,14 @@ ALTER TABLE ONLY public.config_vars
 
 ALTER TABLE ONLY public.hints
     ADD CONSTRAINT hints_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: instances instances_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.instances
+    ADD CONSTRAINT instances_pkey PRIMARY KEY (id);
 
 
 --
@@ -542,6 +590,13 @@ CREATE UNIQUE INDEX idx_config_vars_key ON public.config_vars USING btree (key);
 --
 
 CREATE INDEX idx_hints_challenge_id ON public.hints USING btree (challenge_id);
+
+
+--
+-- Name: idx_instances_team_challenge; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_instances_team_challenge ON public.instances USING btree (team_id, challenge_id);
 
 
 --
@@ -628,6 +683,22 @@ ALTER TABLE ONLY public.challenges
 
 ALTER TABLE ONLY public.hints
     ADD CONSTRAINT fk_challenges_hints FOREIGN KEY (challenge_id) REFERENCES public.challenges(id) ON DELETE CASCADE;
+
+
+--
+-- Name: instances fk_instances_challenge; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.instances
+    ADD CONSTRAINT fk_instances_challenge FOREIGN KEY (challenge_id) REFERENCES public.challenges(id) ON DELETE CASCADE;
+
+
+--
+-- Name: instances fk_instances_team; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.instances
+    ADD CONSTRAINT fk_instances_team FOREIGN KEY (team_id) REFERENCES public.teams(id) ON DELETE CASCADE;
 
 
 --
