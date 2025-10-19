@@ -635,7 +635,7 @@ func (r *InstanceReconciler) setCondition(instance *challengesv1.Instance, condi
 }
 
 // reconcileIngressRoute ensures IngressRoute resources exist for HTTP/HTTPS endpoints.
-// Returns (ready bool, error) where ready indicates if IngressRoutes are properly configured.
+// Returns (ready bool, err error) where ready indicates if IngressRoutes are properly configured.
 func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance *challengesv1.Instance) (bool, error) {
 	log := logf.FromContext(ctx)
 
