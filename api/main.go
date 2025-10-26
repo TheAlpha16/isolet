@@ -71,7 +71,11 @@ func main() {
 	}
 
 	// External services
-	external := external.New()
+	external, err := external.New(ctx)
+	if err != nil {
+		errorDom.RaiseToSentry(ctx, err)
+		appLogger.Fatal("failed to initialize external services", zap.Error(err))
+	}
 
 	// Init repositories
 	repos := repository.New(dbPool, cache)

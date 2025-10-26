@@ -101,6 +101,9 @@ const (
 	ErrInstanceNotFound       ErrorCode = "INSTANCE-01"
 	ErrInstanceWIP            ErrorCode = "INSTANCE-02"
 	ErrInstanceAlreadyRunning ErrorCode = "INSTANCE-03"
+
+	// k8s errors
+	ErrK8sConnectionFailed ErrorCode = "K8S-00"
 )
 
 // Map of error codes to user-facing messages
@@ -205,6 +208,7 @@ var ServerErrorCodes = map[ErrorCode]struct{}{
 	ErrEmailLinkBuild:         {},
 	ErrScoreUpdateFailed:      {},
 	ErrCacheZSetMissingMember: {},
+	ErrK8sConnectionFailed:    {},
 }
 
 // Map of auth error codes
