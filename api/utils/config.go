@@ -95,6 +95,10 @@ type Config struct {
 		LimitMemory   string        `env:"INSTANCE_LIMIT_MEMORY" envDefault:"512Mi"`
 		MaxLifetime   time.Duration `env:"INSTANCE_MAX_LIFETIME" envDefault:"2h"`
 	}
+
+	K8s struct {
+		KubeConfigFilePath string `env:"K8S_KUBE_CONFIG_FILE_PATH" envDefault:""`
+	}
 }
 
 func GetConfig() *Config {
