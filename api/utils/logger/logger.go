@@ -62,7 +62,7 @@ func New() *StandardLogger {
 }
 
 func (l *StandardLogger) WithFields(fields ...zapcore.Field) *StandardLogger {
-	return &StandardLogger{l.Logger.With(fields...)}
+	return &StandardLogger{l.With(fields...)}
 }
 
 func (l *StandardLogger) Sync() {
