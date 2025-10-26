@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	tokenDom "github.com/TheAlpha16/isolet/api/internal/domain/token"
 	userDom "github.com/TheAlpha16/isolet/api/internal/domain/user"
@@ -61,7 +60,7 @@ func (claims *Claims) ToJWTToken(ctx context.Context) (jwt.Token, error) {
 func (claims *Claims) Validate(ctx context.Context) error {
 	err := validator.Validate(ctx, claims)
 	if err != nil {
-		return errors.Raise(ctx, errors.ErrTokenMalformed, "validation failed", err, nil)
+		return errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "validation failed", err, nil)
 	}
 
 	var userIdRequired, teamIdRequired, roleRequired bool
@@ -77,13 +76,13 @@ func (claims *Claims) Validate(ctx context.Context) error {
 	}
 
 	if userIdRequired && claims.UserID == nil {
-		return errors.Raise(ctx, errors.ErrTokenMalformed, "user_id is missing", nil, nil)
+		return errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "user_id is missing", nil, nil)
 	}
 	if teamIdRequired && claims.TeamID == nil {
-		return errors.Raise(ctx, errors.ErrTokenMalformed, "team_id is missing", nil, nil)
+		return errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "team_id is missing", nil, nil)
 	}
 	if roleRequired && claims.Role == nil {
-		return errors.Raise(ctx, errors.ErrTokenMalformed, "role is missing", nil, nil)
+		return errorDom.Raise(ctx, errorDom.ErrTokenMalformed, "role is missing", nil, nil)
 	}
 
 	return nil
@@ -114,9 +113,9 @@ func JWTTokenToClaims(ctx context.Context, token jwt.Token) (*Claims, error) {
 	claims.Purpose = tokenDom.TokenPurpose(purpose)
 
 	// These are optional - only parse if present
-	token.Get(userIDClaim, &userIDFloat)
-	token.Get(teamIDClaim, &teamIDFloat)
-	token.Get(roleClaim, &roleString)
+	token.Get(userIDClaim, &userIDFloat) //nolint:errcheck
+	token.Get(teamIDClaim, &teamIDFloat) //nolint:errcheck
+	token.Get(roleClaim, &roleString)    //nolint:errcheck
 
 	if userIDFloat != 0 {
 		userID := int64(userIDFloat)

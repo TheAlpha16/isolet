@@ -138,10 +138,13 @@ func New(ctx context.Context, repo cvDom.Repository, cnc cnc.CNC) cvDom.Usecase 
 	cv.startAutoRefresh(config.ConfigVars.RefreshInterval)
 
 	// register handler for distributed cache refresh
-	cv.cnc.Register(refreshCacheCmd, func(ctx context.Context, params map[string]any) error {
+	if err := cv.cnc.Register(refreshCacheCmd, func(ctx context.Context, params map[string]any) error {
 		cv.refresh(ctx)
 		return nil
-	})
+	}); err != nil {
+		errorDom.RaiseToSentry(ctx, err)
+		logger.GetAppLogger().Panic("failed to register config variable refresh handler", zap.Error(err))
+	}
 
 	utils.InterruptHandlerChannel <- func() {
 		cancel()

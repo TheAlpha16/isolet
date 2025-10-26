@@ -47,7 +47,7 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 	if err := i.acquireInstanceLock(ctx, teamID, input.ChallengeID, config.Instances.StartTimeout); err != nil {
 		return nil, err
 	}
-	defer i.releaseInstanceLock(ctx, teamID, input.ChallengeID)
+	defer i.releaseInstanceLock(ctx, teamID, input.ChallengeID) //nolint:errcheck
 
 	// TODO create instance
 
@@ -81,7 +81,7 @@ func (i *instanceImpl) Stop(ctx context.Context, input *instanceDom.StopInput) e
 	if err := i.acquireInstanceLock(ctx, teamID, instance.ChallengeID, config.Instances.StopTimeout); err != nil {
 		return err
 	}
-	defer i.releaseInstanceLock(ctx, teamID, instance.ChallengeID)
+	defer i.releaseInstanceLock(ctx, teamID, instance.ChallengeID) //nolint:errcheck
 
 	// TODO stop instance
 
@@ -110,7 +110,7 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 	if err := i.acquireInstanceLock(ctx, teamID, instance.ChallengeID, config.Instances.ExtendTimeout); err != nil {
 		return nil, err
 	}
-	defer i.releaseInstanceLock(ctx, teamID, instance.ChallengeID)
+	defer i.releaseInstanceLock(ctx, teamID, instance.ChallengeID) //nolint:errcheck
 
 	// TODO extend instance deadline
 

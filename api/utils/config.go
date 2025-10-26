@@ -105,7 +105,9 @@ func GetConfig() *Config {
 	if appConfig != nil {
 		return appConfig
 	} else {
-		godotenv.Load()
+		if err := godotenv.Load(); err != nil {
+			log.Panic("Error loading .env file: ", err)
+		}
 
 		cfg, err := env.ParseAs[Config]()
 		if err != nil {

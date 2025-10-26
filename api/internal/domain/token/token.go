@@ -1,13 +1,17 @@
 package token
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	"github.com/TheAlpha16/isolet/api/internal/domain"
+	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
+	"github.com/TheAlpha16/isolet/api/utils/logger"
 	"github.com/TheAlpha16/isolet/api/utils/validator"
 
 	govalidator "github.com/go-playground/validator/v10"
+	"go.uber.org/zap"
 )
 
 type TokenPurpose string
@@ -53,5 +57,8 @@ func purposeValidator(fl govalidator.FieldLevel) bool {
 }
 
 func init() {
-	validator.RegisterValidation("token_purpose", purposeValidator)
+	if err := validator.RegisterValidation("token_purpose", purposeValidator); err != nil {
+		errorDom.RaiseToSentry(context.Background(), err)
+		logger.GetAppLogger().Fatal("failed to register token purpose validator", zap.Error(err))
+	}
 }

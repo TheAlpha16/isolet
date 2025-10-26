@@ -1,9 +1,14 @@
 package user
 
 import (
+	"context"
+
+	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
+	"github.com/TheAlpha16/isolet/api/utils/logger"
 	"github.com/TheAlpha16/isolet/api/utils/validator"
 
 	govalidator "github.com/go-playground/validator/v10"
+	"go.uber.org/zap"
 )
 
 type Role string
@@ -32,5 +37,8 @@ func roleValidator(fl govalidator.FieldLevel) bool {
 }
 
 func init() {
-	validator.RegisterValidation("role", roleValidator)
+	if err := validator.RegisterValidation("role", roleValidator); err != nil {
+		errorDom.RaiseToSentry(context.Background(), err)
+		logger.GetAppLogger().Fatal("failed to register role validator", zap.Error(err))
+	}
 }

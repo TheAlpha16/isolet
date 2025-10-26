@@ -10,9 +10,9 @@ import (
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	"github.com/TheAlpha16/isolet/api/utils"
 	"github.com/TheAlpha16/isolet/api/utils/logger"
-	"go.uber.org/zap"
 
 	"github.com/go-gomail/gomail"
+	"go.uber.org/zap"
 )
 
 type smtpImpl struct {
@@ -137,7 +137,10 @@ func (s *smtpImpl) closeSender() {
 	defer s.mu.Unlock()
 
 	if s.sender != nil {
-		s.sender.Close()
+		if err := s.sender.Close(); err != nil {
+			errorDom.RaiseToSentry(s.ctx, err)
+			logger.GetAppLogger().Error("failed to close SMTP sender", zap.Error(err))
+		}
 	}
 	s.sender = nil
 }

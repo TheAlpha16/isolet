@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
+	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	"github.com/TheAlpha16/isolet/api/utils"
 
 	"go.uber.org/zap"
@@ -66,7 +67,9 @@ func (l *StandardLogger) WithFields(fields ...zapcore.Field) *StandardLogger {
 }
 
 func (l *StandardLogger) Sync() {
-	l.Logger.Sync()
+	if err := l.Logger.Sync(); err != nil {
+		errorDom.RaiseToSentry(context.Background(), err)
+	}
 }
 
 func GetLogger(ctx context.Context) *StandardLogger {

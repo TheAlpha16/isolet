@@ -9,6 +9,7 @@ import (
 	scoreDom "github.com/TheAlpha16/isolet/api/internal/domain/score"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
 	"github.com/TheAlpha16/isolet/api/utils/logger"
+
 	"go.uber.org/zap"
 )
 
@@ -78,6 +79,9 @@ func (scoreImpl *scoreImpl) GetScoreboard(ctx context.Context, input *scoreDom.G
 	}
 
 	entries, _, err := scoreImpl.getScoreboardEntries(ctx, start, stop)
+	if err != nil {
+		return nil, err
+	}
 	scoreboard.Entries = entries
 
 	return &scoreboard, nil

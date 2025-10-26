@@ -3,9 +3,12 @@ package postgres
 import (
 	"context"
 
+	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	"github.com/TheAlpha16/isolet/api/utils"
+	"github.com/TheAlpha16/isolet/api/utils/logger"
 
 	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
+	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	glogger "gorm.io/gorm/logger"
@@ -58,7 +61,10 @@ func NewConnection(ctx context.Context, dbURI string) (*gorm.DB, func(), error) 
 		return nil, nil, err
 	}
 	closeConn := func() {
-		sqlDB.Close()
+		if err := sqlDB.Close(); err != nil {
+			errorDom.RaiseToSentry(context.Background(), err)
+			logger.GetAppLogger().Error("failed to close PostgreSQL connection", zap.Error(err))
+		}
 	}
 
 	return db, closeConn, nil
