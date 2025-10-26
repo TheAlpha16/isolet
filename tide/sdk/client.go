@@ -46,6 +46,6 @@ func (isoc *isoletClient) DeleteInstance(ctx context.Context, name, namespace st
 	return isoc.k8s.Delete(ctx, inst)
 }
 
-func New(k8s client.Client) *isoletClient {
+func New(k8s client.Client) Handler {
 	return &isoletClient{k8s: k8s}
 }
