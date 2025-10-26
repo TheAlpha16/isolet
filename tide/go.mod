@@ -1,6 +1,6 @@
 module github.com/TheAlpha16/isolet/tide
 
-go 1.24.5
+go 1.25
 
 require (
 	github.com/onsi/ginkgo/v2 v2.22.0
