@@ -1,11 +1,12 @@
 package k8s
 
 import (
+	"net/http"
 	"path/filepath"
 
 	"github.com/TheAlpha16/isolet/api/utils"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
@@ -33,13 +34,15 @@ func getRestConfig() (*rest.Config, error) {
 	return config, nil
 }
 
-func NewK8sClient() (*kubernetes.Clientset, error) {
+func NewK8sClient(httpClient *http.Client) (client.Client, error) {
 	config, err := getRestConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	clientset, err := kubernetes.NewForConfig(config)
+	clientset, err := client.New(config, client.Options{
+		HTTPClient: httpClient,
+	})
 	if err != nil {
 		return nil, err
 	}
