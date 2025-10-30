@@ -17,7 +17,7 @@ type instanceRepo struct {
 }
 
 func (ir *instanceRepo) Create(ctx context.Context, instance *instanceDom.Instance) (*instanceDom.Instance, error) {
-	extraData := common.ExtraData{"team_id": instance.TeamID, "challenge_id": instance.ChallengeID}
+	extraData := common.ExtraData{"team_id": instance.TeamID, "challenge_id": instance.Manifest.ChallengeID}
 	instanceModel, err := NewInstanceModel(instance)
 	if err != nil {
 		return nil, err

@@ -14,12 +14,15 @@ type InstanceDTO struct {
 }
 
 func (in *Instance) ToDTO() *InstanceDTO {
-	return &InstanceDTO{
+	inst := &InstanceDTO{
 		ID:          in.ID,
-		ChallengeID: in.ChallengeID,
+		ChallengeID: in.Manifest.ChallengeID,
 		TeamID:      in.TeamID,
-		ExpiresAt:   in.ExpiresAt,
 	}
+	if in.Lifecycle.ExpiresAt != nil {
+		inst.ExpiresAt = in.Lifecycle.ExpiresAt.Unix()
+	}
+	return inst
 }
 
 type StartInput struct {

@@ -27,16 +27,18 @@ func (in *Instance) ToDomain(ctx context.Context) (*instanceDom.Instance, error)
 			CreatedAt: time.Unix(in.CreatedAt, 0),
 			UpdatedAt: time.Unix(in.UpdatedAt, 0),
 		},
-		ID:          in.ID,
-		ChallengeID: in.ChallengeID,
-		TeamID:      in.TeamID,
-		ExpiresAt:   in.ExpiresAt,
+		ID: in.ID,
+		Manifest: &instanceDom.Manifest{
+			ChallengeID: in.ChallengeID,
+		},
+		TeamID:    in.TeamID,
+		ExpiresAt: in.ExpiresAt,
 	}, nil
 }
 
 func NewInstanceModel(in *instanceDom.Instance) (*Instance, error) {
 	instance := &Instance{
-		ChallengeID: in.ChallengeID,
+		ChallengeID: in.Manifest.ChallengeID,
 		TeamID:      in.TeamID,
 		ExpiresAt:   in.ExpiresAt,
 	}

@@ -49,14 +49,20 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 	}
 	defer i.releaseInstanceLock(ctx, teamID, input.ChallengeID) //nolint:errcheck
 
+	inst := instanceDom.Instance{
+		TeamID: teamID,
+		Manifest: &instanceDom.Manifest{
+			ChallengeID: input.ChallengeID,
+		},
+		Lifecycle: &instanceDom.Lifecycle{
+			ExpiresAt:      utils.Int64OrNil(time.Now().Add(config.Instances.Lifetime)),
+			AllowExtension: true,
+		},
+	}
 	// TODO create instance
 
 	// insert into database
-	instance, err = i.repo.Create(ctx, &instanceDom.Instance{
-		TeamID:      teamID,
-		ChallengeID: input.ChallengeID,
-		ExpiresAt:   time.Now().Add(utils.GetConfig().Instances.Lifetime).Unix(),
-	})
+	instance, err = i.repo.Create(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -78,10 +84,10 @@ func (i *instanceImpl) Stop(ctx context.Context, input *instanceDom.StopInput) e
 	}
 
 	// take mutex on the instance to prevent race conditions
-	if err := i.acquireInstanceLock(ctx, teamID, instance.ChallengeID, config.Instances.StopTimeout); err != nil {
+	if err := i.acquireInstanceLock(ctx, teamID, instance.Manifest.ChallengeID, config.Instances.StopTimeout); err != nil {
 		return err
 	}
-	defer i.releaseInstanceLock(ctx, teamID, instance.ChallengeID) //nolint:errcheck
+	defer i.releaseInstanceLock(ctx, teamID, instance.Manifest.ChallengeID) //nolint:errcheck
 
 	// TODO stop instance
 
@@ -107,10 +113,10 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 	}
 
 	// take mutex on the instance to prevent race conditions
-	if err := i.acquireInstanceLock(ctx, teamID, instance.ChallengeID, config.Instances.ExtendTimeout); err != nil {
+	if err := i.acquireInstanceLock(ctx, teamID, instance.Manifest.ChallengeID, config.Instances.ExtendTimeout); err != nil {
 		return nil, err
 	}
-	defer i.releaseInstanceLock(ctx, teamID, instance.ChallengeID) //nolint:errcheck
+	defer i.releaseInstanceLock(ctx, teamID, instance.Manifest.ChallengeID) //nolint:errcheck
 
 	// TODO extend instance deadline
 
