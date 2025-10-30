@@ -85,3 +85,10 @@ func IntOrNil(i int) *int {
 	}
 	return &i
 }
+
+func Int64OrNil(i64 int64) *int64 {
+	if i64 == 0 {
+		return nil
+	}
+	return &i64
+}
