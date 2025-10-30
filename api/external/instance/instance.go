@@ -7,9 +7,10 @@ import (
 	k8sInfra "github.com/TheAlpha16/isolet/api/infra/k8s"
 	"github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	instanceDom "github.com/TheAlpha16/isolet/api/internal/domain/instance"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
+	tide "github.com/TheAlpha16/isolet/tide/api/v1"
 	"github.com/TheAlpha16/isolet/tide/sdk"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 type instanceSvc struct {
@@ -17,6 +18,16 @@ type instanceSvc struct {
 }
 
 func (is *instanceSvc) Start(ctx context.Context) error {
+	instance, err := is.buildInstance(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = is.client.CreateInstance(ctx, instance)
+	if err != nil {
+		return errors.Raise(ctx, errors.ErrInstanceCreationFailed, "", err, nil)
+	}
+
 	return nil
 }
 
@@ -26,6 +37,10 @@ func (is *instanceSvc) Stop(ctx context.Context) error {
 
 func (is *instanceSvc) Extend(ctx context.Context) error {
 	return nil
+}
+
+func (is *instanceSvc) buildInstance(ctx context.Context) (*tide.Instance, error) {
+	return &tide.Instance{}, nil
 }
 
 func New(ctx context.Context) (instanceDom.Service, error) {
