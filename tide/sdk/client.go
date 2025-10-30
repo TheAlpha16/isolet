@@ -24,12 +24,12 @@ func (isoc *isoletClient) GetInstance(ctx context.Context, name, namespace strin
 	}, &inst); err != nil {
 		return nil, err
 	}
-	return &inst, nil
+	return inst.DeepCopy(), nil
 }
 
-func (isoc *isoletClient) ListInstances(ctx context.Context, namespace string) ([]isoletv1.Instance, error) {
+func (isoc *isoletClient) ListInstances(ctx context.Context, opts ...client.ListOptions) ([]isoletv1.Instance, error) {
 	var instList isoletv1.InstanceList
-	if err := isoc.k8s.List(ctx, &instList, client.InNamespace(namespace)); err != nil {
+	if err := isoc.k8s.List(ctx, &instList, opts...); err != nil {
 		return nil, err
 	}
 	return instList.Items, nil
