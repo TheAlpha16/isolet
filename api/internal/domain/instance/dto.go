@@ -17,10 +17,12 @@ func (in *Instance) ToDTO() *InstanceDTO {
 	inst := &InstanceDTO{
 		ID:          in.ID,
 		ChallengeID: in.Manifest.ChallengeID,
-		TeamID:      in.TeamID,
 	}
 	if in.Lifecycle.ExpiresAt != nil {
 		inst.ExpiresAt = in.Lifecycle.ExpiresAt.Unix()
+	}
+	if in.TeamID != nil {
+		inst.TeamID = *in.TeamID
 	}
 	return inst
 }
