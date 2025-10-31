@@ -9,6 +9,7 @@ import (
 
 type ResourceName string
 type Protocol string
+type ResourceType string
 
 const (
 	ProtocolHTTP  Protocol = "http"
@@ -22,6 +23,11 @@ const (
 	ResourceMemory           ResourceName = "memory"
 	ResourceStorage          ResourceName = "storage"
 	ResourceEphemeralStorage ResourceName = "ephemeral-storage"
+)
+
+const (
+	ResourceTypeRequest ResourceType = "request"
+	ResourceTypeLimit   ResourceType = "limit"
 )
 
 type Manifest struct {
@@ -41,6 +47,7 @@ type Resource struct {
 	ID         int64
 	Name       ResourceName
 	Value      string
+	Type       ResourceType
 	ManifestID int64
 	domain.BaseEntity
 }
