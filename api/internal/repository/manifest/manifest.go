@@ -7,7 +7,7 @@ import (
 
 type Manifest struct {
 	postgres.BaseModel
-	ChallengeID int64      `gorm:"not null"`
+	ChallengeID int64      `gorm:"not null;uniqueIndex"`
 	Image       string     `gorm:"not null"`
 	Flag        *string    `gorm:"type:text"`
 	Requests    []Resource `gorm:"foreignKey:ManifestID;references:ID;constraint:OnDelete:CASCADE"`
