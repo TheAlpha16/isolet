@@ -2,6 +2,9 @@
 
 CREATE TYPE user_role AS ENUM ('admin', 'author', 'captain', 'player');
 CREATE TYPE challenge_type AS ENUM ('static', 'dynamic', 'on-demand');
+CREATE TYPE resource_name_type AS ENUM ('cpu', 'memory', 'storage', 'ephemeral-storage');
+CREATE TYPE protocol_type AS ENUM ('http', 'https', 'nc', 'ssh');
+CREATE TYPE resource_type AS ENUM ('request', 'limit');
 
 -- ### FUNCTIONS ###
 
