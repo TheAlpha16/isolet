@@ -42,3 +42,13 @@ CREATE INDEX idx_solves_team_id_created_at ON solves(team_id, created_at);
 
 -- index for (team_id, created_at) in unlocked_hints table
 CREATE INDEX idx_unlocked_hints_team_id_created_at ON unlocked_hints(team_id, created_at);
+
+-- unique partial index for on-demand (team-specific) in instances table
+CREATE UNIQUE INDEX idx_instances_team_challenge_not_null
+ON instances (team_id, challenge_id)
+WHERE team_id IS NOT NULL;
+
+-- unique partial index for dynamic (global) instances in instances table
+CREATE UNIQUE INDEX idx_instances_challenge_null_team
+ON instances (challenge_id)
+WHERE team_id IS NULL;
