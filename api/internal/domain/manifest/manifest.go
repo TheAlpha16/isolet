@@ -1,8 +1,6 @@
-package instance
+package manifest
 
 import (
-	"time"
-
 	"github.com/TheAlpha16/isolet/api/internal/domain"
 	"github.com/TheAlpha16/isolet/api/internal/domain/challenge"
 )
@@ -61,10 +59,4 @@ type Endpoint struct {
 	Hostname   *string
 	Port       *int32
 	domain.BaseEntity
-}
-
-type Lifecycle struct {
-	AvailableAt    *time.Time
-	ExpiresAt      *time.Time
-	AllowExtension bool
 }
