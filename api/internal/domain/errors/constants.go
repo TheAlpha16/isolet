@@ -102,6 +102,7 @@ const (
 	ErrInstanceWIP            ErrorCode = "INSTANCE-02"
 	ErrInstanceAlreadyRunning ErrorCode = "INSTANCE-03"
 	ErrInstanceCreationFailed ErrorCode = "INSTANCE-04"
+	ErrInstanceInvalid        ErrorCode = "INSTANCE-05"
 
 	// k8s errors
 	ErrK8sConnectionFailed ErrorCode = "K8S-00"
@@ -212,6 +213,7 @@ var ServerErrorCodes = map[ErrorCode]struct{}{
 	ErrCacheZSetMissingMember: {},
 	ErrInstanceCreationFailed: {},
 	ErrK8sConnectionFailed:    {},
+	ErrInstanceInvalid:        {},
 }
 
 // Map of auth error codes
