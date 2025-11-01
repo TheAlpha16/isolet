@@ -2,7 +2,7 @@ package manifest
 
 import (
 	"github.com/TheAlpha16/isolet/api/internal/domain"
-	"github.com/TheAlpha16/isolet/api/internal/domain/challenge"
+	challengeDom "github.com/TheAlpha16/isolet/api/internal/domain/challenge"
 )
 
 type ResourceName string
@@ -33,7 +33,7 @@ type Manifest struct {
 	ChallengeID int64
 	Slug        string
 	Image       string
-	Type        challenge.ChallengeType
+	Type        challengeDom.ChallengeType
 	Flag        *string
 	Requests    []*Resource
 	Limits      []*Resource
@@ -59,4 +59,8 @@ type Endpoint struct {
 	Hostname   *string
 	Port       *int32
 	domain.BaseEntity
+}
+
+func (m *Manifest) Populate(challenge *challengeDom.Challenge) {
+	// TODO fininsh this
 }
