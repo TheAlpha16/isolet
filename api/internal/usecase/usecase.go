@@ -13,6 +13,7 @@ import (
 	emailDom "github.com/TheAlpha16/isolet/api/internal/domain/email"
 	eventDom "github.com/TheAlpha16/isolet/api/internal/domain/event"
 	instanceDom "github.com/TheAlpha16/isolet/api/internal/domain/instance"
+	manifestDom "github.com/TheAlpha16/isolet/api/internal/domain/manifest"
 	profileDom "github.com/TheAlpha16/isolet/api/internal/domain/profile"
 	scoreDom "github.com/TheAlpha16/isolet/api/internal/domain/score"
 	teamDom "github.com/TheAlpha16/isolet/api/internal/domain/team"
@@ -25,6 +26,7 @@ import (
 	emailUc "github.com/TheAlpha16/isolet/api/internal/usecase/email"
 	eventUc "github.com/TheAlpha16/isolet/api/internal/usecase/event"
 	instanceUc "github.com/TheAlpha16/isolet/api/internal/usecase/instance"
+	manifestUc "github.com/TheAlpha16/isolet/api/internal/usecase/manifest"
 	profileUc "github.com/TheAlpha16/isolet/api/internal/usecase/profile"
 	scoreUc "github.com/TheAlpha16/isolet/api/internal/usecase/score"
 	teamUc "github.com/TheAlpha16/isolet/api/internal/usecase/team"
@@ -44,6 +46,7 @@ type Usecases struct {
 	Challenge  challengeDom.Usecase
 	Score      scoreDom.Usecase
 	Instance   instanceDom.Usecase
+	Manifest   manifestDom.Usecase
 }
 
 func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repository.Repositories, infra *infra.Infra, external *external.Services) *Usecases {
@@ -60,7 +63,8 @@ func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repo
 	score := scoreUc.New(repos.Score, team, cache)
 	challenge := challengeUc.New(repos.Challenge, cv, score, wg)
 	profile := profileUc.New(cache, user, team, challenge)
-	instance := instanceUc.New(repos.Instance, external.Instance, cache, challenge)
+	manifest := manifestUc.New(repos.Manifest)
+	instance := instanceUc.New(repos.Instance, external.Instance, cache, challenge, manifest)
 
 	return &Usecases{
 		User:       user,
@@ -74,5 +78,6 @@ func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repo
 		Challenge:  challenge,
 		Score:      score,
 		Instance:   instance,
+		Manifest:   manifest,
 	}
 }
