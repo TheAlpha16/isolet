@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -48,20 +50,24 @@ func StructTagsAsString(obj interface{}, tagKey string, depth int) string {
 	return strings.Join(tags, ",")
 }
 
+// HashPassword hashes a plaintext password using bcrypt.
 func HashPassword(passwd string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
 	return string(hash), err
 }
 
+// ComparePassword compares a hashed password with a plaintext password.
 func ComparePassword(hashedPwd, plainPwd string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPwd), []byte(plainPwd))
 	return err == nil
 }
 
+// RandomUUID generates a random UUID string.
 func RandomUUID() string {
 	return uuid.New().String()
 }
 
+// BuildLink constructs a URL with the given public URL, token, and path segments.
 func BuildLink(publicURL, token string, pathSegments []string) (string, error) {
 	url, err := url.Parse(publicURL)
 	if err != nil {
@@ -80,6 +86,7 @@ func BuildLink(publicURL, token string, pathSegments []string) (string, error) {
 	return url.String(), nil
 }
 
+// IntOrNil returns a pointer to the integer or nil if the integer is zero.
 func IntOrNil(i int) *int {
 	if i == 0 {
 		return nil
@@ -87,6 +94,7 @@ func IntOrNil(i int) *int {
 	return &i
 }
 
+// Int64OrNil returns a pointer to the int64 or nil if the int64 is zero.
 func Int64OrNil(i64 int64) *int64 {
 	if i64 == 0 {
 		return nil
@@ -109,4 +117,11 @@ func SlugifyForSubdomain(name string) string {
 	slug = strings.TrimRight(slug, "-")
 
 	return slug
+}
+
+// GenerateRandom generates a random 128-character hexadecimal string.
+func GenerateRandom() string {
+	buffer := make([]byte, 64)
+	rand.Read(buffer)
+	return hex.EncodeToString(buffer)
 }
