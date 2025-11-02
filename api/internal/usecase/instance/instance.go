@@ -68,7 +68,7 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 		TeamID:   utils.Int64OrNil(teamID),
 		Manifest: manifest,
 		Lifecycle: &instanceDom.Lifecycle{
-			ExpiresAt:      utils.TimePtr(timeNow.Add(i.cvUc.GetDuration(ctx, cvDom.InstanceDuration))),
+			ExpiresAt:      utils.TimePtr(timeNow.Add(utils.GetConfig().Instances.Lifetime)),
 			AllowExtension: true,
 		},
 	}
@@ -150,9 +150,9 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 	}
 
 	// check if the new expiry exceeds the maximum allowed duration
-	newExpiry := instance.Lifecycle.ExpiresAt.Add(i.cvUc.GetDuration(ctx, cvDom.InstanceDuration))
+	newExpiry := instance.Lifecycle.ExpiresAt.Add(utils.GetConfig().Instances.Lifetime)
 
-	if instance.CreatedAt.Add(i.cvUc.GetDuration(ctx, cvDom.InstanceMaxDuration)).Before(newExpiry) {
+	if instance.CreatedAt.Add(utils.GetConfig().Instances.MaxLifetime).Before(newExpiry) {
 		return nil, errorDom.Raise(ctx, errorDom.ErrInstanceExtensionNotAllowed, "instance exceeded maximum allowed duration", nil, common.ExtraData{"instance_id": instance.ID})
 	}
 	instance.Lifecycle.ExpiresAt = utils.TimePtr(newExpiry)
