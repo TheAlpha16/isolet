@@ -90,4 +90,10 @@ const (
 // regular expressions
 const (
 	RegexNonAlphanumeric = `[^a-z0-9]+`
+	RegexGenericFlag     = `^(.*\{)([^}]*)\}$`
+)
+
+// numeric constants
+const (
+	InstanceFlagSuffixLength = 8
 )

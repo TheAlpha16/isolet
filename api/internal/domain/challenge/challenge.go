@@ -2,6 +2,8 @@ package challenge
 
 import (
 	"context"
+	"fmt"
+	"regexp"
 
 	"github.com/TheAlpha16/isolet/api/internal/domain"
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
@@ -76,6 +78,20 @@ func (c *Challenge) Slug(ctx context.Context) (string, error) {
 		return "", errorDom.Raise(ctx, errorDom.ErrChallengeNameInvalid, "challenge name results in an invalid slug", nil, common.ExtraData{"challenge_name": c.Name, "slug": slug, "challenge_id": c.ID})
 	}
 	return slug, nil
+}
+
+func (c *Challenge) RandomizedFlag(flag string) string {
+	re := regexp.MustCompile(utils.RegexGenericFlag)
+
+	matches := re.FindStringSubmatch(flag)
+	if len(matches) != 3 {
+		return flag
+	}
+
+	prefix := matches[1]
+	content := matches[2]
+	suffix := utils.GenerateRandom()[:utils.InstanceFlagSuffixLength]
+	return fmt.Sprintf("%s{%s_%s}", prefix, content, suffix)
 }
 
 func (h *Hint) IsUnlocked(unlockedHints map[int64]struct{}) bool {
