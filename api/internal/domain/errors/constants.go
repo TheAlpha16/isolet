@@ -87,6 +87,7 @@ const (
 	ErrChallengeNotFound           ErrorCode = "CHALLENGE-00"
 	ErrChallengeAlreadySolved      ErrorCode = "CHALLENGE-01"
 	ErrChallengeMaxAttemptsReached ErrorCode = "CHALLENGE-02"
+	ErrChallengeNameInvalid        ErrorCode = "CHALLENGE-03"
 
 	// Hint errors
 	ErrHintNotFound        ErrorCode = "HINT-00"
@@ -97,12 +98,15 @@ const (
 	ErrScoreUpdateFailed ErrorCode = "SCORE-00"
 
 	// Instance errors
-	ErrInstanceNotOnDemand    ErrorCode = "INSTANCE-00"
-	ErrInstanceNotFound       ErrorCode = "INSTANCE-01"
-	ErrInstanceWIP            ErrorCode = "INSTANCE-02"
-	ErrInstanceAlreadyRunning ErrorCode = "INSTANCE-03"
-	ErrInstanceCreationFailed ErrorCode = "INSTANCE-04"
-	ErrInstanceInvalid        ErrorCode = "INSTANCE-05"
+	ErrInstanceNotOnDemand             ErrorCode = "INSTANCE-00"
+	ErrInstanceNotFound                ErrorCode = "INSTANCE-01"
+	ErrInstanceWIP                     ErrorCode = "INSTANCE-02"
+	ErrInstanceAlreadyRunning          ErrorCode = "INSTANCE-03"
+	ErrInstanceCreationFailed          ErrorCode = "INSTANCE-04"
+	ErrInstanceInvalid                 ErrorCode = "INSTANCE-05"
+	ErrInstanceInvalidResourceQuantity ErrorCode = "INSTANCE-06"
+	ErrInstanceExtensionNotAllowed     ErrorCode = "INSTANCE-07"
+	ErrInstanceUpdateFailed            ErrorCode = "INSTANCE-08"
 
 	// k8s errors
 	ErrK8sConnectionFailed ErrorCode = "K8S-00"
@@ -171,6 +175,7 @@ var msgMap = map[ErrorCode]string{
 	ErrChallengeNotFound:           "challenge not found",
 	ErrChallengeAlreadySolved:      "challenge already solved",
 	ErrChallengeMaxAttemptsReached: "maximum attempts reached",
+	ErrChallengeNameInvalid:        "challenge name is invalid",
 
 	// Hint errors
 	ErrHintNotFound:        "hint not found",
@@ -181,11 +186,13 @@ var msgMap = map[ErrorCode]string{
 	ErrScoreUpdateFailed: "failed to update score",
 
 	// Instance errors
-	ErrInstanceNotOnDemand:    "instances are not available for this challenge",
-	ErrInstanceNotFound:       "instance not found",
-	ErrInstanceWIP:            "instance work in progress, please wait a few seconds before retrying",
-	ErrInstanceAlreadyRunning: "instance is already running",
-	ErrInstanceCreationFailed: "failed to create instance",
+	ErrInstanceNotOnDemand:             "instances are not available for this challenge",
+	ErrInstanceNotFound:                "instance not found",
+	ErrInstanceWIP:                     "instance work in progress, please wait a few seconds before retrying",
+	ErrInstanceAlreadyRunning:          "instance is already running",
+	ErrInstanceCreationFailed:          "failed to create instance",
+	ErrInstanceInvalidResourceQuantity: "instance has invalid resource quantity",
+	ErrInstanceExtensionNotAllowed:     "instance extension is not allowed",
 }
 
 // Map of server-side error codes that need to be filtered
@@ -214,6 +221,8 @@ var ServerErrorCodes = map[ErrorCode]struct{}{
 	ErrInstanceCreationFailed: {},
 	ErrK8sConnectionFailed:    {},
 	ErrInstanceInvalid:        {},
+	ErrChallengeNameInvalid:   {},
+	ErrInstanceUpdateFailed:   {},
 }
 
 // Map of auth error codes
