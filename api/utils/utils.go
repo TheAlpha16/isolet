@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"net/url"
 	"reflect"
@@ -137,4 +139,10 @@ func GenerateRandom() string {
 	buffer := make([]byte, 64)
 	rand.Read(buffer)
 	return hex.EncodeToString(buffer)
+}
+
+func HMAC256(data, key string) string {
+	h := hmac.New(sha256.New, []byte(key))
+	h.Write([]byte(data))
+	return hex.EncodeToString(h.Sum(nil))
 }
