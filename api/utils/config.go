@@ -84,14 +84,15 @@ type Config struct {
 	}
 
 	Instances struct {
+		Namespace     string        `env:"INSTANCE_NAMESPACE" envDefault:"isolet"`
 		StartTimeout  time.Duration `env:"INSTANCE_START_TIMEOUT" envDefault:"5m"`
 		StopTimeout   time.Duration `env:"INSTANCE_STOP_TIMEOUT" envDefault:"2m"`
 		ExtendTimeout time.Duration `env:"INSTANCE_EXTEND_TIMEOUT" envDefault:"5s"`
 		Lifetime      time.Duration `env:"INSTANCE_LIFETIME" envDefault:"30m"`
-		Namespace     string        `env:"INSTANCE_NAMESPACE" envDefault:"isolet"`
+		MaxLifetime   time.Duration `env:"INSTANCE_MAX_LIFETIME" envDefault:"2h"`
 		LimitCPU      string        `env:"INSTANCE_LIMIT_CPU" envDefault:"50m"`
 		LimitMemory   string        `env:"INSTANCE_LIMIT_MEMORY" envDefault:"128Mi"`
-		MaxLifetime   time.Duration `env:"INSTANCE_MAX_LIFETIME" envDefault:"2h"`
+		SecretKey     string        `env:"INSTANCE_SECRET_KEY" envDefault:"trustmebro"`
 	}
 
 	K8s struct {

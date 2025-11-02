@@ -10,6 +10,7 @@ import (
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	manifestDom "github.com/TheAlpha16/isolet/api/internal/domain/manifest"
+	"github.com/TheAlpha16/isolet/api/utils"
 )
 
 const (
@@ -62,6 +63,16 @@ func (in *Instance) Validate(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (in *Instance) Name() string {
+	var identifier string
+	if in.TeamID == nil {
+		identifier = fmt.Sprintf("dynamic@%d", in.Manifest.ChallengeID)
+	} else {
+		identifier = fmt.Sprintf("team%d@%d", *in.TeamID, in.Manifest.ChallengeID)
+	}
+	return utils.HMAC256(identifier, utils.GetConfig().Instances.SecretKey)
 }
 
 type Lifecycle struct {
