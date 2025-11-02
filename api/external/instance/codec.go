@@ -7,6 +7,7 @@ import (
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	instanceDom "github.com/TheAlpha16/isolet/api/internal/domain/instance"
 	manifestDom "github.com/TheAlpha16/isolet/api/internal/domain/manifest"
+	"github.com/TheAlpha16/isolet/api/utils"
 	"github.com/TheAlpha16/isolet/api/utils/logger"
 	"go.uber.org/zap"
 
@@ -18,6 +19,14 @@ import (
 
 func toTideInstance(ctx context.Context, inst *instanceDom.Instance) *tide.Instance {
 	instance := tide.Instance{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       utils.GetConfig().K8s.InstanceKind,
+			APIVersion: utils.GetConfig().K8s.InstanceAPIVersion,
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      inst.Name(),
+			Namespace: utils.GetConfig().Instances.Namespace,
+		},
 		Spec: tide.InstanceSpec{
 			Challenge: tide.Challenge{
 				ID:    inst.Manifest.ChallengeID,
