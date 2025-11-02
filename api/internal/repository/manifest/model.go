@@ -1,7 +1,11 @@
 package manifest
 
 import (
+	"time"
+
 	"github.com/TheAlpha16/isolet/api/infra/database/postgres"
+	"github.com/TheAlpha16/isolet/api/internal/domain"
+	manifestDom "github.com/TheAlpha16/isolet/api/internal/domain/manifest"
 	challengeRepo "github.com/TheAlpha16/isolet/api/internal/repository/challenge"
 )
 
@@ -17,6 +21,37 @@ type Manifest struct {
 	Challenge challengeRepo.Challenge `gorm:"foreignKey:ChallengeID;references:ID;constraint:OnDelete:CASCADE"`
 }
 
+func (m *Manifest) ToDomain() *manifestDom.Manifest {
+	requests := make([]*manifestDom.Resource, len(m.Requests))
+	for i, req := range m.Requests {
+		requests[i] = req.ToDomain()
+	}
+
+	limits := make([]*manifestDom.Resource, len(m.Limits))
+	for i, lim := range m.Limits {
+		limits[i] = lim.ToDomain()
+	}
+
+	endpoints := make([]*manifestDom.Endpoint, len(m.Endpoints))
+	for i, ep := range m.Endpoints {
+		endpoints[i] = ep.ToDomain()
+	}
+
+	return &manifestDom.Manifest{
+		BaseEntity: domain.BaseEntity{
+			CreatedAt: time.Unix(m.CreatedAt, 0),
+			UpdatedAt: time.Unix(m.UpdatedAt, 0),
+		},
+		ID:          m.ID,
+		ChallengeID: m.ChallengeID,
+		Image:       m.Image,
+		Flag:        m.Flag,
+		Requests:    requests,
+		Limits:      limits,
+		Endpoints:   endpoints,
+	}
+}
+
 type Resource struct {
 	postgres.BaseModel
 	Name       string `gorm:"type:resource_name_type;not null"`
@@ -27,6 +62,20 @@ type Resource struct {
 	Manifest Manifest `gorm:"foreignKey:ManifestID;references:ID"`
 }
 
+func (res *Resource) ToDomain() *manifestDom.Resource {
+	return &manifestDom.Resource{
+		BaseEntity: domain.BaseEntity{
+			CreatedAt: time.Unix(res.CreatedAt, 0),
+			UpdatedAt: time.Unix(res.UpdatedAt, 0),
+		},
+		ID:         res.ID,
+		Name:       manifestDom.ResourceName(res.Name),
+		Value:      res.Value,
+		Type:       manifestDom.ResourceType(res.Type),
+		ManifestID: res.ManifestID,
+	}
+}
+
 type Endpoint struct {
 	postgres.BaseModel
 	Name       string `gorm:"not null"`
@@ -35,4 +84,18 @@ type Endpoint struct {
 	ManifestID int64  `gorm:"not null;index"`
 
 	Manifest Manifest `gorm:"foreignKey:ManifestID;references:ID"`
+}
+
+func (ep *Endpoint) ToDomain() *manifestDom.Endpoint {
+	return &manifestDom.Endpoint{
+		BaseEntity: domain.BaseEntity{
+			CreatedAt: time.Unix(ep.CreatedAt, 0),
+			UpdatedAt: time.Unix(ep.UpdatedAt, 0),
+		},
+		ID:         ep.ID,
+		Name:       ep.Name,
+		Protocol:   manifestDom.Protocol(ep.Protocol),
+		TargetPort: ep.TargetPort,
+		ManifestID: ep.ManifestID,
+	}
 }
