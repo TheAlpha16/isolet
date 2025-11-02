@@ -1,5 +1,7 @@
 package configvars
 
+import "time"
+
 type ConfigKey[T any] struct {
 	Name    string
 	Default T
@@ -30,4 +32,8 @@ var (
 
 	// team
 	TeamMaxSize = ConfigKey[int]{Name: "team_max_size", Default: 4}
+
+	// instance
+	InstanceDuration    = ConfigKey[time.Duration]{Name: "instance_duration", Default: 30 * time.Minute}
+	InstanceMaxDuration = ConfigKey[time.Duration]{Name: "instance_max_duration", Default: 2 * time.Hour}
 )
