@@ -3,6 +3,7 @@ package utils
 import (
 	"net/url"
 	"reflect"
+	"regexp"
 	"strings"
 
 	"github.com/google/uuid"
@@ -91,4 +92,21 @@ func Int64OrNil(i64 int64) *int64 {
 		return nil
 	}
 	return &i64
+}
+
+func SlugifyForSubdomain(name string) string {
+	re := regexp.MustCompile(RegexNonAlphanumeric)
+
+	slug := strings.ToLower(name)
+	slug = re.ReplaceAllString(slug, "-")
+	slug = strings.Trim(slug, "-")
+
+	// truncate to max 63 chars (DNS label limit)
+	if len(slug) > 63 {
+		slug = slug[:63]
+	}
+
+	slug = strings.TrimRight(slug, "-")
+
+	return slug
 }

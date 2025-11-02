@@ -1,7 +1,12 @@
 package challenge
 
 import (
+	"context"
+
 	"github.com/TheAlpha16/isolet/api/internal/domain"
+	"github.com/TheAlpha16/isolet/api/internal/domain/common"
+	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
+	"github.com/TheAlpha16/isolet/api/utils"
 )
 
 type ChallengeType string
@@ -63,6 +68,14 @@ func (c *Challenge) AreRequirementsMet(solves map[int64]struct{}) bool {
 		}
 	}
 	return true
+}
+
+func (c *Challenge) Slug(ctx context.Context) (string, error) {
+	slug := utils.SlugifyForSubdomain(c.Name)
+	if slug == "" {
+		return "", errorDom.Raise(ctx, errorDom.ErrChallengeNameInvalid, "challenge name results in an invalid slug", nil, common.ExtraData{"challenge_name": c.Name, "slug": slug, "challenge_id": c.ID})
+	}
+	return slug, nil
 }
 
 func (h *Hint) IsUnlocked(unlockedHints map[int64]struct{}) bool {

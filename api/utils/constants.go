@@ -86,3 +86,8 @@ const (
 	ContextKeySessionID = "session_id"
 	ContextKeyIP        = "ip"
 )
+
+// regular expressions
+const (
+	RegexNonAlphanumeric = `[^a-z0-9]+`
+)
