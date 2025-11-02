@@ -7,8 +7,10 @@ import (
 	"github.com/TheAlpha16/isolet/api/infra/cache"
 	challengeDom "github.com/TheAlpha16/isolet/api/internal/domain/challenge"
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
+	cvDom "github.com/TheAlpha16/isolet/api/internal/domain/configvars"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	instanceDom "github.com/TheAlpha16/isolet/api/internal/domain/instance"
+	manifestDom "github.com/TheAlpha16/isolet/api/internal/domain/manifest"
 	"github.com/TheAlpha16/isolet/api/utils"
 )
 
@@ -17,6 +19,8 @@ type instanceImpl struct {
 	service     instanceDom.Service
 	cache       cache.Cache
 	challengeUc challengeDom.Usecase
+	manifestUc  manifestDom.Usecase
+	cvUc        cvDom.Usecase
 }
 
 func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput) (*instanceDom.InstanceDTO, error) {
@@ -49,20 +53,35 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 	}
 	defer i.releaseInstanceLock(ctx, teamID, input.ChallengeID) //nolint:errcheck
 
+	manifest, err := i.manifestUc.GetByChallengeID(ctx, input.ChallengeID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := manifest.Populate(ctx, challenge); err != nil {
+		return nil, err
+	}
+
+	timeNow := time.Now()
+
 	inst := instanceDom.Instance{
-		TeamID: teamID,
-		Manifest: &instanceDom.Manifest{
-			ChallengeID: input.ChallengeID,
-		},
+		TeamID:   utils.Int64OrNil(teamID),
+		Manifest: manifest,
 		Lifecycle: &instanceDom.Lifecycle{
-			ExpiresAt:      utils.Int64OrNil(time.Now().Add(config.Instances.Lifetime)),
+			ExpiresAt:      utils.TimePtr(timeNow.Add(i.cvUc.GetDuration(ctx, cvDom.InstanceDuration))),
 			AllowExtension: true,
 		},
 	}
-	// TODO create instance
 
-	// insert into database
-	instance, err = i.repo.Create(ctx)
+	if err := inst.Validate(ctx); err != nil {
+		return nil, err
+	}
+
+	if err := i.service.Start(ctx, &inst); err != nil {
+		return nil, err
+	}
+
+	instance, err = i.repo.Create(ctx, &inst)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +98,7 @@ func (i *instanceImpl) Stop(ctx context.Context, input *instanceDom.StopInput) e
 	if err != nil {
 		return err
 	}
-	if instance.TeamID != teamID {
+	if instance.TeamID == nil || *instance.TeamID != teamID {
 		return errorDom.Raise(ctx, errorDom.ErrInstanceNotFound, "", nil, nil)
 	}
 
@@ -108,7 +127,7 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 	if err != nil {
 		return nil, err
 	}
-	if instance.TeamID != teamID {
+	if instance.TeamID == nil || *instance.TeamID != teamID {
 		return nil, errorDom.Raise(ctx, errorDom.ErrInstanceNotFound, "", nil, nil)
 	}
 
@@ -118,10 +137,30 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 	}
 	defer i.releaseInstanceLock(ctx, teamID, instance.Manifest.ChallengeID) //nolint:errcheck
 
-	// TODO extend instance deadline
+	if err := instance.Validate(ctx); err != nil {
+		return nil, err
+	}
 
-	// update in database
-	instance.ExpiresAt = time.Unix(instance.ExpiresAt, 0).Add(config.Instances.Lifetime).Unix()
+	if !instance.Lifecycle.AllowExtension {
+		return nil, errorDom.Raise(ctx, errorDom.ErrInstanceExtensionNotAllowed, "", nil, nil)
+	}
+
+	if instance.Lifecycle.ExpiresAt == nil {
+		return nil, errorDom.Raise(ctx, errorDom.ErrInstanceInvalid, "instance expiration time is nil", nil, common.ExtraData{"instance_id": instance.ID})
+	}
+
+	// check if the new expiry exceeds the maximum allowed duration
+	newExpiry := instance.Lifecycle.ExpiresAt.Add(i.cvUc.GetDuration(ctx, cvDom.InstanceDuration))
+
+	if instance.CreatedAt.Add(i.cvUc.GetDuration(ctx, cvDom.InstanceMaxDuration)).Before(newExpiry) {
+		return nil, errorDom.Raise(ctx, errorDom.ErrInstanceExtensionNotAllowed, "instance exceeded maximum allowed duration", nil, common.ExtraData{"instance_id": instance.ID})
+	}
+	instance.Lifecycle.ExpiresAt = utils.TimePtr(newExpiry)
+
+	if err := i.service.Extend(ctx, instance); err != nil {
+		return nil, err
+	}
+
 	if err := i.repo.Update(ctx, instance, []string{"expires_at"}); err != nil {
 		return nil, err
 	}
@@ -149,11 +188,13 @@ func (i *instanceImpl) releaseInstanceLock(ctx context.Context, teamID, challeng
 	return i.cache.Delete(ctx, instanceDom.InstanceCacheKey(teamID, challengeID))
 }
 
-func New(repo instanceDom.Repository, service instanceDom.Service, cache cache.Cache, challengeUc challengeDom.Usecase) instanceDom.Usecase {
+func New(repo instanceDom.Repository, service instanceDom.Service, cache cache.Cache, challengeUc challengeDom.Usecase, manifestUc manifestDom.Usecase, cvUc cvDom.Usecase) instanceDom.Usecase {
 	return &instanceImpl{
 		repo:        repo,
 		service:     service,
 		cache:       cache,
 		challengeUc: challengeUc,
+		manifestUc:  manifestUc,
+		cvUc:        cvUc,
 	}
 }
