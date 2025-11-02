@@ -6,14 +6,12 @@ type ConfigKey[T any] struct {
 }
 
 var (
-	// general
-	EventName = ConfigKey[string]{Name: "event_name", Default: "isolet"}
-	PublicURL = ConfigKey[string]{Name: "public_url", Default: "https://isolet.dev"}
-
 	// event
-	EventStart = ConfigKey[int]{Name: "event_start", Default: 1709899200}
-	EventEnd   = ConfigKey[int]{Name: "event_end", Default: 1710028800}
-	PostEvent  = ConfigKey[bool]{Name: "post_event", Default: false}
+	EventName      = ConfigKey[string]{Name: "event_name", Default: "isolet"}
+	EventPublicURL = ConfigKey[string]{Name: "event_public_url", Default: "https://isolet.dev"}
+	EventStart     = ConfigKey[int]{Name: "event_start", Default: 1709899200}
+	EventEnd       = ConfigKey[int]{Name: "event_end", Default: 1710028800}
+	EventPostMode  = ConfigKey[bool]{Name: "event_post_mode", Default: false}
 
 	//smtp
 	SMTPHost     = ConfigKey[string]{Name: "smtp_host", Default: "smtp.isolet.dev"}
@@ -26,10 +24,10 @@ var (
 	EmailSender              = ConfigKey[string]{Name: "email_from", Default: "noreply@isolet.dev"}
 
 	// auth
-	AuthMaxSessions          = ConfigKey[int]{Name: "auth_max_sessions", Default: 5}
-	PasswordResetEnabled     = ConfigKey[bool]{Name: "password_reset_enabled", Default: true}
-	PasswordResetMaxSessions = ConfigKey[int]{Name: "password_reset_max_sessions", Default: 1}
+	AuthMaxSessions              = ConfigKey[int]{Name: "auth_max_sessions", Default: 5}
+	AuthPasswordResetEnabled     = ConfigKey[bool]{Name: "auth_password_reset_enabled", Default: true}
+	AuthPasswordResetMaxSessions = ConfigKey[int]{Name: "auth_password_reset_max_sessions", Default: 1}
 
-	// profile
+	// team
 	TeamMaxSize = ConfigKey[int]{Name: "team_max_size", Default: 4}
 )

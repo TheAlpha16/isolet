@@ -118,7 +118,7 @@ func (c *challengeImpl) SubmitFlag(ctx context.Context, input *challengeDom.Subm
 		IPAddress:   ipAddress,
 	}
 
-	if !c.cvUc.GetBool(ctx, cvDom.PostEvent) {
+	if !c.cvUc.GetBool(ctx, cvDom.EventPostMode) {
 		if err := c.repo.SubmitFlag(ctx, submission); err != nil {
 			return nil, err
 		}

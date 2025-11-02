@@ -156,7 +156,7 @@ func (a *authImpl) Verify(ctx context.Context, verifyToken string) error {
 }
 
 func (a *authImpl) ForgotPassword(ctx context.Context, input *authDom.ForgotPasswordInput) error {
-	if !a.cvUc.GetBool(ctx, cvDom.PasswordResetEnabled) {
+	if !a.cvUc.GetBool(ctx, cvDom.AuthPasswordResetEnabled) {
 		return errorDom.Raise(ctx, errorDom.ErrAuthPasswordResetDisabled, "", nil, nil)
 	}
 
@@ -173,7 +173,7 @@ func (a *authImpl) ForgotPassword(ctx context.Context, input *authDom.ForgotPass
 	if err != nil {
 		return err
 	}
-	if activeSessionCount >= a.cvUc.GetInt(ctx, cvDom.PasswordResetMaxSessions) {
+	if activeSessionCount >= a.cvUc.GetInt(ctx, cvDom.AuthPasswordResetMaxSessions) {
 		return errorDom.Raise(ctx, errorDom.ErrAuthMaxSessionsReached, "max password reset sessions reached", nil, nil)
 	}
 

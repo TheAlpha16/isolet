@@ -16,7 +16,7 @@ func (e *eventImpl) Info(ctx context.Context) (*eventDom.InfoOutput, error) {
 		Name:       e.cvUc.GetString(ctx, cvDom.EventName),
 		StartTime:  int64(e.cvUc.GetInt(ctx, cvDom.EventStart)),
 		EndTime:    int64(e.cvUc.GetInt(ctx, cvDom.EventEnd)),
-		PostEvent:  e.cvUc.GetBool(ctx, cvDom.PostEvent),
+		PostEvent:  e.cvUc.GetBool(ctx, cvDom.EventPostMode),
 		TeamLength: e.cvUc.GetInt(ctx, cvDom.TeamMaxSize),
 	}, nil
 }

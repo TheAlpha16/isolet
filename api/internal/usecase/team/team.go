@@ -189,7 +189,7 @@ func (t *teamImpl) getOrCreateInviteToken(ctx context.Context, teamID int64) (*t
 }
 
 func (t *teamImpl) buildInviteLink(ctx context.Context, token string) (string, error) {
-	publicURL := t.cvUc.GetString(ctx, cvDom.PublicURL)
+	publicURL := t.cvUc.GetString(ctx, cvDom.EventPublicURL)
 	inviteLink, err := utils.BuildLink(
 		publicURL, token,
 		[]string{
