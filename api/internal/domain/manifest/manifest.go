@@ -94,11 +94,11 @@ type Resource struct {
 
 type Endpoint struct {
 	ID         int64
-	ManifestID int64
 	Name       string
 	Protocol   Protocol
 	TargetPort int32
 	Hostname   *string
 	Port       *int32
+	ManifestID int64
 	domain.BaseEntity
 }

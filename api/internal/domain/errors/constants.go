@@ -110,6 +110,9 @@ const (
 
 	// k8s errors
 	ErrK8sConnectionFailed ErrorCode = "K8S-00"
+
+	// Manifest errors
+	ErrManifestNotFound ErrorCode = "MANIFEST-00"
 )
 
 // Map of error codes to user-facing messages
@@ -193,6 +196,9 @@ var msgMap = map[ErrorCode]string{
 	ErrInstanceCreationFailed:          "failed to create instance",
 	ErrInstanceInvalidResourceQuantity: "instance has invalid resource quantity",
 	ErrInstanceExtensionNotAllowed:     "instance extension is not allowed",
+
+	// Manifest errors
+	ErrManifestNotFound: "manifest not found",
 }
 
 // Map of server-side error codes that need to be filtered
@@ -223,6 +229,7 @@ var ServerErrorCodes = map[ErrorCode]struct{}{
 	ErrInstanceInvalid:        {},
 	ErrChallengeNameInvalid:   {},
 	ErrInstanceUpdateFailed:   {},
+	ErrManifestNotFound:       {},
 }
 
 // Map of auth error codes

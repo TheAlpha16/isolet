@@ -100,6 +100,10 @@ type Config struct {
 		InstanceKind       string `env:"K8S_INSTANCE_KIND" envDefault:"Instance"`
 		InstanceAPIVersion string `env:"K8S_INSTANCE_API_VERSION" envDefault:"challenges.isolet.dev/v1"`
 	}
+
+	Manifest struct {
+		CacheTTL time.Duration `env:"MANIFEST_CACHE_TTL" envDefault:"1h"`
+	}
 }
 
 func GetConfig() *Config {
