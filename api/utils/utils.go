@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -102,6 +103,18 @@ func Int64OrNil(i64 int64) *int64 {
 	return &i64
 }
 
+func StringOrNil(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}
+
+func TimePtr(t time.Time) *time.Time {
+	return &t
+}
+
+// SlugifyForSubdomain generates a slug suitable for use as a subdomain.
 func SlugifyForSubdomain(name string) string {
 	re := regexp.MustCompile(RegexNonAlphanumeric)
 
