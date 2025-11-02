@@ -56,6 +56,30 @@ func (m *Manifest) Populate(ctx context.Context, challenge *challengeDom.Challen
 	if m.Flag != nil {
 		m.Flag = utils.StringOrNil(challenge.RandomizedFlag(*m.Flag))
 	}
+
+	// apply default resource limits if not set
+	limits := map[ResourceName]string{}
+
+	for _, limit := range m.Limits {
+		limits[limit.Name] = limit.Value
+	}
+
+	if _, ok := limits[ResourceCPU]; !ok {
+		m.Limits = append(m.Limits, &Resource{
+			Name:  ResourceCPU,
+			Type:  ResourceTypeLimit,
+			Value: utils.GetConfig().Instances.LimitCPU,
+		})
+	}
+
+	if _, ok := limits[ResourceMemory]; !ok {
+		m.Limits = append(m.Limits, &Resource{
+			Name:  ResourceMemory,
+			Type:  ResourceTypeLimit,
+			Value: utils.GetConfig().Instances.LimitMemory,
+		})
+	}
+
 	return nil
 }
 
