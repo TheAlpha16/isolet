@@ -1,8 +1,11 @@
 package manifest
 
 import (
+	"context"
+
 	"github.com/TheAlpha16/isolet/api/internal/domain"
 	challengeDom "github.com/TheAlpha16/isolet/api/internal/domain/challenge"
+	"github.com/TheAlpha16/isolet/api/utils"
 )
 
 type ResourceName string
@@ -41,6 +44,21 @@ type Manifest struct {
 	domain.BaseEntity
 }
 
+func (m *Manifest) Populate(ctx context.Context, challenge *challengeDom.Challenge) error {
+	slug, err := challenge.Slug(ctx)
+	if err != nil {
+		return err
+	}
+
+	m.Slug = slug
+	m.Type = challenge.Type
+
+	if m.Flag != nil {
+		m.Flag = utils.StringOrNil(challenge.RandomizedFlag(*m.Flag))
+	}
+	return nil
+}
+
 type Resource struct {
 	ID         int64
 	Name       ResourceName
@@ -59,8 +77,4 @@ type Endpoint struct {
 	Hostname   *string
 	Port       *int32
 	domain.BaseEntity
-}
-
-func (m *Manifest) Populate(challenge *challengeDom.Challenge) {
-	// TODO fininsh this
 }
