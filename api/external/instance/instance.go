@@ -7,7 +7,10 @@ import (
 	k8sInfra "github.com/TheAlpha16/isolet/api/infra/k8s"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	instanceDom "github.com/TheAlpha16/isolet/api/internal/domain/instance"
+	manifestDom "github.com/TheAlpha16/isolet/api/internal/domain/manifest"
+	"github.com/TheAlpha16/isolet/api/utils"
 
+	tidev1 "github.com/TheAlpha16/isolet/tide/api/v1"
 	"github.com/TheAlpha16/isolet/tide/sdk"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
@@ -19,17 +22,36 @@ type instanceSvc struct {
 func (is *instanceSvc) Start(ctx context.Context, inst *instanceDom.Instance) error {
 	instance := toTideInstance(ctx, inst)
 
-	err := is.client.CreateInstance(ctx, instance)
-	if err != nil {
+	if err := is.client.CreateInstance(ctx, instance); err != nil {
 		return errorDom.Raise(ctx, errorDom.ErrInstanceCreationFailed, "", err, nil)
 	}
 
-	// TODO wait for the instance and populate the necessary fields
+	if err := is.reconcileState(ctx, instance, tidev1.PhaseRunning, tidev1.PhaseFailed); err != nil {
+		return err
+	}
+
+	// update endpoints
+	currentEps := make(map[string]*manifestDom.Endpoint)
+	for _, ep := range inst.Manifest.Endpoints {
+		currentEps[ep.Name] = ep
+	}
+
+	for _, epStatus := range instance.Status.Endpoints {
+		if ep, ok := currentEps[epStatus.Name]; ok {
+			ep.Hostname = epStatus.Hostname
+			ep.Port = epStatus.Port
+		}
+	}
 
 	return nil
 }
 
 func (is *instanceSvc) Stop(ctx context.Context, inst *instanceDom.Instance) error {
+	if err := is.client.DeleteInstance(ctx, inst.Name(), utils.GetConfig().Instances.Namespace); err != nil {
+		return errorDom.Raise(ctx, errorDom.ErrInstanceDeletionFailed, "", err, nil)
+	}
+
+	// TODO wait for the instance to be deleted
 	return nil
 }
 

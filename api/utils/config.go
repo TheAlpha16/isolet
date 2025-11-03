@@ -96,9 +96,10 @@ type Config struct {
 	}
 
 	K8s struct {
-		KubeConfigFilePath string `env:"K8S_KUBE_CONFIG_FILE_PATH" envDefault:""`
-		InstanceKind       string `env:"K8S_INSTANCE_KIND" envDefault:"Instance"`
-		InstanceAPIVersion string `env:"K8S_INSTANCE_API_VERSION" envDefault:"challenges.isolet.dev/v1"`
+		KubeConfigFilePath string        `env:"K8S_KUBE_CONFIG_FILE_PATH" envDefault:""`
+		InstanceKind       string        `env:"K8S_INSTANCE_KIND" envDefault:"Instance"`
+		InstanceAPIVersion string        `env:"K8S_INSTANCE_API_VERSION" envDefault:"challenges.isolet.dev/v1"`
+		InstancePollRate   time.Duration `env:"K8S_INSTANCE_POLL_RATE" envDefault:"5s"`
 	}
 
 	Manifest struct {

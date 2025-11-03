@@ -107,6 +107,8 @@ const (
 	ErrInstanceInvalidResourceQuantity ErrorCode = "INSTANCE-06"
 	ErrInstanceExtensionNotAllowed     ErrorCode = "INSTANCE-07"
 	ErrInstanceUpdateFailed            ErrorCode = "INSTANCE-08"
+	ErrInstanceDeletionFailed          ErrorCode = "INSTANCE-09"
+	ErrInstanceInvalidState            ErrorCode = "INSTANCE-10"
 
 	// k8s errors
 	ErrK8sConnectionFailed ErrorCode = "K8S-00"
@@ -196,6 +198,7 @@ var msgMap = map[ErrorCode]string{
 	ErrInstanceCreationFailed:          "failed to create instance",
 	ErrInstanceInvalidResourceQuantity: "instance has invalid resource quantity",
 	ErrInstanceExtensionNotAllowed:     "instance extension is not allowed",
+	ErrInstanceInvalidState:            "instance is in an invalid state",
 
 	// Manifest errors
 	ErrManifestNotFound: "manifest not found",
@@ -230,6 +233,7 @@ var ServerErrorCodes = map[ErrorCode]struct{}{
 	ErrChallengeNameInvalid:   {},
 	ErrInstanceUpdateFailed:   {},
 	ErrManifestNotFound:       {},
+	ErrInstanceDeletionFailed: {},
 }
 
 // Map of auth error codes

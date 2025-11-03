@@ -11,14 +11,14 @@ import (
 	"github.com/TheAlpha16/isolet/api/utils/logger"
 	"go.uber.org/zap"
 
-	tide "github.com/TheAlpha16/isolet/tide/api/v1"
+	tidev1 "github.com/TheAlpha16/isolet/tide/api/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func toTideInstance(ctx context.Context, inst *instanceDom.Instance) *tide.Instance {
-	instance := tide.Instance{
+func toTideInstance(ctx context.Context, inst *instanceDom.Instance) *tidev1.Instance {
+	instance := tidev1.Instance{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       utils.GetConfig().K8s.InstanceKind,
 			APIVersion: utils.GetConfig().K8s.InstanceAPIVersion,
@@ -27,19 +27,19 @@ func toTideInstance(ctx context.Context, inst *instanceDom.Instance) *tide.Insta
 			Name:      inst.Name(),
 			Namespace: utils.GetConfig().Instances.Namespace,
 		},
-		Spec: tide.InstanceSpec{
-			Challenge: tide.Challenge{
+		Spec: tidev1.InstanceSpec{
+			Challenge: tidev1.Challenge{
 				ID:    inst.Manifest.ChallengeID,
 				Slug:  inst.Manifest.Slug,
 				Flag:  inst.Manifest.Flag,
-				Type:  tide.ChallengeType(inst.Manifest.Type),
+				Type:  tidev1.ChallengeType(inst.Manifest.Type),
 				Image: inst.Manifest.Image,
 			},
 		},
 	}
 
 	if inst.TeamID != nil {
-		instance.Spec.Team = &tide.Team{
+		instance.Spec.Team = &tidev1.Team{
 			ID: *inst.TeamID,
 		}
 	}
@@ -52,12 +52,12 @@ func toTideInstance(ctx context.Context, inst *instanceDom.Instance) *tide.Insta
 		instance.Spec.Limits = *toCoreResource(ctx, inst.Manifest.Limits)
 	}
 
-	var endpoints []tide.EndpointSpec
+	var endpoints []tidev1.EndpointSpec
 	for _, ep := range inst.Manifest.Endpoints {
 		endpoints = append(endpoints, *toTideEndpoint(ctx, ep))
 	}
 
-	lifecycle := tide.Lifecycle{
+	lifecycle := tidev1.Lifecycle{
 		AllowExtension: inst.Lifecycle.AllowExtension,
 	}
 	if inst.Lifecycle.ExpiresAt != nil {
@@ -73,10 +73,10 @@ func toTideInstance(ctx context.Context, inst *instanceDom.Instance) *tide.Insta
 	return &instance
 }
 
-func toTideEndpoint(ctx context.Context, endpoint *manifestDom.Endpoint) *tide.EndpointSpec {
-	return &tide.EndpointSpec{
+func toTideEndpoint(ctx context.Context, endpoint *manifestDom.Endpoint) *tidev1.EndpointSpec {
+	return &tidev1.EndpointSpec{
 		Name:       endpoint.Name,
-		Protocol:   tide.Protocol(endpoint.Protocol),
+		Protocol:   tidev1.Protocol(endpoint.Protocol),
 		TargetPort: endpoint.TargetPort,
 	}
 }
