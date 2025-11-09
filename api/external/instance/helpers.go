@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (is *instanceSvc) reconcileState(ctx context.Context, old *tidev1.Instance, terminalStates ...tidev1.Phase) error {
+func (is *instanceSvc) ensureInstanceReady(ctx context.Context, old *tidev1.Instance, terminalStates ...tidev1.Phase) error {
 	var createdInst *tidev1.Instance
 	var err error
 

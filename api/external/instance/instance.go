@@ -28,7 +28,7 @@ func (is *instanceSvc) Start(ctx context.Context, inst *instanceDom.Instance, ma
 	}
 
 	// wait for instance to reach terminal state
-	if err := is.reconcileState(ctx, tideInstance, tidev1.PhaseRunning, tidev1.PhaseFailed); err != nil {
+	if err := is.ensureInstanceReady(ctx, tideInstance, tidev1.PhaseRunning, tidev1.PhaseFailed); err != nil {
 		return err
 	}
 
