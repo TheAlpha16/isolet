@@ -32,15 +32,15 @@ const (
 )
 
 type Manifest struct {
-	ID          int64
-	ChallengeID int64
-	Slug        string
-	Image       string
-	Type        challengeDom.ChallengeType
-	Flag        *string
-	Requests    []*Resource
-	Limits      []*Resource
-	Endpoints   []*Endpoint
+	ID            int64
+	ChallengeID   int64
+	Slug          string
+	Image         string
+	Type          challengeDom.ChallengeType
+	FlagTemplate  *string
+	Requests      []*Resource
+	Limits        []*Resource
+	EndpointSpecs []*EndpointSpec
 	domain.BaseEntity
 }
 
@@ -52,10 +52,6 @@ func (m *Manifest) Populate(ctx context.Context, challenge *challengeDom.Challen
 
 	m.Slug = slug
 	m.Type = challenge.Type
-
-	if m.Flag != nil {
-		m.Flag = utils.StringOrNil(challenge.RandomizedFlag(*m.Flag))
-	}
 
 	// apply default resource limits if not set
 	limits := map[ResourceName]string{}
@@ -92,13 +88,11 @@ type Resource struct {
 	domain.BaseEntity
 }
 
-type Endpoint struct {
+type EndpointSpec struct {
 	ID         int64
 	Name       string
 	Protocol   Protocol
 	TargetPort int32
-	Hostname   *string
-	Port       *int32
 	ManifestID int64
 	domain.BaseEntity
 }
