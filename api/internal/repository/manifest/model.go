@@ -11,12 +11,12 @@ import (
 
 type Manifest struct {
 	postgres.BaseModel
-	ChallengeID int64      `gorm:"not null;uniqueIndex"`
-	Image       string     `gorm:"not null"`
-	Flag        *string    `gorm:"type:text"`
-	Requests    []Resource `gorm:"foreignKey:ManifestID;references:ID;constraint:OnDelete:CASCADE"`
-	Limits      []Resource `gorm:"foreignKey:ManifestID;references:ID;constraint:OnDelete:CASCADE"`
-	Endpoints   []Endpoint `gorm:"foreignKey:ManifestID;references:ID;constraint:OnDelete:CASCADE"`
+	ChallengeID   int64          `gorm:"not null;uniqueIndex"`
+	Image         string         `gorm:"not null"`
+	FlagTemplate  *string        `gorm:"type:text"`
+	Requests      []Resource     `gorm:"foreignKey:ManifestID;references:ID;constraint:OnDelete:CASCADE"`
+	Limits        []Resource     `gorm:"foreignKey:ManifestID;references:ID;constraint:OnDelete:CASCADE"`
+	EndpointSpecs []EndpointSpec `gorm:"foreignKey:ManifestID;references:ID;constraint:OnDelete:CASCADE"`
 
 	Challenge challengeRepo.Challenge `gorm:"foreignKey:ChallengeID;references:ID;constraint:OnDelete:CASCADE"`
 }
@@ -32,9 +32,9 @@ func (m *Manifest) ToDomain() *manifestDom.Manifest {
 		limits[i] = lim.ToDomain()
 	}
 
-	endpoints := make([]*manifestDom.Endpoint, len(m.Endpoints))
-	for i, ep := range m.Endpoints {
-		endpoints[i] = ep.ToDomain()
+	endpointSpecs := make([]*manifestDom.EndpointSpec, len(m.EndpointSpecs))
+	for i, ep := range m.EndpointSpecs {
+		endpointSpecs[i] = ep.ToDomain()
 	}
 
 	return &manifestDom.Manifest{
@@ -42,13 +42,13 @@ func (m *Manifest) ToDomain() *manifestDom.Manifest {
 			CreatedAt: time.Unix(m.CreatedAt, 0),
 			UpdatedAt: time.Unix(m.UpdatedAt, 0),
 		},
-		ID:          m.ID,
-		ChallengeID: m.ChallengeID,
-		Image:       m.Image,
-		Flag:        m.Flag,
-		Requests:    requests,
-		Limits:      limits,
-		Endpoints:   endpoints,
+		ID:            m.ID,
+		ChallengeID:   m.ChallengeID,
+		Image:         m.Image,
+		FlagTemplate:  m.FlagTemplate,
+		Requests:      requests,
+		Limits:        limits,
+		EndpointSpecs: endpointSpecs,
 	}
 }
 
@@ -76,7 +76,7 @@ func (res *Resource) ToDomain() *manifestDom.Resource {
 	}
 }
 
-type Endpoint struct {
+type EndpointSpec struct {
 	postgres.BaseModel
 	Name       string `gorm:"not null"`
 	Protocol   string `gorm:"type:protocol_type;not null"`
@@ -86,8 +86,8 @@ type Endpoint struct {
 	Manifest Manifest `gorm:"foreignKey:ManifestID;references:ID"`
 }
 
-func (ep *Endpoint) ToDomain() *manifestDom.Endpoint {
-	return &manifestDom.Endpoint{
+func (ep *EndpointSpec) ToDomain() *manifestDom.EndpointSpec {
+	return &manifestDom.EndpointSpec{
 		BaseEntity: domain.BaseEntity{
 			CreatedAt: time.Unix(ep.CreatedAt, 0),
 			UpdatedAt: time.Unix(ep.UpdatedAt, 0),

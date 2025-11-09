@@ -9,7 +9,6 @@ import (
 	"github.com/TheAlpha16/isolet/api/internal/domain/challenge"
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
-	manifestDom "github.com/TheAlpha16/isolet/api/internal/domain/manifest"
 	"github.com/TheAlpha16/isolet/api/utils"
 )
 
@@ -17,21 +16,27 @@ const (
 	InstanceCachePrefix = "instance"
 )
 
+type Protocol string
+
+const (
+	ProtocolHTTP  Protocol = "http"
+	ProtocolHTTPS Protocol = "https"
+	ProtocolNC    Protocol = "nc"
+	ProtocolSSH   Protocol = "ssh"
+)
+
 type Instance struct {
-	ID        int64
-	TeamID    *int64
-	Manifest  *manifestDom.Manifest
-	Lifecycle *Lifecycle
+	ID          int64
+	TeamID      *int64
+	ChallengeID int64
+	Flag        *string
+	Lifecycle   *Lifecycle
+	Endpoints   []*Endpoint
 	domain.BaseEntity
 }
 
-func (in *Instance) Validate(ctx context.Context) error {
+func (in *Instance) Validate(ctx context.Context, challengeType challenge.ChallengeType) error {
 	extraData := common.ExtraData{"instance": *in}
-
-	// manifest
-	if in.Manifest == nil {
-		return errorDom.Raise(ctx, errorDom.ErrInstanceInvalid, "instance manifest cannot be nil", nil, extraData)
-	}
 
 	// lifecycle
 	if in.Lifecycle == nil {
@@ -39,11 +44,11 @@ func (in *Instance) Validate(ctx context.Context) error {
 	}
 
 	// challenge
-	if in.Manifest.ChallengeID == 0 {
-		return errorDom.Raise(ctx, errorDom.ErrInstanceInvalid, "challenge ID in manifest cannot be zero", nil, extraData)
+	if in.ChallengeID == 0 {
+		return errorDom.Raise(ctx, errorDom.ErrInstanceInvalid, "challenge ID cannot be zero", nil, extraData)
 	}
 
-	switch in.Manifest.Type {
+	switch challengeType {
 	case challenge.ChallengeStatic:
 		return errorDom.Raise(ctx, errorDom.ErrInstanceInvalid, "instance cannot be spawned for static challenges", nil, extraData)
 
@@ -59,7 +64,7 @@ func (in *Instance) Validate(ctx context.Context) error {
 			return errorDom.Raise(ctx, errorDom.ErrInstanceInvalid, "team ID must be nil for dynamic challenge instances", nil, extraData)
 		}
 	default:
-		return errorDom.Raise(ctx, errorDom.ErrInstanceInvalid, "invalid challenge type in manifest", nil, extraData)
+		return errorDom.Raise(ctx, errorDom.ErrInstanceInvalid, "invalid challenge type", nil, extraData)
 	}
 
 	return nil
@@ -68,9 +73,9 @@ func (in *Instance) Validate(ctx context.Context) error {
 func (in *Instance) Name() string {
 	var identifier string
 	if in.TeamID == nil {
-		identifier = fmt.Sprintf("dynamic@%d", in.Manifest.ChallengeID)
+		identifier = fmt.Sprintf("dynamic@%d", in.ChallengeID)
 	} else {
-		identifier = fmt.Sprintf("team%d@%d", *in.TeamID, in.Manifest.ChallengeID)
+		identifier = fmt.Sprintf("team%d@%d", *in.TeamID, in.ChallengeID)
 	}
 	return utils.HMAC256(identifier, utils.GetConfig().Instances.SecretKey)
 }
@@ -79,6 +84,18 @@ type Lifecycle struct {
 	AvailableAt    *time.Time
 	ExpiresAt      *time.Time
 	AllowExtension bool
+}
+
+type Endpoint struct {
+	ID         int64
+	InstanceID int64
+	Name       string
+	Protocol   Protocol
+	TargetPort int32
+	Hostname   *string
+	Port       *int32
+	Ready      bool
+	domain.BaseEntity
 }
 
 func InstanceCacheKey(teamID, challengeID int64) string {

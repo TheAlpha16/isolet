@@ -13,34 +13,28 @@ import (
 	tidev1 "github.com/TheAlpha16/isolet/tide/api/v1"
 	"github.com/TheAlpha16/isolet/tide/sdk"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type instanceSvc struct {
 	client sdk.Handler
 }
 
-func (is *instanceSvc) Start(ctx context.Context, inst *instanceDom.Instance) error {
-	instance := toTideInstance(ctx, inst)
+func (is *instanceSvc) Start(ctx context.Context, inst *instanceDom.Instance, manifest *manifestDom.Manifest) error {
+	tideInstance := toTideInstance(ctx, inst, manifest)
 
-	if err := is.client.CreateInstance(ctx, instance); err != nil {
+	if err := is.client.CreateInstance(ctx, tideInstance); err != nil {
 		return errorDom.Raise(ctx, errorDom.ErrInstanceCreationFailed, "", err, nil)
 	}
 
-	if err := is.reconcileState(ctx, instance, tidev1.PhaseRunning, tidev1.PhaseFailed); err != nil {
+	// wait for instance to reach terminal state
+	if err := is.reconcileState(ctx, tideInstance, tidev1.PhaseRunning, tidev1.PhaseFailed); err != nil {
 		return err
 	}
 
-	// update endpoints
-	currentEps := make(map[string]*manifestDom.Endpoint)
-	for _, ep := range inst.Manifest.Endpoints {
-		currentEps[ep.Name] = ep
-	}
-
-	for _, epStatus := range instance.Status.Endpoints {
-		if ep, ok := currentEps[epStatus.Name]; ok {
-			ep.Hostname = epStatus.Hostname
-			ep.Port = epStatus.Port
-		}
+	inst.Endpoints = make([]*instanceDom.Endpoint, 0, len(tideInstance.Status.Endpoints))
+	for _, epStatus := range tideInstance.Status.Endpoints {
+		inst.Endpoints = append(inst.Endpoints, fromTideEndpointStatus(epStatus))
 	}
 
 	return nil
@@ -56,9 +50,17 @@ func (is *instanceSvc) Stop(ctx context.Context, inst *instanceDom.Instance) err
 }
 
 func (is *instanceSvc) Extend(ctx context.Context, inst *instanceDom.Instance) error {
-	instance := toTideInstance(ctx, inst)
+	tideInstance, err := is.client.GetInstance(ctx, inst.Name(), utils.GetConfig().Instances.Namespace)
+	if err != nil {
+		return errorDom.Raise(ctx, errorDom.ErrInstanceUpdateFailed, "failed to get instance for extension", err, nil)
+	}
 
-	if err := is.client.UpdateInstance(ctx, instance); err != nil {
+	if inst.Lifecycle.ExpiresAt != nil {
+		tideInstance.Spec.Lifecycle.ExpiresAt = &metav1.Time{Time: *inst.Lifecycle.ExpiresAt}
+	}
+	tideInstance.Spec.Lifecycle.AllowExtension = inst.Lifecycle.AllowExtension
+
+	if err := is.client.UpdateInstance(ctx, tideInstance); err != nil {
 		return errorDom.Raise(ctx, errorDom.ErrInstanceUpdateFailed, "failed to extend instance expiry", err, nil)
 	}
 

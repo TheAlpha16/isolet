@@ -32,7 +32,7 @@ func (manifestRepo *manifestRepo) GetByChallengeID(ctx context.Context, challeng
 			if err := manifestRepo.db.WithContext(ctx).
 				Preload("Requests", "type = ?", manifestDom.ResourceTypeRequest).
 				Preload("Limits", "type = ?", manifestDom.ResourceTypeLimit).
-				Preload("Endpoints").
+				Preload("EndpointSpecs").
 				Where("challenge_id = ?", challengeID).
 				First(&manifest).Error; err != nil {
 				if errors.Is(err, gorm.ErrRecordNotFound) {

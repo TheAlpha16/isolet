@@ -62,22 +62,29 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 		return nil, err
 	}
 
+	var flag *string
+	if manifest.FlagTemplate != nil {
+		flag = utils.StringOrNil(challenge.RandomizedFlag(*manifest.FlagTemplate))
+	}
+
 	timeNow := time.Now()
 
 	inst := instanceDom.Instance{
-		TeamID:   utils.Int64OrNil(teamID),
-		Manifest: manifest,
+		TeamID:      utils.Int64OrNil(teamID),
+		ChallengeID: manifest.ChallengeID,
+		Flag:        flag,
 		Lifecycle: &instanceDom.Lifecycle{
 			ExpiresAt:      utils.TimePtr(timeNow.Add(utils.GetConfig().Instances.Lifetime)),
 			AllowExtension: true,
 		},
+		Endpoints: []*instanceDom.Endpoint{}, // will be populated by service after K8s creation
 	}
 
-	if err := inst.Validate(ctx); err != nil {
+	if err := inst.Validate(ctx, manifest.Type); err != nil {
 		return nil, err
 	}
 
-	if err := i.service.Start(ctx, &inst); err != nil {
+	if err := i.service.Start(ctx, &inst, manifest); err != nil {
 		return nil, err
 	}
 
@@ -103,12 +110,14 @@ func (i *instanceImpl) Stop(ctx context.Context, input *instanceDom.StopInput) e
 	}
 
 	// take mutex on the instance to prevent race conditions
-	if err := i.acquireInstanceLock(ctx, teamID, instance.Manifest.ChallengeID, config.Instances.StopTimeout); err != nil {
+	if err := i.acquireInstanceLock(ctx, teamID, instance.ChallengeID, config.Instances.StopTimeout); err != nil {
 		return err
 	}
-	defer i.releaseInstanceLock(ctx, teamID, instance.Manifest.ChallengeID) //nolint:errcheck
+	defer i.releaseInstanceLock(ctx, teamID, instance.ChallengeID) //nolint:errcheck
 
-	// TODO stop instance
+	if err := i.service.Stop(ctx, instance); err != nil {
+		return err
+	}
 
 	// delete from database
 	if err := i.repo.Delete(ctx, instance.ID); err != nil {
@@ -131,13 +140,19 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 		return nil, errorDom.Raise(ctx, errorDom.ErrInstanceNotFound, "", nil, nil)
 	}
 
-	// take mutex on the instance to prevent race conditions
-	if err := i.acquireInstanceLock(ctx, teamID, instance.Manifest.ChallengeID, config.Instances.ExtendTimeout); err != nil {
+	// Get challenge to validate type
+	challenge, err := i.challengeUc.ValidateAccess(ctx, instance.ChallengeID, teamID)
+	if err != nil {
 		return nil, err
 	}
-	defer i.releaseInstanceLock(ctx, teamID, instance.Manifest.ChallengeID) //nolint:errcheck
 
-	if err := instance.Validate(ctx); err != nil {
+	// take mutex on the instance to prevent race conditions
+	if err := i.acquireInstanceLock(ctx, teamID, instance.ChallengeID, config.Instances.ExtendTimeout); err != nil {
+		return nil, err
+	}
+	defer i.releaseInstanceLock(ctx, teamID, instance.ChallengeID) //nolint:errcheck
+
+	if err := instance.Validate(ctx, challenge.Type); err != nil {
 		return nil, err
 	}
 

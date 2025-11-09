@@ -17,7 +17,7 @@ type instanceRepo struct {
 }
 
 func (ir *instanceRepo) Create(ctx context.Context, instance *instanceDom.Instance) (*instanceDom.Instance, error) {
-	extraData := common.ExtraData{"team_id": instance.TeamID, "challenge_id": instance.Manifest.ChallengeID}
+	extraData := common.ExtraData{"team_id": instance.TeamID, "challenge_id": instance.ChallengeID}
 	instanceModel, err := NewInstanceModel(instance)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (ir *instanceRepo) Create(ctx context.Context, instance *instanceDom.Instan
 
 func (ir *instanceRepo) GetByID(ctx context.Context, id int64) (*instanceDom.Instance, error) {
 	var instance Instance
-	if err := ir.db.WithContext(ctx).First(&instance, id).Error; err != nil {
+	if err := ir.db.WithContext(ctx).Preload("Endpoints").First(&instance, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errorDom.Raise(ctx, errorDom.ErrInstanceNotFound, "", err, common.ExtraData{"id": id})
 		}
@@ -72,7 +72,7 @@ func (ir instanceRepo) Delete(ctx context.Context, id int64) error {
 
 func (ir *instanceRepo) GetByTeamAndChallenge(ctx context.Context, teamID, challengeID int64) (*instanceDom.Instance, error) {
 	var instance Instance
-	if err := ir.db.WithContext(ctx).Where("team_id = ? AND challenge_id = ?", teamID, challengeID).First(&instance).Error; err != nil {
+	if err := ir.db.WithContext(ctx).Preload("Endpoints").Where("team_id = ? AND challenge_id = ?", teamID, challengeID).First(&instance).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errorDom.Raise(ctx, errorDom.ErrInstanceNotFound, "", err, nil)
 		}

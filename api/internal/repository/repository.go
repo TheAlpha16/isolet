@@ -62,8 +62,9 @@ func AutoMigrate(db *gorm.DB) error {
 		&challengeRepo.Solve{},
 		&challengeRepo.UnlockedHint{},
 		&instanceRepo.Instance{},
+		&instanceRepo.Endpoint{},
 		&manifestRepo.Manifest{},
 		&manifestRepo.Resource{},
-		&manifestRepo.Endpoint{},
+		&manifestRepo.EndpointSpec{},
 	)
 }

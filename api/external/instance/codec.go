@@ -17,7 +17,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func toTideInstance(ctx context.Context, inst *instanceDom.Instance) *tidev1.Instance {
+func toTideInstance(ctx context.Context, inst *instanceDom.Instance, manifest *manifestDom.Manifest) *tidev1.Instance {
 	instance := tidev1.Instance{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       utils.GetConfig().K8s.InstanceKind,
@@ -29,11 +29,11 @@ func toTideInstance(ctx context.Context, inst *instanceDom.Instance) *tidev1.Ins
 		},
 		Spec: tidev1.InstanceSpec{
 			Challenge: tidev1.Challenge{
-				ID:    inst.Manifest.ChallengeID,
-				Slug:  inst.Manifest.Slug,
-				Flag:  inst.Manifest.Flag,
-				Type:  tidev1.ChallengeType(inst.Manifest.Type),
-				Image: inst.Manifest.Image,
+				ID:    manifest.ChallengeID,
+				Slug:  manifest.Slug,
+				Flag:  inst.Flag,
+				Type:  tidev1.ChallengeType(manifest.Type),
+				Image: manifest.Image,
 			},
 		},
 	}
@@ -44,17 +44,17 @@ func toTideInstance(ctx context.Context, inst *instanceDom.Instance) *tidev1.Ins
 		}
 	}
 
-	if inst.Manifest.Requests != nil {
-		instance.Spec.Requests = *toCoreResource(ctx, inst.Manifest.Requests)
+	if manifest.Requests != nil {
+		instance.Spec.Requests = *toCoreResource(ctx, manifest.Requests)
 	}
 
-	if inst.Manifest.Limits != nil {
-		instance.Spec.Limits = *toCoreResource(ctx, inst.Manifest.Limits)
+	if manifest.Limits != nil {
+		instance.Spec.Limits = *toCoreResource(ctx, manifest.Limits)
 	}
 
 	var endpoints []tidev1.EndpointSpec
-	for _, ep := range inst.Manifest.Endpoints {
-		endpoints = append(endpoints, *toTideEndpoint(ctx, ep))
+	for _, ep := range manifest.EndpointSpecs {
+		endpoints = append(endpoints, *toTideEndpointSpec(ctx, ep))
 	}
 
 	lifecycle := tidev1.Lifecycle{
@@ -73,11 +73,22 @@ func toTideInstance(ctx context.Context, inst *instanceDom.Instance) *tidev1.Ins
 	return &instance
 }
 
-func toTideEndpoint(ctx context.Context, endpoint *manifestDom.Endpoint) *tidev1.EndpointSpec {
+func toTideEndpointSpec(ctx context.Context, endpointSpec *manifestDom.EndpointSpec) *tidev1.EndpointSpec {
 	return &tidev1.EndpointSpec{
-		Name:       endpoint.Name,
-		Protocol:   tidev1.Protocol(endpoint.Protocol),
-		TargetPort: endpoint.TargetPort,
+		Name:       endpointSpec.Name,
+		Protocol:   tidev1.Protocol(endpointSpec.Protocol),
+		TargetPort: endpointSpec.TargetPort,
+	}
+}
+
+func fromTideEndpointStatus(epStatus tidev1.EndpointStatus) *instanceDom.Endpoint {
+	return &instanceDom.Endpoint{
+		Name:       epStatus.Name,
+		Protocol:   instanceDom.Protocol(epStatus.Protocol),
+		TargetPort: epStatus.TargetPort,
+		Hostname:   epStatus.Hostname,
+		Port:       epStatus.Port,
+		Ready:      epStatus.Ready,
 	}
 }
 

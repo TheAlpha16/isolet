@@ -1,6 +1,10 @@
 package instance
 
-import "context"
+import (
+	"context"
+
+	manifestDom "github.com/TheAlpha16/isolet/api/internal/domain/manifest"
+)
 
 type Usecase interface {
 	Start(ctx context.Context, input *StartInput) (*InstanceDTO, error)
@@ -17,7 +21,7 @@ type Repository interface {
 }
 
 type Service interface {
-	Start(ctx context.Context, inst *Instance) error
+	Start(ctx context.Context, inst *Instance, manifest *manifestDom.Manifest) error
 	Stop(ctx context.Context, inst *Instance) error
 	Extend(ctx context.Context, inst *Instance) error
 }
