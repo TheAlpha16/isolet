@@ -28,7 +28,7 @@ func (manifestRepo *manifestRepo) GetByChallengeID(ctx context.Context, challeng
 		GetManifestCacheKey(challengeID),
 		config.Manifest.CacheTTL,
 		func() (*manifestDom.Manifest, error) {
-			var manifest manifestDom.Manifest
+			var manifest Manifest
 			if err := manifestRepo.db.WithContext(ctx).
 				Preload("Requests", "type = ?", manifestDom.ResourceTypeRequest).
 				Preload("Limits", "type = ?", manifestDom.ResourceTypeLimit).
@@ -40,7 +40,7 @@ func (manifestRepo *manifestRepo) GetByChallengeID(ctx context.Context, challeng
 				}
 				return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve manifest", err, extraData)
 			}
-			return &manifest, nil
+			return manifest.ToDomain(), nil
 		},
 	)
 }
