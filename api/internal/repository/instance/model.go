@@ -7,6 +7,7 @@ import (
 	"github.com/TheAlpha16/isolet/api/infra/database/postgres"
 	"github.com/TheAlpha16/isolet/api/internal/domain"
 	instanceDom "github.com/TheAlpha16/isolet/api/internal/domain/instance"
+	manifestDom "github.com/TheAlpha16/isolet/api/internal/domain/manifest"
 	challengeRepo "github.com/TheAlpha16/isolet/api/internal/repository/challenge"
 	teamRepo "github.com/TheAlpha16/isolet/api/internal/repository/team"
 )
@@ -110,7 +111,7 @@ func (ep *Endpoint) ToDomain() *instanceDom.Endpoint {
 		ID:         ep.ID,
 		InstanceID: ep.InstanceID,
 		Name:       ep.Name,
-		Protocol:   instanceDom.Protocol(ep.Protocol),
+		Protocol:   manifestDom.Protocol(ep.Protocol),
 		TargetPort: ep.TargetPort,
 		Hostname:   ep.Hostname,
 		Port:       ep.Port,

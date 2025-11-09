@@ -84,7 +84,7 @@ func toTideEndpointSpec(ctx context.Context, endpointSpec *manifestDom.EndpointS
 func fromTideEndpointStatus(epStatus tidev1.EndpointStatus) *instanceDom.Endpoint {
 	return &instanceDom.Endpoint{
 		Name:       epStatus.Name,
-		Protocol:   instanceDom.Protocol(epStatus.Protocol),
+		Protocol:   manifestDom.Protocol(epStatus.Protocol),
 		TargetPort: epStatus.TargetPort,
 		Hostname:   epStatus.Hostname,
 		Port:       epStatus.Port,

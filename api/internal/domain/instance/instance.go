@@ -9,20 +9,12 @@ import (
 	"github.com/TheAlpha16/isolet/api/internal/domain/challenge"
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
+	manifestDom "github.com/TheAlpha16/isolet/api/internal/domain/manifest"
 	"github.com/TheAlpha16/isolet/api/utils"
 )
 
 const (
 	InstanceCachePrefix = "instance"
-)
-
-type Protocol string
-
-const (
-	ProtocolHTTP  Protocol = "http"
-	ProtocolHTTPS Protocol = "https"
-	ProtocolNC    Protocol = "nc"
-	ProtocolSSH   Protocol = "ssh"
 )
 
 type Instance struct {
@@ -90,7 +82,7 @@ type Endpoint struct {
 	ID         int64
 	InstanceID int64
 	Name       string
-	Protocol   Protocol
+	Protocol   manifestDom.Protocol
 	TargetPort int32
 	Hostname   *string
 	Port       *int32
