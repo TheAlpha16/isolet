@@ -8,7 +8,7 @@ metadata:
 spec:
   challenge:
     id: 1
-    name: nginx-server
+    slug: nginx-server
     image: nginx:latest
     type: on-demand
   team:
