@@ -193,11 +193,9 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		// Emit events for significant phase changes
 		switch newPhase {
 		case challengesv1.PhaseStaged:
-			r.Recorder.Event(&instance, corev1.EventTypeNormal, "InstanceStaged",
-				fmt.Sprintf("Instance staged and ready to be activated"))
+			r.Recorder.Event(&instance, corev1.EventTypeNormal, "InstanceStaged", "Instance staged and ready to be activated")
 		case challengesv1.PhaseRunning:
-			r.Recorder.Event(&instance, corev1.EventTypeNormal, "InstanceRunning",
-				fmt.Sprintf("Instance is now running and fully accessible"))
+			r.Recorder.Event(&instance, corev1.EventTypeNormal, "InstanceRunning", "Instance is now running and fully accessible")
 		case challengesv1.PhaseFailed:
 			r.Recorder.Event(&instance, corev1.EventTypeWarning, "InstanceFailed",
 				fmt.Sprintf("Instance has failed (deployment: %v, service: %v, ingress: %v)",
