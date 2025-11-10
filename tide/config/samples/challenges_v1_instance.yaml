@@ -14,12 +14,12 @@ spec:
   team:
     id: 1
   endpoints:
-  - name: web
-    targetPort: 80
-    protocol: http
-  - name: websecure
-    targetPort: 443
-    protocol: https
+    - name: web
+      targetPort: 80
+      protocol: http
+    - name: websecure
+      targetPort: 443
+      protocol: https
   limits:
     cpu: "100m"
     memory: "128Mi"
@@ -27,4 +27,4 @@ spec:
     cpu: "50m"
     memory: "64Mi"
   lifecycle:
-    expiresAt: "2025-12-31T23:59:59Z"
+    expiresAt: "2026-12-31T23:59:59Z"
