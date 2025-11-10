@@ -27,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	challengesv1 "github.com/TheAlpha16/isolet/tide/api/v1"
@@ -46,8 +47,9 @@ var _ = Describe("Instance Controller", func() {
 	BeforeEach(func() {
 		ctx = context.Background()
 		reconciler = &InstanceReconciler{
-			Client: k8sClient,
-			Scheme: k8sClient.Scheme(),
+			Client:   k8sClient,
+			Scheme:   k8sClient.Scheme(),
+			Recorder: record.NewFakeRecorder(100),
 		}
 	})
 
