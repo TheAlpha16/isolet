@@ -211,7 +211,7 @@ type InstanceStatus struct {
 
 // Instance is the Schema for the instances API.
 // +kubebuilder:resource:shortName=inst
-// +kubebuilder:printcolumn:name="Challenge",type=string,JSONPath=`.spec.challenge.name`,description="Challenge Name"
+// +kubebuilder:printcolumn:name="Challenge",type=string,JSONPath=`.spec.challenge.slug`,description="Challenge Slug"
 // +kubebuilder:printcolumn:name="Team",type=string,JSONPath=`.spec.team.id`,description="Team ID"
 // +kubebuilder:printcolumn:name="Type",type=string,JSONPath=`.spec.challenge.type`,description="Challenge Type"
 // +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`,description="Instance Phase",priority=1
