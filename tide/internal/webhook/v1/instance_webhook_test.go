@@ -359,8 +359,8 @@ var _ = Describe("Instance Webhook", func() {
 			Expect(warnings).To(BeNil())
 		})
 
-		It("Should reject challenge.name change", func() {
-			By("Creating instances with different challenge names")
+		It("Should reject challenge.slug change", func() {
+			By("Creating instances with different challenge slugs")
 			oldObj := createValidInstance()
 			newObj := createValidInstance()
 			newObj.Spec.Challenge.Slug = "different-challenge"
@@ -370,7 +370,7 @@ var _ = Describe("Instance Webhook", func() {
 
 			By("Checking that validation fails for immutable field")
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("challenge.name is immutable"))
+			Expect(err.Error()).To(ContainSubstring("challenge.slug is immutable"))
 			Expect(warnings).To(BeNil())
 		})
 

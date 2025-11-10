@@ -29,6 +29,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -41,7 +42,8 @@ import (
 // InstanceReconciler reconciles a Instance object
 type InstanceReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
 }
 
 // +kubebuilder:rbac:groups=challenges.isolet.dev,resources=instances,verbs=get;list;watch;create;update;patch;delete
@@ -50,6 +52,7 @@ type InstanceReconciler struct {
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=traefik.io,resources=ingressroutes,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -58,6 +61,8 @@ type InstanceReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.22.1/pkg/reconcile
 func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := logf.FromContext(ctx)
+	log.Info("Reconciling Instance", "namespace", req.Namespace, "name", req.Name)
+
 	timeNow := metav1.Now()
 
 	// fetch the Instance resource
@@ -65,25 +70,32 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err := r.Get(ctx, req.NamespacedName, &instance); err != nil {
 		// resource not found, might have been deleted - nothing to do
 		if apierrors.IsNotFound(err) {
+			log.Info("Instance not found, likely deleted", "namespace", req.Namespace, "name", req.Name)
 			return ctrl.Result{}, nil
 		}
 		// error reading the object - requeue the request
-		log.Error(err, "unable to fetch Instance", "instance", req.NamespacedName, "error", err)
+		log.Error(err, "Failed to fetch Instance", "namespace", req.Namespace, "name", req.Name)
 		return ctrl.Result{}, err
 	}
 
 	// update phase of the instance if not set (new instance)
 	if instance.Status.Phase == "" {
+		log.Info("Initializing new Instance", "namespace", instance.Namespace, "name", instance.Name,
+			"challenge", instance.Spec.Challenge.Slug, "team", getTeamID(&instance))
 		instance.Status.Phase = challengesv1.PhasePending
 		if err := r.Status().Update(ctx, &instance); err != nil {
-			log.Error(err, "unable to update Instance status", "instance", req.NamespacedName, "error", err)
+			log.Error(err, "Failed to update Instance status to Pending", "namespace", instance.Namespace, "name", instance.Name)
+			r.Recorder.Event(&instance, corev1.EventTypeWarning, "StatusUpdateFailed", fmt.Sprintf("Failed to set initial status: %v", err))
 			return ctrl.Result{}, err
 		}
+		r.Recorder.Event(&instance, corev1.EventTypeNormal, "Created", fmt.Sprintf("Instance created for challenge '%s'", instance.Spec.Challenge.Slug))
 		return ctrl.Result{}, nil
 	}
 
 	// handle deletion
 	if !instance.ObjectMeta.DeletionTimestamp.IsZero() {
+		log.Info("Instance is being deleted", "namespace", instance.Namespace, "name", instance.Name)
+		r.Recorder.Event(&instance, corev1.EventTypeNormal, "Deleting", "Instance deletion in progress")
 		return ctrl.Result{}, nil
 	}
 
@@ -91,8 +103,13 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		// delete the instance if expired
 		if instance.Spec.Lifecycle.ExpiresAt.Before(&timeNow) {
 			// instance is expired, delete it
+			log.Info("Instance has expired, deleting",
+				"namespace", instance.Namespace,
+				"name", instance.Name,
+				"expiresAt", instance.Spec.Lifecycle.ExpiresAt.Time)
+			r.Recorder.Event(&instance, corev1.EventTypeWarning, "Expired", fmt.Sprintf("Instance expired at %s", instance.Spec.Lifecycle.ExpiresAt.Time))
 			if err := r.Client.Delete(ctx, &instance); err != nil {
-				log.Error(err, "unable to delete expired Instance", "instance", req.NamespacedName, "error", err)
+				log.Error(err, "Failed to delete expired Instance", "namespace", instance.Namespace, "name", instance.Name)
 				return ctrl.Result{}, err
 			}
 			return ctrl.Result{}, nil
@@ -162,8 +179,30 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// Update Instance phase based on child resource status
 	newPhase := r.determinePhase(&instance, deploymentReady, serviceReady, ingressReady)
 	if instance.Status.Phase != newPhase {
+		oldPhase := instance.Status.Phase
 		instance.Status.Phase = newPhase
 		statusChanged = true
+		log.Info("Instance phase transition",
+			"instance", instance.Name,
+			"oldPhase", oldPhase,
+			"newPhase", newPhase,
+			"deploymentReady", deploymentReady,
+			"serviceReady", serviceReady,
+			"ingressReady", ingressReady)
+
+		// Emit events for significant phase changes
+		switch newPhase {
+		case challengesv1.PhaseStaged:
+			r.Recorder.Event(&instance, corev1.EventTypeNormal, "InstanceStaged",
+				fmt.Sprintf("Instance staged and ready to be activated"))
+		case challengesv1.PhaseRunning:
+			r.Recorder.Event(&instance, corev1.EventTypeNormal, "InstanceRunning",
+				fmt.Sprintf("Instance is now running and fully accessible"))
+		case challengesv1.PhaseFailed:
+			r.Recorder.Event(&instance, corev1.EventTypeWarning, "InstanceFailed",
+				fmt.Sprintf("Instance has failed (deployment: %v, service: %v, ingress: %v)",
+					deploymentReady, serviceReady, ingressReady))
+		}
 	}
 
 	// Update status if anything changed
@@ -172,7 +211,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		// This prevents "object has been modified" conflicts
 		latestInstance := &challengesv1.Instance{}
 		if err := r.Get(ctx, req.NamespacedName, latestInstance); err != nil {
-			log.Error(err, "unable to refetch Instance before status patch", "instance", req.NamespacedName)
+			log.Error(err, "Unable to refetch Instance before status patch", "instance", req.NamespacedName)
 			return ctrl.Result{}, err
 		}
 
@@ -182,10 +221,13 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		latestInstance.Status.Conditions = instance.Status.Conditions
 
 		if err := r.Status().Patch(ctx, latestInstance, patch); err != nil {
-			log.Error(err, "unable to patch Instance status", "instance", req.NamespacedName, "error", err)
+			log.Error(err, "Unable to patch Instance status", "instance", req.NamespacedName)
 			// Don't return error - let it requeue naturally and retry
 			return ctrl.Result{RequeueAfter: time.Second * 2}, nil
 		}
+		log.Info("Successfully updated Instance status",
+			"instance", instance.Name,
+			"phase", latestInstance.Status.Phase)
 	}
 
 	// requeue in case expiry is set
@@ -296,16 +338,25 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			// Deployment doesn't exist, create it
-			log.Info("Creating Deployment for Instance", "deployment", deployment.Name, "instance", instance.Name)
+			log.Info("Creating Deployment for Instance",
+				"deployment", deployment.Name,
+				"instance", instance.Name,
+				"image", instance.Spec.Challenge.Image,
+				"challenge", instance.Spec.Challenge.Slug)
 			if err := r.Create(ctx, deployment); err != nil {
-				log.Error(err, "failed to create Deployment", "deployment", deployment.Name)
+				log.Error(err, "Failed to create Deployment", "deployment", deployment.Name)
+				r.Recorder.Event(instance, corev1.EventTypeWarning, "DeploymentCreationFailed",
+					fmt.Sprintf("Failed to create Deployment %s: %v", deployment.Name, err))
 				return false, err
 			}
+			log.Info("Successfully created Deployment", "deployment", deployment.Name)
+			r.Recorder.Event(instance, corev1.EventTypeNormal, "DeploymentCreated",
+				fmt.Sprintf("Created Deployment %s with image %s", deployment.Name, instance.Spec.Challenge.Image))
 			// Deployment created but not yet ready
 			return false, nil
 		}
 		// Error reading the Deployment
-		log.Error(err, "failed to get Deployment", "deployment", deployment.Name)
+		log.Error(err, "Failed to get Deployment", "deployment", deployment.Name)
 		return false, err
 	}
 
@@ -314,19 +365,33 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 		log.Info("Deployment spec differs, updating",
 			"deployment", foundDeployment.Name,
 			"currentReplicas", foundDeployment.Spec.Replicas,
-			"desiredReplicas", deployment.Spec.Replicas)
+			"desiredReplicas", deployment.Spec.Replicas,
+			"image", instance.Spec.Challenge.Image)
 		foundDeployment.Spec = deployment.Spec
-		log.Info("Updating Deployment for Instance", "deployment", foundDeployment.Name, "instance", instance.Name)
 		if err := r.Update(ctx, foundDeployment); err != nil {
-			log.Error(err, "failed to update Deployment", "deployment", foundDeployment.Name)
+			log.Error(err, "Failed to update Deployment", "deployment", foundDeployment.Name)
+			r.Recorder.Event(instance, corev1.EventTypeWarning, "DeploymentUpdateFailed",
+				fmt.Sprintf("Failed to update Deployment %s: %v", foundDeployment.Name, err))
 			return false, err
 		}
-		log.Info("Successfully updated Deployment for Instance", "deployment", foundDeployment.Name, "instance", instance.Name)
+		log.Info("Successfully updated Deployment", "deployment", foundDeployment.Name)
+		r.Recorder.Event(instance, corev1.EventTypeNormal, "DeploymentUpdated",
+			fmt.Sprintf("Updated Deployment %s to match desired spec", foundDeployment.Name))
 		// Deployment updated but may not be ready yet
 		return false, nil
 	}
 
-	return r.isDeploymentReady(foundDeployment), nil
+	// Check readiness
+	ready := r.isDeploymentReady(foundDeployment)
+	if ready {
+		log.V(1).Info("Deployment is ready", "deployment", foundDeployment.Name)
+	} else {
+		log.Info("Deployment not yet ready",
+			"deployment", foundDeployment.Name,
+			"replicas", foundDeployment.Status.Replicas,
+			"readyReplicas", foundDeployment.Status.ReadyReplicas)
+	}
+	return ready, nil
 }
 
 // reconcileService ensures the Service for the Instance exists and is up-to-date.
@@ -390,20 +455,29 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 		if apierrors.IsNotFound(err) {
 			// Service doesn't exist, create it if there are endpoints defined
 			if len(service.Spec.Ports) == 0 {
-				log.Info("No endpoints defined for Instance, skipping Service creation", "instance", instance.Name)
+				log.Info("No endpoints defined for Instance, skipping Service creation",
+					"instance", instance.Name)
 				// No service needed, so consider it "ready"
 				return true, nil
 			}
-			log.Info("Creating Service for Instance", "service", service.Name, "instance", instance.Name)
+			log.Info("Creating Service for Instance",
+				"service", service.Name,
+				"instance", instance.Name,
+				"ports", len(service.Spec.Ports))
 			if err := r.Create(ctx, service); err != nil {
-				log.Error(err, "failed to create Service", "service", service.Name)
+				log.Error(err, "Failed to create Service", "service", service.Name)
+				r.Recorder.Event(instance, corev1.EventTypeWarning, "ServiceCreationFailed",
+					fmt.Sprintf("Failed to create Service %s: %v", service.Name, err))
 				return false, err
 			}
+			log.Info("Successfully created Service", "service", service.Name)
+			r.Recorder.Event(instance, corev1.EventTypeNormal, "ServiceCreated",
+				fmt.Sprintf("Created Service %s with %d port(s)", service.Name, len(service.Spec.Ports)))
 			// Service created and is ready (Services are immediately available)
 			return true, nil
 		}
 		// Error reading the Service
-		log.Error(err, "failed to get Service", "service", service.Name)
+		log.Error(err, "Failed to get Service", "service", service.Name)
 		return false, err
 	}
 
@@ -411,24 +485,38 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 	if !equalServiceSpec(&foundService.Spec, &service.Spec) {
 		// if new endpoints are empty, delete the service
 		if len(service.Spec.Ports) == 0 {
-			log.Info("No endpoints defined for Instance, deleting Service", "service", foundService.Name, "instance", instance.Name)
+			log.Info("No endpoints defined for Instance, deleting Service",
+				"service", foundService.Name,
+				"instance", instance.Name)
 			if err := r.Delete(ctx, foundService); err != nil {
-				log.Error(err, "failed to delete Service", "service", foundService.Name)
+				log.Error(err, "Failed to delete Service", "service", foundService.Name)
+				r.Recorder.Event(instance, corev1.EventTypeWarning, "ServiceDeletionFailed",
+					fmt.Sprintf("Failed to delete Service %s: %v", foundService.Name, err))
 				return false, err
 			}
-			log.Info("Successfully deleted Service for Instance", "service", foundService.Name, "instance", instance.Name)
+			log.Info("Successfully deleted Service", "service", foundService.Name)
+			r.Recorder.Event(instance, corev1.EventTypeNormal, "ServiceDeleted",
+				fmt.Sprintf("Deleted Service %s (no endpoints defined)", foundService.Name))
 			return true, nil
 		}
 		foundService.Spec = service.Spec
-		log.Info("Updating Service for Instance", "service", foundService.Name, "instance", instance.Name)
+		log.Info("Updating Service for Instance",
+			"service", foundService.Name,
+			"instance", instance.Name,
+			"ports", len(service.Spec.Ports))
 		if err := r.Update(ctx, foundService); err != nil {
-			log.Error(err, "failed to update Service", "service", foundService.Name)
+			log.Error(err, "Failed to update Service", "service", foundService.Name)
+			r.Recorder.Event(instance, corev1.EventTypeWarning, "ServiceUpdateFailed",
+				fmt.Sprintf("Failed to update Service %s: %v", foundService.Name, err))
 			return false, err
 		}
-		log.Info("Successfully updated Service for Instance", "service", foundService.Name, "instance", instance.Name)
+		log.Info("Successfully updated Service", "service", foundService.Name)
+		r.Recorder.Event(instance, corev1.EventTypeNormal, "ServiceUpdated",
+			fmt.Sprintf("Updated Service %s with %d port(s)", foundService.Name, len(service.Spec.Ports)))
 	}
 
 	// Service exists and is ready
+	log.V(1).Info("Service is ready", "service", foundService.Name)
 	return true, nil
 }
 
@@ -750,38 +838,63 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 	err := r.Get(ctx, client.ObjectKey{Name: ingressRouteName, Namespace: instance.Namespace}, foundIngressRoute)
 	if err != nil && apierrors.IsNotFound(err) {
 		// Create the IngressRoute
-		log.Info("Creating IngressRoute for Instance", "ingressRoute", ingressRouteName, "instance", instance.Name)
+		log.Info("Creating IngressRoute for Instance",
+			"ingressRoute", ingressRouteName,
+			"instance", instance.Name,
+			"endpoints", len(httpEndpoints),
+			"routes", len(routes))
 		if err := r.Create(ctx, ingressRoute); err != nil {
-			log.Error(err, "failed to create IngressRoute", "ingressRoute", ingressRouteName)
+			log.Error(err, "Failed to create IngressRoute", "ingressRoute", ingressRouteName)
+			r.Recorder.Event(instance, corev1.EventTypeWarning, "IngressRouteCreationFailed",
+				fmt.Sprintf("Failed to create IngressRoute %s: %v", ingressRouteName, err))
 			return false, err
 		}
-		log.Info("Successfully created IngressRoute for Instance", "ingressRoute", ingressRouteName, "instance", instance.Name)
+		log.Info("Successfully created IngressRoute", "ingressRoute", ingressRouteName)
+		r.Recorder.Event(instance, corev1.EventTypeNormal, "IngressRouteCreated",
+			fmt.Sprintf("Created IngressRoute %s with %d route(s)", ingressRouteName, len(routes)))
 	} else if err != nil {
-		log.Error(err, "failed to get IngressRoute", "ingressRoute", ingressRouteName)
+		log.Error(err, "Failed to get IngressRoute", "ingressRoute", ingressRouteName)
 		return false, err
 	} else {
 		// IngressRoute exists, check if update is needed
 		if !equalIngressRouteSpec(&foundIngressRoute.Spec, &ingressRoute.Spec) {
-			log.Info("Updating IngressRoute for Instance", "ingressRoute", ingressRouteName, "instance", instance.Name)
+			log.Info("Updating IngressRoute for Instance",
+				"ingressRoute", ingressRouteName,
+				"instance", instance.Name,
+				"routes", len(routes))
 			foundIngressRoute.Spec = ingressRoute.Spec
 			foundIngressRoute.Labels = ingressRoute.Labels
 			if err := r.Update(ctx, foundIngressRoute); err != nil {
-				log.Error(err, "failed to update IngressRoute", "ingressRoute", ingressRouteName)
+				log.Error(err, "Failed to update IngressRoute", "ingressRoute", ingressRouteName)
+				r.Recorder.Event(instance, corev1.EventTypeWarning, "IngressRouteUpdateFailed",
+					fmt.Sprintf("Failed to update IngressRoute %s: %v", ingressRouteName, err))
 				return false, err
 			}
-			log.Info("Successfully updated IngressRoute for Instance", "ingressRoute", ingressRouteName, "instance", instance.Name)
+			log.Info("Successfully updated IngressRoute", "ingressRoute", ingressRouteName)
+			r.Recorder.Event(instance, corev1.EventTypeNormal, "IngressRouteUpdated",
+				fmt.Sprintf("Updated IngressRoute %s with %d route(s)", ingressRouteName, len(routes)))
+		} else {
+			log.V(1).Info("IngressRoute is up to date", "ingressRoute", ingressRouteName)
 		}
 	}
 
 	// Update resolved endpoints in status if changed
 	if !equalEndpointStatus(instance.Status.Endpoints, resolvedEndpoints) {
+		log.Info("Updating Instance status with resolved endpoints",
+			"instance", instance.Name,
+			"endpoints", len(resolvedEndpoints))
 		instance.Status.Endpoints = resolvedEndpoints
 		if err := r.Status().Update(ctx, instance); err != nil {
-			log.Error(err, "failed to update Instance status with resolved endpoints", "instance", instance.Name)
+			log.Error(err, "Failed to update Instance status with resolved endpoints", "instance", instance.Name)
+			r.Recorder.Event(instance, corev1.EventTypeWarning, "EndpointResolutionFailed",
+				fmt.Sprintf("Failed to update resolved endpoints: %v", err))
 			return false, err
 		}
+		r.Recorder.Event(instance, corev1.EventTypeNormal, "EndpointsResolved",
+			fmt.Sprintf("Resolved %d endpoint(s) for Instance", len(resolvedEndpoints)))
 	}
 
+	log.V(1).Info("IngressRoute is ready", "ingressRoute", ingressRouteName)
 	return true, nil
 }
 
@@ -847,6 +960,14 @@ func equalEndpointStatus(a, b []challengesv1.EndpointStatus) bool {
 		}
 	}
 	return true
+}
+
+// getTeamID returns the team ID as a string, or "dynamic" if not set
+func getTeamID(instance *challengesv1.Instance) string {
+	if instance.Spec.Team != nil {
+		return strconv.FormatInt(instance.Spec.Team.ID, 10)
+	}
+	return "dynamic"
 }
 
 // SetupWithManager sets up the controller with the Manager.
