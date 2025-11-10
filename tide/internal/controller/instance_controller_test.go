@@ -25,6 +25,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
@@ -346,4 +347,265 @@ var _ = Describe("Instance Controller", func() {
 		}, service)
 		Expect(errors.IsNotFound(err)).To(BeTrue())
 	})
+
+	It("should set Instance to Staged phase when availableAt is in future", func() {
+		instanceName := "instance-staged"
+		namespace := "default"
+		defer cleanupInstance(instanceName, namespace)
+
+		future := metav1.NewTime(time.Now().Add(time.Hour))
+		instance := createBasicInstance(instanceName, namespace)
+		instance.Spec.Lifecycle = &challengesv1.Lifecycle{AvailableAt: &future}
+		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
+
+		By("First reconcile - sets Pending")
+		_, err := reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Second reconcile - creates resources")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Simulating Deployment becoming ready")
+		simulateDeploymentReady(ctx, instanceName, namespace)
+
+		By("Third reconcile - should transition to Staged")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Verifying Phase is Staged (not Running)")
+		updated := &challengesv1.Instance{}
+		Expect(k8sClient.Get(ctx, types.NamespacedName{Name: instanceName, Namespace: namespace}, updated)).To(Succeed())
+		Expect(updated.Status.Phase).To(Equal(challengesv1.PhaseStaged))
+	})
+
+	It("should update Deployment when spec changes", func() {
+		instanceName := "instance-update-deploy"
+		namespace := "default"
+		defer cleanupInstance(instanceName, namespace)
+
+		instance := createBasicInstance(instanceName, namespace)
+		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
+
+		By("First reconcile - sets Pending")
+		_, err := reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Second reconcile - creates resources")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Verifying initial Deployment")
+		deployment := &appsv1.Deployment{}
+		Eventually(func() error {
+			return k8sClient.Get(ctx, types.NamespacedName{
+				Name:      "deployment-" + instanceName,
+				Namespace: namespace,
+			}, deployment)
+		}, timeout, interval).Should(Succeed())
+		initialImage := deployment.Spec.Template.Spec.Containers[0].Image
+
+		By("Updating Instance spec (this would normally be rejected by webhook)")
+		// Note: In real scenario, the webhook prevents image changes
+		// This test verifies controller behavior if spec somehow changes
+		updated := &challengesv1.Instance{}
+		Expect(k8sClient.Get(ctx, types.NamespacedName{Name: instanceName, Namespace: namespace}, updated)).To(Succeed())
+
+		By("Adding resource limits to trigger reconciliation")
+		updated.Spec.Limits = corev1.ResourceList{
+			corev1.ResourceCPU:    *resourceQuantity("500m"),
+			corev1.ResourceMemory: *resourceQuantity("512Mi"),
+		}
+		Expect(k8sClient.Update(ctx, updated)).To(Succeed())
+
+		By("Third reconcile - detects spec change")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Verifying Deployment was updated with new limits")
+		Eventually(func() bool {
+			err := k8sClient.Get(ctx, types.NamespacedName{
+				Name:      "deployment-" + instanceName,
+				Namespace: namespace,
+			}, deployment)
+			if err != nil {
+				return false
+			}
+			limits := deployment.Spec.Template.Spec.Containers[0].Resources.Limits
+			return limits != nil && !limits.Cpu().IsZero()
+		}, timeout, interval).Should(BeTrue())
+		Expect(deployment.Spec.Template.Spec.Containers[0].Image).To(Equal(initialImage))
+	})
+
+	It("should update Service when endpoints change", func() {
+		instanceName := "instance-update-svc"
+		namespace := "default"
+		defer cleanupInstance(instanceName, namespace)
+
+		instance := createBasicInstance(instanceName, namespace)
+		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
+
+		By("First reconcile - sets Pending")
+		_, err := reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Second reconcile - creates Service with 1 port")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		service := &corev1.Service{}
+		Eventually(func() error {
+			return k8sClient.Get(ctx, types.NamespacedName{
+				Name:      "svc-" + instanceName,
+				Namespace: namespace,
+			}, service)
+		}, timeout, interval).Should(Succeed())
+		Expect(service.Spec.Ports).To(HaveLen(1))
+
+		By("Adding another endpoint")
+		updated := &challengesv1.Instance{}
+		Expect(k8sClient.Get(ctx, types.NamespacedName{Name: instanceName, Namespace: namespace}, updated)).To(Succeed())
+		updated.Spec.Endpoints = append(updated.Spec.Endpoints, challengesv1.EndpointSpec{
+			Name:       "metrics",
+			Protocol:   challengesv1.ProtocolHTTP,
+			TargetPort: 9090,
+		})
+		Expect(k8sClient.Update(ctx, updated)).To(Succeed())
+
+		By("Third reconcile - updates Service with 2 ports")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		Eventually(func() int {
+			err := k8sClient.Get(ctx, types.NamespacedName{
+				Name:      "svc-" + instanceName,
+				Namespace: namespace,
+			}, service)
+			if err != nil {
+				return 0
+			}
+			return len(service.Spec.Ports)
+		}, timeout, interval).Should(Equal(2))
+	})
+
+	It("should set all conditions correctly", func() {
+		instanceName := "instance-conditions"
+		namespace := "default"
+		defer cleanupInstance(instanceName, namespace)
+
+		instance := createBasicInstance(instanceName, namespace)
+		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
+
+		By("First reconcile - sets Pending")
+		_, err := reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Second reconcile - creates resources and sets conditions")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Verifying conditions are set")
+		updated := &challengesv1.Instance{}
+		Expect(k8sClient.Get(ctx, types.NamespacedName{Name: instanceName, Namespace: namespace}, updated)).To(Succeed())
+
+		deploymentCond := getCondition(updated, "DeploymentReady")
+		Expect(deploymentCond).NotTo(BeNil())
+		Expect(deploymentCond.Status).To(Equal(metav1.ConditionFalse))
+		Expect(deploymentCond.ObservedGeneration).To(Equal(updated.Generation))
+
+		serviceCond := getCondition(updated, "ServiceReady")
+		Expect(serviceCond).NotTo(BeNil())
+		Expect(serviceCond.Status).To(Equal(metav1.ConditionTrue))
+
+		ingressCond := getCondition(updated, "IngressReady")
+		Expect(ingressCond).NotTo(BeNil())
+		// IngressReady should be True since HTTP endpoint creates IngressRoute
+		Expect(ingressCond.Status).To(Equal(metav1.ConditionTrue))
+	})
+
+	It("should handle on-demand challenge with team", func() {
+		instanceName := "instance-ondemand"
+		namespace := "default"
+		defer cleanupInstance(instanceName, namespace)
+
+		instance := createBasicInstance(instanceName, namespace)
+		instance.Spec.Challenge.Type = challengesv1.ChallengeTypeOnDemand
+		instance.Spec.Team = &challengesv1.Team{ID: 123}
+		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
+
+		By("First reconcile - sets Pending")
+		_, err := reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Second reconcile - creates resources")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Verifying Deployment has team label")
+		deployment := &appsv1.Deployment{}
+		Eventually(func() error {
+			return k8sClient.Get(ctx, types.NamespacedName{
+				Name:      "deployment-" + instanceName,
+				Namespace: namespace,
+			}, deployment)
+		}, timeout, interval).Should(Succeed())
+		Expect(deployment.Labels).To(HaveKeyWithValue("challenges.isolet.dev/team", "123"))
+	})
+
+	It("should requeue Instance with future expiresAt", func() {
+		instanceName := "instance-requeue"
+		namespace := "default"
+		defer cleanupInstance(instanceName, namespace)
+
+		future := metav1.NewTime(time.Now().Add(5 * time.Second))
+		instance := createBasicInstance(instanceName, namespace)
+		instance.Spec.Lifecycle = &challengesv1.Lifecycle{ExpiresAt: &future}
+		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
+
+		By("First reconcile - sets Pending")
+		_, err := reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Second reconcile - returns requeue duration")
+		result, err := reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(result.RequeueAfter).To(BeNumerically(">", 0))
+		Expect(result.RequeueAfter).To(BeNumerically("<=", 5*time.Second))
+	})
 })
+
+// Helper to create resource.Quantity for testing
+func resourceQuantity(value string) *resource.Quantity {
+	q := resource.MustParse(value)
+	return &q
+}
