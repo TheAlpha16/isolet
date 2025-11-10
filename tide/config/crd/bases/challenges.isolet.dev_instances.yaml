@@ -17,8 +17,8 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - description: Challenge Name
-      jsonPath: .spec.challenge.name
+    - description: Challenge Slug
+      jsonPath: .spec.challenge.slug
       name: Challenge
       type: string
     - description: Team ID
