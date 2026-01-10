@@ -54,7 +54,7 @@ func toTideInstance(ctx context.Context, inst *instanceDom.Instance, manifest *m
 
 	var endpoints []tidev1.EndpointSpec
 	for _, ep := range manifest.EndpointSpecs {
-		endpoints = append(endpoints, *toTideEndpointSpec(ctx, ep))
+		endpoints = append(endpoints, *toTideEndpointSpec(ep))
 	}
 
 	lifecycle := tidev1.Lifecycle{
@@ -73,7 +73,7 @@ func toTideInstance(ctx context.Context, inst *instanceDom.Instance, manifest *m
 	return &instance
 }
 
-func toTideEndpointSpec(ctx context.Context, endpointSpec *manifestDom.EndpointSpec) *tidev1.EndpointSpec {
+func toTideEndpointSpec(endpointSpec *manifestDom.EndpointSpec) *tidev1.EndpointSpec {
 	return &tidev1.EndpointSpec{
 		Name:       endpointSpec.Name,
 		Protocol:   tidev1.Protocol(endpointSpec.Protocol),
