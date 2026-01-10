@@ -2,93 +2,93 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-    name: isolet-manager-binding
-    namespace: isolet
-    labels:
-        app.kubernetes.io/component: role-binding
-        app.kubernetes.io/part-of: isolet
-        {{- include "charts.labels" . | nindent 4 }}
+  name: isolet-manager-binding
+  namespace: isolet
+  labels:
+    app.kubernetes.io/component: role-binding
+    app.kubernetes.io/part-of: isolet
+    {{- include "charts.labels" . | nindent 4 }}
 roleRef:
-    apiGroup: rbac.authorization.k8s.io
-    kind: Role
-    name: isolet-manager
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: isolet-manager
 subjects:
-    - kind: ServiceAccount
-        name: api-service-account
-        namespace: platform
+  - kind: ServiceAccount
+    name: api-service-account
+    namespace: platform
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-    name: cert-reader-binding
+  name: cert-reader-binding
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/component: role-binding
+    app.kubernetes.io/part-of: cert-manager
+    {{- include "charts.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cert-reader
+subjects:
+  - kind: ServiceAccount
+    name: cert-copier-service-account
     namespace: cert-manager
-    labels:
-        app.kubernetes.io/component: role-binding
-        app.kubernetes.io/part-of: cert-manager
-        {{- include "charts.labels" . | nindent 4 }}
-roleRef:
-    apiGroup: rbac.authorization.k8s.io
-    kind: Role
-    name: cert-reader
-subjects:
-    - kind: ServiceAccount
-        name: cert-copier-service-account
-        namespace: cert-manager
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-    name: isolet-cert-copier-binding
-    namespace: isolet
-    labels:
-        app.kubernetes.io/component: role-binding
-        app.kubernetes.io/part-of: isolet
-        {{- include "charts.labels" . | nindent 4 }}
+  name: isolet-cert-copier-binding
+  namespace: isolet
+  labels:
+    app.kubernetes.io/component: role-binding
+    app.kubernetes.io/part-of: isolet
+    {{- include "charts.labels" . | nindent 4 }}
 roleRef:
-    apiGroup: rbac.authorization.k8s.io
-    kind: Role
-    name: isolet-cert-copier
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: isolet-cert-copier
 subjects:
-    - kind: ServiceAccount
-        name: cert-copier-service-account
-        namespace: cert-manager
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-    name: dynamic-cert-copier-binding
-    namespace: dynamic
-    labels:
-        app.kubernetes.io/component: role-binding
-        app.kubernetes.io/part-of: dynamic
-        {{- include "charts.labels" . | nindent 4 }}
-roleRef:
-    apiGroup: rbac.authorization.k8s.io
-    kind: Role
-    name: dynamic-cert-copier
-subjects:
-    - kind: ServiceAccount
-        name: cert-copier-service-account
-        namespace: cert-manager
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-    name: cert-secret-reader-binding
+  - kind: ServiceAccount
+    name: cert-copier-service-account
     namespace: cert-manager
-    labels:
-        app.kubernetes.io/component: role-binding
-        app.kubernetes.io/part-of: cert-manager
-        {{- include "charts.labels" . | nindent 4 }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: dynamic-cert-copier-binding
+  namespace: dynamic
+  labels:
+    app.kubernetes.io/component: role-binding
+    app.kubernetes.io/part-of: dynamic
+    {{- include "charts.labels" . | nindent 4 }}
 roleRef:
-    apiGroup: rbac.authorization.k8s.io
-    kind: Role
-    name: cert-secret-reader
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: dynamic-cert-copier
 subjects:
-    - kind: ServiceAccount
-        name: cert-copier-service-account
-        namespace: cert-manager
+  - kind: ServiceAccount
+    name: cert-copier-service-account
+    namespace: cert-manager
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cert-secret-reader-binding
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/component: role-binding
+    app.kubernetes.io/part-of: cert-manager
+    {{- include "charts.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cert-secret-reader
+subjects:
+  - kind: ServiceAccount
+    name: cert-copier-service-account
+    namespace: cert-manager
