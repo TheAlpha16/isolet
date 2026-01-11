@@ -8,15 +8,17 @@ import (
 	"github.com/TheAlpha16/isolet/api/internal/domain/common"
 	cvDom "github.com/TheAlpha16/isolet/api/internal/domain/configvars"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
+	instanceDom "github.com/TheAlpha16/isolet/api/internal/domain/instance"
 	scoreDom "github.com/TheAlpha16/isolet/api/internal/domain/score"
 	"github.com/TheAlpha16/isolet/api/utils"
 )
 
 type challengeImpl struct {
-	repo    challengeDom.Repository
-	cvUc    cvDom.Usecase
-	scoreUc scoreDom.Usecase
-	wg      *sync.WaitGroup
+	repo         challengeDom.Repository
+	instanceRepo instanceDom.Repository
+	cvUc         cvDom.Usecase
+	scoreUc      scoreDom.Usecase
+	wg           *sync.WaitGroup
 }
 
 func (c *challengeImpl) List(ctx context.Context) ([]*challengeDom.ChallengeDTO, error) {
@@ -108,12 +110,17 @@ func (c *challengeImpl) SubmitFlag(ctx context.Context, input *challengeDom.Subm
 		return nil, err
 	}
 
+	isCorrect, err := c.validateFlag(ctx, challenge, input.Flag)
+	if err != nil {
+		return nil, err
+	}
+
 	submission := &challengeDom.Submission{
 		ChallengeID: input.ChallengeID,
 		UserID:      userID,
 		TeamID:      teamID,
 		Flag:        input.Flag,
-		IsCorrect:   input.Flag == challenge.Flag,
+		IsCorrect:   isCorrect,
 		Points:      challenge.Points,
 		IPAddress:   ipAddress,
 	}
@@ -134,7 +141,7 @@ func (c *challengeImpl) SubmitFlag(ctx context.Context, input *challengeDom.Subm
 	}
 
 	return &challengeDom.SubmitFlagOutput{
-		IsCorrect: input.Flag == challenge.Flag,
+		IsCorrect: isCorrect,
 	}, nil
 }
 
@@ -228,6 +235,24 @@ func (c *challengeImpl) validateAttempt(ctx context.Context, challengeID int64, 
 	return challenge, nil
 }
 
+func (c *challengeImpl) validateFlag(ctx context.Context, challenge *challengeDom.Challenge, flag string) (bool, error) {
+	if challenge.Type == challengeDom.ChallengeOnDemand {
+		// fetch the instance for the team and challenge
+		teamID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyTeamID)
+		instance, err := c.instanceRepo.GetByTeamAndChallenge(ctx, teamID, challenge.ID)
+		if err != nil {
+			if errorDom.IsSameError(err, errorDom.ErrInstanceNotFound) {
+				return false, errorDom.Raise(ctx, errorDom.ErrInstanceNotRunning, "", err, nil)
+			}
+			return false, err
+		}
+		if instance != nil && instance.Flag != nil {
+			return *instance.Flag == flag, nil
+		}
+	}
+	return flag == challenge.Flag, nil
+}
+
 func (c *challengeImpl) GetTeamSubmissions(ctx context.Context, teamID int64) ([]*challengeDom.Submission, error) {
 	return c.repo.GetTeamSubmissions(ctx, teamID)
 }
@@ -257,11 +282,12 @@ func (c *challengeImpl) updateScoreboard(ctx context.Context, teamID int64, delt
 	}
 }
 
-func New(repo challengeDom.Repository, cvUc cvDom.Usecase, scoreUc scoreDom.Usecase, wg *sync.WaitGroup) challengeDom.Usecase {
+func New(repo challengeDom.Repository, instanceRepo instanceDom.Repository, cvUc cvDom.Usecase, scoreUc scoreDom.Usecase, wg *sync.WaitGroup) challengeDom.Usecase {
 	return &challengeImpl{
-		repo:    repo,
-		cvUc:    cvUc,
-		scoreUc: scoreUc,
-		wg:      wg,
+		repo:         repo,
+		instanceRepo: instanceRepo,
+		cvUc:         cvUc,
+		scoreUc:      scoreUc,
+		wg:           wg,
 	}
 }

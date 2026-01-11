@@ -61,7 +61,7 @@ func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repo
 	team := teamUc.New(repos.Team, user, auth, token, cv, infra.JWT)
 	event := eventUc.New(cv)
 	score := scoreUc.New(repos.Score, team, cache)
-	challenge := challengeUc.New(repos.Challenge, cv, score, wg)
+	challenge := challengeUc.New(repos.Challenge, repos.Instance, cv, score, wg)
 	profile := profileUc.New(cache, user, team, challenge)
 	manifest := manifestUc.New(repos.Manifest)
 	instance := instanceUc.New(repos.Instance, external.Instance, cache, challenge, manifest, cv)
