@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"errors"
 	"log"
+	"os"
 	"time"
 
 	"github.com/caarlos0/env/v11"
@@ -112,7 +114,11 @@ func GetConfig() *Config {
 		return appConfig
 	} else {
 		if err := godotenv.Load(); err != nil {
-			log.Panic("Error loading .env file: ", err)
+			if errors.Is(err, os.ErrNotExist) {
+				log.Println(".env file not found, continuing without it")
+			} else {
+				log.Panic("Error loading .env file: ", err)
+			}
 		}
 
 		cfg, err := env.ParseAs[Config]()
