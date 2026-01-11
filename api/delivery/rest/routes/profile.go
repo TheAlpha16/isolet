@@ -10,7 +10,7 @@ import (
 )
 
 func RegisterProfile(router fiber.Router, profileHandler profileHan.ProfileHandler, tokenUc tokenDom.Usecase, jwtSvc jwt.JWT) {
-	profileRouter := router.Group(utils.RouteProfile)
-	profileRouter.Get(utils.RouteProfileMe, middleware.AuthMiddleware(tokenUc, jwtSvc), profileHandler.Me)
-	profileRouter.Get(utils.RouteProfileTeam, middleware.AuthMiddleware(tokenUc, jwtSvc), middleware.RequireTeamMiddleware(), profileHandler.Team)
+	profileRouter := router.Group(utils.RouteProfile, middleware.AuthMiddleware(tokenUc, jwtSvc))
+	profileRouter.Get(utils.RouteProfileMe, profileHandler.Me)
+	profileRouter.Get(utils.RouteProfileTeam, middleware.RequireTeamMiddleware(), profileHandler.Team)
 }
