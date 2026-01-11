@@ -23,6 +23,11 @@ type instanceImpl struct {
 	cvUc        cvDom.Usecase
 }
 
+func (i *instanceImpl) List(ctx context.Context) ([]*instanceDom.InstanceDTO, error) {
+	// TODO finish implementation
+	return nil, nil
+}
+
 func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput) (*instanceDom.InstanceDTO, error) {
 	config := utils.GetConfig()
 	teamID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyTeamID)

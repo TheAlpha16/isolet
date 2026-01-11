@@ -7,6 +7,7 @@ import (
 )
 
 type Usecase interface {
+	List(ctx context.Context) ([]*InstanceDTO, error)
 	Start(ctx context.Context, input *StartInput) (*InstanceDTO, error)
 	Stop(ctx context.Context, input *StopInput) error
 	Extend(ctx context.Context, input *ExtendInput) (*InstanceDTO, error)
@@ -18,6 +19,7 @@ type Repository interface {
 	Update(ctx context.Context, instance *Instance, fields []string) error
 	Delete(ctx context.Context, id int64) error
 	GetByTeamAndChallenge(ctx context.Context, teamID, challengeID int64) (*Instance, error)
+	GetByTeam(ctx context.Context, teamID int64) ([]*Instance, error)
 }
 
 type Service interface {

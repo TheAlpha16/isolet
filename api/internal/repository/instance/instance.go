@@ -82,6 +82,11 @@ func (ir *instanceRepo) GetByTeamAndChallenge(ctx context.Context, teamID, chall
 	return instance.ToDomain(ctx)
 }
 
+func (ir *instanceRepo) GetByTeam(ctx context.Context, teamID int64) ([]*instanceDom.Instance, error) {
+	// TODO finish implementation
+	return nil, nil
+}
+
 func New(db *gorm.DB) instanceDom.Repository {
 	return &instanceRepo{
 		db: db,
