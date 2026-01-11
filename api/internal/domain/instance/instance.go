@@ -69,7 +69,7 @@ func (in *Instance) Name() string {
 	} else {
 		identifier = fmt.Sprintf("team%d@%d", *in.TeamID, in.ChallengeID)
 	}
-	return utils.HMAC256(identifier, utils.GetConfig().Instances.SecretKey)
+	return utils.HMAC256(identifier, utils.GetConfig().Instances.SecretKey)[:16]
 }
 
 type Lifecycle struct {
