@@ -1,7 +1,6 @@
 package k8s
 
 import (
-	"net/http"
 	"path/filepath"
 
 	"github.com/TheAlpha16/isolet/api/utils"
@@ -38,7 +37,7 @@ func getRestConfig() (*rest.Config, error) {
 	return config, nil
 }
 
-func NewK8sClient(httpClient *http.Client) (client.Client, error) {
+func NewK8sClient() (client.Client, error) {
 	config, err := getRestConfig()
 	if err != nil {
 		return nil, err
@@ -55,6 +54,7 @@ func NewK8sClient(httpClient *http.Client) (client.Client, error) {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(tidev1.AddToScheme(scheme))
 
+	// TODO add instrumentation transport wrapper
 	clientset, err := client.New(config, client.Options{
 		Scheme: scheme,
 	})

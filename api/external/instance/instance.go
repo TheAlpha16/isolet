@@ -2,7 +2,6 @@ package instance
 
 import (
 	"context"
-	"net/http"
 
 	k8sInfra "github.com/TheAlpha16/isolet/api/infra/k8s"
 	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
@@ -12,7 +11,7 @@ import (
 
 	tidev1 "github.com/TheAlpha16/isolet/tide/api/v1"
 	"github.com/TheAlpha16/isolet/tide/sdk"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -73,11 +72,7 @@ func (is *instanceSvc) Extend(ctx context.Context, inst *instanceDom.Instance) e
 }
 
 func New(ctx context.Context) (instanceDom.Service, error) {
-	k8sClient, err := k8sInfra.NewK8sClient(
-		&http.Client{
-			Transport: otelhttp.NewTransport(http.DefaultTransport),
-		},
-	)
+	k8sClient, err := k8sInfra.NewK8sClient()
 	if err != nil {
 		return nil, errorDom.Raise(ctx, errorDom.ErrK8sConnectionFailed, "", err, nil)
 	}
