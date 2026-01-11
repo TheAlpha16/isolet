@@ -102,6 +102,7 @@ type Config struct {
 		InstanceKind       string        `env:"K8S_INSTANCE_KIND" envDefault:"Instance"`
 		InstanceAPIVersion string        `env:"K8S_INSTANCE_API_VERSION" envDefault:"challenges.isolet.dev/v1"`
 		InstancePollRate   time.Duration `env:"K8S_INSTANCE_POLL_RATE" envDefault:"5s"`
+		InsecureSkipVerify bool          `env:"K8S_INSECURE_SKIP_VERIFY" envDefault:"false"`
 	}
 
 	Manifest struct {
