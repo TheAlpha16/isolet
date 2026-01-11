@@ -70,6 +70,8 @@ rules:
       - services
       - secrets
       - nodes
+      - configmaps
+      - endpoints
     verbs:
       - get
       - list
