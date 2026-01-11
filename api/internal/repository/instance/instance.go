@@ -83,8 +83,20 @@ func (ir *instanceRepo) GetByTeamAndChallenge(ctx context.Context, teamID, chall
 }
 
 func (ir *instanceRepo) GetByTeam(ctx context.Context, teamID int64) ([]*instanceDom.Instance, error) {
-	// TODO finish implementation
-	return nil, nil
+	var instances []Instance
+	if err := ir.db.WithContext(ctx).Preload("Endpoints").Where("team_id = ?", teamID).Find(&instances).Error; err != nil {
+		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to get instances by team", err, common.ExtraData{"team_id": teamID})
+	}
+
+	domainInstances := make([]*instanceDom.Instance, 0, len(instances))
+	for _, inst := range instances {
+		domainInst, err := inst.ToDomain(ctx)
+		if err != nil {
+			return nil, err
+		}
+		domainInstances = append(domainInstances, domainInst)
+	}
+	return domainInstances, nil
 }
 
 func New(db *gorm.DB) instanceDom.Repository {
