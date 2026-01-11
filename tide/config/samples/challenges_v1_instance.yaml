@@ -5,6 +5,7 @@ metadata:
     app.kubernetes.io/name: tide
     app.kubernetes.io/managed-by: kustomize
   name: sample-instance
+  namespace: isolet
 spec:
   challenge:
     id: 1
@@ -17,9 +18,6 @@ spec:
     - name: web
       targetPort: 80
       protocol: http
-    - name: websecure
-      targetPort: 443
-      protocol: https
   limits:
     cpu: "100m"
     memory: "128Mi"
