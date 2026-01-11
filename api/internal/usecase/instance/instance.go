@@ -24,8 +24,19 @@ type instanceImpl struct {
 }
 
 func (i *instanceImpl) List(ctx context.Context) ([]*instanceDom.InstanceDTO, error) {
-	// TODO finish implementation
-	return nil, nil
+	teamID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyTeamID)
+
+	instances, err := i.repo.GetByTeam(ctx, teamID)
+	if err != nil {
+		return nil, err
+	}
+
+	var instanceDTOs []*instanceDom.InstanceDTO
+	for _, inst := range instances {
+		instanceDTOs = append(instanceDTOs, inst.ToDTO())
+	}
+
+	return instanceDTOs, nil
 }
 
 func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput) (*instanceDom.InstanceDTO, error) {
