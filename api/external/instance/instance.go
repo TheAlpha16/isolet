@@ -41,11 +41,16 @@ func (is *instanceSvc) Start(ctx context.Context, inst *instanceDom.Instance, ma
 }
 
 func (is *instanceSvc) Stop(ctx context.Context, inst *instanceDom.Instance) error {
-	if err := is.client.DeleteInstance(ctx, inst.Name(), utils.GetConfig().Instances.Namespace); err != nil {
+	namespace := utils.GetConfig().Instances.Namespace
+
+	if err := is.client.DeleteInstance(ctx, inst.Name(), namespace); err != nil {
 		return errorDom.Raise(ctx, errorDom.ErrInstanceDeletionFailed, "", err, nil)
 	}
 
-	// TODO wait for the instance to be deleted
+	if err := is.ensureInstanceDeleted(ctx, inst.Name(), namespace); err != nil {
+		return errorDom.Raise(ctx, errorDom.ErrInstanceDeletionFailed, "instance deletion incomplete", err, nil)
+	}
+
 	return nil
 }
 

@@ -13,6 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// ensureInstanceReady waits until the instance is in a terminal state (Running, Failed, etc.)
 func (is *instanceSvc) ensureInstanceReady(ctx context.Context, old *tidev1.Instance, terminalStates ...tidev1.Phase) error {
 	var createdInst *tidev1.Instance
 	var err error
@@ -66,4 +67,36 @@ func (is *instanceSvc) ensureInstanceReady(ctx context.Context, old *tidev1.Inst
 	old.Status = createdInst.Status
 
 	return nil
+}
+
+// ensureInstanceDeleted waits until the instance is fully deleted from Kubernetes
+func (is *instanceSvc) ensureInstanceDeleted(ctx context.Context, name, namespace string) error {
+	maxAttempts := 30 // Prevent infinite loops
+	attempts := 0
+	
+	for attempts < maxAttempts {
+		_, err := is.client.GetInstance(ctx, name, namespace)
+		if err != nil {
+			// Instance not found = successfully deleted
+			logger.GetLogger(ctx).Info("instance successfully deleted",
+				zap.String("instance", name),
+				zap.Int("attempts", attempts),
+			)
+			return nil
+		}
+		
+		// Instance still exists, wait and retry
+		logger.GetLogger(ctx).Info("waiting for instance deletion",
+			zap.String("instance", name),
+			zap.Int("attempt", attempts+1),
+		)
+		time.Sleep(utils.GetConfig().K8s.InstancePollRate)
+		attempts++
+	}
+	
+	// Deletion timeout
+	return errorDom.Raise(ctx, errorDom.ErrInstanceDeletionFailed, "instance deletion timeout", nil, common.ExtraData{
+		"instance_name": name,
+		"max_attempts":  maxAttempts,
+	})
 }
