@@ -17,6 +17,10 @@ func RegisterInstance(router fiber.Router, instanceHandler instanceHan.InstanceH
 		middleware.AuthMiddleware(tokenUc, jwtSvc),
 		middleware.RequireTeamMiddleware(),
 	)
+	instanceRouter.Get(
+		utils.RouteInstanceList,
+		instanceHandler.List,
+	)
 	instanceRouter.Post(
 		utils.RouteInstanceStart,
 		middleware.ContextDeadlineMiddleware(config.Instances.StartTimeout),

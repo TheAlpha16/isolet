@@ -54,6 +54,7 @@ const (
 
 // instance routes
 const (
+	RouteInstanceList   = "/"
 	RouteInstanceStart  = "/start"
 	RouteInstanceStop   = "/stop"
 	RouteInstanceExtend = "/extend"

@@ -8,6 +8,7 @@ import (
 )
 
 type InstanceHandler interface {
+	List(c *fiber.Ctx) error
 	Start(c *fiber.Ctx) error
 	Stop(c *fiber.Ctx) error
 	Extend(c *fiber.Ctx) error
@@ -15,6 +16,15 @@ type InstanceHandler interface {
 
 type instanceHandler struct {
 	instanceUc instanceDom.Usecase
+}
+
+func (h *instanceHandler) List(c *fiber.Ctx) error {
+	instances, err := h.instanceUc.List(c.UserContext())
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.Success("", instances))
 }
 
 func (h *instanceHandler) Start(c *fiber.Ctx) error {
