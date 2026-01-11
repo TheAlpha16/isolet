@@ -7,23 +7,22 @@ event:
   publicURL: https://isolet.dev
   domain: isolet.dev
   teamSize: 4 # max number of users in a team
-  allowedDomains: 
+  allowedDomains:
     - gmail.com
     - yahoo.com
     - hotmail.com
     - outlook.com
     - protonmail.com
-  
-  environment: "production" # to determine the certificate server. use "production" for production environment
+
+  environment: "dev" # to determine the certificate server. use "production" for production environment
   userRegistration: true # whether to allow user registration (usually for dev environment)
   emailVerification: true # whether to send verification email to user (usually for dev environment)
   passwordReset: true # whether to allow password reset (usually for dev environment)
 
-
 # platform unit
 platform:
   database:
-    enabled: true
+    enabled: false
     image: postgres
     version: 18
     name: isolet
@@ -38,17 +37,17 @@ platform:
     version: 1.1.0
     storageClass: standard
     capacity: 3Gi
-    objectStore: 
+    objectStore:
       type: native
-  
+
   api:
     image: docker.io/thealpha16/isolet-api
     version: 2.0.0
-    
+
     sentry:
       sampleRate: 1.0
       traceSampleRate: 0.05
-    
+
     token:
       maxSessionsPerUser: 5 # maximum number of active sessions per user, set to 0 for unlimited
       maxPasswordResetSessions: 1 # maximum number of active password reset sessions, set to 0 for unlimited
@@ -68,7 +67,7 @@ platform:
 
   ui:
     image: docker.io/thealpha16/isolet-ui
-    version: 2.0.2
+    version: v2.0.5
 
   proxy:
     image: docker.io/thealpha16/isolet-proxy
@@ -92,7 +91,7 @@ isolet:
   defaultInstanceTime: 30m
 
 registry:
-  type: private
+  type: public
   url: asia-south1-docker.pkg.dev/greek-proxy-814691-q2/isolet-dev # if you are using external registry, then provide the url here
 
 # automation task unit
