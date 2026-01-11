@@ -35,9 +35,9 @@ spec:
                   name: api-secrets
                   key: TOKEN_SIGNING_KEY
             - name: EVENT_START
-              value: {{ .Values.event.start }}
+              value: {{ .Values.event.start | quote }}
             - name: EVENT_END
-              value: {{ .Values.event.end }}
+              value: {{ .Values.event.end | quote }}
             - name: POST_EVENT
               value: {{ .Values.event.postEvent | quote }}
             - name: OBJECT_STORE
