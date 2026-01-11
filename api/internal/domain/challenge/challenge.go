@@ -91,7 +91,7 @@ func (c *Challenge) RandomizedFlag(flag string) string {
 	prefix := matches[1]
 	content := matches[2]
 	suffix := utils.GenerateRandom()[:utils.InstanceFlagSuffixLength]
-	return fmt.Sprintf("%s{%s_%s}", prefix, content, suffix)
+	return fmt.Sprintf("%s%s_%s}", prefix, content, suffix)
 }
 
 func (h *Hint) IsUnlocked(unlockedHints map[int64]struct{}) bool {
