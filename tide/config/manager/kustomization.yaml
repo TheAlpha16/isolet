@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: thealpha16/isolet-tide
-  newTag: dev
+  newTag: latest
