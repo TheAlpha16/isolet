@@ -1,10 +1,12 @@
 package k8s
 
 import (
+	"net/http"
 	"path/filepath"
 
 	"github.com/TheAlpha16/isolet/api/utils"
 	tidev1 "github.com/TheAlpha16/isolet/tide/api/v1"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -54,7 +56,10 @@ func NewK8sClient() (client.Client, error) {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(tidev1.AddToScheme(scheme))
 
-	// TODO add instrumentation transport wrapper
+	config.WrapTransport = func(rt http.RoundTripper) http.RoundTripper {
+		return otelhttp.NewTransport(rt)
+	}
+
 	clientset, err := client.New(config, client.Options{
 		Scheme: scheme,
 	})

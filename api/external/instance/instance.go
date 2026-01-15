@@ -12,14 +12,20 @@ import (
 	tidev1 "github.com/TheAlpha16/isolet/tide/api/v1"
 	"github.com/TheAlpha16/isolet/tide/sdk"
 
+	"go.opentelemetry.io/otel"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+var tracer = otel.Tracer("api/external/instance")
 
 type instanceSvc struct {
 	client sdk.Handler
 }
 
 func (is *instanceSvc) Start(ctx context.Context, inst *instanceDom.Instance, manifest *manifestDom.Manifest) error {
+	ctx, span := tracer.Start(ctx, "instance.Start")
+	defer span.End()
+
 	tideInstance := toTideInstance(ctx, inst, manifest)
 
 	if err := is.client.CreateInstance(ctx, tideInstance); err != nil {
@@ -40,6 +46,9 @@ func (is *instanceSvc) Start(ctx context.Context, inst *instanceDom.Instance, ma
 }
 
 func (is *instanceSvc) Stop(ctx context.Context, inst *instanceDom.Instance) error {
+	ctx, span := tracer.Start(ctx, "instance.Stop")
+	defer span.End()
+
 	namespace := utils.GetConfig().Instances.Namespace
 
 	if err := is.client.DeleteInstance(ctx, inst.Name(), namespace); err != nil {
@@ -54,6 +63,9 @@ func (is *instanceSvc) Stop(ctx context.Context, inst *instanceDom.Instance) err
 }
 
 func (is *instanceSvc) Extend(ctx context.Context, inst *instanceDom.Instance) error {
+	ctx, span := tracer.Start(ctx, "instance.Extend")
+	defer span.End()
+
 	tideInstance, err := is.client.GetInstance(ctx, inst.Name(), utils.GetConfig().Instances.Namespace)
 	if err != nil {
 		return errorDom.Raise(ctx, errorDom.ErrInstanceUpdateFailed, "failed to get instance for extension", err, nil)
