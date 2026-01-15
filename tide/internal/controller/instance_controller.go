@@ -974,6 +974,7 @@ func (r *InstanceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&challengesv1.Instance{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.Service{}).
+		Owns(&traefikv1alpha1.IngressRoute{}).
 		Named("instance").
 		Complete(r)
 }
