@@ -17,7 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func getRestConfig() (*rest.Config, error) {
+func GetRestConfig() (*rest.Config, error) {
 	var config *rest.Config
 	var err error
 
@@ -40,7 +40,7 @@ func getRestConfig() (*rest.Config, error) {
 }
 
 func NewK8sClient() (client.Client, error) {
-	config, err := getRestConfig()
+	config, err := GetRestConfig()
 	if err != nil {
 		return nil, err
 	}
