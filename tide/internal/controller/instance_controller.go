@@ -87,17 +87,17 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		instance.Status.Phase = challengesv1.PhasePending
 		if err := r.Status().Update(ctx, &instance); err != nil {
 			log.Error(err, "Failed to update Instance status to Pending", "namespace", instance.Namespace, "name", instance.Name)
-			r.Recorder.Event(&instance, corev1.EventTypeWarning, EventReasonStatusUpdateFailed, fmt.Sprintf("Failed to set initial status: %v", err))
+			r.Recorder.Event(&instance, corev1.EventTypeWarning, utils.EventReasonStatusUpdateFailed, fmt.Sprintf("Failed to set initial status: %v", err))
 			return ctrl.Result{}, err
 		}
-		r.Recorder.Event(&instance, corev1.EventTypeNormal, EventReasonCreated, fmt.Sprintf("Instance created for challenge '%s'", instance.Spec.Challenge.Slug))
+		r.Recorder.Event(&instance, corev1.EventTypeNormal, utils.EventReasonCreated, fmt.Sprintf("Instance created for challenge '%s'", instance.Spec.Challenge.Slug))
 		return ctrl.Result{}, nil
 	}
 
 	// handle deletion
 	if !instance.ObjectMeta.DeletionTimestamp.IsZero() {
 		log.Info("Instance is being deleted", "namespace", instance.Namespace, "name", instance.Name)
-		r.Recorder.Event(&instance, corev1.EventTypeNormal, EventReasonDeleting, "Instance deletion in progress")
+		r.Recorder.Event(&instance, corev1.EventTypeNormal, utils.EventReasonDeleting, "Instance deletion in progress")
 		return ctrl.Result{}, nil
 	}
 
@@ -109,7 +109,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 				"namespace", instance.Namespace,
 				"name", instance.Name,
 				"expiresAt", instance.Spec.Lifecycle.ExpiresAt.Time)
-			r.Recorder.Event(&instance, corev1.EventTypeWarning, EventReasonExpired, fmt.Sprintf("Instance expired at %s", instance.Spec.Lifecycle.ExpiresAt.Time))
+			r.Recorder.Event(&instance, corev1.EventTypeWarning, utils.EventReasonExpired, fmt.Sprintf("Instance expired at %s", instance.Spec.Lifecycle.ExpiresAt.Time))
 			if err := r.Client.Delete(ctx, &instance); err != nil {
 				log.Error(err, "Failed to delete expired Instance", "namespace", instance.Namespace, "name", instance.Name)
 				return ctrl.Result{}, err
@@ -129,7 +129,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err != nil {
 		log.Error(err, "failed to reconcile Deployment for Instance", "instance", req.NamespacedName)
 		meta.SetStatusCondition(&instance.Status.Conditions, metav1.Condition{
-			Type:    ConditionDeploymentReady,
+			Type:    utils.ConditionDeploymentReady,
 			Status:  metav1.ConditionFalse,
 			Reason:  "ReconciliationFailed",
 			Message: err.Error(),
@@ -138,7 +138,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	} else {
 		if deploymentReady {
 			if meta.SetStatusCondition(&instance.Status.Conditions, metav1.Condition{
-				Type:    ConditionDeploymentReady,
+				Type:    utils.ConditionDeploymentReady,
 				Status:  metav1.ConditionTrue,
 				Reason:  "DeploymentAvailable",
 				Message: "Deployment is ready and available",
@@ -150,7 +150,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			failed, failureReason, message := r.checkPodFailures(ctx, &instance)
 			if failed {
 				if meta.SetStatusCondition(&instance.Status.Conditions, metav1.Condition{
-					Type:    ConditionDeploymentReady,
+					Type:    utils.ConditionDeploymentReady,
 					Status:  metav1.ConditionFalse,
 					Reason:  failureReason,
 					Message: message,
@@ -162,7 +162,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 				statusChanged = true // Ensure we trigger status update
 			} else {
 				if meta.SetStatusCondition(&instance.Status.Conditions, metav1.Condition{
-					Type:    ConditionDeploymentReady,
+					Type:    utils.ConditionDeploymentReady,
 					Status:  metav1.ConditionFalse,
 					Reason:  "DeploymentNotReady",
 					Message: "Deployment is not yet ready",
@@ -178,7 +178,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err != nil {
 		log.Error(err, "failed to reconcile Service for Instance", "instance", req.NamespacedName)
 		meta.SetStatusCondition(&instance.Status.Conditions, metav1.Condition{
-			Type:    ConditionServiceReady,
+			Type:    utils.ConditionServiceReady,
 			Status:  metav1.ConditionFalse,
 			Reason:  "ReconciliationFailed",
 			Message: err.Error(),
@@ -187,7 +187,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	} else {
 		if serviceReady {
 			if meta.SetStatusCondition(&instance.Status.Conditions, metav1.Condition{
-				Type:    ConditionServiceReady,
+				Type:    utils.ConditionServiceReady,
 				Status:  metav1.ConditionTrue,
 				Reason:  "ServiceAvailable",
 				Message: "Service is ready and available",
@@ -196,7 +196,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			}
 		} else {
 			if meta.SetStatusCondition(&instance.Status.Conditions, metav1.Condition{
-				Type:    ConditionServiceReady,
+				Type:    utils.ConditionServiceReady,
 				Status:  metav1.ConditionFalse,
 				Reason:  "ServiceNotReady",
 				Message: "Service is not yet ready or not needed",
@@ -211,7 +211,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err != nil {
 		log.Error(err, "failed to reconcile Ingress for Instance", "instance", req.NamespacedName)
 		meta.SetStatusCondition(&instance.Status.Conditions, metav1.Condition{
-			Type:    ConditionIngressReady,
+			Type:    utils.ConditionIngressReady,
 			Status:  metav1.ConditionFalse,
 			Reason:  "ReconciliationFailed",
 			Message: err.Error(),
@@ -220,7 +220,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	} else {
 		if ingressReady {
 			if meta.SetStatusCondition(&instance.Status.Conditions, metav1.Condition{
-				Type:    ConditionIngressReady,
+				Type:    utils.ConditionIngressReady,
 				Status:  metav1.ConditionTrue,
 				Reason:  "IngressAvailable",
 				Message: "Ingress is ready and available",
@@ -229,7 +229,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			}
 		} else {
 			if meta.SetStatusCondition(&instance.Status.Conditions, metav1.Condition{
-				Type:    ConditionIngressReady,
+				Type:    utils.ConditionIngressReady,
 				Status:  metav1.ConditionFalse,
 				Reason:  "IngressNotReady",
 				Message: "Ingress is not yet ready or not needed",
@@ -263,11 +263,11 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		// Emit events for significant phase changes
 		switch newPhase {
 		case challengesv1.PhaseStaged:
-			r.Recorder.Event(&instance, corev1.EventTypeNormal, EventReasonInstanceStaged, "Instance staged and ready to be activated")
+			r.Recorder.Event(&instance, corev1.EventTypeNormal, utils.EventReasonInstanceStaged, "Instance staged and ready to be activated")
 		case challengesv1.PhaseRunning:
-			r.Recorder.Event(&instance, corev1.EventTypeNormal, EventReasonInstanceRunning, "Instance is now running and fully accessible")
+			r.Recorder.Event(&instance, corev1.EventTypeNormal, utils.EventReasonInstanceRunning, "Instance is now running and fully accessible")
 		case challengesv1.PhaseFailed:
-			r.Recorder.Event(&instance, corev1.EventTypeWarning, EventReasonInstanceFailed,
+			r.Recorder.Event(&instance, corev1.EventTypeWarning, utils.EventReasonInstanceFailed,
 				fmt.Sprintf("Instance has failed (deployment: %v, service: %v, ingress: %v)",
 					deploymentReady, serviceReady, ingressReady))
 		}
@@ -355,17 +355,17 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 			Namespace: instance.Namespace,
 			Labels: map[string]string{
 				// standard labels
-				LabelAppName:      instance.Name,
-				LabelAppPartOf:    "instance",
-				LabelAppManagedBy: "tide-controller",
-				LabelAppComponent: "deployment",
+				utils.LabelAppName:      instance.Name,
+				utils.LabelAppPartOf:    "instance",
+				utils.LabelAppManagedBy: "tide-controller",
+				utils.LabelAppComponent: "deployment",
 
 				// tide specific labels
-				LabelChallengeID:   instance.Name,
-				LabelChallengeSlug: instance.Spec.Challenge.Slug,
-				LabelChallengeCID:  strconv.FormatInt(instance.Spec.Challenge.ID, 10),
-				LabelChallengeType: string(instance.Spec.Challenge.Type),
-				LabelTeamID: func() string {
+				utils.LabelChallengeID:   instance.Name,
+				utils.LabelChallengeSlug: instance.Spec.Challenge.Slug,
+				utils.LabelChallengeCID:  strconv.FormatInt(instance.Spec.Challenge.ID, 10),
+				utils.LabelChallengeType: string(instance.Spec.Challenge.Type),
+				utils.LabelTeamID: func() string {
 					if instance.Spec.Team != nil {
 						return strconv.FormatInt(instance.Spec.Team.ID, 10)
 					}
@@ -376,17 +376,17 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					LabelAppName:      instance.Name,
-					LabelAppComponent: "deployment",
-					LabelChallengeID:  instance.Name,
+					utils.LabelAppName:      instance.Name,
+					utils.LabelAppComponent: "deployment",
+					utils.LabelChallengeID:  instance.Name,
 				},
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						LabelAppName:      instance.Name,
-						LabelAppComponent: "deployment",
-						LabelChallengeID:  instance.Name,
+						utils.LabelAppName:      instance.Name,
+						utils.LabelAppComponent: "deployment",
+						utils.LabelChallengeID:  instance.Name,
 					},
 				},
 				Spec: corev1.PodSpec{
@@ -432,9 +432,9 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 	}
 
 	// Apply the Deployment (Server Side Apply)
-	if err := r.Patch(ctx, deployment, client.Apply, client.FieldOwner(FieldOwner), client.ForceOwnership); err != nil {
+	if err := r.Patch(ctx, deployment, client.Apply, client.FieldOwner(utils.FieldOwner), client.ForceOwnership); err != nil {
 		log.Error(err, "Failed to apply Deployment", "deployment", deployment.Name)
-		r.Recorder.Event(instance, corev1.EventTypeWarning, EventReasonDeploymentFailed,
+		r.Recorder.Event(instance, corev1.EventTypeWarning, utils.EventReasonDeploymentFailed,
 			fmt.Sprintf("Failed to apply Deployment %s: %v", deployment.Name, err))
 		return false, err
 	}
@@ -467,17 +467,17 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 			Namespace: instance.Namespace,
 			Labels: map[string]string{
 				// standard labels
-				LabelAppName:      instance.Name,
-				LabelAppPartOf:    "instance",
-				LabelAppManagedBy: "tide-controller",
-				LabelAppComponent: "service",
+				utils.LabelAppName:      instance.Name,
+				utils.LabelAppPartOf:    "instance",
+				utils.LabelAppManagedBy: "tide-controller",
+				utils.LabelAppComponent: "service",
 
 				// tide specific labels
-				LabelChallengeID:   instance.Name,
-				LabelChallengeSlug: instance.Spec.Challenge.Slug,
-				LabelChallengeCID:  strconv.FormatInt(instance.Spec.Challenge.ID, 10),
-				LabelChallengeType: string(instance.Spec.Challenge.Type),
-				LabelTeamID: func() string {
+				utils.LabelChallengeID:   instance.Name,
+				utils.LabelChallengeSlug: instance.Spec.Challenge.Slug,
+				utils.LabelChallengeCID:  strconv.FormatInt(instance.Spec.Challenge.ID, 10),
+				utils.LabelChallengeType: string(instance.Spec.Challenge.Type),
+				utils.LabelTeamID: func() string {
 					if instance.Spec.Team != nil {
 						return strconv.FormatInt(instance.Spec.Team.ID, 10)
 					}
@@ -487,8 +487,8 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
-				LabelAppName:      instance.Name,
-				LabelAppComponent: "deployment",
+				utils.LabelAppName:      instance.Name,
+				utils.LabelAppComponent: "deployment",
 			},
 			Type: corev1.ServiceTypeClusterIP,
 		},
@@ -523,9 +523,9 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 	}
 
 	// Apply the Service
-	if err := r.Patch(ctx, service, client.Apply, client.FieldOwner(FieldOwner), client.ForceOwnership); err != nil {
+	if err := r.Patch(ctx, service, client.Apply, client.FieldOwner(utils.FieldOwner), client.ForceOwnership); err != nil {
 		log.Error(err, "Failed to apply Service", "service", service.Name)
-		r.Recorder.Event(instance, corev1.EventTypeWarning, EventReasonServiceFailed,
+		r.Recorder.Event(instance, corev1.EventTypeWarning, utils.EventReasonServiceFailed,
 			fmt.Sprintf("Failed to apply Service %s: %v", service.Name, err))
 		return false, err
 	}
@@ -542,7 +542,7 @@ func (r *InstanceReconciler) checkPodFailures(ctx context.Context, instance *cha
 	listOpts := []client.ListOption{
 		client.InNamespace(instance.Namespace),
 		client.MatchingLabels{
-			LabelAppName: instance.Name,
+			utils.LabelAppName: instance.Name,
 		},
 	}
 	if err := r.List(ctx, podList, listOpts...); err != nil {
@@ -748,12 +748,12 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 			"routes", len(routes))
 		if err := r.Create(ctx, ingressRoute); err != nil {
 			log.Error(err, "Failed to create IngressRoute", "ingressRoute", ingressRouteName)
-			r.Recorder.Event(instance, corev1.EventTypeWarning, EventReasonIngressFailed,
+			r.Recorder.Event(instance, corev1.EventTypeWarning, utils.EventReasonIngressFailed,
 				fmt.Sprintf("Failed to create IngressRoute %s: %v", ingressRouteName, err))
 			return false, err
 		}
 
-		r.Recorder.Event(instance, corev1.EventTypeNormal, EventReasonIngressCreated,
+		r.Recorder.Event(instance, corev1.EventTypeNormal, utils.EventReasonIngressCreated,
 			fmt.Sprintf("Created IngressRoute %s with %d route(s)", ingressRouteName, len(routes)))
 	} else if err != nil {
 		log.Error(err, "Failed to get IngressRoute", "ingressRoute", ingressRouteName)
@@ -769,12 +769,12 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 			foundIngressRoute.Labels = ingressRoute.Labels
 			if err := r.Update(ctx, foundIngressRoute); err != nil {
 				log.Error(err, "Failed to update IngressRoute", "ingressRoute", ingressRouteName)
-				r.Recorder.Event(instance, corev1.EventTypeWarning, EventReasonIngressUpdateFailed,
+				r.Recorder.Event(instance, corev1.EventTypeWarning, utils.EventReasonIngressUpdateFailed,
 					fmt.Sprintf("Failed to update IngressRoute %s: %v", ingressRouteName, err))
 				return false, err
 			}
 
-			r.Recorder.Event(instance, corev1.EventTypeNormal, EventReasonIngressUpdated,
+			r.Recorder.Event(instance, corev1.EventTypeNormal, utils.EventReasonIngressUpdated,
 				fmt.Sprintf("Updated IngressRoute %s with %d route(s)", ingressRouteName, len(routes)))
 		} else {
 
@@ -784,7 +784,7 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 	// Update resolved endpoints in status if changed
 	if !equalEndpointStatus(instance.Status.Endpoints, resolvedEndpoints) {
 		instance.Status.Endpoints = resolvedEndpoints
-		r.Recorder.Event(instance, corev1.EventTypeNormal, EventReasonEndpointsResolved,
+		r.Recorder.Event(instance, corev1.EventTypeNormal, utils.EventReasonEndpointsResolved,
 			fmt.Sprintf("Resolved %d endpoint(s) for Instance", len(resolvedEndpoints)))
 	}
 
