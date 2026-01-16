@@ -40,8 +40,6 @@ import (
 	"github.com/TheAlpha16/isolet/tide/utils"
 )
 
-// Local constants removed in favor of constants.go
-
 // InstanceReconciler reconciles a Instance object
 type InstanceReconciler struct {
 	client.Client
@@ -65,7 +63,7 @@ type InstanceReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.22.1/pkg/reconcile
 func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := logf.FromContext(ctx)
-	log.Info("Reconciling Instance", "namespace", req.Namespace, "name", req.Name)
+	log.V(1).Info("Reconciling Instance", "namespace", req.Namespace, "name", req.Name)
 
 	timeNow := metav1.Now()
 
@@ -334,7 +332,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	if requeueAfter > 0 {
-		log.Info("Requeuing Instance", "instance", instance.Name, "after", requeueAfter, "phase", instance.Status.Phase)
+		log.V(1).Info("Requeuing Instance", "instance", instance.Name, "after", requeueAfter, "phase", instance.Status.Phase)
 		return ctrl.Result{RequeueAfter: requeueAfter}, nil
 	}
 
@@ -441,13 +439,11 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 		return false, err
 	}
 
-	log.Info("Successfully applied Deployment", "deployment", deployment.Name)
-
 	ready := r.isDeploymentReady(deployment)
 	if ready {
-		log.V(1).Info("Deployment is ready", "deployment", deployment.Name)
+
 	} else {
-		log.Info("Deployment not yet ready",
+		log.V(1).Info("Deployment not yet ready",
 			"deployment", deployment.Name,
 			"replicas", deployment.Status.Replicas,
 			"readyReplicas", deployment.Status.ReadyReplicas)
@@ -534,8 +530,6 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 		return false, err
 	}
 
-	log.Info("Successfully applied Service", "service", service.Name)
-	log.V(1).Info("Service is ready", "service", service.Name)
 	return true, nil
 }
 
@@ -758,7 +752,7 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 				fmt.Sprintf("Failed to create IngressRoute %s: %v", ingressRouteName, err))
 			return false, err
 		}
-		log.Info("Successfully created IngressRoute", "ingressRoute", ingressRouteName)
+
 		r.Recorder.Event(instance, corev1.EventTypeNormal, EventReasonIngressCreated,
 			fmt.Sprintf("Created IngressRoute %s with %d route(s)", ingressRouteName, len(routes)))
 	} else if err != nil {
@@ -779,25 +773,21 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 					fmt.Sprintf("Failed to update IngressRoute %s: %v", ingressRouteName, err))
 				return false, err
 			}
-			log.Info("Successfully updated IngressRoute", "ingressRoute", ingressRouteName)
+
 			r.Recorder.Event(instance, corev1.EventTypeNormal, EventReasonIngressUpdated,
 				fmt.Sprintf("Updated IngressRoute %s with %d route(s)", ingressRouteName, len(routes)))
 		} else {
-			log.V(1).Info("IngressRoute is up to date", "ingressRoute", ingressRouteName)
+
 		}
 	}
 
 	// Update resolved endpoints in status if changed
 	if !equalEndpointStatus(instance.Status.Endpoints, resolvedEndpoints) {
-		log.Info("Updating Instance status with resolved endpoints (internal)",
-			"instance", instance.Name,
-			"endpoints", len(resolvedEndpoints))
 		instance.Status.Endpoints = resolvedEndpoints
 		r.Recorder.Event(instance, corev1.EventTypeNormal, EventReasonEndpointsResolved,
 			fmt.Sprintf("Resolved %d endpoint(s) for Instance", len(resolvedEndpoints)))
 	}
 
-	log.V(1).Info("IngressRoute is ready", "ingressRoute", ingressRouteName)
 	return true, nil
 }
 
