@@ -11,6 +11,7 @@ import (
 )
 
 type Environment string
+type Identity string
 
 var appConfig *Config
 
@@ -18,6 +19,9 @@ const (
 	LOCAL Environment = "local"
 	DEV   Environment = "dev"
 	PROD  Environment = "prod"
+
+	IdentityRest     Identity = "rest"
+	IdentityListener Identity = "listener"
 )
 
 type Config struct {
@@ -25,6 +29,7 @@ type Config struct {
 	LogLevel    string      `env:"LOG_LEVEL"   envDefault:"DEBUG"`
 	Environment Environment `env:"ENVIRONMENT" envDefault:"local"`
 	Version     string      `env:"VERSION"     envDefault:"2.0.0"`
+	Identity    Identity    `env:"IDENTITY"    envDefault:"rest"`
 
 	Database struct {
 		Name                  string        `env:"DB_NAME" envDefault:"isolet"`
