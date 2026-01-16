@@ -121,6 +121,5 @@ func StartRestServer(ctx context.Context, usecases *usecase.Usecases, infra *inf
 /*
 TODO
 - Add metrics
-- Add telemetry to k8s interactions
 - Watch for events from k8s instance expiry and delete the corresponding instances from DB
 */
