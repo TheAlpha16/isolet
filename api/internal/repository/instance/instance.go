@@ -70,18 +70,6 @@ func (ir instanceRepo) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (ir *instanceRepo) GetByTeamAndChallenge(ctx context.Context, teamID, challengeID int64) (*instanceDom.Instance, error) {
-	var instance Instance
-	if err := ir.db.WithContext(ctx).Preload("Endpoints").Where("team_id = ? AND challenge_id = ?", teamID, challengeID).First(&instance).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errorDom.Raise(ctx, errorDom.ErrInstanceNotFound, "", err, nil)
-		}
-		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to get instance by team and challenge", err, common.ExtraData{"team_id": teamID, "challenge_id": challengeID})
-	}
-
-	return instance.ToDomain(ctx)
-}
-
 func (ir *instanceRepo) GetByTeam(ctx context.Context, teamID int64) ([]*instanceDom.Instance, error) {
 	var instances []Instance
 	if err := ir.db.WithContext(ctx).Preload("Endpoints").Where("team_id = ?", teamID).Find(&instances).Error; err != nil {
@@ -101,7 +89,7 @@ func (ir *instanceRepo) GetByTeam(ctx context.Context, teamID int64) ([]*instanc
 
 func (ir *instanceRepo) GetByRefs(ctx context.Context, teamID *int64, challengeID int64) (*instanceDom.Instance, error) {
 	var instance Instance
-	query := ir.db.WithContext(ctx).Where("challenge_id = ?", challengeID)
+	query := ir.db.WithContext(ctx).Preload("Endpoints").Where("challenge_id = ?", challengeID)
 
 	if teamID != nil {
 		query = query.Where("team_id = ?", *teamID)
