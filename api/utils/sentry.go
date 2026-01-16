@@ -19,6 +19,9 @@ func InitSentry(config *Config) {
 		ServerName:       config.Name,
 		Release:          config.Version,
 		Environment:      string(config.Environment),
+		Tags: map[string]string{
+			"identity": string(config.Identity),
+		},
 	})
 	if err != nil {
 		panic(err)
