@@ -99,6 +99,26 @@ func (ir *instanceRepo) GetByTeam(ctx context.Context, teamID int64) ([]*instanc
 	return domainInstances, nil
 }
 
+func (ir *instanceRepo) GetByRefs(ctx context.Context, teamID *int64, challengeID int64) (*instanceDom.Instance, error) {
+	var instance Instance
+	query := ir.db.WithContext(ctx).Where("challenge_id = ?", challengeID)
+
+	if teamID != nil {
+		query = query.Where("team_id = ?", *teamID)
+	} else {
+		query = query.Where("team_id IS NULL")
+	}
+
+	if err := query.First(&instance).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errorDom.Raise(ctx, errorDom.ErrInstanceNotFound, "", err, nil)
+		}
+		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to get instance by refs", err, common.ExtraData{"team_id": teamID, "challenge_id": challengeID})
+	}
+
+	return instance.ToDomain(ctx)
+}
+
 func New(db *gorm.DB) instanceDom.Repository {
 	return &instanceRepo{
 		db: db,
