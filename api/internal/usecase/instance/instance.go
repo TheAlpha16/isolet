@@ -192,7 +192,9 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 		return nil, err
 	}
 
-	if err := i.repo.Update(ctx, instance, []string{"expires_at"}); err != nil {
+	if err := i.repo.Update(ctx, instance.ID, map[string]any{
+		instanceDom.ExpiresAtColumn: instance.Lifecycle.ExpiresAt.Unix(),
+	}); err != nil {
 		return nil, err
 	}
 

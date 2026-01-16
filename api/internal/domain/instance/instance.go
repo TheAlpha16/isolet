@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	InstanceCachePrefix = "instance"
+	InstanceCachePrefix string = "instance"
+	ExpiresAtColumn     string = "expires_at"
 )
 
 type Instance struct {
