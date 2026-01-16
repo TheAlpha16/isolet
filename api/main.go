@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/TheAlpha16/isolet/api/delivery/listener"
 	restDel "github.com/TheAlpha16/isolet/api/delivery/rest"
 	"github.com/TheAlpha16/isolet/api/external"
 	"github.com/TheAlpha16/isolet/api/infra"
@@ -83,8 +84,15 @@ func main() {
 	// Init usecases
 	usecases := usecase.New(ctx, &wg, cache, repos, infra, external)
 
-	// Start the rest server
-	StartRestServer(ctx, usecases, infra)
+	// Start the server based on identity
+	switch utils.GetConfig().Identity {
+	case utils.IdentityRest:
+		StartRestServer(ctx, usecases, infra)
+	case utils.IdentityListener:
+		StartListener(ctx, usecases, infra)
+	default:
+		appLogger.Fatal("unknown identity", zap.String("identity", string(utils.GetConfig().Identity)))
+	}
 
 	utils.InterruptHandlerChannel <- func() {
 		wg.Wait()
@@ -118,8 +126,6 @@ func StartRestServer(ctx context.Context, usecases *usecase.Usecases, infra *inf
 	go restDel.StartServer(app)
 }
 
-/*
-TODO
-- Add metrics
-- Watch for events from k8s instance expiry and delete the corresponding instances from DB
-*/
+func StartListener(ctx context.Context, usecases *usecase.Usecases, infra *infra.Infra) {
+	go listener.Start(ctx, usecases, infra)
+}
