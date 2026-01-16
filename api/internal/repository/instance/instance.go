@@ -107,6 +107,21 @@ func (ir *instanceRepo) GetByRefs(ctx context.Context, teamID *int64, challengeI
 	return instance.ToDomain(ctx)
 }
 
+func (ir *instanceRepo) DeleteByRefs(ctx context.Context, teamID *int64, challengeID int64) error {
+	query := ir.db.WithContext(ctx).Where("challenge_id = ?", challengeID)
+
+	if teamID != nil {
+		query = query.Where("team_id = ?", *teamID)
+	} else {
+		query = query.Where("team_id IS NULL")
+	}
+
+	if err := query.Delete(&Instance{}).Error; err != nil {
+		return errorDom.Raise(ctx, errorDom.ErrDBDeleteError, "failed to delete instance by refs", err, common.ExtraData{"team_id": teamID, "challenge_id": challengeID})
+	}
+	return nil
+}
+
 func New(db *gorm.DB) instanceDom.Repository {
 	return &instanceRepo{
 		db: db,

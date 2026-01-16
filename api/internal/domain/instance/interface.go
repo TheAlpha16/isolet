@@ -17,10 +17,11 @@ type Usecase interface {
 type Repository interface {
 	Create(ctx context.Context, instance *Instance) (*Instance, error)
 	GetByID(ctx context.Context, id int64) (*Instance, error)
-	Update(ctx context.Context, instance *Instance, fields []string) error
-	Delete(ctx context.Context, id int64) error
 	GetByRefs(ctx context.Context, teamID *int64, challengeID int64) (*Instance, error)
 	GetByTeam(ctx context.Context, teamID int64) ([]*Instance, error)
+	Update(ctx context.Context, instance *Instance, fields []string) error
+	Delete(ctx context.Context, id int64) error
+	DeleteByRefs(ctx context.Context, teamID *int64, challengeID int64) error
 }
 
 type Service interface {
