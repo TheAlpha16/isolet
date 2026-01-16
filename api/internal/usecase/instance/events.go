@@ -3,7 +3,6 @@ package instance
 import (
 	"context"
 
-	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	instanceDom "github.com/TheAlpha16/isolet/api/internal/domain/instance"
 
 	tideConstants "github.com/TheAlpha16/isolet/tide/utils"
@@ -23,17 +22,5 @@ func (i *instanceImpl) HandleEvent(ctx context.Context, eventType string, instan
 }
 
 func (i instanceImpl) handleInstanceExpired(ctx context.Context, instance *instanceDom.Instance) error {
-	existingInstance, err := i.repo.GetByRefs(ctx, instance.TeamID, instance.ChallengeID)
-	if err != nil {
-		if errorDom.IsSameError(err, errorDom.ErrInstanceNotFound) {
-			return nil
-		}
-		return err
-	}
-
-	if err := i.repo.Delete(ctx, existingInstance.ID); err != nil {
-		return err
-	}
-
-	return nil
+	return i.repo.DeleteByRefs(ctx, instance.TeamID, instance.ChallengeID)
 }
