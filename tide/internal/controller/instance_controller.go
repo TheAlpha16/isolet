@@ -55,6 +55,7 @@ type InstanceReconciler struct {
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=traefik.io,resources=ingressroutes,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 // +kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
@@ -119,6 +120,9 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
+	// capture the original phase to detect transitions later
+	originalPhase := instance.Status.Phase
+
 	// ensure child objects are in desired state
 	statusChanged := false
 
@@ -144,13 +148,29 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 				statusChanged = true
 			}
 		} else {
-			if meta.SetStatusCondition(&instance.Status.Conditions, metav1.Condition{
-				Type:    ConditionDeploymentReady,
-				Status:  metav1.ConditionFalse,
-				Reason:  "DeploymentNotReady",
-				Message: "Deployment is not yet ready",
-			}) {
-				statusChanged = true
+			// Deployment is not ready, check for Pod failures
+			failed, failureReason, message := r.checkPodFailures(ctx, &instance)
+			if failed {
+				if meta.SetStatusCondition(&instance.Status.Conditions, metav1.Condition{
+					Type:    ConditionDeploymentReady,
+					Status:  metav1.ConditionFalse,
+					Reason:  failureReason,
+					Message: message,
+				}) {
+					statusChanged = true
+				}
+				// Force phase update to Failed
+				instance.Status.Phase = challengesv1.PhaseFailed
+				statusChanged = true // Ensure we trigger status update
+			} else {
+				if meta.SetStatusCondition(&instance.Status.Conditions, metav1.Condition{
+					Type:    ConditionDeploymentReady,
+					Status:  metav1.ConditionFalse,
+					Reason:  "DeploymentNotReady",
+					Message: "Deployment is not yet ready",
+				}) {
+					statusChanged = true
+				}
 			}
 		}
 	}
@@ -222,14 +242,21 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// Update Instance phase based on child resource status
-	newPhase := r.determinePhase(&instance, deploymentReady, serviceReady, ingressReady)
-	if instance.Status.Phase != newPhase {
-		oldPhase := instance.Status.Phase
+	newPhase := instance.Status.Phase
+	if instance.Status.Phase != challengesv1.PhaseFailed {
+		newPhase = r.determinePhase(&instance, deploymentReady, serviceReady, ingressReady)
+	} else {
+		if deploymentReady && serviceReady && ingressReady {
+			newPhase = challengesv1.PhaseRunning
+		}
+	}
+
+	if originalPhase != newPhase {
 		instance.Status.Phase = newPhase
 		statusChanged = true
 		log.Info("Instance phase transition",
 			"instance", instance.Name,
-			"oldPhase", oldPhase,
+			"oldPhase", originalPhase,
 			"newPhase", newPhase,
 			"deploymentReady", deploymentReady,
 			"serviceReady", serviceReady,
@@ -250,8 +277,6 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Update status if anything changed
 	if statusChanged {
-		// Refetch the Instance to get the latest resourceVersion before updating status
-		// This prevents "object has been modified" conflicts
 		latestInstance := &challengesv1.Instance{}
 		if err := r.Get(ctx, req.NamespacedName, latestInstance); err != nil {
 			log.Error(err, "Unable to refetch Instance before status patch", "instance", req.NamespacedName)
@@ -262,6 +287,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		patch := client.MergeFrom(latestInstance.DeepCopy())
 		latestInstance.Status.Phase = instance.Status.Phase
 		latestInstance.Status.Conditions = instance.Status.Conditions
+		latestInstance.Status.Endpoints = instance.Status.Endpoints
 
 		if err := r.Status().Patch(ctx, latestInstance, patch); err != nil {
 			log.Error(err, "Unable to patch Instance status", "instance", req.NamespacedName)
@@ -270,14 +296,46 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 		log.Info("Successfully updated Instance status",
 			"instance", instance.Name,
-			"phase", latestInstance.Status.Phase)
+			"phase", latestInstance.Status.Phase,
+			"endpoints", len(latestInstance.Status.Endpoints))
 	}
 
-	// requeue in case expiry is set
+	// Calculate requeue interval based on the nearest important event
+	var requeueAfter time.Duration
+
+	// 1. Poll for Pod failures if Pending (Deployment not ready)
+	if instance.Status.Phase == challengesv1.PhasePending {
+		requeueAfter = 10 * time.Second
+	}
+
+	// 2. Wait for Staged -> Running transition (AvailableAt)
+	if instance.Status.Phase == challengesv1.PhaseStaged &&
+		instance.Spec.Lifecycle != nil &&
+		instance.Spec.Lifecycle.AvailableAt != nil {
+
+		availableIn := instance.Spec.Lifecycle.AvailableAt.Sub(timeNow.Time)
+		if availableIn > 0 {
+			if requeueAfter == 0 || availableIn < requeueAfter {
+				requeueAfter = availableIn
+			}
+		} else {
+			requeueAfter = 1 * time.Second
+		}
+	}
+
+	// 3. Wait for Expiry (ExpiresAt)
 	if instance.Spec.Lifecycle != nil && instance.Spec.Lifecycle.ExpiresAt != nil {
-		return ctrl.Result{
-			RequeueAfter: instance.Spec.Lifecycle.ExpiresAt.Sub(timeNow.Time),
-		}, nil
+		expiresIn := instance.Spec.Lifecycle.ExpiresAt.Sub(timeNow.Time)
+		if expiresIn > 0 {
+			if requeueAfter == 0 || expiresIn < requeueAfter {
+				requeueAfter = expiresIn
+			}
+		}
+	}
+
+	if requeueAfter > 0 {
+		log.Info("Requeuing Instance", "instance", instance.Name, "after", requeueAfter, "phase", instance.Status.Phase)
+		return ctrl.Result{RequeueAfter: requeueAfter}, nil
 	}
 
 	return ctrl.Result{}, nil
@@ -452,16 +510,12 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 	// Handle deletion if no ports defined
 	if len(service.Spec.Ports) == 0 {
 		// No endpoints, ensure Service is deleted
-		// We use Delete instead of Apply with empty specc because we want the resource gone.
-		// Note: We need to set Name and Namespace (already set above).
 		if err := r.Delete(ctx, service); err != nil {
 			if !apierrors.IsNotFound(err) {
 				log.Error(err, "Failed to delete Service", "service", service.Name)
 				return false, err
 			}
-			// NotFound is fine, means already deleted
 		}
-		// Consider ready (no service needed)
 		log.V(1).Info("Service deleted or not needed (no ports)", "service", service.Name)
 		return true, nil
 	}
@@ -481,11 +535,60 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 	}
 
 	log.Info("Successfully applied Service", "service", service.Name)
-	// Service exists and is ready (Services are immediately available)
-
-	// Service exists and is ready
 	log.V(1).Info("Service is ready", "service", service.Name)
 	return true, nil
+}
+
+// checkPodFailures checks if any pods for the instance are in a failed state.
+// Returns (failed bool, reason string, message string)
+func (r *InstanceReconciler) checkPodFailures(ctx context.Context, instance *challengesv1.Instance) (bool, string, string) {
+	log := logf.FromContext(ctx)
+	// List pods matching the instance labels
+	podList := &corev1.PodList{}
+	listOpts := []client.ListOption{
+		client.InNamespace(instance.Namespace),
+		client.MatchingLabels{
+			LabelAppName: instance.Name,
+		},
+	}
+	if err := r.List(ctx, podList, listOpts...); err != nil {
+		log.Error(err, "Failed to list pods for failure check", "instance", instance.Name)
+		return false, "", ""
+	}
+
+	for _, pod := range podList.Items {
+		for _, status := range pod.Status.ContainerStatuses {
+			if status.State.Waiting != nil {
+				reason := status.State.Waiting.Reason
+				if isFailureReason(reason) {
+					return true, reason, fmt.Sprintf("Pod %s is waiting: %s", pod.Name, reason)
+				}
+			}
+			if status.State.Terminated != nil {
+				reason := status.State.Terminated.Reason
+				if isFailureReason(reason) {
+					return true, reason, fmt.Sprintf("Pod %s terminated: %s", pod.Name, reason)
+				}
+				if status.State.Terminated.ExitCode != 0 {
+					return true, "ContainerError", fmt.Sprintf("Pod %s exited with code %d", pod.Name, status.State.Terminated.ExitCode)
+				}
+			}
+		}
+	}
+	return false, "", ""
+}
+
+func isFailureReason(reason string) bool {
+	switch reason {
+	case "CrashLoopBackOff",
+		"ErrImagePull",
+		"ImagePullBackOff",
+		"CreateContainerConfigError",
+		"InvalidImageName",
+		"CreateContainerError":
+		return true
+	}
+	return false
 }
 
 // isDeploymentReady checks if a Deployment is available and ready.
@@ -527,8 +630,6 @@ func (r *InstanceReconciler) determinePhase(instance *challengesv1.Instance, dep
 	// Default to Pending if we can't determine
 	return challengesv1.PhasePending
 }
-
-// setCondition removed in favor of meta.SetStatusCondition
 
 // reconcileIngressRoute ensures IngressRoute resources exist for HTTP/HTTPS endpoints.
 // Returns (ready bool, err error) where ready indicates if IngressRoutes are properly configured.
@@ -688,16 +789,10 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 
 	// Update resolved endpoints in status if changed
 	if !equalEndpointStatus(instance.Status.Endpoints, resolvedEndpoints) {
-		log.Info("Updating Instance status with resolved endpoints",
+		log.Info("Updating Instance status with resolved endpoints (internal)",
 			"instance", instance.Name,
 			"endpoints", len(resolvedEndpoints))
 		instance.Status.Endpoints = resolvedEndpoints
-		if err := r.Status().Update(ctx, instance); err != nil {
-			log.Error(err, "Failed to update Instance status with resolved endpoints", "instance", instance.Name)
-			r.Recorder.Event(instance, corev1.EventTypeWarning, EventReasonResolutionFailed,
-				fmt.Sprintf("Failed to update resolved endpoints: %v", err))
-			return false, err
-		}
 		r.Recorder.Event(instance, corev1.EventTypeNormal, EventReasonEndpointsResolved,
 			fmt.Sprintf("Resolved %d endpoint(s) for Instance", len(resolvedEndpoints)))
 	}
