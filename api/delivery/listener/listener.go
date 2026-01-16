@@ -5,13 +5,14 @@ import (
 
 	"github.com/TheAlpha16/isolet/api/infra"
 	k8sInfra "github.com/TheAlpha16/isolet/api/infra/k8s"
-	instanceDom "github.com/TheAlpha16/isolet/api/internal/domain/instance"
+	errorDom "github.com/TheAlpha16/isolet/api/internal/domain/errors"
 	"github.com/TheAlpha16/isolet/api/internal/usecase"
 	"github.com/TheAlpha16/isolet/api/utils"
 	"github.com/TheAlpha16/isolet/api/utils/logger"
-	tidev1 "github.com/TheAlpha16/isolet/tide/api/v1"
 
-	tideConstants "github.com/TheAlpha16/isolet/tide/utils"
+	tidev1 "github.com/TheAlpha16/isolet/tide/api/v1"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -20,12 +21,18 @@ import (
 	crcache "sigs.k8s.io/controller-runtime/pkg/cache"
 )
 
+var tracer = otel.Tracer("api/delivery/listener")
+
 func Start(ctx context.Context, usecases *usecase.Usecases, infra *infra.Infra) {
-	log := logger.GetAppLogger()
+	ctx, span := tracer.Start(ctx, "listener.Start")
+	defer span.End()
+
+	logger := logger.GetAppLogger()
 
 	config, err := k8sInfra.GetRestConfig()
 	if err != nil {
-		log.Fatal("failed to get k8s config", zap.Error(err))
+		handleError(ctx, span, logger, "failed to get k8s config", err, nil)
+		logger.Fatal("failed to get k8s config", zap.Error(err))
 	}
 
 	sch := runtime.NewScheme()
@@ -33,6 +40,7 @@ func Start(ctx context.Context, usecases *usecase.Usecases, infra *infra.Infra) 
 	utilruntime.Must(tidev1.AddToScheme(sch))
 
 	namespace := utils.GetConfig().Instances.Namespace
+	span.SetAttributes(attribute.String("k8s.namespace", namespace))
 
 	k8sCache, err := crcache.New(config, crcache.Options{
 		Scheme: sch,
@@ -41,57 +49,41 @@ func Start(ctx context.Context, usecases *usecase.Usecases, infra *infra.Infra) 
 		},
 	})
 	if err != nil {
-		log.Fatal("failed to create cache", zap.Error(err))
+		handleError(ctx, span, logger, "failed to create cache", err, nil)
+		logger.Fatal("failed to create cache", zap.Error(err))
 	}
 
 	informer, err := k8sCache.GetInformer(ctx, &tidev1.Instance{})
 	if err != nil {
-		log.Fatal("failed to get informer", zap.Error(err))
+		handleError(ctx, span, logger, "failed to get informer", err, nil)
+		logger.Fatal("failed to get informer", zap.Error(err))
 	}
 
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		DeleteFunc: func(obj interface{}) {
-			instance, ok := obj.(*tidev1.Instance)
-			if !ok {
-				tombstone, ok := obj.(cache.DeletedFinalStateUnknown)
-				if !ok {
-					log.Error("Couldn't get object from tombstone", zap.Any("obj", obj))
-					return
-				}
-				instance, ok = tombstone.Obj.(*tidev1.Instance)
-				if !ok {
-					log.Error("Tombstone contained object that is not an Instance", zap.Any("obj", tombstone.Obj))
-					return
-				}
-			}
-
-			instDom := &instanceDom.Instance{
-				ChallengeID: instance.Spec.Challenge.ID,
-			}
-			if instance.Spec.Team != nil {
-				instDom.TeamID = &instance.Spec.Team.ID
-			}
-
-			if err := usecases.Instance.HandleEvent(context.Background(), tideConstants.EventReasonExpired, instDom); err != nil {
-				log.Error("failed to handle instance expiry event", zap.Error(err))
-			} else {
-				log.Info("Handled instance deletion event", zap.String("instance", instance.Name))
-			}
+			handleDeleteEvent(obj, usecases)
 		},
 	})
 
 	go func() {
-		if err := k8sCache.Start(ctx); err != nil {
-			log.Fatal("failed to start cache", zap.Error(err))
+		cacheCtx, cacheSpan := tracer.Start(ctx, "listener.k8sCache.Start")
+		defer cacheSpan.End()
+
+		if err := k8sCache.Start(cacheCtx); err != nil {
+			handleError(cacheCtx, cacheSpan, logger, "cache failed to start", err, nil)
+			logger.Fatal("failed to start cache", zap.Error(err))
 		}
 	}()
 
 	if !k8sCache.WaitForCacheSync(ctx) {
-		log.Log(zap.ErrorLevel, "Timed out waiting for caches to sync")
+		err := errorDom.RaiseInternal(ctx, "timed out waiting for caches to sync", nil, nil)
+		handleError(ctx, span, logger, "cache sync timeout", err, nil)
 		return
 	}
 
-	log.Info("Listener started, watching for Instance events", zap.String("namespace", namespace))
+	span.AddEvent("listener.started")
+	logger.Info("Listener started, watching for Instance events", zap.String("namespace", namespace))
 
 	<-ctx.Done()
+	span.AddEvent("listener.shutdown")
 }
