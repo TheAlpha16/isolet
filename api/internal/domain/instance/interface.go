@@ -19,7 +19,7 @@ type Repository interface {
 	GetByID(ctx context.Context, id int64) (*Instance, error)
 	GetByRefs(ctx context.Context, teamID *int64, challengeID int64) (*Instance, error)
 	GetByTeam(ctx context.Context, teamID int64) ([]*Instance, error)
-	Update(ctx context.Context, instance *Instance, fields []string) error
+	Update(ctx context.Context, id int64, updates map[string]any) error
 	Delete(ctx context.Context, id int64) error
 	DeleteByRefs(ctx context.Context, teamID *int64, challengeID int64) error
 }

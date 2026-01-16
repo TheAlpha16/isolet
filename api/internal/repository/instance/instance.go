@@ -47,14 +47,9 @@ func (ir *instanceRepo) GetByID(ctx context.Context, id int64) (*instanceDom.Ins
 	return instance.ToDomain(ctx)
 }
 
-func (ir *instanceRepo) Update(ctx context.Context, instance *instanceDom.Instance, fields []string) error {
-	instanceModel, err := NewInstanceModel(instance)
-	if err != nil {
-		return err
-	}
-
-	if err := ir.db.WithContext(ctx).Model(instanceModel).Where("id = ?", instance.ID).Select(fields).Updates(instanceModel).Error; err != nil {
-		return errorDom.Raise(ctx, errorDom.ErrDBUpdateError, "failed to update instance", err, common.ExtraData{"id": instance.ID})
+func (ir *instanceRepo) Update(ctx context.Context, id int64, updates map[string]any) error {
+	if err := ir.db.WithContext(ctx).Model(&Instance{}).Where("id = ?", id).Updates(updates).Error; err != nil {
+		return errorDom.Raise(ctx, errorDom.ErrDBUpdateError, "failed to update instance", err, common.ExtraData{"id": id})
 	}
 
 	return nil
