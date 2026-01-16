@@ -11,6 +11,7 @@ type Usecase interface {
 	Start(ctx context.Context, input *StartInput) (*InstanceDTO, error)
 	Stop(ctx context.Context, input *StopInput) error
 	Extend(ctx context.Context, input *ExtendInput) (*InstanceDTO, error)
+	HandleEvent(ctx context.Context, eventType string, instance *Instance) error
 }
 
 type Repository interface {
