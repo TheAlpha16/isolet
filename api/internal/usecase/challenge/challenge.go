@@ -239,7 +239,7 @@ func (c *challengeImpl) validateFlag(ctx context.Context, challenge *challengeDo
 	if challenge.Type == challengeDom.ChallengeOnDemand {
 		// fetch the instance for the team and challenge
 		teamID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyTeamID)
-		instance, err := c.instanceRepo.GetByTeamAndChallenge(ctx, teamID, challenge.ID)
+		instance, err := c.instanceRepo.GetByRefs(ctx, &teamID, challenge.ID)
 		if err != nil {
 			if errorDom.IsSameError(err, errorDom.ErrInstanceNotFound) {
 				return false, errorDom.Raise(ctx, errorDom.ErrInstanceNotRunning, "", err, nil)

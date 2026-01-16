@@ -53,7 +53,7 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 	}
 
 	// check if the instance is already running for the team and challenge
-	instance, err := i.repo.GetByTeamAndChallenge(ctx, teamID, input.ChallengeID)
+	instance, err := i.repo.GetByRefs(ctx, &teamID, input.ChallengeID)
 	if err != nil {
 		if !errorDom.IsSameError(err, errorDom.ErrInstanceNotFound) {
 			return nil, err
