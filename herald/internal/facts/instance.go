@@ -10,7 +10,9 @@ const (
 
 type InstanceFact struct {
 	BaseFact
-	ID string
+	ID          string
+	ChallengeID int64
+	TeamID      *int64
 }
 
 func (f *InstanceFact) Key() string {

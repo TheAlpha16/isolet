@@ -43,7 +43,13 @@ func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
 			Type: facts.InstanceExpiredFactType,
 			At:   time.Now(),
 		},
-		ID: string(instance.UID),
+		ID:          string(instance.UID),
+		ChallengeID: instance.Spec.Challenge.ID,
+	}
+
+	if instance.Spec.Team != nil {
+		var teamId int64 = instance.Spec.Team.ID
+		fact.TeamID = &teamId
 	}
 
 	if err := fact.Validate(); err != nil {
