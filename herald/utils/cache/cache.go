@@ -17,7 +17,7 @@ var globClient valkey.Client
 var once sync.Once
 var tracer = otel.Tracer("herald.cache")
 
-func getValkeyClient(ctx context.Context) (valkey.Client, error) {
+func GetCache(ctx context.Context) (valkey.Client, error) {
 	once.Do(func() {
 		var err error
 		globClient, err = createValkeyClient(ctx)
@@ -62,7 +62,7 @@ func Get(ctx context.Context, key string) (string, error) {
 	ctx, span := tracer.Start(ctx, "get")
 	defer span.End()
 
-	client, err := getValkeyClient(ctx)
+	client, err := GetCache(ctx)
 	if err != nil {
 		return "", err
 	}
