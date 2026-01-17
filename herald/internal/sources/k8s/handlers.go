@@ -31,7 +31,7 @@ func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
 		return
 	}
 
-	cacheKey := getCacheKey(string(instance.UID))
+	cacheKey := getCacheKey(string(tidev1.PhaseExpired), string(instance.UID))
 	success, _ := cache.SetNXWithTTL(ctx, cacheKey, "1", utils.GetConfig().K8s.DeDupeWindow)
 	if !success {
 		// already processed recently
