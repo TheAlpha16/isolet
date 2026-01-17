@@ -130,12 +130,20 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if instance.Spec.Lifecycle != nil && instance.Spec.Lifecycle.ExpiresAt != nil {
 		// delete the instance if expired
 		if instance.Spec.Lifecycle.ExpiresAt.Before(&timeNow) {
-			// instance is expired, delete it
+			// mark as expired if not already
+			if instance.Status.Phase != challengesv1.PhaseExpired {
+				instance.Status.Phase = challengesv1.PhaseExpired
+				if err := r.Status().Update(ctx, &instance); err != nil {
+					log.Error(err, "Failed to update Instance status to Expired", "namespace", instance.Namespace, "name", instance.Name)
+					return ctrl.Result{}, err
+				}
+				r.Recorder.Event(&instance, corev1.EventTypeWarning, utils.EventReasonExpired, fmt.Sprintf("Instance expired at %s", instance.Spec.Lifecycle.ExpiresAt.Time))
+				return ctrl.Result{RequeueAfter: time.Second}, nil
+			}
 			log.Info("Instance has expired, deleting",
 				"namespace", instance.Namespace,
 				"name", instance.Name,
 				"expiresAt", instance.Spec.Lifecycle.ExpiresAt.Time)
-			r.Recorder.Event(&instance, corev1.EventTypeWarning, utils.EventReasonExpired, fmt.Sprintf("Instance expired at %s", instance.Spec.Lifecycle.ExpiresAt.Time))
 			if err := r.Client.Delete(ctx, &instance); err != nil {
 				log.Error(err, "Failed to delete expired Instance", "namespace", instance.Namespace, "name", instance.Name)
 				return ctrl.Result{}, err
