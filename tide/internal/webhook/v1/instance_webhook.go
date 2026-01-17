@@ -130,6 +130,11 @@ func (v *InstanceCustomValidator) ValidateUpdate(_ context.Context, oldObj, newO
 		return nil, fmt.Errorf("expected a Instance object for the oldObj but got %T", oldObj)
 	}
 
+	// allow changes in case of deletion
+	if !newInstance.ObjectMeta.DeletionTimestamp.IsZero() {
+		return nil, nil
+	}
+
 	// prevent changes to challenge
 	if oldInstance.Spec.Challenge.ID != newInstance.Spec.Challenge.ID {
 		return nil, fmt.Errorf("challenge.id is immutable")
