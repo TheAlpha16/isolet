@@ -310,6 +310,8 @@ spec:
                 - Staged
                 - Running
                 - Failed
+                - Terminated
+                - Expired
                 type: string
             type: object
         required:

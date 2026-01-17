@@ -45,7 +45,7 @@ const (
 )
 
 // Phase describes the current lifecycle phase of an Instance.
-// +kubebuilder:validation:Enum=Pending;Staged;Running;Failed
+// +kubebuilder:validation:Enum=Pending;Staged;Running;Failed;Terminated;Expired
 type Phase string
 
 const (
@@ -60,6 +60,12 @@ const (
 
 	// Instance failed during creation or startup.
 	PhaseFailed Phase = "Failed"
+
+	// Instance has been terminated by owner
+	PhaseTerminated Phase = "Terminated"
+
+	// Instance has expired
+	PhaseExpired Phase = "Expired"
 )
 
 // Challenge contains metadata about the challenge backing an Instance.
