@@ -13,6 +13,8 @@ import (
 )
 
 func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
+	log := logger.GetAppLogger()
+
 	if eventType != eventTypeUpdate {
 		return // dont care about create/delete events for now
 	}
@@ -22,6 +24,7 @@ func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
 
 	instance, ok := extractObject[*tidev1.Instance](obj)
 	if !ok {
+		log.Warn("Failed to extract instance from object")
 		return
 	}
 
