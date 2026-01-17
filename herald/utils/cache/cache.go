@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"sync"
+	"time"
 
 	"github.com/TheAlpha16/isolet/herald/utils"
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
@@ -76,6 +77,26 @@ func Get(ctx context.Context, key string) (string, error) {
 			return "", nil
 		}
 		return "", errors.Raise(errors.ErrCacheCallFailed, "cache get failed", err)
+	}
+
+	return result, nil
+}
+
+func SetNXWithTTL(ctx context.Context, key, value string, ttl time.Duration) (bool, error) {
+	ctx, span := tracer.Start(ctx, "set_nx_with_ttl")
+	defer span.End()
+
+	client, err := GetCache(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	result, err := client.Do(ctx, client.B().Set().Key(key).Value(value).Nx().Ex(ttl).Build()).AsBool()
+	if err != nil {
+		if valkey.IsValkeyNil(err) {
+			return false, nil
+		}
+		return false, errors.Raise(errors.ErrCacheCallFailed, "cache set nx with ttl failed", err)
 	}
 
 	return result, nil
