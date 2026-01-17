@@ -10,22 +10,22 @@ const (
 	InstanceExpiredFactType FactType = "InstanceExpired"
 )
 
-type InstanceLifecycleFact struct {
+type InstanceFact struct {
 	BaseFact
 	ID uuid.UUID
 }
 
-func (f *InstanceLifecycleFact) Key() string {
+func (f *InstanceFact) Key() string {
 	return f.ID.String()
 }
 
-func (f *InstanceLifecycleFact) Validate() error {
+func (f *InstanceFact) Validate() error {
 	if err := f.BaseFact.Validate(); err != nil {
 		return err
 	}
 
 	if f.ID == uuid.Nil {
-		return errors.Raise(errors.ErrFactInvalidKey, "InstanceLifecycleFact has invalid ID", nil)
+		return errors.Raise(errors.ErrFactInvalidKey, "InstanceFact has invalid ID", nil)
 	}
 
 	return nil
