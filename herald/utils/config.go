@@ -35,6 +35,13 @@ type Config struct {
 		KubeConfigFilePath string   `env:"K8S_KUBE_CONFIG_FILE_PATH" envDefault:""`
 		Namespaces         []string `env:"K8S_NAMESPACES" envDefault:"isolet,dynamic"`
 	}
+
+	Valkey struct {
+		Address  []string `env:"VALKEY_ADDRESS" envDefault:"valkey://localhost:6379"`
+		Username string   `env:"VALKEY_USERNAME" envDefault:""`
+		Password string   `env:"VALKEY_PASSWORD" envDefault:""`
+		UseTLS   bool     `env:"VALKEY_USE_TLS" envDefault:"false"`
+	}
 }
 
 func GetConfig() *Config {
