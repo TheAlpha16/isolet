@@ -43,6 +43,7 @@ func (s *k8sSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 
 	go func() {
 		cacheCtx, cacheSpan := tracer.Start(ctx, "herald.sources.k8s.cache.Start")
+		defer cacheSpan.End()
 
 		if err := s.cache.Start(cacheCtx); err != nil {
 			handleError(cacheCtx, cacheSpan, logger, "k8s cache failed to start", err, nil)
