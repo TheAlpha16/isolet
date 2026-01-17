@@ -32,7 +32,8 @@ type Config struct {
 	}
 
 	K8s struct {
-		KubeConfigFilePath string `env:"K8S_KUBE_CONFIG_FILE_PATH" envDefault:""`
+		KubeConfigFilePath string   `env:"K8S_KUBE_CONFIG_FILE_PATH" envDefault:""`
+		Namespaces         []string `env:"K8S_NAMESPACES" envDefault:"isolet,dynamic"`
 	}
 }
 
