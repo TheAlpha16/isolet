@@ -14,7 +14,12 @@ import (
 	"go.uber.org/zap"
 	"k8s.io/client-go/tools/cache"
 	crcache "sigs.k8s.io/controller-runtime/pkg/cache"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+var objectHandlers = map[client.Object]func(obj any, out chan<- facts.Fact){
+	&tidev1.Instance{}: handleInstance,
+}
 
 var tracer = otel.Tracer("herald.sources.k8s")
 
@@ -31,13 +36,19 @@ func (s *k8sSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 	defer span.End()
 	logger := logger.GetAppLogger()
 
-	informer, err := s.cache.GetInformer(ctx, &tidev1.Instance{})
-	if err != nil {
-		handleError(ctx, span, logger, "failed to get informer", err, nil)
+	if err := s.startInformers(ctx, out); err != nil {
+		handleError(ctx, span, logger, "failed to start informers", err, nil)
 		return err
 	}
 
-	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{})
+	go func() {
+		cacheCtx, cacheSpan := tracer.Start(ctx, "herald.sources.k8s.cache.Start")
+
+		if err := s.cache.Start(cacheCtx); err != nil {
+			handleError(cacheCtx, cacheSpan, logger, "k8s cache failed to start", err, nil)
+			logger.Fatal("failed to start cache", zap.Error(err))
+		}
+	}()
 
 	if !s.cache.WaitForCacheSync(ctx) {
 		err := errors.Raise(errors.ErrInternalError, "timed out waiting for caches to sync", nil)
@@ -50,6 +61,28 @@ func (s *k8sSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 
 	<-ctx.Done()
 	span.AddEvent("k8s.source.shutdown")
+	return nil
+}
+
+func (s *k8sSource) startInformers(ctx context.Context, out chan<- facts.Fact) error {
+	for objType, handlerFunc := range objectHandlers {
+		informer, err := s.cache.GetInformer(ctx, objType)
+		if err != nil {
+			return err
+		}
+
+		informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+			AddFunc: func(obj interface{}) {
+				handlerFunc(obj, out)
+			},
+			UpdateFunc: func(oldObj, newObj interface{}) {
+				handlerFunc(newObj, out)
+			},
+			DeleteFunc: func(obj interface{}) {
+				handlerFunc(obj, out)
+			},
+		})
+	}
 	return nil
 }
 
