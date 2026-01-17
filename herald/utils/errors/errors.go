@@ -44,7 +44,7 @@ func (ae *AppError) Format(s fmt.State, verb rune) {
 }
 
 // Raise is a general util to construct domain errors
-func Raise(ctx context.Context, code ErrorCode, msg string, errToWrap error) error {
+func Raise(code ErrorCode, msg string, errToWrap error) error {
 	ae := &AppError{
 		ErrorCode: code,
 	}
