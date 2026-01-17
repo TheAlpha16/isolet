@@ -30,6 +30,10 @@ type Config struct {
 		SampleRate      float64 `env:"SENTRY_SAMPLE_RATE" envDefault:"1.0"`
 		TraceSampleRate float64 `env:"SENTRY_TRACE_SAMPLE_RATE" envDefault:"0.05"`
 	}
+
+	K8s struct {
+		KubeConfigFilePath string `env:"K8S_KUBE_CONFIG_FILE_PATH" envDefault:""`
+	}
 }
 
 func GetConfig() *Config {
