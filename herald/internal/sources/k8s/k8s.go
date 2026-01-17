@@ -8,7 +8,6 @@ import (
 	"github.com/TheAlpha16/isolet/herald/utils"
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
 	"github.com/TheAlpha16/isolet/herald/utils/logger"
-	"github.com/valkey-io/valkey-go"
 
 	tidev1 "github.com/TheAlpha16/isolet/tide/api/v1"
 	"go.opentelemetry.io/otel"
@@ -33,8 +32,7 @@ var objectHandlers = map[client.Object]func(obj any, out chan<- facts.Fact, even
 var tracer = otel.Tracer("herald.sources.k8s")
 
 type k8sSource struct {
-	cache  crcache.Cache
-	valkey valkey.Client
+	cache crcache.Cache
 }
 
 func (s *k8sSource) Name() string {
@@ -97,7 +95,7 @@ func (s *k8sSource) startInformers(ctx context.Context, out chan<- facts.Fact) e
 	return nil
 }
 
-func New(ctx context.Context, valkey valkey.Client) sources.Source {
+func New(ctx context.Context) sources.Source {
 	ctx, span := tracer.Start(ctx, "herald.sources.k8s.New")
 	defer span.End()
 	logger := logger.GetAppLogger()
@@ -109,7 +107,6 @@ func New(ctx context.Context, valkey valkey.Client) sources.Source {
 	}
 
 	return &k8sSource{
-		cache:  cache,
-		valkey: valkey,
+		cache: cache,
 	}
 }
