@@ -12,6 +12,9 @@ const (
 	ErrFactInvalidKey       ErrorCode = "FACT-01"
 	ErrFactInvalidType      ErrorCode = "FACT-02"
 	ErrFactInvalidOccuredAt ErrorCode = "FACT-03"
+
+	// Cache errors
+	ErrCacheCallFailed ErrorCode = "CACHE-01"
 )
 
 var msgMap = map[ErrorCode]string{
