@@ -2,8 +2,6 @@ package facts
 
 import (
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
-
-	"github.com/google/uuid"
 )
 
 const (
@@ -12,11 +10,11 @@ const (
 
 type InstanceFact struct {
 	BaseFact
-	ID uuid.UUID
+	ID string
 }
 
 func (f *InstanceFact) Key() string {
-	return f.ID.String()
+	return f.ID
 }
 
 func (f *InstanceFact) Validate() error {
@@ -24,7 +22,7 @@ func (f *InstanceFact) Validate() error {
 		return err
 	}
 
-	if f.ID == uuid.Nil {
+	if f.ID == "" {
 		return errors.Raise(errors.ErrFactInvalidKey, "InstanceFact has invalid ID", nil)
 	}
 
