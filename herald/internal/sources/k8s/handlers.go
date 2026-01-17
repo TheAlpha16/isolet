@@ -5,9 +5,11 @@ import (
 	"time"
 
 	"github.com/TheAlpha16/isolet/herald/internal/facts"
+	"github.com/TheAlpha16/isolet/herald/utils"
+	"github.com/TheAlpha16/isolet/herald/utils/cache"
 	"github.com/TheAlpha16/isolet/herald/utils/logger"
+
 	tidev1 "github.com/TheAlpha16/isolet/tide/api/v1"
-	"github.com/google/uuid"
 )
 
 func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
@@ -29,12 +31,19 @@ func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
 		return
 	}
 
+	cacheKey := getCacheKey(string(instance.UID))
+	success, _ := cache.SetNXWithTTL(ctx, cacheKey, "1", utils.GetConfig().K8s.DeDupeWindow)
+	if !success {
+		// already processed recently
+		return
+	}
+
 	fact := &facts.InstanceFact{
 		BaseFact: facts.BaseFact{
 			Type: facts.InstanceExpiredFactType,
 			At:   time.Now(),
 		},
-		ID: uuid.New(),
+		ID: string(instance.UID),
 	}
 
 	if err := fact.Validate(); err != nil {
