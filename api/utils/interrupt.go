@@ -7,7 +7,7 @@ import (
 	"syscall"
 )
 
-var InterruptHandlerChannel chan func() = make(chan func(), 5)
+var InterruptHandlerChannel chan func() = make(chan func(), 20)
 
 func InterruptHandler() {
 	var interruptHandlers []func()
