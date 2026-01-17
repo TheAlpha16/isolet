@@ -19,6 +19,9 @@ type pipeline struct {
 }
 
 func (p *pipeline) Run(ctx context.Context, in <-chan facts.Fact) {
+	log := logger.GetAppLogger()
+	log.Info("Starting pipeline", zap.Int("workers", p.workers))
+
 	for i := 0; i < p.workers; i++ {
 		p.wg.Add(1)
 		go func(workerID int) {
@@ -28,12 +31,12 @@ func (p *pipeline) Run(ctx context.Context, in <-chan facts.Fact) {
 	}
 
 	utils.InterruptHandlerChannel <- func() {
-		logger.GetAppLogger().Info("pipeline shutting down")
+		log.Info("pipeline shutting down")
 		p.emitter.Close()
 	}
 
 	<-ctx.Done()
-	p.wg.Wait()
+	log.Info("Pipeline context canceled, waiting for workers...")
 }
 
 func (p *pipeline) runWorker(ctx context.Context, workerID int, in <-chan facts.Fact) {
@@ -42,9 +45,14 @@ func (p *pipeline) runWorker(ctx context.Context, workerID int, in <-chan facts.
 	for {
 		select {
 		case <-ctx.Done():
+			log.Debug("Worker stopping due to context cancellation")
 			return
 
-		case fact := <-in:
+		case fact, ok := <-in:
+			if !ok {
+				log.Debug("Worker stopping because fact channel closed")
+				return
+			}
 			p.emitWithRetry(ctx, log, fact)
 		}
 	}
