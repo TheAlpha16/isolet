@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/cache"
 	crcache "sigs.k8s.io/controller-runtime/pkg/cache"
 )
 
@@ -56,4 +57,20 @@ func getK8sCache() (crcache.Cache, error) {
 	}
 
 	return cache, nil
+}
+
+func extractObject[T any](obj any) (T, bool) {
+	var zero T
+
+	if castedObj, ok := obj.(T); ok {
+		return castedObj, true
+	}
+
+	tombstone, ok := obj.(cache.DeletedFinalStateUnknown)
+	if !ok {
+		return zero, false
+	}
+
+	castedObj, ok := tombstone.Obj.(T)
+	return castedObj, ok
 }
