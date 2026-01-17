@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"time"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
@@ -32,8 +33,9 @@ type Config struct {
 	}
 
 	K8s struct {
-		KubeConfigFilePath string   `env:"K8S_KUBE_CONFIG_FILE_PATH" envDefault:""`
-		Namespaces         []string `env:"K8S_NAMESPACES" envDefault:"isolet,dynamic"`
+		KubeConfigFilePath string        `env:"K8S_KUBE_CONFIG_FILE_PATH" envDefault:""`
+		Namespaces         []string      `env:"K8S_NAMESPACES" envDefault:"isolet,dynamic"`
+		DeDupeWindow       time.Duration `env:"K8S_DEDUPE_WINDOW" envDefault:"60s"`
 	}
 
 	Valkey struct {
