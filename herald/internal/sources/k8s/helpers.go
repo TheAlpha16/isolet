@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	"strings"
 
 	"github.com/TheAlpha16/isolet/herald/utils"
 	errorDom "github.com/TheAlpha16/isolet/herald/utils/errors"
@@ -73,4 +74,8 @@ func extractObject[T any](obj any) (T, bool) {
 
 	castedObj, ok := tombstone.Obj.(T)
 	return castedObj, ok
+}
+
+func getCacheKey(parts ...string) string {
+	return "herald:k8s:" + strings.Join(parts, ":")
 }
