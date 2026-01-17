@@ -17,7 +17,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var objectHandlers = map[client.Object]func(obj any, out chan<- facts.Fact){
+type eventType string
+
+const (
+	eventTypeCreate eventType = "CREATE"
+	eventTypeUpdate eventType = "UPDATE"
+	eventTypeDelete eventType = "DELETE"
+)
+
+var objectHandlers = map[client.Object]func(obj any, out chan<- facts.Fact, eventType eventType){
 	&tidev1.Instance{}: handleInstance,
 }
 
@@ -74,13 +82,13 @@ func (s *k8sSource) startInformers(ctx context.Context, out chan<- facts.Fact) e
 
 		informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				handlerFunc(obj, out)
+				handlerFunc(obj, out, eventTypeCreate)
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
-				handlerFunc(newObj, out)
+				handlerFunc(newObj, out, eventTypeUpdate)
 			},
 			DeleteFunc: func(obj interface{}) {
-				handlerFunc(obj, out)
+				handlerFunc(obj, out, eventTypeDelete)
 			},
 		})
 	}
