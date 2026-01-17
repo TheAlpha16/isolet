@@ -44,6 +44,11 @@ type Config struct {
 		Password string   `env:"VALKEY_PASSWORD" envDefault:""`
 		UseTLS   bool     `env:"VALKEY_USE_TLS" envDefault:"false"`
 	}
+
+	Emitter struct {
+		Retries       int           `env:"EMITTER_RETRIES" envDefault:"5"`
+		RetryInterval time.Duration `env:"EMITTER_RETRY_INTERVAL" envDefault:"1s"`
+	}
 }
 
 func GetConfig() *Config {
