@@ -80,6 +80,18 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{}, err
 	}
 
+	// Ensure finalizer is present for all non-deleted Instances
+	if instance.ObjectMeta.DeletionTimestamp.IsZero() {
+		if !controllerutil.ContainsFinalizer(&instance, utils.InstanceFinalizer) {
+			controllerutil.AddFinalizer(&instance, utils.InstanceFinalizer)
+			if err := r.Update(ctx, &instance); err != nil {
+				log.Error(err, "Failed to add finalizer", "namespace", instance.Namespace, "name", instance.Name)
+				return ctrl.Result{}, err
+			}
+			return ctrl.Result{}, nil
+		}
+	}
+
 	// update phase of the instance if not set (new instance)
 	if instance.Status.Phase == "" {
 		log.Info("Initializing new Instance", "namespace", instance.Namespace, "name", instance.Name,
@@ -96,7 +108,21 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// handle deletion
 	if !instance.ObjectMeta.DeletionTimestamp.IsZero() {
-		log.Info("Instance is being deleted", "namespace", instance.Namespace, "name", instance.Name)
+		if instance.Status.Phase != challengesv1.PhaseTerminated {
+			instance.Status.Phase = challengesv1.PhaseTerminated
+			if err := r.Status().Update(ctx, &instance); err != nil {
+				log.Error(err, "Failed to update Instance status to Terminated", "namespace", instance.Namespace, "name", instance.Name)
+			}
+			return ctrl.Result{RequeueAfter: time.Second}, nil
+		}
+		if controllerutil.ContainsFinalizer(&instance, utils.InstanceFinalizer) {
+			controllerutil.RemoveFinalizer(&instance, utils.InstanceFinalizer)
+			if err := r.Update(ctx, &instance); err != nil {
+				log.Error(err, "Failed to remove finalizer", "namespace", instance.Namespace, "name", instance.Name)
+				return ctrl.Result{}, err
+			}
+		}
+		log.Info("Instance finalizer removed, deletion will proceed", "namespace", instance.Namespace, "name", instance.Name)
 		r.Recorder.Event(&instance, corev1.EventTypeNormal, utils.EventReasonDeleting, "Instance deletion in progress")
 		return ctrl.Result{}, nil
 	}

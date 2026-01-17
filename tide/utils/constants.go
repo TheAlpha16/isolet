@@ -44,6 +44,6 @@ const (
 	ConditionIngressReady    = "IngressReady"
 	ConditionReady           = "Ready"
 
-	// Field Owner for SSA
-	FieldOwner = "tide-controller"
+	FieldOwner        = "tide-controller"
+	InstanceFinalizer = "challenges.isolet.dev/instance-finalizer"
 )
