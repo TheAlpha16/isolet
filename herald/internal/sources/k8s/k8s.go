@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/TheAlpha16/isolet/herald/internal/facts"
+	"github.com/TheAlpha16/isolet/herald/pkg/facts"
 	"github.com/TheAlpha16/isolet/herald/internal/sources"
 	"github.com/TheAlpha16/isolet/herald/utils"
 	"github.com/TheAlpha16/isolet/herald/utils/errors"

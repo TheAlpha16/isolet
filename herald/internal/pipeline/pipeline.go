@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/TheAlpha16/isolet/herald/internal/emitter"
-	"github.com/TheAlpha16/isolet/herald/internal/facts"
+	"github.com/TheAlpha16/isolet/herald/pkg/facts"
 	"github.com/TheAlpha16/isolet/herald/utils"
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
 	"github.com/TheAlpha16/isolet/herald/utils/logger"

@@ -3,7 +3,7 @@ package sources
 import (
 	"context"
 
-	"github.com/TheAlpha16/isolet/herald/internal/facts"
+	"github.com/TheAlpha16/isolet/herald/pkg/facts"
 )
 
 type Source interface {

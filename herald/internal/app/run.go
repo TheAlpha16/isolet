@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	kafkaEmit "github.com/TheAlpha16/isolet/herald/internal/emitter/kafka"
-	"github.com/TheAlpha16/isolet/herald/internal/facts"
+	"github.com/TheAlpha16/isolet/herald/pkg/facts"
 	"github.com/TheAlpha16/isolet/herald/internal/pipeline"
 	"github.com/TheAlpha16/isolet/herald/internal/sources"
 	"github.com/TheAlpha16/isolet/herald/utils/kafka"
