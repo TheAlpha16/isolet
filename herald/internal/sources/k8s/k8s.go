@@ -95,7 +95,7 @@ func (s *k8sSource) startInformers(ctx context.Context, out chan<- facts.Fact) e
 	return nil
 }
 
-func New(ctx context.Context) sources.Source {
+func NewSource(ctx context.Context) sources.Source {
 	ctx, span := tracer.Start(ctx, "herald.sources.k8s.New")
 	defer span.End()
 	logger := logger.GetAppLogger()
