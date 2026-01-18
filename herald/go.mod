@@ -10,6 +10,7 @@ require (
 	github.com/getsentry/sentry-go v0.41.0
 	github.com/getsentry/sentry-go/otel v0.41.0
 	github.com/go-errors/errors v1.5.1
+	github.com/goccy/go-json v0.10.5
 	github.com/joho/godotenv v1.5.1
 	github.com/valkey-io/valkey-go v1.0.70
 	go.opentelemetry.io/otel v1.39.0
