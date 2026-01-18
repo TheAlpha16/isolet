@@ -49,6 +49,11 @@ type Config struct {
 		Retries       int           `env:"EMITTER_RETRIES" envDefault:"5"`
 		RetryInterval time.Duration `env:"EMITTER_RETRY_INTERVAL" envDefault:"1s"`
 	}
+
+	Kafka struct {
+		Brokers []string `env:"KAFKA_BROKERS" envDefault:"localhost:9092"`
+		Retries int      `env:"KAFKA_RETRIES" envDefault:"3"`
+	}
 }
 
 func GetConfig() *Config {
