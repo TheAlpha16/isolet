@@ -5,3 +5,5 @@ use (
 	./herald
 	./tide
 )
+
+replace google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230822172742-b8732ec3820d

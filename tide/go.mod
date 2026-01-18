@@ -124,5 +124,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
-
-exclude google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1

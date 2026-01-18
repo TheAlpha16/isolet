@@ -5,8 +5,10 @@ github.com/Masterminds/semver/v3 v3.4.0 h1:Zog+i5UMtVoCU8oKka5P7i9q9HgrJeGzI9SA1
 github.com/Masterminds/semver/v3 v3.4.0/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=
 github.com/TheAlpha16/cnc-go v0.1.1 h1:x2kw33p1WQ5sx4QwBUjx6tqJo8FGpRUIukZLlOhsTJs=
 github.com/TheAlpha16/cnc-go v0.1.1/go.mod h1:kRLkTlJ9gmq0pLe/9wNzDH3lS16ovLY5aQ6boNaNK9Y=
-github.com/TheAlpha16/isolet/tide v0.0.0-20251030110621-e2317c4025e2 h1:p03TyIg8aaMTbMoNSPM5D1vM1lrHxCCKrA7xGUUiL7g=
-github.com/TheAlpha16/isolet/tide v0.0.0-20251030110621-e2317c4025e2/go.mod h1:93VVqQKy57Us5IqHBRFn2RZ7c76qGSHzDii95y3QY20=
+github.com/TheAlpha16/isolet/herald v0.0.0-20260118175132-2f36266ea180 h1:iyCXFg6UTUA/QtC1wLRiFIE6NJCOaaDLkHqOdx+NQd4=
+github.com/TheAlpha16/isolet/herald v0.0.0-20260118175132-2f36266ea180/go.mod h1:ket70UW1If3cfbEHRpb4Sx92V0HLVBIVWRoQURUAoLY=
+github.com/TheAlpha16/isolet/tide v0.0.0-20260116201402-f9de9908f7ec h1:fjvDgQlF+CiFDgucZNqRkgDzjszQasrK3B7+94ShjtU=
+github.com/TheAlpha16/isolet/tide v0.0.0-20260116201402-f9de9908f7ec/go.mod h1:9pJtTT+IjsJHLv5DxsWW1xFZgcGgScGEJJaRINKM9BQ=
 github.com/actgardner/gogen-avro/v10 v10.1.0/go.mod h1:o+ybmVjEa27AAr35FRqU98DJu1fXES56uXniYFv4yDA=
 github.com/actgardner/gogen-avro/v10 v10.2.1/go.mod h1:QUhjeHPchheYmMDni/Nx7VB0RsT/ee8YIgGY/xpEQgQ=
 github.com/actgardner/gogen-avro/v9 v9.1.0/go.mod h1:nyTj6wPqDJoxM3qdnjcLv+EnMDSDFqE0qDpva2QRmKc=
@@ -102,6 +104,7 @@ github.com/go-playground/validator/v10 v10.27.0/go.mod h1:I5QpIEbmr8On7W0TktmJAu
 github.com/go-task/slim-sprig/v3 v3.0.0 h1:sUs3vkvUymDpBKi3qH1YSqBQk9+9D/8M2mN1vB6EwHI=
 github.com/go-task/slim-sprig/v3 v3.0.0/go.mod h1:W848ghGpv3Qj3dhTPRyJypKRiqCdHZiAzKg9hl15HA8=
 github.com/goccy/go-json v0.10.5 h1:Fq85nIqj+gXn/S5ahsiTlK3TmC85qgirsdTP/+DeaC4=
+github.com/goccy/go-json v0.10.5/go.mod h1:oq7eo15ShAhp70Anwd5lgX2pLfOS3QCiwU/PULtXL6M=
 github.com/gofiber/contrib/otelfiber/v2 v2.2.3 h1:WKW1XezHFAoohGZwnvC0R8TFJcNkabQwB5YIpdKmz00=
 github.com/gofiber/contrib/otelfiber/v2 v2.2.3/go.mod h1:WdQ1tYbL83IYC6oBaWvKBMVGSAYvSTRuUWTcr0wK1T4=
 github.com/gofiber/fiber/v2 v2.52.9 h1:YjKl5DOiyP3j0mO61u3NTmK7or8GzzWzCFzkboyP5cw=
