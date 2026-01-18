@@ -8,7 +8,6 @@ import (
 	"github.com/TheAlpha16/isolet/herald/internal/facts"
 	"github.com/TheAlpha16/isolet/herald/internal/pipeline"
 	"github.com/TheAlpha16/isolet/herald/internal/sources"
-	"github.com/TheAlpha16/isolet/herald/internal/sources/k8s"
 	"github.com/TheAlpha16/isolet/herald/utils/kafka"
 )
 
@@ -21,10 +20,9 @@ type AppConfig struct {
 
 func RunPipeline(ctx context.Context, kafkaClient *kafka.Client, wg *sync.WaitGroup, config AppConfig) {
 	factChannel := make(chan facts.Fact, config.ChannelSize)
-
-	k8sSource := k8s.NewSource(ctx)
 	emitter := kafkaEmit.NewEmitter(config.KafkaTopic, kafkaClient)
 	pipeline := pipeline.New(emitter, config.Workers, wg)
+
 	go pipeline.Run(ctx, factChannel)
-	go k8sSource.Run(ctx, factChannel)
+	go config.Source.Run(ctx, factChannel)
 }
