@@ -30,13 +30,15 @@ func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
 
 	phase := instance.Status.Phase
 
-	log.Debug(
-		"received instance event from k8s",
+	log = log.With(
 		zap.String("event_type", string(eventType)),
 		zap.ByteString("uid", []byte(instance.UID)),
+		zap.String("phase", string(phase)),
+	)
+
+	log.Debug("received instance event from k8s",
 		zap.String("instance", instance.Name),
 		zap.String("namespace", instance.Namespace),
-		zap.String("phase", string(phase)),
 	)
 
 	if phase != tidev1.PhaseExpired {
@@ -44,9 +46,15 @@ func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
 	}
 
 	cacheKey := getCacheKey(string(tidev1.PhaseExpired), string(instance.UID))
-	success, _ := cache.SetNXWithTTL(ctx, cacheKey, "1", utils.GetConfig().K8s.DeDupeWindow)
-	if !success {
-		log.Debug("received duplicate event", zap.String("instance", instance.Name), zap.String("namespace", instance.Namespace))
+	success, err := cache.SetNXWithTTL(ctx, cacheKey, "1", utils.GetConfig().K8s.DeDupeWindow)
+	if err != nil {
+		errors.HandleSpanError(
+			ctx, span, log,
+			"failed to set de-dupe cache key", err,
+			zap.String("cache_key", cacheKey),
+		)
+	} else if !success {
+		log.Debug("received duplicate event")
 		// already processed recently
 		return
 	}
@@ -69,9 +77,6 @@ func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
 		errors.HandleSpanError(
 			ctx, span, log,
 			"failed to validate InstanceFact", err,
-			zap.String("instance", instance.Name),
-			zap.String("namespace", instance.Namespace),
-			zap.String("phase", string(phase)),
 		)
 		return
 	}
