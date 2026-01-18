@@ -5,7 +5,7 @@ go 1.25
 require (
 	github.com/TheAlpha16/cnc-go v0.1.1
 	github.com/TheAlpha16/isolet/herald v0.0.0-20260118175132-2f36266ea180
-	github.com/TheAlpha16/isolet/tide v0.0.0-20260116201402-f9de9908f7ec
+	github.com/TheAlpha16/isolet/tide v0.0.0-20260118175132-2f36266ea180
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/cockroachdb/errors v1.12.0
 	github.com/confluentinc/confluent-kafka-go v1.9.2

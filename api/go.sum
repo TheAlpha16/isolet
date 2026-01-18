@@ -9,6 +9,8 @@ github.com/TheAlpha16/isolet/herald v0.0.0-20260118175132-2f36266ea180 h1:iyCXFg
 github.com/TheAlpha16/isolet/herald v0.0.0-20260118175132-2f36266ea180/go.mod h1:ket70UW1If3cfbEHRpb4Sx92V0HLVBIVWRoQURUAoLY=
 github.com/TheAlpha16/isolet/tide v0.0.0-20260116201402-f9de9908f7ec h1:fjvDgQlF+CiFDgucZNqRkgDzjszQasrK3B7+94ShjtU=
 github.com/TheAlpha16/isolet/tide v0.0.0-20260116201402-f9de9908f7ec/go.mod h1:9pJtTT+IjsJHLv5DxsWW1xFZgcGgScGEJJaRINKM9BQ=
+github.com/TheAlpha16/isolet/tide v0.0.0-20260118175132-2f36266ea180 h1:WmgZmGSIzvIturyADhVLm7MSmx8zINvTxT2uD9rrkH0=
+github.com/TheAlpha16/isolet/tide v0.0.0-20260118175132-2f36266ea180/go.mod h1:U4XExbte/xlVZVVcHDHJSjNik1cvsJ2fNH0ZSXvJFR4=
 github.com/actgardner/gogen-avro/v10 v10.1.0/go.mod h1:o+ybmVjEa27AAr35FRqU98DJu1fXES56uXniYFv4yDA=
 github.com/actgardner/gogen-avro/v10 v10.2.1/go.mod h1:QUhjeHPchheYmMDni/Nx7VB0RsT/ee8YIgGY/xpEQgQ=
 github.com/actgardner/gogen-avro/v9 v9.1.0/go.mod h1:nyTj6wPqDJoxM3qdnjcLv+EnMDSDFqE0qDpva2QRmKc=
