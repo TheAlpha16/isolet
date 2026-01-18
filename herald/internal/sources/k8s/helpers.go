@@ -1,36 +1,18 @@
 package k8s
 
 import (
-	"context"
 	"strings"
 
 	"github.com/TheAlpha16/isolet/herald/utils"
-	errorDom "github.com/TheAlpha16/isolet/herald/utils/errors"
 	"github.com/TheAlpha16/isolet/herald/utils/k8s"
-	"github.com/TheAlpha16/isolet/herald/utils/logger"
 
 	tidev1 "github.com/TheAlpha16/isolet/tide/api/v1"
-	"go.opentelemetry.io/otel/codes"
-	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/cache"
 	crcache "sigs.k8s.io/controller-runtime/pkg/cache"
 )
-
-func handleError(ctx context.Context, span trace.Span, log *logger.StandardLogger, msg string, err error, extraFields map[string]any) {
-	span.RecordError(err)
-	span.SetStatus(codes.Error, msg)
-	errorDom.RaiseToSentry(ctx, err)
-
-	zapFields := []zap.Field{zap.Error(err)}
-	for k, v := range extraFields {
-		zapFields = append(zapFields, zap.Any(k, v))
-	}
-	log.Error(msg, zapFields...)
-}
 
 func getK8sCache() (crcache.Cache, error) {
 	config, err := k8s.GetRestConfig()

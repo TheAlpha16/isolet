@@ -3,8 +3,12 @@ package errors
 import (
 	"context"
 
+	"github.com/TheAlpha16/isolet/herald/utils/logger"
+
 	"github.com/getsentry/sentry-go"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
 )
 
 // ExtractErrorCode extracts the ErrorCode from an error, if it is an AppError
@@ -35,4 +39,14 @@ func addTraceContextToSentryEvent(ctx context.Context, event *sentry.Event) {
 		"span_id":  sc.SpanID().String(),
 		"type":     "trace",
 	}
+}
+
+func HandleSpanError(ctx context.Context, span trace.Span, log *logger.StandardLogger, msg string, err error, extraFields ...zap.Field) {
+	span.RecordError(err)
+	span.SetStatus(codes.Error, msg)
+	RaiseToSentry(ctx, err)
+
+	zapFields := []zap.Field{zap.Error(err)}
+	zapFields = append(zapFields, extraFields...)
+	log.Error(msg, zapFields...)
 }
