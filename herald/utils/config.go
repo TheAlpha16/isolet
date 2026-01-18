@@ -54,6 +54,10 @@ type Config struct {
 		Brokers []string `env:"KAFKA_BROKERS" envDefault:"localhost:9092"`
 		Retries int      `env:"KAFKA_RETRIES" envDefault:"3"`
 	}
+
+	InstanceLifecycle struct {
+		KafkaTopic string `env:"INSTANCE_LIFECYCLE_KAFKA_TOPIC" envDefault:"herald.instance.lifecycle"`
+	}
 }
 
 func GetConfig() *Config {
