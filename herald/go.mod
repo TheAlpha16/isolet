@@ -6,7 +6,7 @@ require (
 	github.com/TheAlpha16/isolet/tide v0.0.0-20260116201402-f9de9908f7ec
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/cockroachdb/errors v1.12.0
-	github.com/confluentinc/confluent-kafka-go v1.9.2
+	github.com/confluentinc/confluent-kafka-go/v2 v2.13.0
 	github.com/getsentry/sentry-go v0.41.0
 	github.com/getsentry/sentry-go/otel v0.41.0
 	github.com/go-errors/errors v1.5.1
@@ -76,3 +76,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
+
+replace github.com/TheAlpha16/isolet/tide => ../tide
