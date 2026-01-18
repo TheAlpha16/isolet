@@ -45,7 +45,7 @@ func (s *k8sSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 	logger := logger.GetAppLogger()
 
 	if err := s.startInformers(ctx, out); err != nil {
-		handleError(ctx, span, logger, "failed to start informers", err, nil)
+		errors.HandleSpanError(ctx, span, logger, "failed to start informers", err)
 		return err
 	}
 
@@ -54,14 +54,14 @@ func (s *k8sSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 		defer cacheSpan.End()
 
 		if err := s.cache.Start(cacheCtx); err != nil {
-			handleError(cacheCtx, cacheSpan, logger, "k8s cache failed to start", err, nil)
+			errors.HandleSpanError(cacheCtx, cacheSpan, logger, "k8s cache failed to start", err)
 			logger.Fatal("failed to start cache", zap.Error(err))
 		}
 	}()
 
 	if !s.cache.WaitForCacheSync(ctx) {
-		err := errors.Raise(errors.ErrInternalError, "timed out waiting for caches to sync", nil)
-		handleError(ctx, span, logger, "cache sync timeout", err, nil)
+		err := errors.Raise(errors.ErrK8sCacheSyncFailed, "timed out waiting for caches to sync", nil)
+		errors.HandleSpanError(ctx, span, logger, "cache sync timeout", err)
 		return err
 	}
 
@@ -77,7 +77,7 @@ func (s *k8sSource) startInformers(ctx context.Context, out chan<- facts.Fact) e
 	for objType, handlerFunc := range objectHandlers {
 		informer, err := s.cache.GetInformer(ctx, objType)
 		if err != nil {
-			return err
+			return errors.Raise(errors.ErrK8sInformerCreationFailed, "", err)
 		}
 
 		informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -102,7 +102,7 @@ func NewSource(ctx context.Context) sources.Source {
 
 	cache, err := getK8sCache()
 	if err != nil {
-		handleError(ctx, span, logger, "failed to create k8s event cache", err, nil)
+		errors.HandleSpanError(ctx, span, logger, "failed to create k8s event cache", err)
 		logger.Fatal("failed to create k8s event cache", zap.Error(err))
 	}
 
