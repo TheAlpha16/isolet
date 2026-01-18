@@ -97,7 +97,46 @@ services:
       - ui
     restart: always
 
+  redpanda:
+    image: redpandadata/redpanda:v23.3.9
+    container_name: isolet-redpanda
+    command:
+      - redpanda
+      - start
+      - --mode
+      - dev-container
+      - --smp
+      - "1"
+      - --memory
+      - 1G
+      - --reserve-memory
+      - 0M
+      - --overprovisioned
+      - --node-id
+      - "0"
+
+      # Bind listeners
+      - --kafka-addr
+      - INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
+
+      # Advertise correctly
+      - --advertise-kafka-addr
+      - INTERNAL://redpanda:29092,EXTERNAL://localhost:9092
+    ports:
+      - "9092:9092"
+
+  redpanda-console:
+    image: redpandadata/console:latest
+    container_name: isolet-redpanda-console
+    ports:
+      - "8085:8080"
+    depends_on:
+      - redpanda
+    environment:
+      KAFKA_BROKERS: redpanda:29092
+
 networks:
   backend: {}
 volumes:
   isolet-data:
+  kafka_data:
