@@ -14,11 +14,12 @@ type Fact interface {
 	Key() []byte
 	OccuredAt() time.Time
 	Validate() error
+	Marshal() ([]byte, error)
 }
 
 type BaseFact struct {
-	Type FactType
-	At   time.Time
+	Type FactType  `json:"type"`
+	At   time.Time `json:"at"`
 }
 
 func (f *BaseFact) FactType() FactType {

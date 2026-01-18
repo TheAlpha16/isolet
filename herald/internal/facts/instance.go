@@ -2,6 +2,8 @@ package facts
 
 import (
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
+
+	"github.com/goccy/go-json"
 )
 
 const (
@@ -10,13 +12,17 @@ const (
 
 type InstanceFact struct {
 	BaseFact
-	ID          string
-	ChallengeID int64
-	TeamID      *int64
+	ID          string `json:"id"`
+	ChallengeID int64  `json:"challenge_id"`
+	TeamID      *int64 `json:"team_id"`
 }
 
-func (f *InstanceFact) Key() string {
-	return f.ID
+func (f *InstanceFact) Key() []byte {
+	return []byte(f.ID)
+}
+
+func (f *InstanceFact) Marshal() ([]byte, error) {
+	return json.Marshal(f)
 }
 
 func (f *InstanceFact) Validate() error {
