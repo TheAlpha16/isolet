@@ -101,7 +101,7 @@ func (s *k8sSource) startInformers(ctx context.Context, out chan<- facts.Fact) e
 }
 
 func NewSource(ctx context.Context, wg *sync.WaitGroup) sources.Source {
-	ctx, span := tracer.Start(ctx, "herald.sources.k8s.New")
+	ctx, span := tracer.Start(ctx, "herald.sources.k8s.NewSource")
 	defer span.End()
 	logger := logger.GetAppLogger()
 
