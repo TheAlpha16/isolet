@@ -8,9 +8,14 @@ import (
 	"github.com/TheAlpha16/isolet/herald/internal/emitter"
 	"github.com/TheAlpha16/isolet/herald/internal/facts"
 	"github.com/TheAlpha16/isolet/herald/utils"
+	"github.com/TheAlpha16/isolet/herald/utils/errors"
 	"github.com/TheAlpha16/isolet/herald/utils/logger"
+
+	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 )
+
+var tracer = otel.Tracer("herald.pipeline")
 
 type pipeline struct {
 	emitter emitter.Emitter
@@ -19,6 +24,9 @@ type pipeline struct {
 }
 
 func (p *pipeline) Run(ctx context.Context, in <-chan facts.Fact) {
+	ctx, span := tracer.Start(ctx, "herald.pipeline.Run")
+	defer span.End()
+
 	log := logger.GetAppLogger()
 	log.Info("starting pipeline", zap.Int("workers", p.workers))
 
@@ -37,9 +45,13 @@ func (p *pipeline) Run(ctx context.Context, in <-chan facts.Fact) {
 
 	<-ctx.Done()
 	log.Info("pipeline context canceled, waiting for workers...")
+	span.AddEvent("pipeline.shutdown")
 }
 
 func (p *pipeline) runWorker(ctx context.Context, workerID int, in <-chan facts.Fact) {
+	ctx, span := tracer.Start(ctx, "herald.pipeline.runWorker")
+	defer span.End()
+
 	log := logger.GetAppLogger().With(zap.Int("worker", workerID))
 	log.Debug("worker started")
 
@@ -60,13 +72,17 @@ func (p *pipeline) runWorker(ctx context.Context, workerID int, in <-chan facts.
 }
 
 func (p *pipeline) emitWithRetry(ctx context.Context, log *zap.Logger, fact facts.Fact) {
+	var err error
+	ctx, span := tracer.Start(ctx, "herald.pipeline.emitWithRetry")
+	defer span.End()
+
 	log.Debug(
 		"received fact in pipeline",
 		zap.ByteString("key", fact.Key()),
 		zap.String("fact_type", string(fact.FactType())),
 	)
 	for attempt := 1; attempt <= utils.GetConfig().Emitter.Retries; attempt++ {
-		err := p.emitter.Emit(ctx, fact)
+		err = p.emitter.Emit(ctx, fact)
 		if err == nil {
 			log.Debug(
 				"emitted fact successfully",
@@ -92,8 +108,9 @@ func (p *pipeline) emitWithRetry(ctx context.Context, log *zap.Logger, fact fact
 	}
 
 	// At-least-once semantics: last attempt
-	log.Error(
-		"giving up after retries, dropping fact",
+	errors.HandleSpanError(
+		ctx, span, logger.GetAppLogger(),
+		"giving up after retries, dropping fact", err,
 		zap.ByteString("key", fact.Key()),
 		zap.String("fact_type", string(fact.FactType())),
 	)
