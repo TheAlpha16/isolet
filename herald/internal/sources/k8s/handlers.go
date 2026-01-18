@@ -15,7 +15,7 @@ import (
 )
 
 func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
-	log := logger.GetAppLogger()
+	log := logger.GetAppLogger().Logger
 
 	if eventType != eventTypeUpdate {
 		return // dont care about create/delete events for now

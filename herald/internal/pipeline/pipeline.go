@@ -76,26 +76,21 @@ func (p *pipeline) emitWithRetry(ctx context.Context, log *zap.Logger, fact fact
 	ctx, span := tracer.Start(ctx, "herald.pipeline.emitWithRetry")
 	defer span.End()
 
-	log.Debug(
-		"received fact in pipeline",
+	log = log.With(
 		zap.ByteString("key", fact.Key()),
 		zap.String("fact_type", string(fact.FactType())),
 	)
+	log.Debug("received fact in pipeline")
+
 	for attempt := 1; attempt <= utils.GetConfig().Emitter.Retries; attempt++ {
 		err = p.emitter.Emit(ctx, fact)
 		if err == nil {
-			log.Debug(
-				"emitted fact successfully",
-				zap.ByteString("key", fact.Key()),
-				zap.String("fact_type", string(fact.FactType())),
-			)
+			log.Debug("emitted fact successfully")
 			return
 		}
 
-		log.Warn(
+		log.Error(
 			"failed to emit fact",
-			zap.ByteString("key", fact.Key()),
-			zap.String("fact_type", string(fact.FactType())),
 			zap.Int("attempt", attempt),
 			zap.Error(err),
 		)
@@ -108,12 +103,7 @@ func (p *pipeline) emitWithRetry(ctx context.Context, log *zap.Logger, fact fact
 	}
 
 	// At-least-once semantics: last attempt
-	errors.HandleSpanError(
-		ctx, span, logger.GetAppLogger(),
-		"giving up after retries, dropping fact", err,
-		zap.ByteString("key", fact.Key()),
-		zap.String("fact_type", string(fact.FactType())),
-	)
+	errors.HandleSpanError(ctx, span, log, "giving up after retries, dropping fact", err)
 }
 
 func New(ctx context.Context, emitter emitter.Emitter, workers int, wg *sync.WaitGroup) *pipeline {

@@ -33,7 +33,7 @@ func (e *kafkaEmitter) Emit(ctx context.Context, fact facts.Fact) error {
 
 	value, err := fact.Marshal()
 	if err != nil {
-		errors.HandleSpanError(ctx, span, logger.GetAppLogger(), "failed to marshal fact", err)
+		errors.HandleSpanError(ctx, span, log, "failed to marshal fact", err)
 		return err
 	}
 
@@ -43,8 +43,9 @@ func (e *kafkaEmitter) Emit(ctx context.Context, fact facts.Fact) error {
 	)
 
 	if err := e.producer.Produce(e.topic, fact.Key(), value); err != nil {
-		errors.HandleSpanError(ctx, span, logger.GetAppLogger(), "failed to produce fact to kafka", err)
-		return errors.Raise(errors.ErrKafkaProduceFailed, "", err)
+		err = errors.Raise(errors.ErrKafkaProduceFailed, "", err)
+		errors.HandleSpanError(ctx, span, log, "failed to produce fact to kafka", err)
+		return err
 	}
 
 	log.Debug("produced fact to kafka successfully")

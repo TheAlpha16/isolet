@@ -44,10 +44,10 @@ func (s *k8sSource) Name() string {
 func (s *k8sSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 	ctx, span := tracer.Start(ctx, "herald.sources.k8s.Run")
 	defer span.End()
-	logger := logger.GetAppLogger()
+	log := logger.GetAppLogger().Logger
 
 	if err := s.startInformers(ctx, out); err != nil {
-		errors.HandleSpanError(ctx, span, logger, "failed to start informers", err)
+		errors.HandleSpanError(ctx, span, log, "failed to start informers", err)
 		return err
 	}
 
@@ -59,19 +59,19 @@ func (s *k8sSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 
 		if err := s.cache.Start(cacheCtx); err != nil {
 			err = errors.Raise(errors.ErrK8sCacheFailed, "k8s cache failed to start", err)
-			errors.HandleSpanError(cacheCtx, cacheSpan, logger, "k8s cache failed to start", err)
-			logger.Fatal("failed to start cache", zap.Error(err))
+			errors.HandleSpanError(cacheCtx, cacheSpan, log, "k8s cache failed to start", err)
+			log.Fatal("failed to start cache", zap.Error(err))
 		}
 	}()
 
 	if !s.cache.WaitForCacheSync(ctx) {
 		err := errors.Raise(errors.ErrK8sCacheFailed, "timed out waiting for caches to sync", nil)
-		errors.HandleSpanError(ctx, span, logger, "cache sync timeout", err)
+		errors.HandleSpanError(ctx, span, log, "cache sync timeout", err)
 		return err
 	}
 
 	span.AddEvent("k8s.source.started")
-	logger.Info("K8s source started", zap.Strings("namespaces", utils.GetConfig().K8s.Namespaces))
+	log.Info("K8s source started", zap.Strings("namespaces", utils.GetConfig().K8s.Namespaces))
 
 	<-ctx.Done()
 	span.AddEvent("k8s.source.shutdown")
@@ -103,12 +103,12 @@ func (s *k8sSource) startInformers(ctx context.Context, out chan<- facts.Fact) e
 func NewSource(ctx context.Context, wg *sync.WaitGroup) sources.Source {
 	ctx, span := tracer.Start(ctx, "herald.sources.k8s.NewSource")
 	defer span.End()
-	logger := logger.GetAppLogger()
+	log := logger.GetAppLogger().Logger
 
 	cache, err := getK8sCache()
 	if err != nil {
-		errors.HandleSpanError(ctx, span, logger, "failed to create k8s event cache", err)
-		logger.Fatal("failed to create k8s event cache", zap.Error(err))
+		errors.HandleSpanError(ctx, span, log, "failed to create k8s event cache", err)
+		log.Fatal("failed to create k8s event cache", zap.Error(err))
 	}
 
 	return &k8sSource{
