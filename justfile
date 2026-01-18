@@ -10,6 +10,7 @@ UI := "ui"
 TIDE := "tide"
 PROXY := "proxy"
 SOCKY := "socky"
+HERALD := "herald"
 
 # Default target
 default: help
@@ -21,17 +22,20 @@ help:
 # --- Common commands ---
 
 # Build the docker image
-docker-build RESOURCE TAG="":
+docker-build RESOURCmaE TAG="":
 	#!/usr/bin/env bash
-	cd {{RESOURCE}}
 	if [ -z "{{TAG}}" ]; then
-		TAG=$(cat VERSION)
+		TAG=$(cat {{RESOURCE}}/VERSION)
 	else
 		TAG="{{TAG}}"
 	fi
-	echo "[#] building docker image for {{RESOURCE}} with tag $TAG"
-	docker build -t {{REGISTRY}}/isolet-{{RESOURCE}}:$TAG .
-	docker build -t {{REGISTRY}}/isolet-{{RESOURCE}}:latest .
+	echo "[#] ensuring buildx builder exists..."
+	docker buildx create --name isolet-builder --use 2>/dev/null || docker buildx use isolet-builder
+	echo "[#] building multi-platform docker image for {{RESOURCE}} with tag $TAG"
+	docker buildx build --platform linux/amd64,linux/arm64 \
+		-t {{REGISTRY}}/isolet-{{RESOURCE}}:$TAG \
+		-t {{REGISTRY}}/isolet-{{RESOURCE}}:latest \
+		-f {{RESOURCE}}/Dockerfile .
 	echo "[#] built docker image for {{RESOURCE}} with tag $TAG"
 
 # Push the docker image to the registry
@@ -69,7 +73,7 @@ build-all:
 	just docker-build {{TIDE}}
 	just docker-build {{PROXY}}
 	just docker-build {{SOCKY}}
-
+	just docker-build {{HERALD}}
 # Push all services
 push-all:
 	just docker-push {{API}}
@@ -77,7 +81,7 @@ push-all:
 	just docker-push {{TIDE}}
 	just docker-push {{PROXY}}
 	just docker-push {{SOCKY}}
-
+	just docker-push {{HERALD}}
 # --- API commands ---
 
 # Run the API service
@@ -167,6 +171,21 @@ socky-build:
 socky-version:
 	@cat {{SOCKY}}/VERSION
 
+# --- Herald commands ---
+
+# Run the Herald service
+herald-run:
+	dotenv -f .env -- dotenv -f {{HERALD}}/.env -- \
+		sh -c 'cd {{HERALD}} && {{GORUN_COMMAND}} main.go'
+
+# Tidy Herald Go modules
+herald-tidy:
+	cd {{HERALD}} && {{GOTIDY_COMMAND}}
+
+# Show current Herald version
+herald-version:
+	@cat {{HERALD}}/VERSION
+
 # --- Kubernetes/Helm commands ---
 
 # Install/upgrade the Helm chart
@@ -212,3 +231,4 @@ versions:
 	@echo "Tide:  $(cat {{TIDE}}/VERSION)"
 	@echo "Proxy: $(cat {{PROXY}}/VERSION)"
 	@echo "Socky: $(cat {{SOCKY}}/VERSION)"
+	@echo "Herald: $(cat {{HERALD}}/VERSION)"
