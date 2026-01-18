@@ -11,7 +11,7 @@ type FactType string
 
 type Fact interface {
 	FactType() FactType
-	Key() string
+	Key() []byte
 	OccuredAt() time.Time
 	Validate() error
 }

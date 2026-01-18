@@ -67,7 +67,7 @@ func (p *pipeline) emitWithRetry(ctx context.Context, log *zap.Logger, fact fact
 
 		log.Warn(
 			"failed to emit fact",
-			zap.String("key", fact.Key()),
+			zap.ByteString("key", fact.Key()),
 			zap.String("fact_type", string(fact.FactType())),
 			zap.Int("attempt", attempt),
 			zap.Error(err),
@@ -83,7 +83,7 @@ func (p *pipeline) emitWithRetry(ctx context.Context, log *zap.Logger, fact fact
 	// At-least-once semantics: last attempt
 	log.Error(
 		"giving up after retries, dropping fact",
-		zap.String("key", fact.Key()),
+		zap.ByteString("key", fact.Key()),
 		zap.String("fact_type", string(fact.FactType())),
 	)
 }
