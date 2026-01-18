@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/TheAlpha16/isolet/api/delivery/consumer"
 	"github.com/TheAlpha16/isolet/api/delivery/listener"
 	restDel "github.com/TheAlpha16/isolet/api/delivery/rest"
 	"github.com/TheAlpha16/isolet/api/external"
@@ -91,6 +92,8 @@ func main() {
 		StartRestServer(ctx, usecases, infra)
 	case utils.IdentityListener:
 		StartListener(ctx, usecases, infra)
+	case utils.IdentityConsumer:
+		StartConsumer(ctx, usecases, infra, &wg)
 	default:
 		appLogger.Fatal("unknown identity", zap.String("identity", string(utils.GetConfig().Identity)))
 	}
@@ -129,4 +132,26 @@ func StartRestServer(ctx context.Context, usecases *usecase.Usecases, infra *inf
 
 func StartListener(ctx context.Context, usecases *usecase.Usecases, infra *infra.Infra) {
 	go listener.Start(ctx, usecases, infra)
+}
+
+func StartConsumer(ctx context.Context, usecases *usecase.Usecases, infra *infra.Infra, wg *sync.WaitGroup) {
+	appLogger := logger.GetAppLogger()
+	c, err := consumer.New(ctx, usecases.Fact)
+	if err != nil {
+		appLogger.Fatal("failed to initialize kafka consumer", zap.Error(err))
+	}
+
+	cCtx, cancel := context.WithCancel(ctx)
+	utils.InterruptHandlerChannel <- func() {
+		cancel()
+	}
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		if err := c.Start(cCtx); err != nil {
+			errorDom.RaiseToSentry(ctx, err)
+			appLogger.Error("kafka consumer failed", zap.Error(err))
+		}
+	}()
 }
