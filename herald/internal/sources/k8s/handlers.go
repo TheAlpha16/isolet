@@ -32,6 +32,15 @@ func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
 
 	phase := instance.Status.Phase
 
+	log.Debug(
+		"received instance event from k8s",
+		zap.String("type", string(eventType)),
+		zap.ByteString("uid", []byte(instance.UID)),
+		zap.String("instance", instance.Name),
+		zap.String("namespace", instance.Namespace),
+		zap.String("phase", string(phase)),
+	)
+
 	if phase != tidev1.PhaseExpired {
 		return
 	}
@@ -39,6 +48,7 @@ func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
 	cacheKey := getCacheKey(string(tidev1.PhaseExpired), string(instance.UID))
 	success, _ := cache.SetNXWithTTL(ctx, cacheKey, "1", utils.GetConfig().K8s.DeDupeWindow)
 	if !success {
+		log.Debug("received duplicate event", zap.String("instance", instance.Name), zap.String("namespace", instance.Namespace))
 		// already processed recently
 		return
 	}
@@ -69,4 +79,10 @@ func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
 	}
 
 	out <- fact
+	span.AddEvent("instance.fact.buffered")
+	log.Debug(
+		"sent fact to channel",
+		zap.ByteString("key", fact.Key()),
+		zap.String("type", string(fact.FactType())),
+	)
 }
