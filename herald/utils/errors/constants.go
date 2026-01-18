@@ -20,6 +20,7 @@ const (
 
 	// Kafka errors
 	ErrKafkaProducerCreationFailed ErrorCode = "KAFKA-01"
+	ErrKafkaProduceFailed          ErrorCode = "KAFKA-02"
 
 	// K8s errors
 	ErrK8sInformerCreationFailed ErrorCode = "K8S-01"
@@ -37,6 +38,7 @@ var msgMap = map[ErrorCode]string{
 
 	// Kafka errors
 	ErrKafkaProducerCreationFailed: "failed to create kafka producer",
+	ErrKafkaProduceFailed:          "failed to produce kafka message",
 
 	// K8s errors
 	ErrK8sInformerCreationFailed: "failed to create k8s informer",

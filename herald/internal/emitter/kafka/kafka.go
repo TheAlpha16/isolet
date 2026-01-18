@@ -5,21 +5,50 @@ import (
 
 	"github.com/TheAlpha16/isolet/herald/internal/emitter"
 	"github.com/TheAlpha16/isolet/herald/internal/facts"
+	"github.com/TheAlpha16/isolet/herald/utils/errors"
 	"github.com/TheAlpha16/isolet/herald/utils/kafka"
+	"github.com/TheAlpha16/isolet/herald/utils/logger"
+
+	"go.opentelemetry.io/otel"
+	"go.uber.org/zap"
 )
+
+var tracer = otel.Tracer("herald.emit.kafka")
 
 type kafkaEmitter struct {
 	topic    string
 	producer *kafka.Client
 }
 
-func (e *kafkaEmitter) Emit(_ context.Context, fact facts.Fact) error {
+func (e *kafkaEmitter) Emit(ctx context.Context, fact facts.Fact) error {
+	ctx, span := tracer.Start(ctx, "herald.emit.kafka")
+	defer span.End()
+
+	log := logger.GetAppLogger().With(
+		zap.String("emitter", "kafka"),
+		zap.ByteString("key", fact.Key()),
+		zap.String("fact_type", string(fact.FactType())),
+	)
+	log.Debug("received fact for emission")
+
 	value, err := fact.Marshal()
 	if err != nil {
+		errors.HandleSpanError(ctx, span, logger.GetAppLogger(), "failed to marshal fact", err)
 		return err
 	}
 
-	return e.producer.Produce(e.topic, fact.Key(), value)
+	log.Debug(
+		"producing fact to kafka",
+		zap.ByteString("payload", value),
+	)
+
+	if err := e.producer.Produce(e.topic, fact.Key(), value); err != nil {
+		errors.HandleSpanError(ctx, span, logger.GetAppLogger(), "failed to produce fact to kafka", err)
+		return errors.Raise(errors.ErrKafkaProduceFailed, "", err)
+	}
+
+	log.Debug("produced fact to kafka successfully")
+	return nil
 }
 
 func (e *kafkaEmitter) Close() error {
