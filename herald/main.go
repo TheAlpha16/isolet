@@ -11,6 +11,7 @@ import (
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
 	"github.com/TheAlpha16/isolet/herald/utils/kafka"
 	"github.com/TheAlpha16/isolet/herald/utils/logger"
+	"github.com/TheAlpha16/isolet/herald/utils/tracer"
 
 	"go.uber.org/zap"
 )
@@ -24,7 +25,7 @@ func main() {
 
 	wg := &sync.WaitGroup{}
 	config := utils.GetConfig()
-	utils.InitSentry(config)
+	tracer.InitSentry(config)
 	cache.GetCache(globalCtx)
 
 	kafkaClient, err := kafka.NewClient()

@@ -1,6 +1,8 @@
-package utils
+package tracer
 
 import (
+	"github.com/TheAlpha16/isolet/herald/utils"
+
 	"github.com/getsentry/sentry-go"
 	sentryotel "github.com/getsentry/sentry-go/otel"
 	"go.opentelemetry.io/otel"
@@ -9,7 +11,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
 )
 
-func InitSentry(config *Config) {
+func InitSentry(config *utils.Config) {
 	err := sentry.Init(sentry.ClientOptions{
 		Dsn:              config.Sentry.DSN,
 		AttachStacktrace: true,
