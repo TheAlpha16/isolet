@@ -54,13 +54,14 @@ func (s *k8sSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 		defer cacheSpan.End()
 
 		if err := s.cache.Start(cacheCtx); err != nil {
+			err = errors.Raise(errors.ErrK8sCacheFailed, "k8s cache failed to start", err)
 			errors.HandleSpanError(cacheCtx, cacheSpan, logger, "k8s cache failed to start", err)
 			logger.Fatal("failed to start cache", zap.Error(err))
 		}
 	}()
 
 	if !s.cache.WaitForCacheSync(ctx) {
-		err := errors.Raise(errors.ErrK8sCacheSyncFailed, "timed out waiting for caches to sync", nil)
+		err := errors.Raise(errors.ErrK8sCacheFailed, "timed out waiting for caches to sync", nil)
 		errors.HandleSpanError(ctx, span, logger, "cache sync timeout", err)
 		return err
 	}

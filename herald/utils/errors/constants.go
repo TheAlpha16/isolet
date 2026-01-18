@@ -22,7 +22,7 @@ const (
 
 	// K8s errors
 	ErrK8sInformerCreationFailed ErrorCode = "K8S-01"
-	ErrK8sCacheSyncFailed        ErrorCode = "K8S-02"
+	ErrK8sCacheFailed            ErrorCode = "K8S-02"
 )
 
 var msgMap = map[ErrorCode]string{
