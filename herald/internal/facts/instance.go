@@ -22,7 +22,11 @@ func (f *InstanceFact) Key() []byte {
 }
 
 func (f *InstanceFact) Marshal() ([]byte, error) {
-	return json.Marshal(f)
+	val, err := json.Marshal(f)
+	if err != nil {
+		return nil, errors.Raise(errors.ErrFactMarshalFailed, "failed to marshal InstanceFact", err)
+	}
+	return val, nil
 }
 
 func (f *InstanceFact) Validate() error {
