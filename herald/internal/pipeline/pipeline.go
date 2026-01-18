@@ -96,6 +96,7 @@ func (p *pipeline) emitWithRetry(ctx context.Context, log *zap.Logger, fact fact
 
 func New(emitter emitter.Emitter, workers int, wg *sync.WaitGroup) *pipeline {
 	if workers <= 0 {
+		logger.GetAppLogger().Warn("invalid worker count, defaulting to 1")
 		workers = 1
 	}
 
