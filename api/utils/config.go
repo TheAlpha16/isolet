@@ -22,6 +22,7 @@ const (
 
 	IdentityRest     Identity = "rest"
 	IdentityListener Identity = "listener"
+	IdentityConsumer Identity = "consumer"
 )
 
 type Config struct {
@@ -100,6 +101,7 @@ type Config struct {
 		LimitCPU      string        `env:"INSTANCE_LIMIT_CPU" envDefault:"50m"`
 		LimitMemory   string        `env:"INSTANCE_LIMIT_MEMORY" envDefault:"128Mi"`
 		SecretKey     string        `env:"INSTANCE_SECRET_KEY" envDefault:"trustmebro"`
+		FactTopic     string        `env:"INSTANCE_FACT_TOPIC" envDefault:"herald.instance.lifecycle"`
 	}
 
 	K8s struct {
@@ -112,6 +114,11 @@ type Config struct {
 
 	Manifest struct {
 		CacheTTL time.Duration `env:"MANIFEST_CACHE_TTL" envDefault:"1h"`
+	}
+
+	Kafka struct {
+		Brokers string `env:"KAFKA_BROKERS" envDefault:"localhost:9092"`
+		GroupID string `env:"KAFKA_GROUP_ID" envDefault:"oracle-consumer"`
 	}
 }
 
