@@ -60,6 +60,11 @@ func (p *pipeline) runWorker(ctx context.Context, workerID int, in <-chan facts.
 }
 
 func (p *pipeline) emitWithRetry(ctx context.Context, log *zap.Logger, fact facts.Fact) {
+	log.Debug(
+		"received fact in pipeline",
+		zap.ByteString("key", fact.Key()),
+		zap.String("fact_type", string(fact.FactType())),
+	)
 	for attempt := 1; attempt <= utils.GetConfig().Emitter.Retries; attempt++ {
 		err := p.emitter.Emit(ctx, fact)
 		if err == nil {
