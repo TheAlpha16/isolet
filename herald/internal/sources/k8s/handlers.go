@@ -34,7 +34,7 @@ func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
 
 	log.Debug(
 		"received instance event from k8s",
-		zap.String("type", string(eventType)),
+		zap.String("event_type", string(eventType)),
 		zap.ByteString("uid", []byte(instance.UID)),
 		zap.String("instance", instance.Name),
 		zap.String("namespace", instance.Namespace),
@@ -83,6 +83,6 @@ func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
 	log.Debug(
 		"sent fact to channel",
 		zap.ByteString("key", fact.Key()),
-		zap.String("type", string(fact.FactType())),
+		zap.String("fact_type", string(fact.FactType())),
 	)
 }
