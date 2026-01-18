@@ -17,6 +17,7 @@ import (
 	"github.com/TheAlpha16/isolet/api/internal/usecase"
 	"github.com/TheAlpha16/isolet/api/utils"
 	"github.com/TheAlpha16/isolet/api/utils/logger"
+	"github.com/TheAlpha16/isolet/api/utils/tracer"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -31,7 +32,7 @@ func main() {
 	var wg sync.WaitGroup
 
 	// Init Sentry
-	utils.InitSentry(utils.GetConfig())
+	tracer.InitSentry(utils.GetConfig())
 
 	// Initialize database connection
 	dbPool, closeDBConn, err := ConnectToPostgresDatabase(ctx)
