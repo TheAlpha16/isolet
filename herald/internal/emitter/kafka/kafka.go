@@ -8,12 +8,13 @@ import (
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
 	"github.com/TheAlpha16/isolet/herald/utils/kafka"
 	"github.com/TheAlpha16/isolet/herald/utils/logger"
+	"github.com/TheAlpha16/isolet/herald/utils/tracer"
 
 	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 )
 
-var tracer = otel.Tracer("herald.emit.kafka")
+var kafkaTracer = otel.Tracer("herald.emit.kafka")
 
 type kafkaEmitter struct {
 	topic    string
@@ -21,10 +22,10 @@ type kafkaEmitter struct {
 }
 
 func (e *kafkaEmitter) Emit(ctx context.Context, fact facts.Fact) error {
-	ctx, span := tracer.Start(ctx, "herald.emit.kafka")
+	ctx, span, log := tracer.StartSpan(ctx, kafkaTracer, "herald.emit.kafka.Emit")
 	defer span.End()
 
-	log := logger.GetAppLogger().With(
+	log = logger.GetAppLogger().With(
 		zap.String("emitter", "kafka"),
 		zap.ByteString("key", fact.Key()),
 		zap.String("fact_type", string(fact.FactType())),

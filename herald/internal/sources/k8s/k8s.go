@@ -8,7 +8,7 @@ import (
 	"github.com/TheAlpha16/isolet/herald/internal/sources"
 	"github.com/TheAlpha16/isolet/herald/utils"
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
-	"github.com/TheAlpha16/isolet/herald/utils/logger"
+	"github.com/TheAlpha16/isolet/herald/utils/tracer"
 
 	tidev1 "github.com/TheAlpha16/isolet/tide/api/v1"
 	"go.opentelemetry.io/otel"
@@ -30,7 +30,7 @@ var objectHandlers = map[client.Object]func(obj any, out chan<- facts.Fact, even
 	&tidev1.Instance{}: handleInstance,
 }
 
-var tracer = otel.Tracer("herald.sources.k8s")
+var k8sTracer = otel.Tracer("herald.sources.k8s")
 
 type k8sSource struct {
 	cache crcache.Cache
@@ -42,9 +42,8 @@ func (s *k8sSource) Name() string {
 }
 
 func (s *k8sSource) Run(ctx context.Context, out chan<- facts.Fact) error {
-	ctx, span := tracer.Start(ctx, "herald.sources.k8s.Run")
+	ctx, span, log := tracer.StartSpan(ctx, k8sTracer, "herald.sources.k8s.Run")
 	defer span.End()
-	log := logger.GetAppLogger().Logger
 
 	if err := s.startInformers(ctx, out); err != nil {
 		errors.HandleSpanError(ctx, span, log, "failed to start informers", err)
@@ -54,13 +53,13 @@ func (s *k8sSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 	s.wg.Add(1)
 	go func() {
 		defer s.wg.Done()
-		cacheCtx, cacheSpan := tracer.Start(ctx, "herald.sources.k8s.cache.Start")
+		cacheCtx, cacheSpan, cacheLog := tracer.StartSpan(ctx, k8sTracer, "herald.sources.k8s.cache.Start")
 		defer cacheSpan.End()
 
 		if err := s.cache.Start(cacheCtx); err != nil {
 			err = errors.Raise(errors.ErrK8sCacheFailed, "k8s cache failed to start", err)
-			errors.HandleSpanError(cacheCtx, cacheSpan, log, "k8s cache failed to start", err)
-			log.Fatal("failed to start cache", zap.Error(err))
+			errors.HandleSpanError(cacheCtx, cacheSpan, cacheLog, "k8s cache failed to start", err)
+			cacheLog.Fatal("failed to start cache", zap.Error(err))
 		}
 	}()
 
@@ -101,9 +100,8 @@ func (s *k8sSource) startInformers(ctx context.Context, out chan<- facts.Fact) e
 }
 
 func NewSource(ctx context.Context, wg *sync.WaitGroup) sources.Source {
-	ctx, span := tracer.Start(ctx, "herald.sources.k8s.NewSource")
+	ctx, span, log := tracer.StartSpan(ctx, k8sTracer, "herald.sources.k8s.NewSource")
 	defer span.End()
-	log := logger.GetAppLogger().Logger
 
 	cache, err := getK8sCache()
 	if err != nil {

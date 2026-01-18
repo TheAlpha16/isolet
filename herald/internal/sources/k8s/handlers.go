@@ -8,21 +8,19 @@ import (
 	"github.com/TheAlpha16/isolet/herald/utils"
 	"github.com/TheAlpha16/isolet/herald/utils/cache"
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
-	"github.com/TheAlpha16/isolet/herald/utils/logger"
+	"github.com/TheAlpha16/isolet/herald/utils/tracer"
 
 	tidev1 "github.com/TheAlpha16/isolet/tide/api/v1"
 	"go.uber.org/zap"
 )
 
 func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
-	log := logger.GetAppLogger().Logger
+	ctx, span, log := tracer.StartSpan(context.Background(), k8sTracer, "herald.sources.k8s.handleInstance")
+	defer span.End()
 
 	if eventType != eventTypeUpdate {
 		return // dont care about create/delete events for now
 	}
-
-	ctx, span := tracer.Start(context.Background(), "herald.sources.k8s.handleInstance")
-	defer span.End()
 
 	instance, ok := extractObject[*tidev1.Instance](obj)
 	if !ok {

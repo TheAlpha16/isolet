@@ -10,12 +10,13 @@ import (
 	"github.com/TheAlpha16/isolet/herald/utils"
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
 	"github.com/TheAlpha16/isolet/herald/utils/logger"
+	"github.com/TheAlpha16/isolet/herald/utils/tracer"
 
 	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 )
 
-var tracer = otel.Tracer("herald.pipeline")
+var pipelineTracer = otel.Tracer("herald.pipeline")
 
 type pipeline struct {
 	emitter emitter.Emitter
@@ -24,10 +25,9 @@ type pipeline struct {
 }
 
 func (p *pipeline) Run(ctx context.Context, in <-chan facts.Fact) {
-	ctx, span := tracer.Start(ctx, "herald.pipeline.Run")
+	ctx, span, log := tracer.StartSpan(ctx, pipelineTracer, "herald.pipeline.Run")
 	defer span.End()
 
-	log := logger.GetAppLogger()
 	log.Info("starting pipeline", zap.Int("workers", p.workers))
 
 	for i := 0; i < p.workers; i++ {
@@ -49,10 +49,10 @@ func (p *pipeline) Run(ctx context.Context, in <-chan facts.Fact) {
 }
 
 func (p *pipeline) runWorker(ctx context.Context, workerID int, in <-chan facts.Fact) {
-	ctx, span := tracer.Start(ctx, "herald.pipeline.runWorker")
+	ctx, span, log := tracer.StartSpan(ctx, pipelineTracer, "herald.pipeline.runWorker")
 	defer span.End()
 
-	log := logger.GetAppLogger().With(zap.Int("worker", workerID))
+	log = log.With(zap.Int("worker", workerID))
 	log.Debug("worker started")
 
 	for {
@@ -73,7 +73,7 @@ func (p *pipeline) runWorker(ctx context.Context, workerID int, in <-chan facts.
 
 func (p *pipeline) emitWithRetry(ctx context.Context, log *zap.Logger, fact facts.Fact) {
 	var err error
-	ctx, span := tracer.Start(ctx, "herald.pipeline.emitWithRetry")
+	ctx, span, log := tracer.StartSpan(ctx, pipelineTracer, "herald.pipeline.emitWithRetry")
 	defer span.End()
 
 	log = log.With(
