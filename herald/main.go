@@ -37,7 +37,7 @@ func main() {
 		appLogger.Info("triggering context cancellation...")
 		cancel()
 		wg.Wait()
-		appLogger.Info("all components stopped.")
+		appLogger.Info("all components stopped")
 	}
 
 	app.RunPipeline(globalCtx, kafkaClient, wg, app.AppConfig{
@@ -48,4 +48,5 @@ func main() {
 	})
 
 	utils.InterruptHandler()
+	appLogger.Info("herald shut down successfully")
 }
