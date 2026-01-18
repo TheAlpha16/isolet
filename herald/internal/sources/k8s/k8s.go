@@ -16,6 +16,8 @@ import (
 	"k8s.io/client-go/tools/cache"
 	crcache "sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
+	ctrlzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 type eventType string
@@ -102,6 +104,8 @@ func (s *k8sSource) startInformers(ctx context.Context, out chan<- facts.Fact) e
 func NewSource(ctx context.Context, wg *sync.WaitGroup) sources.Source {
 	ctx, span, log := tracer.StartSpan(ctx, k8sTracer, "herald.sources.k8s.NewSource")
 	defer span.End()
+
+	ctrllog.SetLogger(ctrlzap.New(ctrlzap.UseDevMode(utils.GetConfig().Environment != utils.PROD)))
 
 	cache, err := getK8sCache()
 	if err != nil {
