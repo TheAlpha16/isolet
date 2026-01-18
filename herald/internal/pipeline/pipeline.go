@@ -20,7 +20,7 @@ type pipeline struct {
 
 func (p *pipeline) Run(ctx context.Context, in <-chan facts.Fact) {
 	log := logger.GetAppLogger()
-	log.Info("Starting pipeline", zap.Int("workers", p.workers))
+	log.Info("starting pipeline", zap.Int("workers", p.workers))
 
 	for i := 0; i < p.workers; i++ {
 		p.wg.Add(1)
@@ -36,21 +36,22 @@ func (p *pipeline) Run(ctx context.Context, in <-chan facts.Fact) {
 	}
 
 	<-ctx.Done()
-	log.Info("Pipeline context canceled, waiting for workers...")
+	log.Info("pipeline context canceled, waiting for workers...")
 }
 
 func (p *pipeline) runWorker(ctx context.Context, workerID int, in <-chan facts.Fact) {
 	log := logger.GetAppLogger().With(zap.Int("worker", workerID))
+	log.Debug("worker started")
 
 	for {
 		select {
 		case <-ctx.Done():
-			log.Debug("Worker stopping due to context cancellation")
+			log.Debug("worker stopping due to context cancellation")
 			return
 
 		case fact, ok := <-in:
 			if !ok {
-				log.Debug("Worker stopping because fact channel closed")
+				log.Debug("worker stopping because fact channel closed")
 				return
 			}
 			p.emitWithRetry(ctx, log, fact)
@@ -62,6 +63,11 @@ func (p *pipeline) emitWithRetry(ctx context.Context, log *zap.Logger, fact fact
 	for attempt := 1; attempt <= utils.GetConfig().Emitter.Retries; attempt++ {
 		err := p.emitter.Emit(ctx, fact)
 		if err == nil {
+			log.Debug(
+				"emitted fact successfully",
+				zap.ByteString("key", fact.Key()),
+				zap.String("fact_type", string(fact.FactType())),
+			)
 			return
 		}
 
