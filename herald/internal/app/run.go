@@ -9,6 +9,9 @@ import (
 	"github.com/TheAlpha16/isolet/herald/internal/pipeline"
 	"github.com/TheAlpha16/isolet/herald/internal/sources"
 	"github.com/TheAlpha16/isolet/herald/utils/kafka"
+	"github.com/TheAlpha16/isolet/herald/utils/logger"
+
+	"go.uber.org/zap"
 )
 
 type AppConfig struct {
@@ -24,5 +27,9 @@ func RunPipeline(ctx context.Context, kafkaClient *kafka.Client, wg *sync.WaitGr
 	pipeline := pipeline.New(emitter, config.Workers, wg)
 
 	go pipeline.Run(ctx, factChannel)
-	go config.Source.Run(ctx, factChannel)
+	go func() {
+		if err := config.Source.Run(ctx, factChannel); err != nil {
+			logger.GetAppLogger().Fatal("error from source", zap.Error(err))
+		}
+	}()
 }
