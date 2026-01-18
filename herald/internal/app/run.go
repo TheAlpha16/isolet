@@ -26,8 +26,17 @@ func RunPipeline(ctx context.Context, kafkaClient *kafka.Client, wg *sync.WaitGr
 	emitter := kafkaEmit.NewEmitter(config.KafkaTopic, kafkaClient)
 	pipeline := pipeline.New(emitter, config.Workers, wg)
 
-	go pipeline.Run(ctx, factChannel)
+	// start the pipeline
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
+		pipeline.Run(ctx, factChannel)
+	}()
+
+	// start the source
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 		if err := config.Source.Run(ctx, factChannel); err != nil {
 			logger.GetAppLogger().Fatal("error from source", zap.Error(err))
 		}
