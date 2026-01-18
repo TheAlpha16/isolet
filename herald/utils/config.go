@@ -51,8 +51,8 @@ type Config struct {
 	}
 
 	Kafka struct {
-		Brokers []string `env:"KAFKA_BROKERS" envDefault:"localhost:9092"`
-		Retries int      `env:"KAFKA_RETRIES" envDefault:"3"`
+		Brokers string `env:"KAFKA_BROKERS" envDefault:"localhost:9092"`
+		Retries int    `env:"KAFKA_RETRIES" envDefault:"3"`
 	}
 
 	InstanceLifecycle struct {
