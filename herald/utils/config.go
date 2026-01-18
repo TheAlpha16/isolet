@@ -56,7 +56,8 @@ type Config struct {
 	}
 
 	InstanceLifecycle struct {
-		KafkaTopic string `env:"INSTANCE_LIFECYCLE_KAFKA_TOPIC" envDefault:"herald.instance.lifecycle"`
+		KafkaTopic      string `env:"INSTANCE_LIFECYCLE_KAFKA_TOPIC" envDefault:"herald.instance.lifecycle"`
+		FactChannelSize int    `env:"INSTANCE_LIFECYCLE_FACT_CHANNEL_SIZE" envDefault:"1024"`
 	}
 }
 
