@@ -4,8 +4,8 @@ go 1.25
 
 require (
 	github.com/TheAlpha16/cnc-go v0.1.1
-	github.com/TheAlpha16/isolet/herald v0.0.0-20260118175132-2f36266ea180
-	github.com/TheAlpha16/isolet/tide v0.0.0-20260118175132-2f36266ea180
+	github.com/TheAlpha16/isolet/herald v0.0.0-20260118183829-d31dc0b1cd40
+	github.com/TheAlpha16/isolet/tide v0.0.0-20260118183829-d31dc0b1cd40
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/cockroachdb/errors v1.12.0
 	github.com/confluentinc/confluent-kafka-go v1.9.2
@@ -44,6 +44,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
 	github.com/cockroachdb/redact v1.1.5 // indirect
+	github.com/confluentinc/confluent-kafka-go/v2 v2.13.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.13.0 // indirect
@@ -53,6 +54,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/go-logr/zapr v1.3.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.2 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.1 // indirect

@@ -7,10 +7,12 @@ github.com/TheAlpha16/cnc-go v0.1.1 h1:x2kw33p1WQ5sx4QwBUjx6tqJo8FGpRUIukZLlOhsT
 github.com/TheAlpha16/cnc-go v0.1.1/go.mod h1:kRLkTlJ9gmq0pLe/9wNzDH3lS16ovLY5aQ6boNaNK9Y=
 github.com/TheAlpha16/isolet/herald v0.0.0-20260118175132-2f36266ea180 h1:iyCXFg6UTUA/QtC1wLRiFIE6NJCOaaDLkHqOdx+NQd4=
 github.com/TheAlpha16/isolet/herald v0.0.0-20260118175132-2f36266ea180/go.mod h1:ket70UW1If3cfbEHRpb4Sx92V0HLVBIVWRoQURUAoLY=
-github.com/TheAlpha16/isolet/tide v0.0.0-20260116201402-f9de9908f7ec h1:fjvDgQlF+CiFDgucZNqRkgDzjszQasrK3B7+94ShjtU=
-github.com/TheAlpha16/isolet/tide v0.0.0-20260116201402-f9de9908f7ec/go.mod h1:9pJtTT+IjsJHLv5DxsWW1xFZgcGgScGEJJaRINKM9BQ=
+github.com/TheAlpha16/isolet/herald v0.0.0-20260118183829-d31dc0b1cd40 h1:b8OxgZhDGzRM28fkP9ZJ32yD3+DIaTuKLe0LFNkNHEQ=
+github.com/TheAlpha16/isolet/herald v0.0.0-20260118183829-d31dc0b1cd40/go.mod h1:jVIcl5mWgu9+RqI6lXS1gGCEAQYZyseCLFhBQdKxr0M=
 github.com/TheAlpha16/isolet/tide v0.0.0-20260118175132-2f36266ea180 h1:WmgZmGSIzvIturyADhVLm7MSmx8zINvTxT2uD9rrkH0=
 github.com/TheAlpha16/isolet/tide v0.0.0-20260118175132-2f36266ea180/go.mod h1:U4XExbte/xlVZVVcHDHJSjNik1cvsJ2fNH0ZSXvJFR4=
+github.com/TheAlpha16/isolet/tide v0.0.0-20260118183829-d31dc0b1cd40 h1:Up4c9JxYsQVWbeNdjdyJtJRjA6BgXtbYmq61udPzOtY=
+github.com/TheAlpha16/isolet/tide v0.0.0-20260118183829-d31dc0b1cd40/go.mod h1:GPB3zzomAtip6slFKHPMjOjKeIdKTO1ZJoL+u2a1LCY=
 github.com/actgardner/gogen-avro/v10 v10.1.0/go.mod h1:o+ybmVjEa27AAr35FRqU98DJu1fXES56uXniYFv4yDA=
 github.com/actgardner/gogen-avro/v10 v10.2.1/go.mod h1:QUhjeHPchheYmMDni/Nx7VB0RsT/ee8YIgGY/xpEQgQ=
 github.com/actgardner/gogen-avro/v9 v9.1.0/go.mod h1:nyTj6wPqDJoxM3qdnjcLv+EnMDSDFqE0qDpva2QRmKc=
@@ -43,6 +45,8 @@ github.com/cockroachdb/redact v1.1.5 h1:u1PMllDkdFfPWaNGMyLD1+so+aq3uUItthCFqzwP
 github.com/cockroachdb/redact v1.1.5/go.mod h1:BVNblN9mBWFyMyqK1k3AAiSxhvhfK2oOZZ2lK+dpvRg=
 github.com/confluentinc/confluent-kafka-go v1.9.2 h1:gV/GxhMBUb03tFWkN+7kdhg+zf+QUM+wVkI9zwh770Q=
 github.com/confluentinc/confluent-kafka-go v1.9.2/go.mod h1:ptXNqsuDfYbAE/LBW6pnwWZElUoWxHoV8E43DCrliyo=
+github.com/confluentinc/confluent-kafka-go/v2 v2.13.0 h1:y9wh3z7FdqN3RJ9IHW12hzytJx4KjlpviPWn4ncA5u0=
+github.com/confluentinc/confluent-kafka-go/v2 v2.13.0/go.mod h1:aR1aciwbULyLhKkv9eq88JhS4XmGOusEnHZx1R93XZI=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
