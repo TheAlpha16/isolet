@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/TheAlpha16/isolet/herald/internal/app"
+	"github.com/TheAlpha16/isolet/herald/internal/sources/k8s"
 	"github.com/TheAlpha16/isolet/herald/utils"
 	"github.com/TheAlpha16/isolet/herald/utils/cache"
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
@@ -33,11 +34,18 @@ func main() {
 	}
 
 	utils.InterruptHandlerChannel <- func() {
-		appLogger.Info("Triggering context cancellation...")
+		appLogger.Info("triggering context cancellation...")
 		cancel()
 		wg.Wait()
-		appLogger.Info("All components stopped.")
+		appLogger.Info("all components stopped.")
 	}
 
-	app.Start(globalCtx, kafkaClient, wg)
+	app.RunPipeline(globalCtx, kafkaClient, wg, app.AppConfig{
+		Source:      k8s.NewSource(globalCtx),
+		Workers:     config.InstanceLifecycle.Workers,
+		ChannelSize: config.InstanceLifecycle.FactChannelSize,
+		KafkaTopic:  config.InstanceLifecycle.KafkaTopic,
+	})
+
+	utils.InterruptHandler()
 }

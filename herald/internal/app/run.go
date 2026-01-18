@@ -9,7 +9,6 @@ import (
 	"github.com/TheAlpha16/isolet/herald/internal/pipeline"
 	"github.com/TheAlpha16/isolet/herald/internal/sources"
 	"github.com/TheAlpha16/isolet/herald/internal/sources/k8s"
-	"github.com/TheAlpha16/isolet/herald/utils"
 	"github.com/TheAlpha16/isolet/herald/utils/kafka"
 )
 
@@ -18,19 +17,6 @@ type AppConfig struct {
 	Workers     int
 	ChannelSize int
 	KafkaTopic  string
-}
-
-func Start(ctx context.Context, kafkaClient *kafka.Client, wg *sync.WaitGroup) {
-	config := utils.GetConfig()
-
-	RunPipeline(ctx, kafkaClient, wg, AppConfig{
-		Source:      k8s.NewSource(ctx),
-		Workers:     config.InstanceLifecycle.Workers,
-		ChannelSize: config.InstanceLifecycle.FactChannelSize,
-		KafkaTopic:  config.InstanceLifecycle.KafkaTopic,
-	})
-
-	utils.InterruptHandler()
 }
 
 func RunPipeline(ctx context.Context, kafkaClient *kafka.Client, wg *sync.WaitGroup, config AppConfig) {
