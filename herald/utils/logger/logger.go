@@ -1,11 +1,9 @@
 package logger
 
 import (
-	"context"
 	"sync"
 
 	"github.com/TheAlpha16/isolet/herald/utils"
-	"github.com/TheAlpha16/isolet/herald/utils/errors"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -64,9 +62,7 @@ func (l *StandardLogger) WithFields(fields ...zapcore.Field) *StandardLogger {
 }
 
 func (l *StandardLogger) Sync() {
-	if err := l.Logger.Sync(); err != nil {
-		errors.RaiseToSentry(context.Background(), err)
-	}
+	l.Logger.Sync()
 }
 
 func GetAppLogger() *StandardLogger {
