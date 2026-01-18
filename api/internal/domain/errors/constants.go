@@ -116,6 +116,14 @@ const (
 
 	// Manifest errors
 	ErrManifestNotFound ErrorCode = "MANIFEST-00"
+
+	// Kafka errors
+	ErrKafkaConnectionFailed   ErrorCode = "KAFKA-00"
+	ErrKafkaSubscriptionFailed ErrorCode = "KAFKA-01"
+	ErrKafkaConsumerError      ErrorCode = "KAFKA-02"
+
+	// Fact errors
+	ErrFactDeserialization ErrorCode = "FACT-00"
 )
 
 // Map of error codes to user-facing messages
@@ -204,38 +212,50 @@ var msgMap = map[ErrorCode]string{
 
 	// Manifest errors
 	ErrManifestNotFound: "manifest not found",
+
+	// Kafka errors
+	ErrKafkaConnectionFailed:   "failed to connect to kafka",
+	ErrKafkaSubscriptionFailed: "failed to subscribe to kafka topics",
+	ErrKafkaConsumerError:      "kafka consumer encountered an error",
+
+	// Fact errors
+	ErrFactDeserialization: "failed to deserialize fact",
 }
 
 // Map of server-side error codes that need to be filtered
 var ServerErrorCodes = map[ErrorCode]struct{}{
-	ErrInternalError:          {},
-	ErrCacheCallFail:          {},
-	ErrMarshalError:           {},
-	ErrUnmarshalError:         {},
-	ErrDBCreateError:          {},
-	ErrDBReadError:            {},
-	ErrDBUpdateError:          {},
-	ErrDBExecError:            {},
-	ErrDBDeleteError:          {},
-	ErrCacheScriptLoadFail:    {},
-	ErrTokenSigningFailed:     {},
-	ErrConfigVarInvalid:       {},
-	ErrConfigVarRefreshFailed: {},
-	ErrSMTPQueueFull:          {},
-	ErrSMTPContextCanceled:    {},
-	ErrEmailInvalidType:       {},
-	ErrEmailTemplateFetch:     {},
-	ErrEmailTemplateExecute:   {},
-	ErrEmailLinkBuild:         {},
-	ErrScoreUpdateFailed:      {},
-	ErrCacheZSetMissingMember: {},
-	ErrInstanceCreationFailed: {},
-	ErrK8sConnectionFailed:    {},
-	ErrInstanceInvalid:        {},
-	ErrChallengeNameInvalid:   {},
-	ErrInstanceUpdateFailed:   {},
-	ErrManifestNotFound:       {},
-	ErrInstanceDeletionFailed: {},
+	ErrInternalError:           {},
+	ErrCacheCallFail:           {},
+	ErrMarshalError:            {},
+	ErrUnmarshalError:          {},
+	ErrDBCreateError:           {},
+	ErrDBReadError:             {},
+	ErrDBUpdateError:           {},
+	ErrDBExecError:             {},
+	ErrDBDeleteError:           {},
+	ErrCacheScriptLoadFail:     {},
+	ErrTokenSigningFailed:      {},
+	ErrConfigVarInvalid:        {},
+	ErrConfigVarRefreshFailed:  {},
+	ErrSMTPQueueFull:           {},
+	ErrSMTPContextCanceled:     {},
+	ErrEmailInvalidType:        {},
+	ErrEmailTemplateFetch:      {},
+	ErrEmailTemplateExecute:    {},
+	ErrEmailLinkBuild:          {},
+	ErrScoreUpdateFailed:       {},
+	ErrCacheZSetMissingMember:  {},
+	ErrInstanceCreationFailed:  {},
+	ErrK8sConnectionFailed:     {},
+	ErrInstanceInvalid:         {},
+	ErrChallengeNameInvalid:    {},
+	ErrInstanceUpdateFailed:    {},
+	ErrManifestNotFound:        {},
+	ErrInstanceDeletionFailed:  {},
+	ErrKafkaConnectionFailed:   {},
+	ErrKafkaSubscriptionFailed: {},
+	ErrKafkaConsumerError:      {},
+	ErrFactDeserialization:     {},
 }
 
 // Map of auth error codes
