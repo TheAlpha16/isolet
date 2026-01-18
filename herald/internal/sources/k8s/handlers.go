@@ -7,9 +7,11 @@ import (
 	"github.com/TheAlpha16/isolet/herald/internal/facts"
 	"github.com/TheAlpha16/isolet/herald/utils"
 	"github.com/TheAlpha16/isolet/herald/utils/cache"
+	"github.com/TheAlpha16/isolet/herald/utils/errors"
 	"github.com/TheAlpha16/isolet/herald/utils/logger"
 
 	tidev1 "github.com/TheAlpha16/isolet/tide/api/v1"
+	"go.uber.org/zap"
 )
 
 func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
@@ -24,7 +26,7 @@ func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
 
 	instance, ok := extractObject[*tidev1.Instance](obj)
 	if !ok {
-		log.Warn("Failed to extract instance from object")
+		log.Warn("failed to extract instance from object")
 		return
 	}
 
@@ -56,11 +58,13 @@ func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
 	}
 
 	if err := fact.Validate(); err != nil {
-		handleError(ctx, span, logger.GetAppLogger(), "failed to validate InstanceFact", err, map[string]any{
-			"instance":  instance.Name,
-			"namespace": instance.Namespace,
-			"phase":     phase,
-		})
+		errors.HandleSpanError(
+			ctx, span, log,
+			"failed to validate InstanceFact", err,
+			zap.String("instance", instance.Name),
+			zap.String("namespace", instance.Namespace),
+			zap.String("phase", string(phase)),
+		)
 		return
 	}
 
