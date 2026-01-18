@@ -12,6 +12,7 @@ import (
 	cvDom "github.com/TheAlpha16/isolet/api/internal/domain/configvars"
 	emailDom "github.com/TheAlpha16/isolet/api/internal/domain/email"
 	eventDom "github.com/TheAlpha16/isolet/api/internal/domain/event"
+	factDom "github.com/TheAlpha16/isolet/api/internal/domain/fact"
 	instanceDom "github.com/TheAlpha16/isolet/api/internal/domain/instance"
 	manifestDom "github.com/TheAlpha16/isolet/api/internal/domain/manifest"
 	profileDom "github.com/TheAlpha16/isolet/api/internal/domain/profile"
@@ -25,6 +26,7 @@ import (
 	cvUc "github.com/TheAlpha16/isolet/api/internal/usecase/configvars"
 	emailUc "github.com/TheAlpha16/isolet/api/internal/usecase/email"
 	eventUc "github.com/TheAlpha16/isolet/api/internal/usecase/event"
+	factUc "github.com/TheAlpha16/isolet/api/internal/usecase/fact"
 	instanceUc "github.com/TheAlpha16/isolet/api/internal/usecase/instance"
 	manifestUc "github.com/TheAlpha16/isolet/api/internal/usecase/manifest"
 	profileUc "github.com/TheAlpha16/isolet/api/internal/usecase/profile"
@@ -46,6 +48,7 @@ type Usecases struct {
 	Challenge  challengeDom.Usecase
 	Score      scoreDom.Usecase
 	Instance   instanceDom.Usecase
+	Fact       factDom.Usecase
 	Manifest   manifestDom.Usecase
 }
 
@@ -65,6 +68,7 @@ func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repo
 	profile := profileUc.New(cache, user, team, challenge)
 	manifest := manifestUc.New(repos.Manifest)
 	instance := instanceUc.New(repos.Instance, external.Instance, cache, challenge, manifest, cv)
+	fact := factUc.New(instance)
 
 	return &Usecases{
 		User:       user,
@@ -78,6 +82,7 @@ func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repo
 		Challenge:  challenge,
 		Score:      score,
 		Instance:   instance,
+		Fact:       fact,
 		Manifest:   manifest,
 	}
 }
