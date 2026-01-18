@@ -39,6 +39,7 @@ func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
 	log.Debug("received instance event from k8s",
 		zap.String("instance", instance.Name),
 		zap.String("namespace", instance.Namespace),
+		zap.String("resource_version", instance.ResourceVersion),
 	)
 
 	if phase != tidev1.PhaseExpired {
