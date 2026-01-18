@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	"sync"
 
 	"github.com/TheAlpha16/isolet/herald/internal/facts"
 	"github.com/TheAlpha16/isolet/herald/internal/sources"
@@ -33,6 +34,7 @@ var tracer = otel.Tracer("herald.sources.k8s")
 
 type k8sSource struct {
 	cache crcache.Cache
+	wg    *sync.WaitGroup
 }
 
 func (s *k8sSource) Name() string {
@@ -49,7 +51,9 @@ func (s *k8sSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 		return err
 	}
 
+	s.wg.Add(1)
 	go func() {
+		defer s.wg.Done()
 		cacheCtx, cacheSpan := tracer.Start(ctx, "herald.sources.k8s.cache.Start")
 		defer cacheSpan.End()
 
@@ -96,7 +100,7 @@ func (s *k8sSource) startInformers(ctx context.Context, out chan<- facts.Fact) e
 	return nil
 }
 
-func NewSource(ctx context.Context) sources.Source {
+func NewSource(ctx context.Context, wg *sync.WaitGroup) sources.Source {
 	ctx, span := tracer.Start(ctx, "herald.sources.k8s.New")
 	defer span.End()
 	logger := logger.GetAppLogger()
@@ -109,5 +113,6 @@ func NewSource(ctx context.Context) sources.Source {
 
 	return &k8sSource{
 		cache: cache,
+		wg:    wg,
 	}
 }

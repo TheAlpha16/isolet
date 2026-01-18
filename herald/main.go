@@ -41,7 +41,7 @@ func main() {
 	}
 
 	app.RunPipeline(globalCtx, kafkaClient, wg, app.AppConfig{
-		Source:      k8s.NewSource(globalCtx),
+		Source:      k8s.NewSource(globalCtx, wg),
 		Workers:     config.InstanceLifecycle.Workers,
 		ChannelSize: config.InstanceLifecycle.FactChannelSize,
 		KafkaTopic:  config.InstanceLifecycle.KafkaTopic,
