@@ -7,11 +7,13 @@ require (
 	github.com/TheAlpha16/isolet/tide v0.0.0-20251030110621-e2317c4025e2
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/cockroachdb/errors v1.12.0
+	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/getsentry/sentry-go v0.41.0
 	github.com/getsentry/sentry-go/otel v0.41.0
 	github.com/go-errors/errors v1.5.1
 	github.com/go-gomail/gomail v0.0.0-20160411212932-81ebce5c23df
 	github.com/go-playground/validator/v10 v10.27.0
+	github.com/goccy/go-json v0.10.3
 	github.com/gofiber/contrib/otelfiber/v2 v2.2.3
 	github.com/gofiber/fiber/v2 v2.52.9
 	github.com/google/uuid v1.6.0
@@ -55,7 +57,6 @@ require (
 	github.com/go-openapi/swag v0.23.1 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/gnostic-models v0.7.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
