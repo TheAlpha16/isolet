@@ -13,7 +13,7 @@ require (
 	github.com/go-errors/errors v1.5.1
 	github.com/go-gomail/gomail v0.0.0-20160411212932-81ebce5c23df
 	github.com/go-playground/validator/v10 v10.27.0
-	github.com/goccy/go-json v0.10.3
+	github.com/goccy/go-json v0.10.5
 	github.com/gofiber/contrib/otelfiber/v2 v2.2.3
 	github.com/gofiber/fiber/v2 v2.52.9
 	github.com/google/uuid v1.6.0
