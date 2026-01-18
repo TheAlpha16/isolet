@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"github.com/TheAlpha16/isolet/herald/utils"
+	"github.com/TheAlpha16/isolet/herald/utils/errors"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
@@ -31,7 +32,7 @@ func NewClient() (*Client, error) {
 		"retries":           utils.GetConfig().Kafka.Retries,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.Raise(errors.ErrKafkaProducerCreationFailed, "", err)
 	}
 
 	return &Client{producer: p}, nil
