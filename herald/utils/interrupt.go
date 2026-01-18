@@ -31,5 +31,5 @@ func InterruptHandler() {
 	for _, handler := range interruptHandlers {
 		handler()
 	}
-	fmt.Println("Server was successful shutdown.")
+	fmt.Println("Server was successfully shutdown.")
 }
