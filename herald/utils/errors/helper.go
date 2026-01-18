@@ -3,8 +3,6 @@ package errors
 import (
 	"context"
 
-	"github.com/TheAlpha16/isolet/herald/utils/logger"
-
 	"github.com/getsentry/sentry-go"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -41,7 +39,7 @@ func addTraceContextToSentryEvent(ctx context.Context, event *sentry.Event) {
 	}
 }
 
-func HandleSpanError(ctx context.Context, span trace.Span, log *logger.StandardLogger, msg string, err error, extraFields ...zap.Field) {
+func HandleSpanError(ctx context.Context, span trace.Span, log *zap.Logger, msg string, err error, extraFields ...zap.Field) {
 	span.RecordError(err)
 	span.SetStatus(codes.Error, msg)
 	RaiseToSentry(ctx, err)
