@@ -24,7 +24,7 @@ type AppConfig struct {
 func RunPipeline(ctx context.Context, kafkaClient *kafka.Client, wg *sync.WaitGroup, config AppConfig) {
 	factChannel := make(chan facts.Fact, config.ChannelSize)
 	emitter := kafkaEmit.NewEmitter(config.KafkaTopic, kafkaClient)
-	pipeline := pipeline.New(ctx, emitter, config.Workers, wg)
+	pipeline := pipeline.New(emitter, config.Workers, wg)
 
 	// start the pipeline
 	wg.Add(1)

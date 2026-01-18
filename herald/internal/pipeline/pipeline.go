@@ -106,10 +106,7 @@ func (p *pipeline) emitWithRetry(ctx context.Context, log *zap.Logger, fact fact
 	errors.HandleSpanError(ctx, span, log, "giving up after retries, dropping fact", err)
 }
 
-func New(ctx context.Context, emitter emitter.Emitter, workers int, wg *sync.WaitGroup) *pipeline {
-	ctx, span := tracer.Start(ctx, "herald.pipeline.New")
-	defer span.End()
-
+func New(emitter emitter.Emitter, workers int, wg *sync.WaitGroup) *pipeline {
 	if workers <= 0 {
 		logger.GetAppLogger().Warn("invalid worker count, defaulting to 1")
 		workers = 1
