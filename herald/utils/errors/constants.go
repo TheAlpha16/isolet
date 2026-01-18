@@ -12,6 +12,7 @@ const (
 	ErrFactInvalidKey       ErrorCode = "FACT-01"
 	ErrFactInvalidType      ErrorCode = "FACT-02"
 	ErrFactInvalidOccuredAt ErrorCode = "FACT-03"
+	ErrFactInvalidField     ErrorCode = "FACT-04"
 
 	// Cache errors
 	ErrCacheCallFailed ErrorCode = "CACHE-01"

@@ -34,5 +34,13 @@ func (f *InstanceFact) Validate() error {
 		return errors.Raise(errors.ErrFactInvalidKey, "InstanceFact has invalid ID", nil)
 	}
 
+	if f.ChallengeID <= 0 {
+		return errors.Raise(errors.ErrFactInvalidField, "InstanceFact has invalid ChallengeID", nil)
+	}
+
+	if f.TeamID != nil && *f.TeamID <= 0 {
+		return errors.Raise(errors.ErrFactInvalidField, "InstanceFact has invalid TeamID", nil)
+	}
+
 	return nil
 }
