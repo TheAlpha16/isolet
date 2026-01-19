@@ -1,0 +1,1377 @@
+openapi: 3.0.3
+info:
+  title: oracle
+  description: API for the isolet CTF platform
+  version: "2.0.0"
+  contact:
+    email: admin@isolet.dev
+servers:
+  - url: "/api/v1"
+tags:
+  - name: auth
+    description: Authentication and user management
+  - name: team
+    description: Team management
+  - name: event
+    description: Event information and metadata
+  - name: profile
+    description: User and team profiles
+  - name: challenge
+    description: Challenge management and interactions
+  - name: score
+    description: Scoreboard and scoring information
+  - name: instance
+    description: Challenge instance management (on-demand challenges)
+  - name: health
+    description: Health check endpoints
+paths:
+  /ping:
+    get:
+      tags:
+        - health
+      summary: Health check endpoint
+      description: Checks if the API is running
+      responses:
+        200:
+          description: API is running
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      data:
+                        nullable: true
+                      message:
+                        example: "still alive, atleast for now!"
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: Register a new user
+      description: Creates a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        200:
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      message:
+                        example: "registration successful"
+                      data:
+                        $ref: "#/components/schemas/Session"
+        202:
+          description: Verification email sent
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      message:
+                        example: "check your mail for verification"
+                      data:
+                        nullable: true
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /auth/verify:
+    post:
+      tags:
+        - auth
+      summary: Verify email
+      description: Verifies the user's email using a token
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Email verified
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      message:
+                        example: "verified successfully! proceed to login"
+                      data:
+                        nullable: true
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Login
+      description: Authenticate a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      message:
+                        example: "login successful"
+                      data:
+                        $ref: "#/components/schemas/Session"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /auth/forgot-password:
+    post:
+      tags:
+        - auth
+      summary: Forgot password
+      description: Sends a password reset email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordInput"
+      responses:
+        200:
+          description: Password reset email sent
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      message:
+                        example: "check your mail for password reset"
+                      data:
+                        nullable: true
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /auth/reset-password:
+    post:
+      tags:
+        - auth
+      summary: Reset password
+      description: Resets the user's password using a token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordInput"
+      responses:
+        200:
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      message:
+                        example: "password reset successful"
+                      data:
+                        nullable: true
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /auth/logout:
+    get:
+      tags:
+        - auth
+      summary: Logout
+      description: Logs out the user
+      security:
+        - cookieAuth: []
+      responses:
+        204:
+          description: Logout successful
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /team/create:
+    post:
+      tags:
+        - team
+      summary: Create team
+      description: Creates a new team
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTeamInput"
+      responses:
+        201:
+          description: Team created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      message:
+                        example: "team created successfully"
+                      data:
+                        $ref: "#/components/schemas/Session"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /team/join:
+    post:
+      tags:
+        - team
+      summary: Join team
+      description: Joins an existing team
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JoinTeamInput"
+      responses:
+        201:
+          description: Team joined
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      message:
+                        example: "team joined successfully"
+                      data:
+                        $ref: "#/components/schemas/Session"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /team/invite:
+    post:
+      tags:
+        - team
+      summary: Generate invite
+      description: Generates a team invite link
+      security:
+        - cookieAuth: []
+      responses:
+        201:
+          description: Invite generated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      message:
+                        example: "invite link generated successfully"
+                      data:
+                        $ref: "#/components/schemas/GenerateInviteOutput"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+    get:
+      tags:
+        - team
+      summary: Accept invite
+      description: Accepts a team invite
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        201:
+          description: Team joined
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      message:
+                        example: "team joined successfully"
+                      data:
+                        $ref: "#/components/schemas/Session"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /event/info:
+    get:
+      tags:
+        - event
+      summary: Event info
+      description: Returns information about the event
+      responses:
+        200:
+          description: Event information
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/EventInfo"
+  /profile/me:
+    get:
+      tags:
+        - profile
+      summary: User profile
+      description: Returns the user's profile
+      security:
+        - cookieAuth: []
+      responses:
+        200:
+          description: User profile
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/ProfileMe"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /profile/team:
+    get:
+      tags:
+        - profile
+      summary: Team profile
+      description: Returns the team's profile
+      security:
+        - cookieAuth: []
+      responses:
+        200:
+          description: Team profile
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/ProfileTeam"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /challenge:
+    get:
+      tags:
+        - challenge
+      summary: List challenges
+      description: Returns a list of challenges
+      security:
+        - cookieAuth: []
+      responses:
+        200:
+          description: List of challenges
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Challenge"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /challenge/submit:
+    post:
+      tags:
+        - challenge
+      summary: Submit flag
+      description: Submits a flag for a challenge
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitFlagInput"
+      responses:
+        200:
+          description: Flag submitted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/SubmitFlagOutput"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /challenge/hint/unlock:
+    post:
+      tags:
+        - challenge
+      summary: Unlock hint
+      description: Unlocks a hint for a challenge
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnlockHintInput"
+      responses:
+        200:
+          description: Hint unlocked
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Hint"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /score:
+    get:
+      tags:
+        - score
+      summary: Scoreboard
+      description: Returns the scoreboard
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 10
+            maximum: 100
+            default: 50
+      responses:
+        200:
+          description: Scoreboard
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Scoreboard"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /score/graph:
+    get:
+      tags:
+        - score
+      summary: Score graph
+      description: Returns the score graph
+      security:
+        - cookieAuth: []
+      responses:
+        200:
+          description: Score graph
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/ScoreGraph"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /instance/start:
+    post: 
+      tags:
+        - instance
+      summary: Start instance
+      description: Starts a new instance for an on-demand challenge
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InstanceStartInput"
+      responses:
+        201:
+          description: Instance started
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      message:
+                        example: "instance started successfully"
+                      data:
+                        $ref: "#/components/schemas/Instance"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        408:
+          description: Request timeout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /instance/stop:
+    post:
+      tags:
+        - instance
+      summary: Stop instance
+      description: Stops a running instance
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InstanceStopInput"
+      responses:
+        200:
+          description: Instance stopped
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      message:
+                        example: "instance stopped successfully"
+                      data:
+                        nullable: true
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        408:
+          description: Request timeout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+  /instance/extend:
+    post:
+      tags:
+        - instance
+      summary: Extend instance
+      description: Extends the lifetime of a running instance
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InstanceExtendInput"
+      responses:
+        200:
+          description: Instance extended
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      message:
+                        example: "instance extended successfully"
+                      data:
+                        $ref: "#/components/schemas/Instance"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        408:
+          description: Request timeout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+  schemas:
+    Response:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success, error]
+          example: success
+        message:
+          type: string
+          example: "login successful"
+        data:
+          type: object
+          nullable: true
+      required:
+        - status
+        - message
+    LoginInput:
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: Email or username
+          maxLength: 320
+          example: "user@example.com"
+        password:
+          type: string
+          maxLength: 32
+          example: "password123"
+      required:
+        - identifier
+        - password
+    RegisterInput:
+      type: object
+      properties:
+        username:
+          type: string
+          maxLength: 32
+          example: "john_doe"
+        email:
+          type: string
+          format: email
+          maxLength: 320
+          example: "john@example.com"
+        password:
+          type: string
+          minLength: 8
+          maxLength: 32
+          example: "password123"
+      required:
+        - username
+        - email
+        - password
+    ForgotPasswordInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 320
+          example: "user@example.com"
+      required:
+        - email
+    ResetPasswordInput:
+      type: object
+      properties:
+        token:
+          type: string
+          maxLength: 500
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        password:
+          type: string
+          minLength: 8
+          maxLength: 32
+          example: "newPassword123"
+      required:
+        - token
+        - password
+    Session:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          format: int64
+          example: 123
+        team_id:
+          type: integer
+          format: int64
+          nullable: true
+          example: 456
+        expires_at:
+          type: integer
+          format: int64
+          example: 1615982300
+      required:
+        - user_id
+        - expires_at
+    CreateTeamInput:
+      type: object
+      properties:
+        team_name:
+          type: string
+          maxLength: 32
+          example: "H4ck3rs"
+        password:
+          type: string
+          minLength: 8
+          maxLength: 32
+          example: "teamPassword123"
+      required:
+        - team_name
+        - password
+    JoinTeamInput:
+      type: object
+      properties:
+        team_name:
+          type: string
+          maxLength: 32
+          example: "H4ck3rs"
+        password:
+          type: string
+          maxLength: 32
+          example: "teamPassword123"
+      required:
+        - team_name
+        - password
+    GenerateInviteOutput:
+      type: object
+      properties:
+        invite_link:
+          type: string
+          example: "https://isolet.dev/api/v1/team/invite?token=eyJhbGci..."
+      required:
+        - invite_link
+    Team:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 456
+        name:
+          type: string
+          example: "H4ck3rs"
+        captain_id:
+          type: integer
+          format: int64
+          example: 123
+      required:
+        - id
+        - name
+        - captain_id
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 123
+        username:
+          type: string
+          example: "john_doe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        role:
+          type: string
+          enum: [admin, author, captain, player]
+          example: "player"
+      required:
+        - id
+        - username
+        - email
+        - role
+    ProfileMe:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        team:
+          $ref: "#/components/schemas/Team"
+          nullable: true
+      required:
+        - user
+    Submission:
+      type: object
+      properties:
+        challenge_id:
+          type: integer
+          format: int64
+          example: 789
+        user_id:
+          type: integer
+          format: int64
+          example: 123
+        team_id:
+          type: integer
+          format: int64
+          example: 456
+        is_correct:
+          type: boolean
+          example: true
+        timestamp:
+          type: integer
+          format: int64
+          example: 1615982300
+      required:
+        - challenge_id
+        - user_id
+        - team_id
+        - is_correct
+        - timestamp
+    ProfileTeam:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Team"
+        - type: object
+          properties:
+            score:
+              type: integer
+              example: 1500
+            rank:
+              type: integer
+              nullable: true
+              example: 3
+            members:
+              type: array
+              items:
+                $ref: "#/components/schemas/User"
+            submissions:
+              type: array
+              items:
+                $ref: "#/components/schemas/Submission"
+          required:
+            - score
+            - submissions
+            - members
+    EventInfo:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Isolet CTF 2023"
+        event_start:
+          type: integer
+          format: int64
+          example: 1709899200
+        event_end:
+          type: integer
+          format: int64
+          example: 1710028800
+        post_event:
+          type: boolean
+          example: false
+        team_length:
+          type: integer
+          example: 4
+      required:
+        - name
+        - event_start
+        - event_end
+        - post_event
+        - team_length
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Web Exploitation"
+      required:
+        - id
+        - name
+    Hint:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        text:
+          type: string
+          example: "Check the headers"
+        cost:
+          type: integer
+          example: 50
+        unlocked:
+          type: boolean
+          example: false
+      required:
+        - id
+        - text
+        - cost
+        - unlocked
+    Challenge:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 789
+        name:
+          type: string
+          example: "Broken Authentication"
+        prompt:
+          type: string
+          example: "Can you bypass the authentication?"
+        category:
+          $ref: "#/components/schemas/Category"
+        type:
+          type: string
+          enum: [static, dynamic, on-demand]
+          example: "static"
+        points:
+          type: integer
+          example: 500
+        files:
+          type: array
+          items:
+            type: string
+          example: ["challenge.zip"]
+        hints:
+          type: array
+          items:
+            $ref: "#/components/schemas/Hint"
+        author:
+          type: string
+          example: "admin"
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["web", "auth", "beginner"]
+        links:
+          type: array
+          items:
+            type: string
+          example: ["https://challenge.isolet.dev"]
+        max_attempts:
+          type: integer
+          example: 10
+        total_solves:
+          type: integer
+          example: 5
+        solved:
+          type: boolean
+          example: false
+        attempt_count:
+          type: integer
+          example: 2
+      required:
+        - id
+        - name
+        - prompt
+        - category
+        - type
+        - points
+        - files
+        - hints
+        - author
+        - tags
+        - links
+        - max_attempts
+        - total_solves
+        - solved
+        - attempt_count
+    SubmitFlagInput:
+      type: object
+      properties:
+        challenge_id:
+          type: integer
+          format: int64
+          example: 789
+        flag:
+          type: string
+          example: "flag{th1s_1s_4_fl4g}"
+      required:
+        - challenge_id
+        - flag
+    SubmitFlagOutput:
+      type: object
+      properties:
+        is_correct:
+          type: boolean
+          example: true
+      required:
+        - is_correct
+    UnlockHintInput:
+      type: object
+      properties:
+        hint_id:
+          type: integer
+          format: int64
+          example: 1
+      required:
+        - hint_id
+    ScoreboardEntry:
+      type: object
+      properties:
+        team_id:
+          type: integer
+          format: int64
+          example: 456
+        team_name:
+          type: string
+          example: "H4ck3rs"
+        rank:
+          type: integer
+          example: 3
+        score:
+          type: integer
+          example: 1500
+      required:
+        - team_id
+        - team_name
+        - rank
+        - score
+    Scoreboard:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        page_size:
+          type: integer
+          example: 50
+        total_pages:
+          type: integer
+          example: 5
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScoreboardEntry"
+      required:
+        - page
+        - page_size
+        - total_pages
+        - entries
+    ScoreRecord:
+      type: object
+      properties:
+        points:
+          type: integer
+          example: 500
+        timestamp:
+          type: integer
+          format: int64
+          example: 1615982300
+      required:
+        - points
+        - timestamp
+    ScoreGraphEntry:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/ScoreboardEntry"
+        - type: object
+          properties:
+            records:
+              type: array
+              items:
+                $ref: "#/components/schemas/ScoreRecord"
+          required:
+            - records
+    ScoreGraph:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 10
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScoreGraphEntry"
+      required:
+        - count
+        - entries
+    Instance:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        challenge_id:
+          type: integer
+          format: int64
+          example: 789
+        team_id:
+          type: integer
+          format: int64
+          example: 456
+        expires_at:
+          type: integer
+          format: int64
+          example: 1615985900
+      required:
+        - id
+        - challenge_id
+        - team_id
+        - expires_at
+    InstanceStartInput:
+      type: object
+      properties:
+        challenge_id:
+          type: integer
+          format: int64
+          example: 789
+      required:
+        - challenge_id
+    InstanceStopInput:
+      type: object
+      properties:
+        instance_id:
+          type: integer
+          format: int64
+          example: 1
+      required:
+        - instance_id
+    InstanceExtendInput:
+      type: object
+      properties:
+        instance_id:
+          type: integer
+          format: int64
+          example: 1
+      required:
+        - instance_id

@@ -23,9 +23,9 @@ services:
       - isolet-data:/var/lib/postgresql/data
     restart: always
 
-  api:
-    container_name: api
-    build: ./api
+  oracle:
+    container_name: oracle
+    build: ./oracle
     environment:
       <<: *common-variables
       DB_HOST: database
@@ -50,7 +50,7 @@ services:
     networks:
       - backend
     depends_on:
-      - api
+      - oracle
     restart: always
 
   proxy:
@@ -61,7 +61,7 @@ services:
       - "443:443"
     environment:
       UI_URL: ui:3000
-      API_URL: api:8000
+      API_URL: oracle:8000
       SOCKY_URL: ui:3000
       PHOROS_URL: ui:3000
       PROXY_SERVER_NAME: "isolet.dev localhost"
@@ -93,7 +93,7 @@ services:
     networks:
       - backend
     depends_on:
-      - api
+      - oracle
       - ui
     restart: always
 

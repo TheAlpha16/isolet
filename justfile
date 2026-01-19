@@ -5,7 +5,7 @@ GO := "go"
 GORUN_COMMAND := GO + " run"
 GOTIDY_COMMAND := GO + " mod tidy"
 REGISTRY := "docker.io/thealpha16"
-API := "api"
+ORACLE := "oracle"
 UI := "ui"
 TIDE := "tide"
 PROXY := "proxy"
@@ -68,7 +68,7 @@ bump RESOURCE LEVEL:
 
 # Build all services
 build-all:
-	just docker-build {{API}}
+	just docker-build {{ORACLE}}
 	just docker-build {{UI}}
 	just docker-build {{TIDE}}
 	just docker-build {{PROXY}}
@@ -76,7 +76,7 @@ build-all:
 	just docker-build {{HERALD}}
 # Push all services
 push-all:
-	just docker-push {{API}}
+	just docker-push {{ORACLE}}
 	just docker-push {{UI}}
 	just docker-push {{TIDE}}
 	just docker-push {{PROXY}}
@@ -85,17 +85,17 @@ push-all:
 # --- API commands ---
 
 # Run the API service
-api-run:
-	dotenv -f .env -- dotenv -f {{API}}/.env -- \
-		sh -c 'cd {{API}} && {{GORUN_COMMAND}} main.go'
+oracle-run:
+	dotenv -f .env -- dotenv -f {{ORACLE}}/.env -- \
+		sh -c 'cd {{ORACLE}} && {{GORUN_COMMAND}} main.go'
 
 # Tidy API Go modules
-api-tidy:
-	cd {{API}} && {{GOTIDY_COMMAND}}
+oracle-tidy:
+	cd {{ORACLE}} && {{GOTIDY_COMMAND}}
 
 # Show current API version
-api-version:
-	@cat {{API}}/VERSION
+oracle-version:
+	@cat {{ORACLE}}/VERSION
 
 # --- Tide Controller commands ---
 
@@ -136,7 +136,7 @@ tide-version:
 # Generate UI client from OpenAPI spec
 ui-generate:
 	dotenv -f .env -- \
-		npx openapi-typescript-codegen --input {{API}}/openapi.yaml --output {{UI}}/api
+		npx openoracle-typescript-codegen --input {{ORACLE}}/openapi.yaml --output {{UI}}/api
 	@echo "Generated UI client from OpenAPI spec."
 
 # Run the UI development server
@@ -218,7 +218,7 @@ delete-crds:
 
 # Clean up generated files and build artifacts
 clean:
-	rm -rf {{API}}/tmp
+	rm -rf {{ORACLE}}/tmp
 	rm -rf {{UI}}/.next
 	rm -rf {{UI}}/node_modules
 	rm -rf {{SOCKY}}/node_modules
@@ -226,7 +226,7 @@ clean:
 
 # Show all versions
 versions:
-	@echo "API:   $(cat {{API}}/VERSION)"
+	@echo "API:   $(cat {{ORACLE}}/VERSION)"
 	@echo "UI:    $(cat {{UI}}/VERSION)"
 	@echo "Tide:  $(cat {{TIDE}}/VERSION)"
 	@echo "Proxy: $(cat {{PROXY}}/VERSION)"

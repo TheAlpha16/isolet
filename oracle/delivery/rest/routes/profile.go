@@ -1,0 +1,16 @@
+package routes
+
+import (
+	profileHan "github.com/TheAlpha16/isolet/oracle/delivery/rest/handler/profile"
+	"github.com/TheAlpha16/isolet/oracle/delivery/rest/middleware"
+	"github.com/TheAlpha16/isolet/oracle/infra/jwt"
+	tokenDom "github.com/TheAlpha16/isolet/oracle/internal/domain/token"
+	"github.com/TheAlpha16/isolet/oracle/utils"
+	"github.com/gofiber/fiber/v2"
+)
+
+func RegisterProfile(router fiber.Router, profileHandler profileHan.ProfileHandler, tokenUc tokenDom.Usecase, jwtSvc jwt.JWT) {
+	profileRouter := router.Group(utils.RouteProfile, middleware.AuthMiddleware(tokenUc, jwtSvc))
+	profileRouter.Get(utils.RouteProfileMe, profileHandler.Me)
+	profileRouter.Get(utils.RouteProfileTeam, middleware.RequireTeamMiddleware(), profileHandler.Team)
+}

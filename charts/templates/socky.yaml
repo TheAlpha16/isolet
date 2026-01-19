@@ -38,31 +38,31 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: api-secrets
+                  name: oracle-secrets
                   key: DB_PASSWORD
 
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: api-secrets
+                  name: oracle-secrets
                   key: DB_USER
 
             - name: POSTGRES_HOST
               valueFrom:
                 configMapKeyRef:
-                  name: api-config
+                  name: oracle-config
                   key: DB_HOST
 
             - name: POSTGRES_DATABASE
               valueFrom:
                 configMapKeyRef:
-                  name: api-config
+                  name: oracle-config
                   key: DB_NAME
 
             - name: SESSION_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: api-secrets
+                  name: oracle-secrets
                   key: TOKEN_SIGNING_KEY
           livenessProbe:
             httpGet:

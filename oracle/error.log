@@ -1,0 +1,42 @@
+2025/09/27 13:44:11 main.go:22: API version: v2.0.9
+2025/09/27 13:44:11 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 13:44:11 main.go:29: sleep for 5 seconds
+2025/09/27 13:44:16 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 13:44:16 main.go:29: sleep for 10 seconds
+2025/09/27 13:44:27 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 13:44:27 main.go:29: sleep for 20 seconds
+2025/09/27 13:44:47 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 13:44:47 main.go:29: sleep for 40 seconds
+2025/09/27 13:45:27 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 13:45:27 main.go:29: sleep for 80 seconds
+2025/09/27 13:46:47 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 13:46:47 main.go:29: sleep for 160 seconds
+2025/09/27 15:04:38 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 15:04:38 main.go:29: sleep for 320 seconds
+2025/09/27 15:09:58 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 15:09:58 main.go:29: sleep for 640 seconds
+2025/09/27 15:20:38 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 15:20:38 main.go:29: sleep for 1280 seconds
+2025/09/27 15:41:58 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 15:41:58 main.go:29: sleep for 2560 seconds
+2025/09/27 16:00:50 main.go:22: API version: v2.0.9
+2025/09/27 16:00:50 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 16:00:50 main.go:29: sleep for 5 seconds
+2025/09/27 16:00:55 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 16:00:55 main.go:29: sleep for 10 seconds
+2025/09/27 16:01:05 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 16:01:05 main.go:29: sleep for 20 seconds
+2025/09/27 16:01:25 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 16:01:25 main.go:29: sleep for 40 seconds
+2025/09/27 16:02:05 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 16:02:05 main.go:29: sleep for 80 seconds
+2025/09/27 16:03:25 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 16:03:25 main.go:29: sleep for 160 seconds
+2025/09/27 16:06:05 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 16:06:05 main.go:29: sleep for 320 seconds
+2025/09/27 16:11:25 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 16:11:25 main.go:29: sleep for 640 seconds
+2025/09/27 16:22:06 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 16:22:06 main.go:29: sleep for 1280 seconds
+2025/09/27 16:43:26 main.go:28: failed to connect to `host=port=5432 user=password= database=sslmode=disable`: hostname resolving error (lookup port=5432: no such host)
+2025/09/27 16:43:26 main.go:29: sleep for 2560 seconds

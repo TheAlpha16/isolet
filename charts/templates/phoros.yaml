@@ -27,12 +27,12 @@ spec:
             - name: SESSION_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: api-secrets
+                  name: oracle-secrets
                   key: TOKEN_SIGNING_KEY
             - name: ADMIN_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: api-secrets
+                  name: oracle-secrets
                   key: TOKEN_SIGNING_KEY
             - name: EVENT_START
               value: {{ .Values.event.start | quote }}

@@ -688,17 +688,17 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: api-secrets
+                  name: oracle-secrets
                   key: DB_PASSWORD
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: api-secrets
+                  name: oracle-secrets
                   key: DB_USER
             - name: POSTGRES_DB
               valueFrom:
                 configMapKeyRef:
-                  name: api-config
+                  name: oracle-config
                   key: DB_NAME
           ports:
             - name: db-container

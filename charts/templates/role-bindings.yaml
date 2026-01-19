@@ -14,7 +14,7 @@ roleRef:
   name: isolet-manager
 subjects:
   - kind: ServiceAccount
-    name: api-service-account
+    name: oracle-service-account
     namespace: platform
 
 ---

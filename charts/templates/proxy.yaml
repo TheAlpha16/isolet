@@ -40,7 +40,7 @@ spec:
             - name: UI_URL
               value: ui-svc
             - name: API_URL
-              value: api-svc
+              value: oracle-svc
             - name: SOCKY_URL
               value: socky-svc
             - name: PHOROS_URL

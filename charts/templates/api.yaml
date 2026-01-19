@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api-deployment
+  name: oracle-deployment
   namespace: platform
   labels: 
     app.kubernetes.io/component: deployment
@@ -16,12 +16,12 @@ spec:
       app.kubernetes.io/part-of: api
   template:
     metadata:
-      name: api-deployment
+      name: oracle-deployment
       labels:
         app.kubernetes.io/component: deployment
         app.kubernetes.io/part-of: api
     spec:
-      serviceAccountName: api-service-account
+      serviceAccountName: oracle-service-account
       containers:
         - name: api
           image: "{{ .Values.platform.api.image }}:{{ .Values.platform.api.version }}"
@@ -37,9 +37,9 @@ spec:
             - containerPort: 80
           envFrom:
             - configMapRef:
-                name: api-config
+                name: oracle-config
             - secretRef:
-                name: api-secrets
+                name: oracle-secrets
           readinessProbe:
             httpGet:
               path: /api/v1/ping
@@ -51,7 +51,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: api-svc
+  name: oracle-svc
   namespace: platform
   labels: 
     app.kubernetes.io/component: service
@@ -68,7 +68,7 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: api-hpa
+  name: oracle-hpa
   namespace: platform
   labels: 
     app.kubernetes.io/component: hpa
@@ -78,7 +78,7 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: api-deployment
+    name: oracle-deployment
   minReplicas: 2
   maxReplicas: 20
   metrics:
