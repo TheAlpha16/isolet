@@ -119,7 +119,7 @@ func (ir *instanceRepo) DeleteByRefs(ctx context.Context, teamID *int64, challen
 }
 
 func (ir *instanceRepo) DeleteExpired(ctx context.Context, now time.Time) (int64, error) {
-	result := ir.db.WithContext(ctx).Where("expires_at <= ?", now).Delete(&Instance{})
+	result := ir.db.WithContext(ctx).Where("expires_at <= ?", now.Unix()).Delete(&Instance{})
 	if err := result.Error; err != nil {
 		return 0, errorDom.Raise(ctx, errorDom.ErrDBDeleteError, "failed to delete expired instances", err, common.ExtraData{"now": now})
 	}
