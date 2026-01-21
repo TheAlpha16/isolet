@@ -15,12 +15,15 @@ import (
 )
 
 type instanceImpl struct {
-	repo        instanceDom.Repository
-	service     instanceDom.Service
-	cache       cache.Cache
+	repo    instanceDom.Repository
+	service instanceDom.Service
+
 	challengeUc challengeDom.Usecase
 	manifestUc  manifestDom.Usecase
 	cvUc        cvDom.Usecase
+
+	cache cache.Cache
+	wg    *sync.WaitGroup
 }
 
 func (i *instanceImpl) List(ctx context.Context) ([]*instanceDom.InstanceDTO, error) {
@@ -229,5 +232,6 @@ func New(repo instanceDom.Repository, service instanceDom.Service, cache cache.C
 		challengeUc: challengeUc,
 		manifestUc:  manifestUc,
 		cvUc:        cvUc,
+		wg:          wg,
 	}
 }

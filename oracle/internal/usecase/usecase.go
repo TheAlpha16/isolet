@@ -67,7 +67,7 @@ func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repo
 	challenge := challengeUc.New(repos.Challenge, repos.Instance, cv, score, wg)
 	profile := profileUc.New(cache, user, team, challenge)
 	manifest := manifestUc.New(repos.Manifest)
-	instance := instanceUc.New(repos.Instance, external.Instance, cache, challenge, manifest, cv)
+	instance := instanceUc.New(ctx, repos.Instance, external.Instance, cache, challenge, manifest, cv, wg)
 	fact := factUc.New(instance)
 
 	return &Usecases{
