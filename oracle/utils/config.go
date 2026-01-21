@@ -25,7 +25,7 @@ const (
 )
 
 type Config struct {
-	Name        string      `env:"NAME"        envDefault:"api"`
+	Name        string      `env:"NAME"        envDefault:"oracle"`
 	LogLevel    string      `env:"LOG_LEVEL"   envDefault:"DEBUG"`
 	Environment Environment `env:"ENVIRONMENT" envDefault:"local"`
 	Version     string      `env:"VERSION"     envDefault:"2.0.0"`
