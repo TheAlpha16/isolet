@@ -91,16 +91,17 @@ type Config struct {
 	}
 
 	Instances struct {
-		Namespace     string        `env:"INSTANCE_NAMESPACE" envDefault:"isolet"`
-		StartTimeout  time.Duration `env:"INSTANCE_START_TIMEOUT" envDefault:"5m"`
-		StopTimeout   time.Duration `env:"INSTANCE_STOP_TIMEOUT" envDefault:"2m"`
-		ExtendTimeout time.Duration `env:"INSTANCE_EXTEND_TIMEOUT" envDefault:"5s"`
-		Lifetime      time.Duration `env:"INSTANCE_LIFETIME" envDefault:"30m"`
-		MaxLifetime   time.Duration `env:"INSTANCE_MAX_LIFETIME" envDefault:"2h"`
-		LimitCPU      string        `env:"INSTANCE_LIMIT_CPU" envDefault:"50m"`
-		LimitMemory   string        `env:"INSTANCE_LIMIT_MEMORY" envDefault:"128Mi"`
-		SecretKey     string        `env:"INSTANCE_SECRET_KEY" envDefault:"trustmebro"`
-		FactTopic     string        `env:"INSTANCE_FACT_TOPIC" envDefault:"herald.instance.lifecycle"`
+		Namespace           string        `env:"INSTANCE_NAMESPACE" envDefault:"isolet"`
+		StartTimeout        time.Duration `env:"INSTANCE_START_TIMEOUT" envDefault:"5m"`
+		StopTimeout         time.Duration `env:"INSTANCE_STOP_TIMEOUT" envDefault:"2m"`
+		ExtendTimeout       time.Duration `env:"INSTANCE_EXTEND_TIMEOUT" envDefault:"5s"`
+		Lifetime            time.Duration `env:"INSTANCE_LIFETIME" envDefault:"30m"`
+		MaxLifetime         time.Duration `env:"INSTANCE_MAX_LIFETIME" envDefault:"2h"`
+		LimitCPU            string        `env:"INSTANCE_LIMIT_CPU" envDefault:"50m"`
+		LimitMemory         string        `env:"INSTANCE_LIMIT_MEMORY" envDefault:"128Mi"`
+		SecretKey           string        `env:"INSTANCE_SECRET_KEY" envDefault:"trustmebro"`
+		FactTopic           string        `env:"INSTANCE_FACT_TOPIC" envDefault:"herald.instance.lifecycle"`
+		ExpiryCheckInterval time.Duration `env:"INSTANCE_EXPIRY_CHECK_INTERVAL" envDefault:"5m"`
 	}
 
 	K8s struct {
