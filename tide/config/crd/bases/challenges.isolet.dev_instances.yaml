@@ -70,6 +70,9 @@ spec:
               challenge:
                 description: Challenge backing this instance.
                 properties:
+                  domain:
+                    description: Domain name used for constructing instance hostnames.
+                    type: string
                   flag:
                     description: Optional flag injected into the instance as an environment
                       variable.
@@ -97,6 +100,7 @@ spec:
                     - on-demand
                     type: string
                 required:
+                - domain
                 - id
                 - image
                 - slug

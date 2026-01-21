@@ -94,6 +94,10 @@ type Challenge struct {
 	// Container image used to run the challenge.
 	// +required
 	Image string `json:"image"`
+
+	// Domain name used for constructing instance hostnames.
+	// +required
+	Domain string `json:"domain"`
 }
 
 // Team identifies the team an Instance belongs to.

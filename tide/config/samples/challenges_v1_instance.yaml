@@ -12,6 +12,7 @@ spec:
     slug: nginx-server
     image: nginx:latest
     type: on-demand
+    domain: isolet.dev
   team:
     id: 1
   endpoints:
