@@ -22,7 +22,7 @@ help:
 # --- Common commands ---
 
 # Build the docker image
-docker-build RESOURCmaE TAG="":
+docker-build RESOURCE TAG="":
 	#!/usr/bin/env bash
 	if [ -z "{{TAG}}" ]; then
 		TAG=$(cat {{RESOURCE}}/VERSION)
