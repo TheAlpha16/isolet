@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/TheAlpha16/isolet/oracle/infra/cache"
@@ -12,7 +13,12 @@ import (
 	instanceDom "github.com/TheAlpha16/isolet/oracle/internal/domain/instance"
 	manifestDom "github.com/TheAlpha16/isolet/oracle/internal/domain/manifest"
 	"github.com/TheAlpha16/isolet/oracle/utils"
+	"github.com/TheAlpha16/isolet/oracle/utils/tracer"
+
+	"go.opentelemetry.io/otel"
 )
+
+var instanceTracer = otel.Tracer("usecase.instance")
 
 type instanceImpl struct {
 	repo    instanceDom.Repository
@@ -224,8 +230,32 @@ func (i *instanceImpl) releaseInstanceLock(ctx context.Context, teamID, challeng
 	return i.cache.Delete(ctx, instanceDom.InstanceCacheKey(teamID, challengeID))
 }
 
-func New(repo instanceDom.Repository, service instanceDom.Service, cache cache.Cache, challengeUc challengeDom.Usecase, manifestUc manifestDom.Usecase, cvUc cvDom.Usecase) instanceDom.Usecase {
-	return &instanceImpl{
+func (i *instanceImpl) runInstanceExpiryCleanup(ctx context.Context, interval time.Duration) {
+	i.wg.Go(func() {
+		ctx, span, logger := tracer.StartSpan(ctx, instanceTracer, "instanceImpl.InstanceCleanup")
+		defer span.End()
+
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				_, err := i.repo.DeleteExpired(ctx, time.Now())
+				if err != nil {
+					errorDom.HandleSpanError(ctx, span, logger, "failed to delete expired instances", err)
+				}
+			case <-ctx.Done():
+				return
+			}
+		}
+	})
+}
+
+func New(ctx context.Context, repo instanceDom.Repository, service instanceDom.Service, cache cache.Cache, challengeUc challengeDom.Usecase, manifestUc manifestDom.Usecase, cvUc cvDom.Usecase, wg *sync.WaitGroup) instanceDom.Usecase {
+	ctx, cancel := context.WithCancel(ctx)
+
+	inst := &instanceImpl{
 		repo:        repo,
 		service:     service,
 		cache:       cache,
@@ -234,4 +264,12 @@ func New(repo instanceDom.Repository, service instanceDom.Service, cache cache.C
 		cvUc:        cvUc,
 		wg:          wg,
 	}
+
+	inst.runInstanceExpiryCleanup(ctx, utils.GetConfig().Instances.ExpiryCheckInterval)
+
+	utils.InterruptHandlerChannel <- func() {
+		cancel()
+	}
+
+	return inst
 }
