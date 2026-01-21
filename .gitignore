@@ -1,16 +1,11 @@
-/challenges/.venv
-/challenges/__pycache__
+**/.venv
+**/__pycache__
 
-api/.env
-api/access.log
-api/error.log
+**/.env
+**/*.log
+**/*.log
 
 kubernetes/configuration/app-secrets.yml.local
 
-levels/
-
-herald/.env
-
-notes.txt
-.DS_Store
+**/.DS_Store
 **/tmp/
