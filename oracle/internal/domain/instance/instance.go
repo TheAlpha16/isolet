@@ -25,6 +25,7 @@ type Instance struct {
 	Flag        *string
 	Lifecycle   *Lifecycle
 	Endpoints   []*Endpoint
+	Domain      string
 	domain.BaseEntity
 }
 
@@ -39,6 +40,10 @@ func (in *Instance) Validate(ctx context.Context, challengeType challenge.Challe
 	// challenge
 	if in.ChallengeID == 0 {
 		return errorDom.Raise(ctx, errorDom.ErrInstanceInvalid, "challenge ID cannot be zero", nil, extraData)
+	}
+
+	if in.Domain == "" {
+		return errorDom.Raise(ctx, errorDom.ErrInstanceInvalid, "instance domain cannot be empty", nil, extraData)
 	}
 
 	switch challengeType {
