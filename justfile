@@ -24,18 +24,15 @@ help:
 # Build the docker image
 docker-build RESOURCE TAG="":
 	#!/usr/bin/env bash
+	cd {{RESOURCE}}
 	if [ -z "{{TAG}}" ]; then
-		TAG=$(cat {{RESOURCE}}/VERSION)
+		TAG=$(cat VERSION)
 	else
 		TAG="{{TAG}}"
 	fi
-	echo "[#] ensuring buildx builder exists..."
-	docker buildx create --name isolet-builder --use 2>/dev/null || docker buildx use isolet-builder
-	echo "[#] building multi-platform docker image for {{RESOURCE}} with tag $TAG"
-	docker buildx build --platform linux/amd64,linux/arm64 \
-		-t {{REGISTRY}}/isolet-{{RESOURCE}}:$TAG \
-		-t {{REGISTRY}}/isolet-{{RESOURCE}}:latest \
-		-f {{RESOURCE}}/Dockerfile .
+	echo "[#] building docker image for {{RESOURCE}} with tag $TAG"
+	docker build -t {{REGISTRY}}/isolet-{{RESOURCE}}:$TAG .
+	docker build -t {{REGISTRY}}/isolet-{{RESOURCE}}:latest .
 	echo "[#] built docker image for {{RESOURCE}} with tag $TAG"
 
 # Push the docker image to the registry
