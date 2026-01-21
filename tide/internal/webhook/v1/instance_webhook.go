@@ -99,6 +99,11 @@ func (v *InstanceCustomValidator) ValidateCreate(_ context.Context, obj runtime.
 	}
 	instancelog.Info("Validation for Instance upon creation", "name", instance.GetName())
 
+	// enforce required challenge fields
+	if instance.Spec.Challenge.Domain == "" {
+		return nil, fmt.Errorf("challenge.domain is required")
+	}
+
 	// enforce team for on-demand challenges
 	if instance.Spec.Challenge.Type == challengesv1.ChallengeTypeOnDemand && instance.Spec.Team == nil {
 		return nil, fmt.Errorf("team must be set for on-demand challenges")
@@ -147,6 +152,9 @@ func (v *InstanceCustomValidator) ValidateUpdate(_ context.Context, oldObj, newO
 	}
 	if oldInstance.Spec.Challenge.Type != newInstance.Spec.Challenge.Type {
 		return nil, fmt.Errorf("challenge.type is immutable")
+	}
+	if oldInstance.Spec.Challenge.Domain != newInstance.Spec.Challenge.Domain {
+		return nil, fmt.Errorf("challenge.domain is immutable")
 	}
 
 	// prevent changes to team
