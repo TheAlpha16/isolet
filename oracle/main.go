@@ -153,6 +153,4 @@ func StartConsumer(ctx context.Context, usecases *usecase.Usecases, infra *infra
 TODO
 - add metrics to api, herald, tide
 - dont init full usecases in case of listener and consumer
-- remove listener
-- add hardcoded things to config in tide
 */
