@@ -21,7 +21,6 @@ const (
 	PROD  Environment = "prod"
 
 	IdentityRest     Identity = "rest"
-	IdentityListener Identity = "listener"
 	IdentityConsumer Identity = "consumer"
 )
 

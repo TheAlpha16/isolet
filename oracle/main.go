@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/TheAlpha16/isolet/oracle/delivery/consumer"
-	"github.com/TheAlpha16/isolet/oracle/delivery/listener"
 	restDel "github.com/TheAlpha16/isolet/oracle/delivery/rest"
 	"github.com/TheAlpha16/isolet/oracle/external"
 	"github.com/TheAlpha16/isolet/oracle/infra"
@@ -90,8 +89,6 @@ func main() {
 	switch utils.GetConfig().Identity {
 	case utils.IdentityRest:
 		StartRestServer(ctx, usecases, infra)
-	case utils.IdentityListener:
-		StartListener(ctx, usecases, infra)
 	case utils.IdentityConsumer:
 		StartConsumer(ctx, usecases, infra, &wg)
 	default:
@@ -128,10 +125,6 @@ func StartRestServer(ctx context.Context, usecases *usecase.Usecases, infra *inf
 		restDel.Shutdown(app)
 	}
 	go restDel.StartServer(app)
-}
-
-func StartListener(ctx context.Context, usecases *usecase.Usecases, infra *infra.Infra) {
-	go listener.Start(ctx, usecases, infra)
 }
 
 func StartConsumer(ctx context.Context, usecases *usecase.Usecases, infra *infra.Infra, wg *sync.WaitGroup) {
