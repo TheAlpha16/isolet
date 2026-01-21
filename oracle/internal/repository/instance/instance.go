@@ -3,6 +3,7 @@ package instance
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/TheAlpha16/isolet/oracle/internal/domain/common"
 	errorDom "github.com/TheAlpha16/isolet/oracle/internal/domain/errors"
@@ -115,6 +116,14 @@ func (ir *instanceRepo) DeleteByRefs(ctx context.Context, teamID *int64, challen
 		return errorDom.Raise(ctx, errorDom.ErrDBDeleteError, "failed to delete instance by refs", err, common.ExtraData{"team_id": teamID, "challenge_id": challengeID})
 	}
 	return nil
+}
+
+func (ir *instanceRepo) DeleteExpired(ctx context.Context, now time.Time) (int64, error) {
+	result := ir.db.WithContext(ctx).Where("expires_at <= ?", now).Delete(&Instance{})
+	if err := result.Error; err != nil {
+		return 0, errorDom.Raise(ctx, errorDom.ErrDBDeleteError, "failed to delete expired instances", err, common.ExtraData{"now": now})
+	}
+	return result.RowsAffected, nil
 }
 
 func New(db *gorm.DB) instanceDom.Repository {

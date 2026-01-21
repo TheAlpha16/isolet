@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	"time"
 
 	manifestDom "github.com/TheAlpha16/isolet/oracle/internal/domain/manifest"
 )
@@ -22,6 +23,7 @@ type Repository interface {
 	Update(ctx context.Context, id int64, updates map[string]any) error
 	Delete(ctx context.Context, id int64) error
 	DeleteByRefs(ctx context.Context, teamID *int64, challengeID int64) error
+	DeleteExpired(ctx context.Context, now time.Time) (int64, error)
 }
 
 type Service interface {
