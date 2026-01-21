@@ -103,6 +103,7 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 			AllowExtension: true,
 		},
 		Endpoints: []*instanceDom.Endpoint{}, // will be populated by service after K8s creation
+		Domain:    i.cvUc.GetString(ctx, cvDom.InstanceDomain),
 	}
 
 	if err := inst.Validate(ctx, manifest.Type); err != nil {
@@ -164,6 +165,9 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 	if instance.TeamID == nil || *instance.TeamID != teamID {
 		return nil, errorDom.Raise(ctx, errorDom.ErrInstanceNotFound, "", nil, nil)
 	}
+
+	// update instance domain from config vars
+	instance.Domain = i.cvUc.GetString(ctx, cvDom.InstanceDomain)
 
 	// Get challenge to validate type
 	challenge, err := i.challengeUc.ValidateAccess(ctx, instance.ChallengeID, teamID)

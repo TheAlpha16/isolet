@@ -29,11 +29,12 @@ func toTideInstance(ctx context.Context, inst *instanceDom.Instance, manifest *m
 		},
 		Spec: tidev1.InstanceSpec{
 			Challenge: tidev1.Challenge{
-				ID:    manifest.ChallengeID,
-				Slug:  manifest.Slug,
-				Flag:  inst.Flag,
-				Type:  tidev1.ChallengeType(manifest.Type),
-				Image: manifest.Image,
+				ID:     manifest.ChallengeID,
+				Slug:   manifest.Slug,
+				Flag:   inst.Flag,
+				Type:   tidev1.ChallengeType(manifest.Type),
+				Image:  manifest.Image,
+				Domain: inst.Domain,
 			},
 		},
 	}
