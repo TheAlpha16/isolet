@@ -30,4 +30,7 @@ var (
 
 	// team
 	TeamMaxSize = ConfigKey[int]{Name: "team_max_size", Default: 4}
+
+	// instance
+	InstanceDomain = ConfigKey[string]{Name: "instance_domain", Default: "isolet.dev"}
 )
