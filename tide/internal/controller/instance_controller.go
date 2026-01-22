@@ -47,6 +47,20 @@ type InstanceReconciler struct {
 	Recorder record.EventRecorder
 }
 
+const (
+	// StatusUpdateRetryInterval is the retry interval when status update conflicts occur
+	StatusUpdateRetryInterval = 3 * time.Second
+
+	// PendingPhaseCheckInterval is how often to check Pod status during Pending phase
+	PendingPhaseCheckInterval = 5 * time.Second
+
+	// TerminationCheckInterval is the requeue interval during termination
+	TerminationCheckInterval = 1 * time.Second
+
+	// ImmediateRequeueInterval is for immediate requeue for time-based transitions
+	ImmediateRequeueInterval = 1 * time.Second
+)
+
 // +kubebuilder:rbac:groups=challenges.isolet.dev,resources=instances,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=challenges.isolet.dev,resources=instances/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=challenges.isolet.dev,resources=instances/finalizers,verbs=update
@@ -113,7 +127,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			if err := r.Status().Update(ctx, &instance); err != nil {
 				log.Error(err, "Failed to update Instance status to Terminated", "namespace", instance.Namespace, "name", instance.Name)
 			}
-			return ctrl.Result{RequeueAfter: time.Second}, nil
+			return ctrl.Result{RequeueAfter: TerminationCheckInterval}, nil
 		}
 		if controllerutil.ContainsFinalizer(&instance, utils.InstanceFinalizer) {
 			controllerutil.RemoveFinalizer(&instance, utils.InstanceFinalizer)
@@ -138,7 +152,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 					return ctrl.Result{}, err
 				}
 				r.Recorder.Event(&instance, corev1.EventTypeWarning, utils.EventReasonExpired, fmt.Sprintf("Instance expired at %s", instance.Spec.Lifecycle.ExpiresAt.Time))
-				return ctrl.Result{RequeueAfter: time.Second}, nil
+				return ctrl.Result{RequeueAfter: ImmediateRequeueInterval}, nil
 			}
 			log.Info("Instance has expired, deleting",
 				"namespace", instance.Namespace,
@@ -324,7 +338,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		if err := r.Status().Patch(ctx, latestInstance, patch); err != nil {
 			log.Error(err, "Unable to patch Instance status", "instance", req.NamespacedName)
 			// Don't return error - let it requeue naturally and retry
-			return ctrl.Result{RequeueAfter: time.Second * 2}, nil
+			return ctrl.Result{RequeueAfter: StatusUpdateRetryInterval}, nil
 		}
 		log.Info("Successfully updated Instance status",
 			"instance", instance.Name,
@@ -337,7 +351,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// 1. Poll for Pod failures if Pending (Deployment not ready)
 	if instance.Status.Phase == challengesv1.PhasePending {
-		requeueAfter = 10 * time.Second
+		requeueAfter = PendingPhaseCheckInterval
 	}
 
 	// 2. Wait for Staged -> Running transition (AvailableAt)
@@ -351,7 +365,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 				requeueAfter = availableIn
 			}
 		} else {
-			requeueAfter = 1 * time.Second
+			requeueAfter = ImmediateRequeueInterval
 		}
 	}
 
