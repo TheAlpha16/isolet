@@ -83,8 +83,7 @@ push-all:
 
 # Run the API service
 oracle-run:
-	dotenv -f .env -- dotenv -f {{ORACLE}}/.env -- \
-		sh -c 'cd {{ORACLE}} && {{GORUN_COMMAND}} main.go'
+	cd {{ORACLE}} && {{GORUN_COMMAND}} main.go
 
 # Tidy API Go modules
 oracle-tidy:
@@ -132,8 +131,7 @@ tide-version:
 
 # Generate UI client from OpenAPI spec
 ui-generate:
-	dotenv -f .env -- \
-		npx openoracle-typescript-codegen --input {{ORACLE}}/openapi.yaml --output {{UI}}/api
+	npx openoracle-typescript-codegen --input {{ORACLE}}/openapi.yaml --output {{UI}}/api
 	@echo "Generated UI client from OpenAPI spec."
 
 # Run the UI development server
@@ -172,8 +170,7 @@ socky-version:
 
 # Run the Herald service
 herald-run:
-	dotenv -f .env -- dotenv -f {{HERALD}}/.env -- \
-		sh -c 'cd {{HERALD}} && {{GORUN_COMMAND}} main.go'
+	cd {{HERALD}} && {{GORUN_COMMAND}} main.go
 
 # Tidy Herald Go modules
 herald-tidy:
