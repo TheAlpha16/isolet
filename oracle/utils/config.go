@@ -48,6 +48,11 @@ type Config struct {
 		TraceSampleRate float64 `env:"SENTRY_TRACE_SAMPLE_RATE" envDefault:"0.05"`
 	}
 
+	Metrics struct {
+		Port int    `env:"METRICS_PORT" envDefault:"6969"`
+		Path string `env:"METRICS_PATH" envDefault:"/metrics"`
+	}
+
 	Rest struct {
 		Port             int    `env:"REST_PORT" envDefault:"80"`
 		APIVersionPrefix string `env:"REST_API_VERSION_PREFIX" envDefault:"/api/v1"`
