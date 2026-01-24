@@ -39,6 +39,7 @@ func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
 
 	// Setup middlewares
 	app.Use(middleware.ContextMiddleware())
+	app.Use(middleware.MetricsMiddleware())
 	app.Use(otelfiber.Middleware(
 		otelfiber.WithNext(func(c *fiber.Ctx) bool {
 			return (c.Path() == utils.RoutePing || c.Path() == utils.RouteMetrics)
