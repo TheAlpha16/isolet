@@ -99,7 +99,7 @@ oracle-version:
 
 # Start consumer for processing
 oracle-consumer:
-	cd {{ORACLE}} && IDENTITY=consumer {{GORUN_COMMAND}} main.go
+	cd {{ORACLE}} && IDENTITY=consumer METRICS_PORT=6868 {{GORUN_COMMAND}} main.go
 
 # --- Tide Controller commands ---
 
