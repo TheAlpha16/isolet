@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 
 	"github.com/TheAlpha16/isolet/oracle/utils"
+
 	tidev1 "github.com/TheAlpha16/isolet/tide/api/v1"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"

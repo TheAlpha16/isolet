@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -16,8 +17,6 @@ import (
 	"github.com/TheAlpha16/isolet/oracle/utils/tracer"
 
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
 )
 
 var instanceTracer = otel.Tracer("usecase.instance")
@@ -113,37 +112,39 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 	}
 
 	if err := i.service.Start(ctx, &inst, manifest); err != nil {
-		tracer.InstanceOperationsTotal.Add(ctx, 1, metric.WithAttributes(
-			attribute.String("operation", "start"),
-			attribute.String("status", "failure"),
-			attribute.Int64("challenge_id", input.ChallengeID),
-		))
+		tracer.InstanceOperationsTotal.WithLabelValues(
+			fmt.Sprintf("%d", input.ChallengeID),
+			"start",
+			"failure",
+		).Inc()
 		return nil, err
 	}
 
 	instance, err = i.repo.Create(ctx, &inst)
 	if err != nil {
-		tracer.InstanceOperationsTotal.Add(ctx, 1, metric.WithAttributes(
-			attribute.String("operation", "start"),
-			attribute.String("status", "failure"),
-			attribute.Int64("challenge_id", input.ChallengeID),
-		))
+		tracer.InstanceOperationsTotal.WithLabelValues(
+			fmt.Sprintf("%d", input.ChallengeID),
+			"start",
+			"failure",
+		).Inc()
 		return nil, err
 	}
 
-	// Metrics: success
-	opAttrs := metric.WithAttributes(
-		attribute.String("operation", "start"),
-		attribute.String("status", "success"),
-		attribute.Int64("challenge_id", input.ChallengeID),
-	)
-	tracer.InstanceOperationsTotal.Add(ctx, 1, opAttrs)
-	tracer.InstanceProvisionDurationSeconds.Record(ctx, time.Since(timeNow).Seconds(), opAttrs)
+	tracer.InstanceOperationsTotal.WithLabelValues(
+		fmt.Sprintf("%d", input.ChallengeID),
+		"start",
+		"success",
+	).Inc()
 
-	// Gauge only needs challenge_id
-	tracer.InstanceActiveTotal.Add(ctx, 1, metric.WithAttributes(
-		attribute.Int64("challenge_id", input.ChallengeID),
-	))
+	tracer.InstanceProvisionDurationSeconds.WithLabelValues(
+		fmt.Sprintf("%d", input.ChallengeID),
+		"start",
+		"success",
+	).Observe(time.Since(timeNow).Seconds())
+
+	tracer.InstanceActiveTotal.WithLabelValues(
+		fmt.Sprintf("%d", input.ChallengeID),
+	).Inc()
 
 	return instance.ToDTO(), nil
 }
@@ -173,25 +174,24 @@ func (i *instanceImpl) Stop(ctx context.Context, input *instanceDom.StopInput) e
 
 	// delete from database
 	if err := i.repo.Delete(ctx, instance.ID); err != nil {
-		tracer.InstanceOperationsTotal.Add(ctx, 1, metric.WithAttributes(
-			attribute.String("operation", "stop"),
-			attribute.String("status", "failure"),
-			attribute.Int64("challenge_id", instance.ChallengeID),
-		))
+		tracer.InstanceOperationsTotal.WithLabelValues(
+			fmt.Sprintf("%d", instance.ChallengeID),
+			"stop",
+			"failure",
+		).Inc()
 		return err
 	}
 
-	opAttrs := metric.WithAttributes(
-		attribute.String("operation", "stop"),
-		attribute.String("status", "success"),
-		attribute.Int64("challenge_id", instance.ChallengeID),
-	)
-	tracer.InstanceOperationsTotal.Add(ctx, 1, opAttrs)
+	tracer.InstanceOperationsTotal.WithLabelValues(
+		fmt.Sprintf("%d", instance.ChallengeID),
+		"stop",
+		"success",
+	).Inc()
 
 	// Gauge only needs challenge_id
-	tracer.InstanceActiveTotal.Add(ctx, -1, metric.WithAttributes(
-		attribute.Int64("challenge_id", instance.ChallengeID),
-	))
+	tracer.InstanceActiveTotal.WithLabelValues(
+		fmt.Sprintf("%d", instance.ChallengeID),
+	).Dec()
 
 	return nil
 }
@@ -251,19 +251,19 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 	if err := i.repo.Update(ctx, instance.ID, map[string]any{
 		instanceDom.ExpiresAtColumn: instance.Lifecycle.ExpiresAt.Unix(),
 	}); err != nil {
-		tracer.InstanceOperationsTotal.Add(ctx, 1, metric.WithAttributes(
-			attribute.String("operation", "extend"),
-			attribute.String("status", "failure"),
-			attribute.Int64("challenge_id", instance.ChallengeID),
-		))
+		tracer.InstanceOperationsTotal.WithLabelValues(
+			fmt.Sprintf("%d", instance.ChallengeID),
+			"extend",
+			"failure",
+		).Inc()
 		return nil, err
 	}
 
-	tracer.InstanceOperationsTotal.Add(ctx, 1, metric.WithAttributes(
-		attribute.String("operation", "extend"),
-		attribute.String("status", "success"),
-		attribute.Int64("challenge_id", instance.ChallengeID),
-	))
+	tracer.InstanceOperationsTotal.WithLabelValues(
+		fmt.Sprintf("%d", instance.ChallengeID),
+		"extend",
+		"success",
+	).Inc()
 
 	return instance.ToDTO(), nil
 }

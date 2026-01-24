@@ -13,8 +13,6 @@ import (
 	"github.com/TheAlpha16/isolet/oracle/utils/tracer"
 
 	"github.com/go-gomail/gomail"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/zap"
 )
 
@@ -89,9 +87,8 @@ func (s *smtpImpl) handleEmail(message *gomail.Message) {
 		if err != nil {
 			status = "failure"
 		}
-		attrs := metric.WithAttributes(attribute.String("status", status))
-		tracer.EmailsSentTotal.Add(s.ctx, 1, attrs)
-		tracer.EmailSendDurationSeconds.Record(s.ctx, time.Since(start).Seconds(), attrs)
+		tracer.EmailsSentTotal.WithLabelValues(status).Inc()
+		tracer.EmailSendDurationSeconds.WithLabelValues(status).Observe(time.Since(start).Seconds())
 	}()
 
 	for i := 0; i <= s.config.Retries; i++ {
