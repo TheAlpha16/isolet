@@ -105,11 +105,12 @@ type Config struct {
 	}
 
 	K8s struct {
-		KubeConfigFilePath string        `env:"K8S_KUBE_CONFIG_FILE_PATH" envDefault:""`
-		InstanceKind       string        `env:"K8S_INSTANCE_KIND" envDefault:"Instance"`
-		InstanceAPIVersion string        `env:"K8S_INSTANCE_API_VERSION" envDefault:"challenges.isolet.dev/v1"`
-		InstancePollRate   time.Duration `env:"K8S_INSTANCE_POLL_RATE" envDefault:"5s"`
-		InsecureSkipVerify bool          `env:"K8S_INSECURE_SKIP_VERIFY" envDefault:"false"`
+		KubeConfigFilePath     string        `env:"K8S_KUBE_CONFIG_FILE_PATH" envDefault:""`
+		InstanceKind           string        `env:"K8S_INSTANCE_KIND" envDefault:"Instance"`
+		InstanceAPIVersion     string        `env:"K8S_INSTANCE_API_VERSION" envDefault:"challenges.isolet.dev/v1"`
+		InstanceStartPollRate  time.Duration `env:"K8S_INSTANCE_START_POLL_RATE" envDefault:"3s"`
+		InstanceDeletePollRate time.Duration `env:"K8S_INSTANCE_DELETE_POLL_RATE" envDefault:"1s"`
+		InsecureSkipVerify     bool          `env:"K8S_INSECURE_SKIP_VERIFY" envDefault:"false"`
 	}
 
 	Manifest struct {

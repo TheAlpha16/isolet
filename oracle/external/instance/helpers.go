@@ -54,7 +54,7 @@ func (is *instanceSvc) ensureInstanceReady(ctx context.Context, old *tidev1.Inst
 			zap.String("instance", old.Name),
 			zap.String("phase", string(createdInst.Status.Phase)),
 		)
-		tracer.Sleep(ctx, "instance.ensureInstanceReady", utils.GetConfig().K8s.InstancePollRate)
+		tracer.Sleep(ctx, "instance.ensureInstanceReady", utils.GetConfig().K8s.InstanceStartPollRate)
 	}
 
 	if createdInst.Status.Phase != tidev1.PhaseRunning {
@@ -90,7 +90,7 @@ func (is *instanceSvc) ensureInstanceDeleted(ctx context.Context, name, namespac
 			zap.String("instance", name),
 			zap.Int("attempt", attempts+1),
 		)
-		tracer.Sleep(ctx, "instance.ensureInstanceDeleted", utils.GetConfig().K8s.InstancePollRate)
+		tracer.Sleep(ctx, "instance.ensureInstanceDeleted", utils.GetConfig().K8s.InstanceDeletePollRate)
 		attempts++
 	}
 
