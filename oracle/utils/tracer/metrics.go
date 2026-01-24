@@ -65,6 +65,7 @@ func InitMetrics(ctx context.Context) error {
 		"instance_provision_duration_seconds",
 		metric.WithDescription("Time taken to provision an instance"),
 		metric.WithUnit("s"),
+		metric.WithExplicitBucketBoundaries(1, 2, 5, 10, 15, 20, 30, 60),
 	)
 	if err != nil {
 		return err
