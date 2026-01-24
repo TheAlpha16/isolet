@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"context"
+	"time"
 
 	errorDom "github.com/TheAlpha16/isolet/oracle/internal/domain/errors"
 	factDom "github.com/TheAlpha16/isolet/oracle/internal/domain/fact"
@@ -51,20 +52,30 @@ func (c *Consumer) Start(ctx context.Context) error {
 			case *kafka.Message:
 				deserializer, ok := c.deserializers[*e.TopicPartition.Topic]
 				if !ok {
+					tracer.FactsTotal.WithLabelValues(*e.TopicPartition.Topic, "ignored", "unknown").Inc()
 					logger.Warn("no deserializer found for topic", zap.String("topic", *e.TopicPartition.Topic))
 					continue
 				}
 
+				start := time.Now()
 				fact, err := deserializer(eventCtx, e.Value)
 				if err != nil {
+					tracer.FactsTotal.WithLabelValues(*e.TopicPartition.Topic, "error", "unknown").Inc()
 					errorDom.RaiseToSentry(ctx, err)
 					logger.Error("failed to deserialize fact", zap.Error(err))
 					continue
 				}
 
-				if err := c.factUc.HandleEvent(eventCtx, fact); err != nil {
+				err = c.factUc.HandleEvent(eventCtx, fact)
+				status := "success"
+				if err != nil {
+					status = "error"
 					logger.Error("failed to handle event", zap.Error(err), zap.String("fact_type", string(fact.FactType())))
 				}
+
+				tracer.FactsTotal.WithLabelValues(*e.TopicPartition.Topic, status, string(fact.FactType())).Inc()
+				tracer.FactProcessingDurationSeconds.WithLabelValues(*e.TopicPartition.Topic, string(fact.FactType())).Observe(time.Since(start).Seconds())
+				tracer.FactDeliveryDurationSeconds.WithLabelValues(*e.TopicPartition.Topic, string(fact.FactType())).Observe(start.Sub(fact.OccuredAt()).Seconds())
 
 			case kafka.Error:
 				if e.IsFatal() {
