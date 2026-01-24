@@ -16,14 +16,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var tracer = otel.Tracer("api/external/instance")
+var instanceTracer = otel.Tracer("api/external/instance")
 
 type instanceSvc struct {
 	client sdk.Handler
 }
 
 func (is *instanceSvc) Start(ctx context.Context, inst *instanceDom.Instance, manifest *manifestDom.Manifest) error {
-	ctx, span := tracer.Start(ctx, "instance.Start")
+	ctx, span := instanceTracer.Start(ctx, "instance.Start")
 	defer span.End()
 
 	tideInstance := toTideInstance(ctx, inst, manifest)
@@ -46,7 +46,7 @@ func (is *instanceSvc) Start(ctx context.Context, inst *instanceDom.Instance, ma
 }
 
 func (is *instanceSvc) Stop(ctx context.Context, inst *instanceDom.Instance) error {
-	ctx, span := tracer.Start(ctx, "instance.Stop")
+	ctx, span := instanceTracer.Start(ctx, "instance.Stop")
 	defer span.End()
 
 	namespace := utils.GetConfig().Instances.Namespace
@@ -63,7 +63,7 @@ func (is *instanceSvc) Stop(ctx context.Context, inst *instanceDom.Instance) err
 }
 
 func (is *instanceSvc) Extend(ctx context.Context, inst *instanceDom.Instance) error {
-	ctx, span := tracer.Start(ctx, "instance.Extend")
+	ctx, span := instanceTracer.Start(ctx, "instance.Extend")
 	defer span.End()
 
 	tideInstance, err := is.client.GetInstance(ctx, inst.Name(), utils.GetConfig().Instances.Namespace)
