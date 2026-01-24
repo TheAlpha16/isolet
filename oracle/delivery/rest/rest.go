@@ -35,7 +35,7 @@ func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
 	)
 
 	// Register metrics endpoint
-	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
+	app.Get(utils.RouteMetrics, adaptor.HTTPHandler(promhttp.Handler()))
 
 	// Setup middlewares
 	app.Use(middleware.ContextMiddleware())
