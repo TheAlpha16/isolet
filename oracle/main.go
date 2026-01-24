@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/TheAlpha16/isolet/oracle/delivery/consumer"
+	"github.com/TheAlpha16/isolet/oracle/delivery/metrics"
 	restDel "github.com/TheAlpha16/isolet/oracle/delivery/rest"
 	"github.com/TheAlpha16/isolet/oracle/external"
 	"github.com/TheAlpha16/isolet/oracle/infra"
@@ -90,6 +91,15 @@ func main() {
 	// Init usecases
 	usecases := usecase.New(ctx, &wg, cache, repos, infra, external)
 
+	// Start metrics server
+	metricsServer := metrics.New()
+	wg.Go(func() {
+		metricsServer.Start()
+	})
+	utils.InterruptHandlerChannel <- func() {
+		metricsServer.Shutdown(ctx)
+	}
+
 	// Start the server based on identity
 	switch utils.GetConfig().Identity {
 	case utils.IdentityRest:
@@ -156,6 +166,6 @@ func StartConsumer(ctx context.Context, usecases *usecase.Usecases, infra *infra
 
 /*
 TODO
-- add metrics to api, herald, tide
+- add metrics to herald, tide
 - dont init full usecases in case of listener and consumer
 */
