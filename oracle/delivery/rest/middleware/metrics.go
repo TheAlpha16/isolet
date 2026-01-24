@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
@@ -16,9 +15,6 @@ func MetricsMiddleware() fiber.Handler {
 		start := time.Now()
 		method := utils.CopyString(c.Method())
 		path := utils.CopyString(c.Path())
-
-		// DEBUG
-		fmt.Println("[MetricsMiddleware] method:", method, "path:", path)
 
 		tracer.HttpRequestsInFlight.WithLabelValues(path).Inc()
 		defer tracer.HttpRequestsInFlight.WithLabelValues(path).Dec()
