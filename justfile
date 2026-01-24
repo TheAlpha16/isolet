@@ -53,6 +53,10 @@ docker-push RESOURCE TAG="":
 	docker push {{REGISTRY}}/isolet-{{RESOURCE}}:latest
 	echo "[#] pushed docker image for {{RESOURCE}} with tag $TAG to registry"
 
+build-push RESOURCE TAG="":
+	just docker-build {{RESOURCE}} {{TAG}}
+	just docker-push {{RESOURCE}} {{TAG}}
+
 # Bump version (usage: just bump RESOURCE patch | minor | major)
 bump RESOURCE LEVEL:
 	#!/usr/bin/env bash
