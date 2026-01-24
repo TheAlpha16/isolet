@@ -132,14 +132,18 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 	}
 
 	// Metrics: success
-	attrs := metric.WithAttributes(
+	opAttrs := metric.WithAttributes(
 		attribute.String("operation", "start"),
 		attribute.String("status", "success"),
 		attribute.Int64("challenge_id", input.ChallengeID),
 	)
-	tracer.InstanceOperationsTotal.Add(ctx, 1, attrs)
-	tracer.InstanceActiveTotal.Add(ctx, 1, attrs)
-	tracer.InstanceProvisionDurationSeconds.Record(ctx, time.Since(timeNow).Seconds(), attrs)
+	tracer.InstanceOperationsTotal.Add(ctx, 1, opAttrs)
+	tracer.InstanceProvisionDurationSeconds.Record(ctx, time.Since(timeNow).Seconds(), opAttrs)
+
+	// Gauge only needs challenge_id
+	tracer.InstanceActiveTotal.Add(ctx, 1, metric.WithAttributes(
+		attribute.Int64("challenge_id", input.ChallengeID),
+	))
 
 	return instance.ToDTO(), nil
 }
@@ -177,13 +181,17 @@ func (i *instanceImpl) Stop(ctx context.Context, input *instanceDom.StopInput) e
 		return err
 	}
 
-	attrs := metric.WithAttributes(
+	opAttrs := metric.WithAttributes(
 		attribute.String("operation", "stop"),
 		attribute.String("status", "success"),
 		attribute.Int64("challenge_id", instance.ChallengeID),
 	)
-	tracer.InstanceOperationsTotal.Add(ctx, 1, attrs)
-	tracer.InstanceActiveTotal.Add(ctx, -1, attrs)
+	tracer.InstanceOperationsTotal.Add(ctx, 1, opAttrs)
+
+	// Gauge only needs challenge_id
+	tracer.InstanceActiveTotal.Add(ctx, -1, metric.WithAttributes(
+		attribute.Int64("challenge_id", instance.ChallengeID),
+	))
 
 	return nil
 }
