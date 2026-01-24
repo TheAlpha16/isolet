@@ -36,7 +36,6 @@ var (
 		prometheus.HistogramOpts{
 			Name:    "instance_provision_duration_seconds",
 			Help:    "Time taken to provision an instance",
-			Buckets: []float64{1, 2, 5, 10, 15, 20, 30, 60},
 		},
 		[]string{"challenge_id", "operation", "status"},
 	)
@@ -71,7 +70,6 @@ var (
 		prometheus.HistogramOpts{
 			Name:    "http_request_duration_seconds",
 			Help:    "Duration of HTTP requests",
-			Buckets: []float64{0.1, 0.5, 1, 2, 5},
 		},
 		[]string{"method", "route"},
 	)
