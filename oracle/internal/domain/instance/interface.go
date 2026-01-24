@@ -22,7 +22,7 @@ type Repository interface {
 	GetByTeam(ctx context.Context, teamID int64) ([]*Instance, error)
 	Update(ctx context.Context, id int64, updates map[string]any) error
 	Delete(ctx context.Context, id int64) error
-	DeleteByRefs(ctx context.Context, teamID *int64, challengeID int64) error
+	DeleteByRefs(ctx context.Context, teamID *int64, challengeID int64) (int64, error)
 	DeleteExpired(ctx context.Context, now time.Time) (int64, error)
 }
 
