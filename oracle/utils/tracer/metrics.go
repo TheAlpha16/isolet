@@ -24,7 +24,9 @@ var (
 )
 
 func InitMetrics(ctx context.Context) error {
-	exporter, err := prometheus.New()
+	exporter, err := prometheus.New(
+		prometheus.WithoutScopeInfo(),
+	)
 	if err != nil {
 		return err
 	}
