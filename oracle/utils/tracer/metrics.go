@@ -34,8 +34,8 @@ var (
 
 	InstanceProvisionDurationSeconds = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "instance_provision_duration_seconds",
-			Help:    "Time taken to provision an instance",
+			Name: "instance_provision_duration_seconds",
+			Help: "Time taken to provision an instance",
 		},
 		[]string{"challenge_id", "operation", "status"},
 	)
@@ -68,8 +68,8 @@ var (
 
 	HttpRequestDurationSeconds = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "http_request_duration_seconds",
-			Help:    "Duration of HTTP requests",
+			Name: "http_request_duration_seconds",
+			Help: "Duration of HTTP requests",
 		},
 		[]string{"method", "route"},
 	)
@@ -80,6 +80,31 @@ var (
 			Help: "Current number of in-flight HTTP requests",
 		},
 		[]string{"route"},
+	)
+
+	// Facts
+	FactsTotal = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "facts_total",
+			Help: "Total number of facts processed",
+		},
+		[]string{"topic", "status", "fact_type"},
+	)
+
+	FactDeliveryDurationSeconds = promauto.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name: "fact_delivery_duration_seconds",
+			Help: "Time taken to deliver a fact",
+		},
+		[]string{"topic", "fact_type"},
+	)
+
+	FactProcessingDurationSeconds = promauto.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name: "fact_processing_duration_seconds",
+			Help: "Time taken to process a fact",
+		},
+		[]string{"topic", "fact_type"},
 	)
 )
 
