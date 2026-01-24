@@ -41,7 +41,7 @@ func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
 	app.Use(middleware.ContextMiddleware())
 	app.Use(otelfiber.Middleware(
 		otelfiber.WithNext(func(c *fiber.Ctx) bool {
-			return c.Path() == utils.RoutePing
+			return (c.Path() == utils.RoutePing || c.Path() == utils.RouteMetrics)
 		}),
 		otelfiber.WithCustomAttributes(func(ctx *fiber.Ctx) []attribute.KeyValue {
 			return []attribute.KeyValue{
