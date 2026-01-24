@@ -34,6 +34,11 @@ func main() {
 	// Init Sentry
 	tracer.InitSentry(utils.GetConfig())
 
+	// Init Metrics
+	if err := tracer.InitMetrics(ctx); err != nil {
+		appLogger.Fatal("failed to initialize metrics", zap.Error(err))
+	}
+
 	// Initialize database connection
 	dbPool, closeDBConn, err := ConnectToPostgresDatabase(ctx)
 	if err != nil {

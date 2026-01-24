@@ -20,6 +20,8 @@ import (
 
 	"github.com/gofiber/contrib/otelfiber/v2"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/adaptor"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 )
 
@@ -30,6 +32,9 @@ func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
 			AppName: config.Name,
 		},
 	)
+
+	// Register metrics endpoint
+	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 
 	// Setup middlewares
 	app.Use(middleware.ContextMiddleware())

@@ -11,6 +11,10 @@ import (
 	instanceDom "github.com/TheAlpha16/isolet/oracle/internal/domain/instance"
 	scoreDom "github.com/TheAlpha16/isolet/oracle/internal/domain/score"
 	"github.com/TheAlpha16/isolet/oracle/utils"
+	"github.com/TheAlpha16/isolet/oracle/utils/tracer"
+
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 )
 
 type challengeImpl struct {
@@ -139,6 +143,11 @@ func (c *challengeImpl) SubmitFlag(ctx context.Context, input *challengeDom.Subm
 			}()
 		}
 	}
+
+	tracer.FlagSubmissionsTotal.Add(ctx, 1, metric.WithAttributes(
+		attribute.Int64("challenge_id", input.ChallengeID),
+		attribute.Bool("correct", isCorrect),
+	))
 
 	return &challengeDom.SubmitFlagOutput{
 		IsCorrect: isCorrect,

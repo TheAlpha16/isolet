@@ -16,6 +16,8 @@ import (
 	"github.com/TheAlpha16/isolet/oracle/utils/tracer"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 )
 
 var instanceTracer = otel.Tracer("usecase.instance")
@@ -111,13 +113,33 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 	}
 
 	if err := i.service.Start(ctx, &inst, manifest); err != nil {
+		tracer.InstanceOperationsTotal.Add(ctx, 1, metric.WithAttributes(
+			attribute.String("operation", "start"),
+			attribute.String("status", "failure"),
+			attribute.Int64("challenge_id", input.ChallengeID),
+		))
 		return nil, err
 	}
 
 	instance, err = i.repo.Create(ctx, &inst)
 	if err != nil {
+		tracer.InstanceOperationsTotal.Add(ctx, 1, metric.WithAttributes(
+			attribute.String("operation", "start"),
+			attribute.String("status", "failure"),
+			attribute.Int64("challenge_id", input.ChallengeID),
+		))
 		return nil, err
 	}
+
+	// Metrics: success
+	attrs := metric.WithAttributes(
+		attribute.String("operation", "start"),
+		attribute.String("status", "success"),
+		attribute.Int64("challenge_id", input.ChallengeID),
+	)
+	tracer.InstanceOperationsTotal.Add(ctx, 1, attrs)
+	tracer.InstanceActiveTotal.Add(ctx, 1, attrs)
+	tracer.InstanceProvisionDurationSeconds.Record(ctx, time.Since(timeNow).Seconds(), attrs)
 
 	return instance.ToDTO(), nil
 }
@@ -147,8 +169,21 @@ func (i *instanceImpl) Stop(ctx context.Context, input *instanceDom.StopInput) e
 
 	// delete from database
 	if err := i.repo.Delete(ctx, instance.ID); err != nil {
+		tracer.InstanceOperationsTotal.Add(ctx, 1, metric.WithAttributes(
+			attribute.String("operation", "stop"),
+			attribute.String("status", "failure"),
+			attribute.Int64("challenge_id", instance.ChallengeID),
+		))
 		return err
 	}
+
+	attrs := metric.WithAttributes(
+		attribute.String("operation", "stop"),
+		attribute.String("status", "success"),
+		attribute.Int64("challenge_id", instance.ChallengeID),
+	)
+	tracer.InstanceOperationsTotal.Add(ctx, 1, attrs)
+	tracer.InstanceActiveTotal.Add(ctx, -1, attrs)
 
 	return nil
 }
@@ -208,8 +243,19 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 	if err := i.repo.Update(ctx, instance.ID, map[string]any{
 		instanceDom.ExpiresAtColumn: instance.Lifecycle.ExpiresAt.Unix(),
 	}); err != nil {
+		tracer.InstanceOperationsTotal.Add(ctx, 1, metric.WithAttributes(
+			attribute.String("operation", "extend"),
+			attribute.String("status", "failure"),
+			attribute.Int64("challenge_id", instance.ChallengeID),
+		))
 		return nil, err
 	}
+
+	tracer.InstanceOperationsTotal.Add(ctx, 1, metric.WithAttributes(
+		attribute.String("operation", "extend"),
+		attribute.String("status", "success"),
+		attribute.Int64("challenge_id", instance.ChallengeID),
+	))
 
 	return instance.ToDTO(), nil
 }
