@@ -38,12 +38,23 @@ type ZRangeItem struct {
 	Score  float64
 }
 
-func (c *cache) WithTrace(ctx context.Context, operation string) (context.Context, trace.Span) {
-	return c.tracer.Start(
+func (c *cache) WithTrace(ctx context.Context, operation string, key string) (context.Context, trace.Span) {
+	ctx, span := c.tracer.Start(
 		ctx,
 		fmt.Sprintf("valkey.%s", operation),
-		trace.WithAttributes(attribute.String("cache.operation", operation)),
+		trace.WithSpanKind(trace.SpanKindClient),
 	)
+
+	span.SetAttributes(
+		attribute.String("db.system", "redis"),
+		attribute.String("db.operation", operation),
+	)
+
+	if key != "" {
+		span.SetAttributes(attribute.String("db.redis.key", key))
+	}
+
+	return ctx, span
 }
 
 func NewClient(ctx context.Context, client valkey.Client) (Cache, error) {
