@@ -64,7 +64,7 @@ var (
 			Name: "http_requests_total",
 			Help: "Total number of HTTP requests",
 		},
-		[]string{"method", "path", "status"},
+		[]string{"method", "route", "status"},
 	)
 
 	HttpRequestDurationSeconds = promauto.NewHistogramVec(
@@ -73,7 +73,7 @@ var (
 			Help:    "Duration of HTTP requests",
 			Buckets: []float64{0.1, 0.5, 1, 2, 5},
 		},
-		[]string{"method", "path"},
+		[]string{"method", "route"},
 	)
 
 	HttpRequestsInFlight = promauto.NewGaugeVec(
@@ -81,7 +81,7 @@ var (
 			Name: "http_requests_in_flight",
 			Help: "Current number of in-flight HTTP requests",
 		},
-		[]string{"method", "path"},
+		[]string{"method", "route"},
 	)
 )
 
