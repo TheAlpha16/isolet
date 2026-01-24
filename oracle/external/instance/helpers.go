@@ -2,12 +2,12 @@ package instance
 
 import (
 	"context"
-	"time"
 
 	"github.com/TheAlpha16/isolet/oracle/internal/domain/common"
 	errorDom "github.com/TheAlpha16/isolet/oracle/internal/domain/errors"
 	"github.com/TheAlpha16/isolet/oracle/utils"
 	"github.com/TheAlpha16/isolet/oracle/utils/logger"
+	"github.com/TheAlpha16/isolet/oracle/utils/tracer"
 
 	tidev1 "github.com/TheAlpha16/isolet/tide/api/v1"
 	"go.uber.org/zap"
@@ -54,7 +54,7 @@ func (is *instanceSvc) ensureInstanceReady(ctx context.Context, old *tidev1.Inst
 			zap.String("instance", old.Name),
 			zap.String("phase", string(createdInst.Status.Phase)),
 		)
-		time.Sleep(utils.GetConfig().K8s.InstancePollRate)
+		tracer.Sleep(ctx, "instance.ensureInstanceReady", utils.GetConfig().K8s.InstancePollRate)
 	}
 
 	if createdInst.Status.Phase != tidev1.PhaseRunning {
@@ -90,7 +90,7 @@ func (is *instanceSvc) ensureInstanceDeleted(ctx context.Context, name, namespac
 			zap.String("instance", name),
 			zap.Int("attempt", attempts+1),
 		)
-		time.Sleep(utils.GetConfig().K8s.InstancePollRate)
+		tracer.Sleep(ctx, "instance.ensureInstanceDeleted", utils.GetConfig().K8s.InstancePollRate)
 		attempts++
 	}
 
