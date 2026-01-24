@@ -52,7 +52,7 @@ const (
 	StatusUpdateRetryInterval = 3 * time.Second
 
 	// PendingPhaseCheckInterval is how often to check Pod status during Pending phase
-	PendingPhaseCheckInterval = 5 * time.Second
+	PendingPhaseCheckInterval = 3 * time.Second
 
 	// TerminationCheckInterval is the requeue interval during termination
 	TerminationCheckInterval = 1 * time.Second
