@@ -73,7 +73,7 @@ var (
 			Help:    "Duration of HTTP requests",
 			Buckets: []float64{0.1, 0.5, 1, 2, 5},
 		},
-		[]string{"method", "path", "status"},
+		[]string{"method", "path"},
 	)
 
 	HttpRequestsInFlight = promauto.NewGaugeVec(
