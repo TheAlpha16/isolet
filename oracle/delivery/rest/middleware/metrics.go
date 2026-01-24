@@ -14,8 +14,8 @@ func MetricsMiddleware() fiber.Handler {
 		method := c.Method()
 		path := c.Route().Path
 
-		tracer.HttpRequestsInFlight.WithLabelValues(method, path).Inc()
-		defer tracer.HttpRequestsInFlight.WithLabelValues(method, path).Dec()
+		tracer.HttpRequestsInFlight.WithLabelValues(path).Inc()
+		defer tracer.HttpRequestsInFlight.WithLabelValues(path).Dec()
 
 		err := c.Next()
 

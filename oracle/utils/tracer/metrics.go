@@ -81,7 +81,7 @@ var (
 			Name: "http_requests_in_flight",
 			Help: "Current number of in-flight HTTP requests",
 		},
-		[]string{"method", "route"},
+		[]string{"route"},
 	)
 )
 
