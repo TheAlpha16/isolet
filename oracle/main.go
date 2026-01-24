@@ -35,7 +35,7 @@ func main() {
 	tracer.InitSentry(utils.GetConfig())
 
 	// Init Metrics
-	if err := tracer.InitMetrics(ctx); err != nil {
+	if err := tracer.InitMetrics(); err != nil {
 		appLogger.Fatal("failed to initialize metrics", zap.Error(err))
 	}
 
