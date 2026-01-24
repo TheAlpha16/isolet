@@ -10,6 +10,7 @@ import (
 	errorDom "github.com/TheAlpha16/isolet/oracle/internal/domain/errors"
 	"github.com/TheAlpha16/isolet/oracle/utils"
 	"github.com/TheAlpha16/isolet/oracle/utils/logger"
+	"github.com/TheAlpha16/isolet/oracle/utils/tracer"
 
 	"github.com/go-gomail/gomail"
 	"go.uber.org/zap"
@@ -85,7 +86,7 @@ func (s *smtpImpl) handleEmail(message *gomail.Message) {
 			return
 		}
 		logger.GetAppLogger().Error("error sending email", zap.Error(err))
-		time.Sleep(time.Second * time.Duration(1<<i)) // 1s, 2s, 4s, 8s...
+		tracer.Sleep(s.ctx, "smtp.handleEmail.retry", time.Second*time.Duration(1<<i)) // 1s, 2s, 4s, 8s...
 	}
 
 	logger.GetAppLogger().Error("email max retries exceeded", zap.String("recipient", message.GetHeader("To")[0]))
