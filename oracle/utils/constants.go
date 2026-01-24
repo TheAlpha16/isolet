@@ -62,8 +62,7 @@ const (
 
 // misc routes
 const (
-	RoutePing    = "/ping"
-	RouteMetrics = "/metrics"
+	RoutePing = "/ping"
 )
 
 // rest constants

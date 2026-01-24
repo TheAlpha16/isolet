@@ -12,8 +12,7 @@ import (
 )
 
 var skipMetricRoutes = map[string]struct{}{
-	utils.RouteMetrics: {},
-	utils.RoutePing:    {},
+	utils.RoutePing: {},
 }
 
 func MetricsMiddleware() fiber.Handler {

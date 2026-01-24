@@ -20,8 +20,6 @@ import (
 
 	"github.com/gofiber/contrib/otelfiber/v2"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/adaptor"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 )
@@ -34,15 +32,12 @@ func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
 		},
 	)
 
-	// Register metrics endpoint
-	app.Get(utils.RouteMetrics, adaptor.HTTPHandler(promhttp.Handler()))
-
 	// Setup middlewares
 	app.Use(middleware.ContextMiddleware())
 	app.Use(middleware.MetricsMiddleware())
 	app.Use(otelfiber.Middleware(
 		otelfiber.WithNext(func(c *fiber.Ctx) bool {
-			return (c.Path() == utils.RoutePing || c.Path() == utils.RouteMetrics)
+			return (c.Path() == utils.RoutePing)
 		}),
 		otelfiber.WithCustomAttributes(func(ctx *fiber.Ctx) []attribute.KeyValue {
 			return []attribute.KeyValue{
