@@ -93,6 +93,10 @@ oracle-tidy:
 oracle-version:
 	@cat {{ORACLE}}/VERSION
 
+# Start consumer for processing
+oracle-consumer:
+	cd {{ORACLE}} && IDENTITY=consumer {{GORUN_COMMAND}} main.go
+
 # --- Tide Controller commands ---
 
 # Run the Tide controller locally (for development)
