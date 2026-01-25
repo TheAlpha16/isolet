@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cockroachdb/errors"
 	"github.com/getsentry/sentry-go"
 	goerrors "github.com/go-errors/errors"
 )
@@ -37,10 +36,6 @@ func (ae *AppError) GetCode() string {
 
 func (ae *AppError) GetMessage() string {
 	return ae.Message
-}
-
-func (ae *AppError) Format(s fmt.State, verb rune) {
-	errors.FormatError(ae, s, verb)
 }
 
 // Raise is a general util to construct domain errors
@@ -97,13 +92,4 @@ func RaiseToSentry(ctx context.Context, err error) {
 		addTraceContextToSentryEvent(ctx, event)
 		hub.CaptureEvent(event)
 	}
-}
-
-// AsAppError tries to cast the given error to an AppError
-func AsAppError(err error) (*AppError, bool) {
-	var ae *AppError
-	if errors.As(err, &ae) {
-		return ae, true
-	}
-	return nil, false
 }
