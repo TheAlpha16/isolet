@@ -90,7 +90,7 @@ type Endpoint struct {
 	Name       string
 	Protocol   manifestDom.Protocol
 	TargetPort int32
-	Hostname   *string
+	Hostname   string
 	Port       *int32
 	Ready      bool
 	domain.BaseEntity

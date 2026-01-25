@@ -65,11 +65,6 @@ func (in *EndpointSpec) DeepCopy() *EndpointSpec {
 func (in *EndpointStatus) DeepCopyInto(out *EndpointStatus) {
 	*out = *in
 	out.EndpointSpec = in.EndpointSpec
-	if in.Hostname != nil {
-		in, out := &in.Hostname, &out.Hostname
-		*out = new(string)
-		**out = **in
-	}
 	if in.Port != nil {
 		in, out := &in.Port, &out.Port
 		*out = new(int32)

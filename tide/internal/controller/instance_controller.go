@@ -736,14 +736,14 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 		// Single endpoint, route directly
 		resEndpoint := challengesv1.EndpointStatus{
 			EndpointSpec: httpEndpoints[0],
-			Hostname:     utils.Ptr(fmt.Sprintf("%s.%s.%s", instance.Name, instance.Spec.Challenge.Slug, instance.Spec.Challenge.Domain)), // using the match rule as hostname
+			Hostname:     fmt.Sprintf("%s.%s.%s", instance.Name, instance.Spec.Challenge.Slug, instance.Spec.Challenge.Domain), // using the match rule as hostname
 			Ready:        true,
 		}
 		resolvedEndpoints = append(resolvedEndpoints, resEndpoint)
 		routes = []traefikv1alpha1.Route{
 			{
 				Kind:  "Rule",
-				Match: fmt.Sprintf("Host(`%s`)", *resEndpoint.Hostname),
+				Match: fmt.Sprintf("Host(`%s`)", resEndpoint.Hostname),
 				Services: []traefikv1alpha1.Service{
 					{LoadBalancerSpec: traefikv1alpha1.LoadBalancerSpec{
 						Name: serviceName,
@@ -757,7 +757,7 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 		for _, ep := range httpEndpoints {
 			resEP := challengesv1.EndpointStatus{
 				EndpointSpec: ep,
-				Hostname:     utils.Ptr(fmt.Sprintf("%s-%s.%s.%s", ep.Name, instance.Name, instance.Spec.Challenge.Slug, instance.Spec.Challenge.Domain)),
+				Hostname:     fmt.Sprintf("%s-%s.%s.%s", ep.Name, instance.Name, instance.Spec.Challenge.Slug, instance.Spec.Challenge.Domain),
 				Ready:        true,
 			}
 			resolvedEndpoints = append(resolvedEndpoints, resEP)
@@ -895,7 +895,7 @@ func equalEndpointStatus(a, b []challengesv1.EndpointStatus) bool {
 		if aep, exists := aMap[ep.Name]; !exists ||
 			aep.Protocol != ep.Protocol ||
 			aep.TargetPort != ep.TargetPort ||
-			aep.Hostname == nil || ep.Hostname == nil || *aep.Hostname != *ep.Hostname ||
+			aep.Hostname != ep.Hostname ||
 			aep.Ready != ep.Ready {
 			return false
 		}

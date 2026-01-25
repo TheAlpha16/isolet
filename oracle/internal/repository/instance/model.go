@@ -91,13 +91,13 @@ func NewInstanceModel(in *instanceDom.Instance) (*Instance, error) {
 
 type Endpoint struct {
 	postgres.BaseModel
-	InstanceID int64   `gorm:"not null;index"`
-	Name       string  `gorm:"not null"`
-	Protocol   string  `gorm:"type:protocol_type;not null"`
-	TargetPort int32   `gorm:"not null"`
-	Hostname   *string `gorm:"type:text"`
-	Port       *int32  `gorm:"column:port"`
-	Ready      bool    `gorm:"default:false;not null"`
+	InstanceID int64  `gorm:"not null;index"`
+	Name       string `gorm:"not null"`
+	Protocol   string `gorm:"type:protocol_type;not null"`
+	TargetPort int32  `gorm:"not null"`
+	Hostname   string `gorm:"type:text"`
+	Port       *int32 `gorm:"column:port"`
+	Ready      bool   `gorm:"default:false;not null"`
 
 	Instance Instance `gorm:"foreignKey:InstanceID;references:ID"`
 }

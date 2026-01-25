@@ -131,14 +131,14 @@ type EndpointStatus struct {
 	// Embeds the spec fields.
 	EndpointSpec `json:",inline"`
 
-	// Fully-qualified domain name. If not provided, the controller will generate one.
+	// Fully-qualified domain name. The controller will generate one.
 	// Example: "<instance-uuid>.<challenge-name>.isolet.dev".
 	// +optional
-	Hostname *string `json:"hostname,omitempty"`
+	Hostname string `json:"hostname"`
 
 	// Exposed service port assigned by controller (cluster-facing).
 	// +optional
-	Port *int32 `json:"port"`
+	Port *int32 `json:"port,omitempty"`
 
 	// Whether this endpoint is ready to receive traffic.
 	// +optional
