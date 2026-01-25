@@ -13,17 +13,17 @@ export default function useUserOnboard() {
     confirm = confirm.trim();
 
     if (!username || !email || !password || !confirm) {
-      showToast(ToastStatus.Failure, "All fields are required");
+      showToast(ToastStatus.Failure, "all fields are required");
       return false;
     }
 
     if (password !== confirm) {
-      showToast(ToastStatus.Failure, "Passwords do not match");
+      showToast(ToastStatus.Failure, "passwords do not match");
       return false;
     }
 
     if (password.length < 8) {
-      showToast(ToastStatus.Failure, "Password must be at least 8 characters long");
+      showToast(ToastStatus.Failure, "password must be at least 8 characters long");
     }
 
     setLoading(true);

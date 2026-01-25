@@ -36,7 +36,7 @@ export class BaseService {
       } else if (error?.message) {
         showToast(ToastStatus.Failure, error.message);
       } else {
-        showToast(ToastStatus.Failure, "An unexpected error occurred");
+        showToast(ToastStatus.Failure, "an unexpected error occurred");
       }
       return undefined;
     }
@@ -74,7 +74,7 @@ export class BaseService {
       } else if (error?.message) {
         showToast(ToastStatus.Failure, error.message);
       } else {
-        showToast(ToastStatus.Failure, "An unexpected error occurred");
+        showToast(ToastStatus.Failure, "an unexpected error occurred");
       }
     }
   }

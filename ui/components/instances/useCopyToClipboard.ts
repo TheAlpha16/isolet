@@ -12,7 +12,7 @@ export function useCopyToClipboard() {
       setCopiedLink(text);
       setTimeout(() => setCopiedLink(null), 4000);
     } catch {
-      showToast(ToastStatus.Failure, "Failed to copy to clipboard");
+      showToast(ToastStatus.Failure, "failed to copy to clipboard");
     }
   };
 
