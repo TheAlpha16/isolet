@@ -156,6 +156,10 @@ ui-version:
 
 # --- Proxy commands ---
 
+# Restart nginx proxy with updated configuration
+proxy-restart:
+	@bash dev/proxy/proxy-restart.sh
+
 # Show current Proxy version
 proxy-version:
 	@cat {{PROXY}}/VERSION
