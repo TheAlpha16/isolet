@@ -10,6 +10,7 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 export type { Category } from './models/Category';
 export { Challenge } from './models/Challenge';
 export type { CreateTeamInput } from './models/CreateTeamInput';
+export type { Endpoint } from './models/Endpoint';
 export type { EventInfo } from './models/EventInfo';
 export type { ForgotPasswordInput } from './models/ForgotPasswordInput';
 export type { GenerateInviteOutput } from './models/GenerateInviteOutput';

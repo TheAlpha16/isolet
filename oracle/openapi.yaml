@@ -717,7 +717,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Response"
   /instance/start:
-    post: 
+    post:
       tags:
         - instance
       summary: Start instance
@@ -1377,11 +1377,14 @@ components:
           type: integer
           format: int64
           example: 1615985900
+        endpoints:
+          type: array
+          items:
+            $ref: "#/components/schemas/Endpoint"
       required:
         - id
         - challenge_id
-        - team_id
-        - expires_at
+        - endpoints
     InstanceStartInput:
       type: object
       properties:
@@ -1409,3 +1412,28 @@ components:
           example: 1
       required:
         - instance_id
+    Endpoint:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "web"
+        protocol:
+          type: string
+          example: "http"
+        hostname:
+          type: string
+          example: "challenge-123.isolet.dev"
+        port:
+          type: integer
+          format: int32
+          nullable: true
+          example: 443
+        ready:
+          type: boolean
+          example: true
+      required:
+        - name
+        - protocol
+        - hostname
+        - ready
