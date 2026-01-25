@@ -35,22 +35,20 @@ func (in *Instance) ToDTO() *InstanceDTO {
 }
 
 type EndpointDTO struct {
-	Name       string  `json:"name"`
-	Protocol   string  `json:"protocol"`
-	TargetPort int32   `json:"target_port"`
-	Hostname   *string `json:"hostname,omitempty"`
-	Port       *int32  `json:"port,omitempty"`
-	Ready      bool    `json:"ready"`
+	Name     string  `json:"name"`
+	Protocol string  `json:"protocol"`
+	Hostname *string `json:"hostname,omitempty"`
+	Port     *int32  `json:"port,omitempty"`
+	Ready    bool    `json:"ready"`
 }
 
 func (ep *Endpoint) ToDTO() *EndpointDTO {
 	return &EndpointDTO{
-		Name:       ep.Name,
-		Protocol:   string(ep.Protocol),
-		TargetPort: ep.TargetPort,
-		Hostname:   ep.Hostname,
-		Port:       ep.Port,
-		Ready:      ep.Ready,
+		Name:     ep.Name,
+		Protocol: string(ep.Protocol),
+		Hostname: ep.Hostname,
+		Port:     ep.Port,
+		Ready:    ep.Ready,
 	}
 }
 
