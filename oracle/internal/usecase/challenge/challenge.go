@@ -167,7 +167,7 @@ func (c *challengeImpl) UnlockHint(ctx context.Context, input *challengeDom.Unlo
 
 	challenge, err := c.repo.GetByID(ctx, hint.ChallengeID)
 	if err != nil {
-		if errorDom.IsSameError(err, errorDom.ErrChallengeNotFound) {
+		if errorDom.Is(err, errorDom.ErrChallengeNotFound) {
 			return nil, ErrHintNotFound
 		}
 		return nil, err
@@ -249,7 +249,7 @@ func (c *challengeImpl) validateFlag(ctx context.Context, challenge *challengeDo
 		teamID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyTeamID)
 		instance, err := c.instanceRepo.GetByRefs(ctx, &teamID, challenge.ID)
 		if err != nil {
-			if errorDom.IsSameError(err, errorDom.ErrInstanceNotFound) {
+			if errorDom.Is(err, errorDom.ErrInstanceNotFound) {
 				return false, errorDom.Raise(ctx, errorDom.ErrInstanceNotRunning, "", err, nil)
 			}
 			return false, err

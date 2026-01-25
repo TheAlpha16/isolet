@@ -80,7 +80,7 @@ func (p *profileImpl) Team(ctx context.Context) (*profileDom.Team, error) {
 func (p *profileImpl) getTeamScoreAndRank(ctx context.Context, teamID int64) (rank int, score int, err error) {
 	teamRank, err := p.cache.ZRevRank(ctx, scoreDom.ScoreboardCacheKey, scoreDom.ScoreboardMember(teamID))
 	if err != nil {
-		if !errorDom.IsSameError(err, errorDom.ErrCacheZSetMissingMember) {
+		if !errorDom.Is(err, errorDom.ErrCacheZSetMissingMember) {
 			return 0, 0, err
 		}
 		return 0, 0, nil
@@ -88,7 +88,7 @@ func (p *profileImpl) getTeamScoreAndRank(ctx context.Context, teamID int64) (ra
 
 	teamScore, err := p.cache.ZScore(ctx, scoreDom.ScoreboardCacheKey, scoreDom.ScoreboardMember(teamID))
 	if err != nil {
-		if !errorDom.IsSameError(err, errorDom.ErrCacheZSetMissingMember) {
+		if !errorDom.Is(err, errorDom.ErrCacheZSetMissingMember) {
 			return 0, 0, err
 		}
 		return 0, 0, nil

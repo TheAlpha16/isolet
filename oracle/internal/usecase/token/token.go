@@ -32,7 +32,7 @@ func (t *tokenImpl) Create(ctx context.Context, token *tokenDom.Token, extras ma
 func (t *tokenImpl) Fetch(ctx context.Context, id *tokenDom.TokenIdentifier) (*tokenDom.Token, error) {
 	val, err := t.cache.Get(ctx, id.Key())
 	if err != nil {
-		if errorDom.IsSameError(err, errorDom.ErrCacheMiss) {
+		if errorDom.Is(err, errorDom.ErrCacheMiss) {
 			return nil, errorDom.Raise(ctx, errorDom.ErrTokenExpiredInvalid, "", err, nil)
 		}
 		return nil, err

@@ -27,7 +27,7 @@ type authImpl struct {
 func (a *authImpl) Login(ctx context.Context, input *authDom.LoginInput) (*authDom.Session, error) {
 	user, err := a.userUc.GetByEmailOrUsername(ctx, strings.ToLower(input.Identifier), input.Identifier)
 	if err != nil {
-		if errorDom.IsSameError(err, errorDom.ErrUserNotFound) {
+		if errorDom.Is(err, errorDom.ErrUserNotFound) {
 			return nil, errorDom.Raise(ctx, errorDom.ErrAuthInvalidCredentials, "", nil, nil)
 		}
 		return nil, err
@@ -161,7 +161,7 @@ func (a *authImpl) ForgotPassword(ctx context.Context, input *authDom.ForgotPass
 
 	user, err := a.userUc.GetByEmailOrUsername(ctx, input.Email, "")
 	if err != nil {
-		if errorDom.IsSameError(err, errorDom.ErrUserNotFound) {
+		if errorDom.Is(err, errorDom.ErrUserNotFound) {
 			// user not found -> do nothing
 			return nil
 		}

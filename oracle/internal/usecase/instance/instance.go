@@ -65,7 +65,7 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 	// check if the instance is already running for the team and challenge
 	instance, err := i.repo.GetByRefs(ctx, &teamID, input.ChallengeID)
 	if err != nil {
-		if !errorDom.IsSameError(err, errorDom.ErrInstanceNotFound) {
+		if !errorDom.Is(err, errorDom.ErrInstanceNotFound) {
 			return nil, err
 		}
 	}
@@ -170,14 +170,14 @@ func (i *instanceImpl) Stop(ctx context.Context, input *instanceDom.StopInput) e
 
 	if err := i.service.Stop(ctx, instance); err != nil {
 		// if instance doesn't exist in K8s, still proceed to clean up DB record
-		if !errorDom.IsSameError(err, errorDom.ErrK8sInstanceNotFound) {
+		if !errorDom.Is(err, errorDom.ErrK8sInstanceNotFound) {
 			return err
 		}
 	}
 
 	// delete from database
 	if err := i.repo.Delete(ctx, instance.ID); err != nil {
-		if !errorDom.IsSameError(err, errorDom.ErrInstanceNotFound) {
+		if !errorDom.Is(err, errorDom.ErrInstanceNotFound) {
 			tracer.InstanceOperationsTotal.WithLabelValues(
 				strconv.FormatInt(instance.ChallengeID, 10),
 				"stop",
@@ -254,7 +254,7 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 			"extend",
 			tracer.StatusUnknown,
 		).Inc()
-		if errorDom.IsSameError(err, errorDom.ErrK8sInstanceNotFound) {
+		if errorDom.Is(err, errorDom.ErrK8sInstanceNotFound) {
 			// delete the orphaned DB record
 			if delErr := i.repo.Delete(ctx, instance.ID); delErr == nil {
 				tracer.InstanceActiveTotal.WithLabelValues(

@@ -38,7 +38,7 @@ func (u *userImpl) ExistsByEmailOrUsername(ctx context.Context, email, username 
 	_, err := u.cache.Get(ctx, userDom.EmailCacheKey(email))
 	if err != nil {
 		// return immediately in case of errors other than cache miss
-		if !errorDom.IsSameError(err, errorDom.ErrCacheMiss) {
+		if !errorDom.Is(err, errorDom.ErrCacheMiss) {
 			return err
 		}
 	} else {
@@ -48,7 +48,7 @@ func (u *userImpl) ExistsByEmailOrUsername(ctx context.Context, email, username 
 	_, err = u.cache.Get(ctx, userDom.UsernameCacheKey(username))
 	if err != nil {
 		// return immediately in case of errors other than cache miss
-		if !errorDom.IsSameError(err, errorDom.ErrCacheMiss) {
+		if !errorDom.Is(err, errorDom.ErrCacheMiss) {
 			return err
 		}
 	} else {
@@ -57,7 +57,7 @@ func (u *userImpl) ExistsByEmailOrUsername(ctx context.Context, email, username 
 
 	user, err := u.repo.GetByEmailOrUsername(ctx, email, username)
 	if err != nil {
-		if errorDom.IsSameError(err, errorDom.ErrUserNotFound) {
+		if errorDom.Is(err, errorDom.ErrUserNotFound) {
 			return nil
 		}
 		return err

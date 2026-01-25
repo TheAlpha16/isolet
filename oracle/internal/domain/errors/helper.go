@@ -20,8 +20,8 @@ func ExtractErrorCode(err error) (ErrorCode, bool) {
 	return "", false
 }
 
-// IsSameError checks if the error is the same as the given ErrorCode
-func IsSameError(err error, code ErrorCode) bool {
+// Is checks if the error is the same as the given ErrorCode
+func Is(err error, code ErrorCode) bool {
 	if ec, ok := ExtractErrorCode(err); ok {
 		return ec == code
 	}

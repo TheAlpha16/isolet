@@ -18,7 +18,7 @@ func CachedQuery[T any](ctx context.Context, cache cache.Cache, key string, ttl 
 	// look in cache
 	val, err := cache.Get(ctx, key)
 	if err != nil {
-		if !errorDom.IsSameError(err, errorDom.ErrCacheMiss) {
+		if !errorDom.Is(err, errorDom.ErrCacheMiss) {
 			return zero, err
 		}
 	} else {

@@ -55,7 +55,7 @@ func (t *teamImpl) Join(ctx context.Context, input *teamDom.JoinInput) (*authDom
 
 	team, err := t.repo.GetByName(ctx, input.TeamName)
 	if err != nil {
-		if errorDom.IsSameError(err, errorDom.ErrTeamNotFound) {
+		if errorDom.Is(err, errorDom.ErrTeamNotFound) {
 			return nil, errorDom.Raise(ctx, errorDom.ErrAuthInvalidCredentials, "", nil, nil)
 		}
 		return nil, err
