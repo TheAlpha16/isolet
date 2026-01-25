@@ -1204,7 +1204,32 @@
           },
           "unit": "reqps"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "/api/v1/instance/extend"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": true,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -2784,8 +2809,8 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
-          "editorMode": "builder",
-          "expr": "sum by (status) (\n  rate(kafka_messages_total[1m])\n)",
+          "editorMode": "code",
+          "expr": "sum by(status) (rate(facts_total[1m]))",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A",
@@ -3227,14 +3252,14 @@
     "list": []
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "oracle",
   "uid": "adwjz7r",
-  "version": 94,
+  "version": 96,
   "weekStart": "",
   "id": null
 }
