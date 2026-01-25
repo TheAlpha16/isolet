@@ -74,8 +74,14 @@ func (c *Consumer) Start(ctx context.Context) error {
 				}
 
 				tracer.FactsTotal.WithLabelValues(*e.TopicPartition.Topic, status, string(fact.FactType())).Inc()
-				tracer.FactProcessingDurationSeconds.WithLabelValues(*e.TopicPartition.Topic, string(fact.FactType())).Observe(time.Since(start).Seconds())
-				tracer.FactDeliveryDurationSeconds.WithLabelValues(*e.TopicPartition.Topic, string(fact.FactType())).Observe(start.Sub(fact.OccuredAt()).Seconds())
+				tracer.FactProcessingDurationSeconds.WithLabelValues(
+					*e.TopicPartition.Topic,
+					string(fact.FactType()),
+				).Observe(time.Since(start).Seconds())
+				tracer.FactDeliveryDurationSeconds.WithLabelValues(
+					*e.TopicPartition.Topic,
+					string(fact.FactType()),
+				).Observe(start.Sub(fact.OccuredAt()).Seconds())
 
 			case kafka.Error:
 				if e.IsFatal() {
