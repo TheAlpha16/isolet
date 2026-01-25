@@ -550,8 +550,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 12,
+        "w": 24,
         "x": 0,
         "y": 18
       },
@@ -572,15 +572,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "builder",
           "expr": "sum by(route) (rate(http_requests_total{job=\"oracle\"}[1m]))",
           "legendFormat": "{{route}}",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Requests per Route",
@@ -648,8 +648,8 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 12,
-        "y": 18
+        "x": 0,
+        "y": 30
       },
       "id": 13,
       "options": {
@@ -668,15 +668,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "expr": "sum by (route) (http_requests_in_flight{job=\"oracle\"})",
           "legendFormat": "{{route}}",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "In-Flight Requests by Route",
@@ -748,8 +748,8 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 0,
-        "y": 26
+        "x": 12,
+        "y": 30
       },
       "id": 8,
       "options": {
@@ -768,15 +768,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "expr": "sum by(route) (rate(http_requests_total{status=~\"5..\", job=\"oracle\"}[5m]))",
           "legendFormat": "{{route}}",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Errors by Route",
@@ -788,7 +788,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 38
       },
       "id": 11,
       "panels": [],
@@ -859,10 +859,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 13,
+        "w": 24,
         "x": 0,
-        "y": 35
+        "y": 39
       },
       "id": 10,
       "options": {
@@ -881,15 +881,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "builder",
           "expr": "histogram_quantile(0.95, sum by(le, route) (rate(http_request_duration_seconds_bucket{job=\"oracle\"}[5m])))",
           "legendFormat": "__auto",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "P95 Latency by Route",
@@ -1001,8 +1001,8 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 12,
-        "y": 35
+        "x": 0,
+        "y": 52
       },
       "id": 14,
       "options": {
@@ -1024,15 +1024,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "expr": "histogram_quantile(0.95, sum by(le) (rate(http_request_duration_seconds_bucket{job=\"oracle\", route!~\"/api/v1/instance/.+\"}[5m])))",
           "legendFormat": "P95 latency",
           "range": true,
-          "refId": "p95 latency",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "p95 latency"
         },
         {
           "datasource": {
@@ -1075,15 +1075,16 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "s"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 0,
-        "y": 43
+        "x": 12,
+        "y": 52
       },
       "id": 12,
       "options": {
@@ -1113,6 +1114,10 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "exemplar": false,
           "expr": "topk(\n  5,\n  histogram_quantile(\n    0.95,\n    sum by (le, route) (\n      rate(http_request_duration_seconds_bucket{job=\"oracle\"}[5m])\n    )\n  )\n)\n",
@@ -1120,11 +1125,7 @@
           "instant": true,
           "legendFormat": "__auto",
           "range": false,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Top 5 Slowest Routes",
@@ -1136,7 +1137,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 51
+        "y": 60
       },
       "id": 16,
       "panels": [],
@@ -1235,7 +1236,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 52
+        "y": 61
       },
       "id": 17,
       "options": {
@@ -1254,15 +1255,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "builder",
           "expr": "sum by(route) (rate(http_requests_total{route=~\"/api/v1/instance.*\", job=\"oracle\"}[1m]))",
           "legendFormat": "__auto",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Instance Lifecycle API Traffic",
@@ -1298,7 +1299,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 52
+        "y": 61
       },
       "id": 15,
       "options": {
@@ -1402,7 +1403,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 60
+        "y": 69
       },
       "id": 23,
       "options": {
@@ -1421,15 +1422,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "expr": "sum by (challenge_id) (instance_active_total{job=\"oracle\"})",
           "legendFormat": "{{challenge_id}}",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Active Instances by Challenge",
@@ -1498,7 +1499,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 60
+        "y": 69
       },
       "id": 26,
       "options": {
@@ -1517,15 +1518,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "expr": "histogram_quantile(\n  0.95,\n  sum by (le, challenge_id) (\n    rate(instance_provision_duration_seconds_bucket{operation=\"start\"}[5m])\n  )\n)\n",
           "legendFormat": "{{challenge_id}}",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Instance Provisioning P95 Latency",
@@ -1640,7 +1641,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 68
+        "y": 77
       },
       "id": 24,
       "options": {
@@ -1659,15 +1660,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "expr": "sum by(operation) (rate(instance_operations_total{job=\"oracle\"}[1m]))",
           "legendFormat": "__auto",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Instance Operations Rate",
@@ -1747,7 +1748,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 68
+        "y": 77
       },
       "id": 25,
       "options": {
@@ -1766,15 +1767,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "expr": "sum by (operation) (rate(instance_operations_total{status=\"failure\"}[1m])) * 100 / (sum by (operation) (rate(instance_operations_total[1m])))",
           "legendFormat": "{{operation}}",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Failed Instance Operations Percentage",
@@ -1786,7 +1787,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 76
+        "y": 85
       },
       "id": 18,
       "panels": [],
@@ -1857,7 +1858,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 77
+        "y": 86
       },
       "id": 19,
       "options": {
@@ -1876,15 +1877,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "builder",
           "expr": "sum by(challenge_id) (rate(flag_submissions_total[1m]))",
           "legendFormat": "__auto",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Flag Submissions Rate",
@@ -1919,7 +1920,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 77
+        "y": 86
       },
       "id": 22,
       "options": {
@@ -1949,6 +1950,10 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "exemplar": false,
           "expr": "topk(\n  10,\n  sum by (challenge_id) (\n    rate(flag_submissions_total[5m])\n  )\n)",
@@ -1956,11 +1961,7 @@
           "instant": true,
           "legendFormat": "__auto",
           "range": false,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Most Attempted Challenges",
@@ -2059,7 +2060,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 85
+        "y": 94
       },
       "id": 20,
       "options": {
@@ -2078,15 +2079,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "builder",
           "expr": "sum by(correct) (rate(flag_submissions_total{job=\"oracle\"}[1m]))",
           "legendFormat": "__auto",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Status (Correct vs Incorrect)",
@@ -2126,7 +2127,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 85
+        "y": 94
       },
       "id": 21,
       "options": {
@@ -2169,7 +2170,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 93
+        "y": 102
       },
       "id": 31,
       "panels": [],
@@ -2238,7 +2239,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 94
+        "y": 103
       },
       "id": 32,
       "options": {
@@ -2257,15 +2258,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "expr": "sum by(topic) (rate(facts_total{job=\"oracle\"}[1m]))",
           "legendFormat": "__auto",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Total Facts Processed",
@@ -2384,7 +2385,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 94
+        "y": 103
       },
       "id": 36,
       "options": {
@@ -2415,15 +2416,15 @@
           "refId": "B"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "expr": "histogram_quantile(0.95, (rate(fact_processing_duration_seconds_bucket{job=\"oracle\"}[1m])))",
           "legendFormat": "P95",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         },
         {
           "datasource": {
@@ -2504,7 +2505,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 102
+        "y": 111
       },
       "id": 38,
       "options": {
@@ -2523,15 +2524,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "expr": "histogram_quantile(0.95, sum by(le, topic) (rate(fact_delivery_duration_seconds_bucket{job=\"oracle\"}[1m])))",
           "legendFormat": "__auto",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "P95 Fact Transport Latency",
@@ -2600,7 +2601,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 102
+        "y": 111
       },
       "id": 37,
       "options": {
@@ -2619,15 +2620,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "expr": "histogram_quantile(0.95, sum by (le, topic) (rate(fact_processing_duration_seconds_bucket{job=\"oracle\"}[1m])))",
           "legendFormat": "__auto",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "P95 Latency by Topic",
@@ -2695,7 +2696,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 110
+        "y": 119
       },
       "id": 35,
       "options": {
@@ -2714,15 +2715,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "expr": "sum by(fact_type) (rate(facts_total{job=\"oracle\"}[1m]))",
           "legendFormat": "__auto",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Facts Processed by Type",
@@ -2790,7 +2791,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 110
+        "y": 119
       },
       "id": 33,
       "options": {
@@ -2809,15 +2810,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "expr": "sum by(status) (rate(facts_total[1m]))",
           "legendFormat": "__auto",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Success vs Failure Trend",
@@ -2896,7 +2897,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 118
+        "y": 127
       },
       "id": 34,
       "options": {
@@ -2915,15 +2916,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "expr": "(\n  sum by (topic) (rate(facts_total{status!=\"success\"}[1m])) * 100\n)/\nsum by (topic) (rate(facts_total[1m]))",
           "legendFormat": "__auto",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Error percentage",
@@ -2935,7 +2936,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 126
+        "y": 135
       },
       "id": 27,
       "panels": [],
@@ -3009,7 +3010,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 127
+        "y": 136
       },
       "id": 28,
       "options": {
@@ -3028,15 +3029,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "expr": "sum by (status) (rate(emails_sent_total[1m]))",
           "legendFormat": "{{status}}",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Emails Sent Rate",
@@ -3114,7 +3115,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 127
+        "y": 136
       },
       "id": 29,
       "options": {
@@ -3133,15 +3134,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "expr": "sum(rate(emails_sent_total{status!=\"success\"}[5m])) * 100 / sum(rate(emails_sent_total[5m]))",
           "legendFormat": "__auto",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Email Success Rate",
@@ -3210,7 +3211,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 135
+        "y": 144
       },
       "id": 30,
       "options": {
@@ -3229,15 +3230,15 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
           "expr": "histogram_quantile(\n  0.95,\n  sum by (le, status) (\n    rate(email_send_duration_seconds_bucket[5m])\n  )\n)",
           "legendFormat": "{{status}}",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Email Send P95 Latency",
@@ -3259,7 +3260,7 @@
   "timezone": "browser",
   "title": "oracle",
   "uid": "adwjz7r",
-  "version": 96,
+  "version": 2,
   "weekStart": "",
   "id": null
 }
