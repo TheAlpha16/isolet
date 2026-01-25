@@ -1,4 +1,6 @@
-import React, { useState, useMemo } from "react";
+"use client";
+
+import React, { useMemo } from "react";
 import { useInstanceStore } from "@/store/instance";
 import { useCopyToClipboard } from "@/components/instances/useCopyToClipboard";
 import { useInstanceTimer } from "@/components/instances/useInstanceTimer";

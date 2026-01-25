@@ -1,6 +1,6 @@
 import type { Hint as APIHint } from "@/api";
 import { Challenge } from "@/api";
-import { InstanceCard } from "@/components/challenges/InstanceCard";
+import { InstanceCard } from "@/components/instances/InstanceCard";
 import Hint from "@/components/hints/Hint";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
