@@ -682,6 +682,40 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Response"
+  /instance:
+    get:
+      tags:
+        - instance
+      summary: List instances
+      description: Returns a list of instances running for the user's team
+      security:
+        - cookieAuth: []
+      responses:
+        200:
+          description: List of instances
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Response"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Instance"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
   /instance/start:
     post: 
       tags:
