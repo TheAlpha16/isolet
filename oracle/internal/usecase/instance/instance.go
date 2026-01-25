@@ -317,10 +317,18 @@ func (i *instanceImpl) runInstanceExpiryCleanup(ctx context.Context, interval ti
 		for {
 			select {
 			case <-ticker.C:
-				_, err := i.repo.DeleteExpired(ctx, time.Now())
+				challengeCounts, err := i.repo.DeleteExpired(ctx, time.Now())
 				if err != nil {
 					errorDom.HandleSpanError(ctx, span, logger, "failed to delete expired instances", err)
+					continue
 				}
+
+				for challengeID, count := range challengeCounts {
+					tracer.InstanceActiveTotal.WithLabelValues(
+						strconv.FormatInt(challengeID, 10),
+					).Sub(float64(count))
+				}
+
 			case <-ctx.Done():
 				return
 			}
