@@ -131,7 +131,9 @@ export function ChallengeModal({ challenge, onClose }: ChallengeModalProps) {
             </div>
           )}
 
-          {challenge.type === Challenge.type.ON_DEMAND && <InstanceCard chall_id={challenge.id} />}
+          {challenge.type === Challenge.type.ON_DEMAND && (
+            <InstanceCard challenge_id={challenge.id} />
+          )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-2">
             {challenge.max_attempts > 0 && (
