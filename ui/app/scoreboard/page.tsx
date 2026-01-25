@@ -49,6 +49,10 @@ export default function Scoreboard() {
     await fetchPage(newPage);
   };
 
+  const filteredScores = scores.filter((score) =>
+    score.team_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const PageNavigation = () => (
     <div className="flex items-center justify-center gap-1">
       <Button
@@ -103,7 +107,7 @@ export default function Scoreboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {scores.map((entry) => (
+              {filteredScores.map((entry) => (
                 <TableRow key={entry.team_id}>
                   <TableCell className="text-center">
                     <div className="flex justify-center items-center">
