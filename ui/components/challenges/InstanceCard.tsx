@@ -30,18 +30,10 @@ export function InstanceCard({ challenge_id }: InstanceCardProps) {
 
   const isActive = instance?.expires_at ? instance.expires_at * 1000 > Date.now() : false;
 
-  const primaryEndpoint = useMemo(() => {
-    if (!instance || !instance.endpoints || instance.endpoints.length === 0) return null;
-    return instance.endpoints.find((e) => e.name === "main") || instance.endpoints[0];
+  const endpoints = useMemo(() => {
+    if (!instance || !instance.endpoints || instance.endpoints.length === 0) return [];
+    return instance.endpoints;
   }, [instance]);
-
-  const connectionLink = useMemo(() => {
-    if (!primaryEndpoint) return "";
-    const port =
-      primaryEndpoint.port ??
-      (primaryEndpoint.protocol === "http" ? 80 : primaryEndpoint.protocol === "ssh" ? 22 : 0);
-    return GenerateChallengeEndpoint(primaryEndpoint.protocol, primaryEndpoint.hostname, port);
-  }, [primaryEndpoint]);
 
   useEffect(() => {
     if (instance?.expires_at) {
@@ -161,21 +153,28 @@ export function InstanceCard({ challenge_id }: InstanceCardProps) {
         </TooltipProvider>
       </div>
 
-      {isActive && connectionLink && (
-        <div className="flex items-center space-x-2">
-          <div className="relative flex-grow">
-            <Terminal className="h-5 w-5 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
-            <Input
-              value={connectionLink}
-              readOnly
-              className="pl-8 truncate font-mono focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
-            />
-          </div>
-          <CopyButton
-            copiedLink={copiedLink}
-            content={connectionLink}
-            copyToClipboard={copyToClipboard}
-          />
+      {isActive && endpoints.length > 0 && (
+        <div className="flex flex-col space-y-2">
+          {endpoints.map((endpoint, index) => {
+            const connectionString = GenerateChallengeEndpoint(endpoint);
+            return (
+              <div key={index} className="flex items-center space-x-2">
+                <div className="relative flex-grow">
+                  <Terminal className="h-5 w-5 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                  <Input
+                    value={connectionString}
+                    readOnly
+                    className="pl-8 truncate font-mono focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
+                </div>
+                <CopyButton
+                  copiedLink={copiedLink}
+                  content={connectionString}
+                  copyToClipboard={copyToClipboard}
+                />
+              </div>
+            );
+          })}
         </div>
       )}
       {/* {instance.active && instance.password && (
