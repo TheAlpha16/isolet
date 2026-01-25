@@ -277,7 +277,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(http_requests_total{status!~\"5..\", job=\"oracle\"}[5m])) / (sum(rate(http_requests_total[5m])))",
+          "expr": "sum(rate(http_requests_total{status!~\"5..\", job=\"oracle\"}[5m])) / (sum(rate(http_requests_total{job=\"oracle\"}[5m])))",
           "legendFormat": "success",
           "range": true,
           "refId": "A"
@@ -856,7 +856,32 @@
           },
           "unit": "s"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "/api/v1/challenge/submit"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": true,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 13,
@@ -1205,32 +1230,7 @@
           },
           "unit": "reqps"
         },
-        "overrides": [
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "/api/v1/instance/extend"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": true,
-                  "viz": true
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -1327,7 +1327,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "builder",
-          "expr": "sum(instance_active_total{job=\"oracle\"})",
+          "expr": "sum(instance_operations_total{operation=\"start\", status=\"success\"}) - (clamp_min(sum(instance_operations_total{operation=~\"stop|expire\", status=\"success\"}), 1e-9))",
           "legendFormat": "{{route}}",
           "range": true,
           "refId": "A"
@@ -1427,7 +1427,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum by (challenge_id) (instance_active_total{job=\"oracle\"})",
+          "expr": "sum by(challenge_id) (instance_operations_total{job=\"oracle\", operation=\"start\", status=\"success\"}) - sum by(challenge_id) (instance_operations_total{job=\"oracle\", operation=~\"stop|expire\", status=\"success\"})",
           "legendFormat": "{{challenge_id}}",
           "range": true,
           "refId": "A"
@@ -1522,8 +1522,8 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "editorMode": "code",
-          "expr": "histogram_quantile(\n  0.95,\n  sum by (le, challenge_id) (\n    rate(instance_provision_duration_seconds_bucket{operation=\"start\"}[5m])\n  )\n)\n",
+          "editorMode": "builder",
+          "expr": "histogram_quantile(0.95, sum by(le, challenge_id) (rate(instance_provision_duration_seconds_bucket{operation=\"start\", status=\"success\"}[5m])))",
           "legendFormat": "{{challenge_id}}",
           "range": true,
           "refId": "A"
@@ -1608,7 +1608,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "extend"
+              "options": "expire"
             },
             "properties": [
               {
@@ -1630,6 +1630,21 @@
                 "id": "color",
                 "value": {
                   "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "extend"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
                   "mode": "fixed"
                 }
               }
@@ -2154,8 +2169,8 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "editorMode": "builder",
-          "expr": "sum(rate(flag_submissions_total{correct=\"false\"}[5m]))\n/\nsum(rate(flag_submissions_total[5m]))",
+          "editorMode": "code",
+          "expr": "sum(rate(flag_submissions_total{correct=\"false\"}[5m]))\n/\nclamp_min(sum(rate(flag_submissions_total{job=\"oracle\"}[5m])), 1e-9)",
           "legendFormat": "{{route}}",
           "range": true,
           "refId": "A"
@@ -2408,8 +2423,8 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "editorMode": "code",
-          "expr": "histogram_quantile(0.99, (rate(fact_processing_duration_seconds_bucket{job=\"oracle\"}[1m])))",
+          "editorMode": "builder",
+          "expr": "histogram_quantile(\n  0.99,\n  sum by (le) (\n    rate(fact_processing_duration_seconds_bucket{job=\"oracle\"}[1m])\n  )\n)",
           "hide": false,
           "legendFormat": "P99",
           "range": true,
@@ -2421,7 +2436,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, (rate(fact_processing_duration_seconds_bucket{job=\"oracle\"}[1m])))",
+          "expr": "histogram_quantile(\n  0.95,\n  sum by (le) (\n    rate(fact_processing_duration_seconds_bucket{job=\"oracle\"}[1m])\n  )\n)\n",
           "legendFormat": "P95",
           "range": true,
           "refId": "A"
@@ -2432,7 +2447,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.90, (rate(fact_processing_duration_seconds_bucket{job=\"oracle\"}[1m])))",
+          "expr": "histogram_quantile(\n  0.90,\n  sum by (le) (\n    rate(fact_processing_duration_seconds_bucket{job=\"oracle\"}[1m])\n  )\n)",
           "hide": false,
           "legendFormat": "P90",
           "range": true,
@@ -2921,7 +2936,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "(\n  sum by (topic) (rate(facts_total{status!=\"success\"}[1m])) * 100\n)/\nsum by (topic) (rate(facts_total[1m]))",
+          "expr": "(sum by (topic) (rate(facts_total{status!=\"success\"}[1m])) * 100)\n/\nclamp_min(sum by (topic) (rate(facts_total[1m])), 1e-9)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -3139,7 +3154,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(emails_sent_total{status!=\"success\"}[5m])) * 100 / sum(rate(emails_sent_total[5m]))",
+          "expr": "sum(rate(emails_sent_total{status!=\"success\"}[5m])) * 100 / clamp_min(sum(rate(emails_sent_total[5m])), 1e-9)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -3246,21 +3261,21 @@
     }
   ],
   "preload": false,
-  "refresh": "auto",
+  "refresh": "",
   "schemaVersion": 42,
   "tags": [],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "oracle",
   "uid": "adwjz7r",
-  "version": 2,
+  "version": 8,
   "weekStart": "",
   "id": null
 }

@@ -30,7 +30,11 @@ func (i instanceImpl) handleInstanceExpired(ctx context.Context, instance *insta
 	}
 
 	if deletedRows > 0 {
-		tracer.InstanceActiveTotal.WithLabelValues(strconv.FormatInt(instance.ChallengeID, 10)).Dec()
+		tracer.InstanceOperationsTotal.WithLabelValues(
+			strconv.FormatInt(instance.ChallengeID, 10),
+			tracer.OpExpire,
+			tracer.StatusSuccess,
+		).Add(float64(deletedRows))
 	}
 
 	return nil

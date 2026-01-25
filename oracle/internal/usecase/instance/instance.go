@@ -114,7 +114,7 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 	if err := i.service.Start(ctx, &inst, manifest); err != nil {
 		tracer.InstanceOperationsTotal.WithLabelValues(
 			strconv.FormatInt(input.ChallengeID, 10),
-			"start",
+			tracer.OpStart,
 			tracer.StatusFailure,
 		).Inc()
 		return nil, err
@@ -124,7 +124,7 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 	if err != nil {
 		tracer.InstanceOperationsTotal.WithLabelValues(
 			strconv.FormatInt(input.ChallengeID, 10),
-			"start",
+			tracer.OpStart,
 			tracer.StatusFailure,
 		).Inc()
 		return nil, err
@@ -132,19 +132,15 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 
 	tracer.InstanceOperationsTotal.WithLabelValues(
 		strconv.FormatInt(input.ChallengeID, 10),
-		"start",
+		tracer.OpStart,
 		tracer.StatusSuccess,
 	).Inc()
 
 	tracer.InstanceProvisionDurationSeconds.WithLabelValues(
 		strconv.FormatInt(input.ChallengeID, 10),
-		"start",
+		tracer.OpStart,
 		tracer.StatusSuccess,
 	).Observe(time.Since(timeNow).Seconds())
-
-	tracer.InstanceActiveTotal.WithLabelValues(
-		strconv.FormatInt(input.ChallengeID, 10),
-	).Inc()
 
 	return instance.ToDTO(), nil
 }
@@ -177,25 +173,14 @@ func (i *instanceImpl) Stop(ctx context.Context, input *instanceDom.StopInput) e
 
 	// delete from database
 	if err := i.repo.Delete(ctx, instance.ID); err != nil {
-		if !errorDom.Is(err, errorDom.ErrInstanceNotFound) {
-			tracer.InstanceOperationsTotal.WithLabelValues(
-				strconv.FormatInt(instance.ChallengeID, 10),
-				"stop",
-				tracer.StatusFailure,
-			).Inc()
-			return err
-		}
+		return err
 	}
 
 	tracer.InstanceOperationsTotal.WithLabelValues(
 		strconv.FormatInt(instance.ChallengeID, 10),
-		"stop",
+		tracer.OpStop,
 		tracer.StatusSuccess,
 	).Inc()
-
-	tracer.InstanceActiveTotal.WithLabelValues(
-		strconv.FormatInt(instance.ChallengeID, 10),
-	).Dec()
 
 	return nil
 }
@@ -251,15 +236,17 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 	if err := i.service.Extend(ctx, instance); err != nil {
 		tracer.InstanceOperationsTotal.WithLabelValues(
 			strconv.FormatInt(instance.ChallengeID, 10),
-			"extend",
-			tracer.StatusUnknown,
+			tracer.OpExtend,
+			tracer.StatusFailure,
 		).Inc()
 		if errorDom.Is(err, errorDom.ErrK8sInstanceNotFound) {
 			// delete the orphaned DB record
 			if delErr := i.repo.Delete(ctx, instance.ID); delErr == nil {
-				tracer.InstanceActiveTotal.WithLabelValues(
+				tracer.InstanceOperationsTotal.WithLabelValues(
 					strconv.FormatInt(instance.ChallengeID, 10),
-				).Dec()
+					tracer.OpStop,
+					tracer.StatusSuccess,
+				).Inc()
 			}
 			return nil, errorDom.Raise(ctx, errorDom.ErrInstanceNotFound, "", err, nil)
 		}
@@ -271,7 +258,7 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 	}); err != nil {
 		tracer.InstanceOperationsTotal.WithLabelValues(
 			strconv.FormatInt(instance.ChallengeID, 10),
-			"extend",
+			tracer.OpExtend,
 			tracer.StatusFailure,
 		).Inc()
 		return nil, err
@@ -279,7 +266,7 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 
 	tracer.InstanceOperationsTotal.WithLabelValues(
 		strconv.FormatInt(instance.ChallengeID, 10),
-		"extend",
+		tracer.OpExtend,
 		tracer.StatusSuccess,
 	).Inc()
 
@@ -324,9 +311,11 @@ func (i *instanceImpl) runInstanceExpiryCleanup(ctx context.Context, interval ti
 				}
 
 				for challengeID, count := range challengeCounts {
-					tracer.InstanceActiveTotal.WithLabelValues(
+					tracer.InstanceOperationsTotal.WithLabelValues(
 						strconv.FormatInt(challengeID, 10),
-					).Sub(float64(count))
+						tracer.OpExpire,
+						tracer.StatusSuccess,
+					).Add(float64(count))
 				}
 
 			case <-ctx.Done():

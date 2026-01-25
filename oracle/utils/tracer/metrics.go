@@ -9,6 +9,11 @@ var (
 	StatusSuccess = "success"
 	StatusFailure = "failure"
 	StatusUnknown = "unknown"
+
+	OpStart  = "start"
+	OpStop   = "stop"
+	OpExtend = "extend"
+	OpExpire = "expire"
 )
 
 var (
@@ -28,14 +33,6 @@ var (
 			Help: "Total number of instance operations",
 		},
 		[]string{"challenge_id", "operation", "status"},
-	)
-
-	InstanceActiveTotal = promauto.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Name: "instance_active_total",
-			Help: "Current number of active instances",
-		},
-		[]string{"challenge_id"},
 	)
 
 	InstanceProvisionDurationSeconds = promauto.NewHistogramVec(
