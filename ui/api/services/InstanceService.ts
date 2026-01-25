@@ -12,6 +12,24 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class InstanceService {
     /**
+     * List instances
+     * Returns a list of instances running for the user's team
+     * @returns any List of instances
+     * @throws ApiError
+     */
+    public static getInstance(): CancelablePromise<(Response & {
+        data?: Array<Instance>;
+    })> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/instance',
+            errors: {
+                401: `Unauthorized`,
+                403: `Forbidden`,
+            },
+        });
+    }
+    /**
      * Start instance
      * Starts a new instance for an on-demand challenge
      * @param requestBody
