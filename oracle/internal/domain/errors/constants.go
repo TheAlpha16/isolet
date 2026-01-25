@@ -113,6 +113,7 @@ const (
 
 	// k8s errors
 	ErrK8sConnectionFailed ErrorCode = "K8S-00"
+	ErrK8sInstanceNotFound ErrorCode = "K8S-01"
 
 	// Manifest errors
 	ErrManifestNotFound ErrorCode = "MANIFEST-00"
@@ -209,6 +210,9 @@ var msgMap = map[ErrorCode]string{
 	ErrInstanceExtensionNotAllowed:     "instance extension is not allowed",
 	ErrInstanceInvalidState:            "instance is in an invalid state",
 	ErrInstanceNotRunning:              "instance is not running",
+
+	// k8s errors
+	ErrK8sInstanceNotFound: "instance not found in kubernetes cluster",
 
 	// Manifest errors
 	ErrManifestNotFound: "manifest not found",
