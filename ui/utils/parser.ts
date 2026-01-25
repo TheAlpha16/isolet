@@ -1,38 +1,42 @@
-function GenerateChallengeEndpoint(
-    method: string,
-    domain: string,
-    port: number,
-    username: string = "hacker",
-): string {
-    let connString: string = "";
+import type { Endpoint } from "../api/models/Endpoint";
 
-    switch (method) {
-        case "http":
-            if (port === 80) {
-                connString = `http://${domain}`;
-            } else if (port === 443) {
-                connString = `https://${domain}`;
-            } else {
-                connString = `http://${domain}:${port}`;
-            }
-            break;
+function GenerateChallengeEndpoint(endpoint: Endpoint, username: string = "hacker"): string {
+  let connString: string = "";
+  const { protocol, hostname, port } = endpoint;
 
-        case "ssh":
-            let user: string = username;
+  switch (protocol) {
+    case "http":
+    case "https":
+      connString = `${protocol}://${hostname}`;
+      if (port && port !== 80 && port !== 443) {
+        connString += `:${port}`;
+      }
+      break;
 
-            if (port === 22) {
-                connString = `ssh ${user}@${domain}`;
-            } else {
-                connString = `ssh ${user}@${domain} -p ${port}`;
-            }
-            break;
+    case "ssh":
+      connString = `ssh ${username}@${hostname}`;
+      if (port && port !== 22) {
+        connString += ` -p ${port}`;
+      }
+      break;
 
-        case "nc":
-            connString = `nc ${domain} ${port}`;
-            break;
-    }
+    case "nc":
+      connString = `nc ${hostname}`;
+      if (port) {
+        connString += ` ${port}`;
+      }
+      break;
 
-    return connString;
+    default:
+      // Generic format for unknown protocols
+      connString = `${protocol}://${hostname}`;
+      if (port) {
+        connString += `:${port}`;
+      }
+      break;
+  }
+
+  return connString;
 }
 
 export { GenerateChallengeEndpoint };
