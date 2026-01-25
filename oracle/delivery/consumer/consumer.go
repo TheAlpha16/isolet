@@ -52,7 +52,7 @@ func (c *Consumer) Start(ctx context.Context) error {
 			case *kafka.Message:
 				deserializer, ok := c.deserializers[*e.TopicPartition.Topic]
 				if !ok {
-					tracer.FactsTotal.WithLabelValues(*e.TopicPartition.Topic, "ignored", "unknown").Inc()
+					tracer.FactsTotal.WithLabelValues(*e.TopicPartition.Topic, tracer.StatusUnknown, "unknown").Inc()
 					logger.Warn("no deserializer found for topic", zap.String("topic", *e.TopicPartition.Topic))
 					continue
 				}
