@@ -5,4 +5,5 @@ export { ProfileService } from "./profile";
 export { EventService } from "./event";
 export { ScoreService } from "./score";
 export { HealthService } from "./health";
+export { InstanceService } from "./instance";
 export { BaseService } from "./base";
