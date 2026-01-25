@@ -83,9 +83,9 @@ func (s *smtpImpl) handleEmail(message *gomail.Message) {
 	start := time.Now()
 
 	defer func() {
-		status := "success"
+		status := tracer.StatusSuccess
 		if err != nil {
-			status = "failure"
+			status = tracer.StatusFailure
 		}
 		tracer.EmailsSentTotal.WithLabelValues(status).Inc()
 		tracer.EmailSendDurationSeconds.WithLabelValues(status).Observe(time.Since(start).Seconds())

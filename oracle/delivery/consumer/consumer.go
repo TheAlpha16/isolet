@@ -60,16 +60,16 @@ func (c *Consumer) Start(ctx context.Context) error {
 				start := time.Now()
 				fact, err := deserializer(eventCtx, e.Value)
 				if err != nil {
-					tracer.FactsTotal.WithLabelValues(*e.TopicPartition.Topic, "error", "unknown").Inc()
+					tracer.FactsTotal.WithLabelValues(*e.TopicPartition.Topic, tracer.StatusFailure, "unknown").Inc()
 					errorDom.RaiseToSentry(ctx, err)
 					logger.Error("failed to deserialize fact", zap.Error(err))
 					continue
 				}
 
 				err = c.factUc.HandleEvent(eventCtx, fact)
-				status := "success"
+				status := tracer.StatusSuccess
 				if err != nil {
-					status = "error"
+					status = tracer.StatusFailure
 					logger.Error("failed to handle event", zap.Error(err), zap.String("fact_type", string(fact.FactType())))
 				}
 

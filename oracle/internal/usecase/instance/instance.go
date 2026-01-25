@@ -115,7 +115,7 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 		tracer.InstanceOperationsTotal.WithLabelValues(
 			strconv.FormatInt(input.ChallengeID, 10),
 			"start",
-			"failure",
+			tracer.StatusFailure,
 		).Inc()
 		return nil, err
 	}
@@ -125,7 +125,7 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 		tracer.InstanceOperationsTotal.WithLabelValues(
 			strconv.FormatInt(input.ChallengeID, 10),
 			"start",
-			"failure",
+			tracer.StatusFailure,
 		).Inc()
 		return nil, err
 	}
@@ -133,13 +133,13 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 	tracer.InstanceOperationsTotal.WithLabelValues(
 		strconv.FormatInt(input.ChallengeID, 10),
 		"start",
-		"success",
+		tracer.StatusSuccess,
 	).Inc()
 
 	tracer.InstanceProvisionDurationSeconds.WithLabelValues(
 		strconv.FormatInt(input.ChallengeID, 10),
 		"start",
-		"success",
+		tracer.StatusSuccess,
 	).Observe(time.Since(timeNow).Seconds())
 
 	tracer.InstanceActiveTotal.WithLabelValues(
@@ -177,7 +177,7 @@ func (i *instanceImpl) Stop(ctx context.Context, input *instanceDom.StopInput) e
 		tracer.InstanceOperationsTotal.WithLabelValues(
 			strconv.FormatInt(instance.ChallengeID, 10),
 			"stop",
-			"failure",
+			tracer.StatusFailure,
 		).Inc()
 		return err
 	}
@@ -185,7 +185,7 @@ func (i *instanceImpl) Stop(ctx context.Context, input *instanceDom.StopInput) e
 	tracer.InstanceOperationsTotal.WithLabelValues(
 		strconv.FormatInt(instance.ChallengeID, 10),
 		"stop",
-		"success",
+		tracer.StatusSuccess,
 	).Inc()
 
 	// Gauge only needs challenge_id
@@ -254,7 +254,7 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 		tracer.InstanceOperationsTotal.WithLabelValues(
 			strconv.FormatInt(instance.ChallengeID, 10),
 			"extend",
-			"failure",
+			tracer.StatusFailure,
 		).Inc()
 		return nil, err
 	}
@@ -262,7 +262,7 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 	tracer.InstanceOperationsTotal.WithLabelValues(
 		strconv.FormatInt(instance.ChallengeID, 10),
 		"extend",
-		"success",
+		tracer.StatusSuccess,
 	).Inc()
 
 	return instance.ToDTO(), nil

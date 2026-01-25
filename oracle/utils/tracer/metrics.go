@@ -6,6 +6,11 @@ import (
 )
 
 var (
+	StatusSuccess = "success"
+	StatusFailure = "failure"
+)
+
+var (
 	// Challenges
 	FlagSubmissionsTotal = promauto.NewCounterVec(
 		prometheus.CounterOpts{
