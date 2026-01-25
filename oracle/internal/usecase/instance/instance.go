@@ -188,7 +188,6 @@ func (i *instanceImpl) Stop(ctx context.Context, input *instanceDom.StopInput) e
 		tracer.StatusSuccess,
 	).Inc()
 
-	// Gauge only needs challenge_id
 	tracer.InstanceActiveTotal.WithLabelValues(
 		strconv.FormatInt(instance.ChallengeID, 10),
 	).Dec()
