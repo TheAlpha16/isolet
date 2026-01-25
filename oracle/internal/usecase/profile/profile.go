@@ -95,9 +95,7 @@ func (p *profileImpl) getTeamScoreAndRank(ctx context.Context, teamID int64) (ra
 	}
 
 	// need to increase rank by 1 due to zscore handling
-	if teamRank > 0 {
-		teamRank++
-	}
+	teamRank++
 
 	return int(teamScore), int(teamRank), nil
 }
