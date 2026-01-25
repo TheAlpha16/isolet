@@ -5,22 +5,20 @@ import { ChallengeCard } from "@/components/challenges/ChallengeCard";
 import { ChallengeModal } from "@/components/challenges/ChallengeModal";
 import { ChallengeSkeleton } from "@/components/skeletons/challenge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useChallengeStore } from "@/store";
-// import { useInstanceStore } from "@/store/instanceStore";
+import { useChallengeStore, useInstanceStore } from "@/store";
 import { useEffect, useState } from "react";
 
 function Challenges() {
   const [currentChallenge, setCurrentChallenge] = useState<Challenge | null>(null);
   const { challengeIdMap, categoryIdMap, categoryChallengeMap, fetchChallenges, loading } =
     useChallengeStore();
-  // const { fetchInstances } = useInstanceStore();
+  const { fetchInstances } = useInstanceStore();
   const categoryIds = Object.keys(categoryIdMap).map(Number);
 
   useEffect(() => {
     fetchChallenges();
-    // DEBUG temporarily disable instance fetching
-    // fetchInstances();
-  }, [fetchChallenges]);
+    fetchInstances();
+  }, [fetchChallenges, fetchInstances]);
 
   if (loading) {
     return <ChallengeSkeleton />;
