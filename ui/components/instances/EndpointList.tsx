@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import type { Endpoint } from "@/api";
 import { EndpointUtils } from "@/lib/endpoint";
