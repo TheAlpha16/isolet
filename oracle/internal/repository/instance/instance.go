@@ -11,6 +11,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type instanceRepo struct {
@@ -119,12 +120,21 @@ func (ir *instanceRepo) DeleteByRefs(ctx context.Context, teamID *int64, challen
 	return resp.RowsAffected, nil
 }
 
-func (ir *instanceRepo) DeleteExpired(ctx context.Context, now time.Time) (int64, error) {
-	result := ir.db.WithContext(ctx).Where("expires_at <= ?", now.Unix()).Delete(&Instance{})
-	if err := result.Error; err != nil {
-		return 0, errorDom.Raise(ctx, errorDom.ErrDBDeleteError, "failed to delete expired instances", err, common.ExtraData{"now": now})
+func (ir *instanceRepo) DeleteExpired(ctx context.Context, now time.Time) (map[int64]int64, error) {
+	var instances []Instance
+
+	if err := ir.db.WithContext(ctx).Clauses(
+		clause.Returning{Columns: []clause.Column{{Name: "challenge_id"}}},
+	).Where("expires_at <= ?", now.Unix()).Delete(&instances).Error; err != nil {
+		return nil, errorDom.Raise(ctx, errorDom.ErrDBDeleteError, "failed to delete expired instances", err, common.ExtraData{"now": now})
 	}
-	return result.RowsAffected, nil
+
+	result := make(map[int64]int64, len(instances))
+	for _, inst := range instances {
+		result[inst.ChallengeID]++
+	}
+
+	return result, nil
 }
 
 func New(db *gorm.DB) instanceDom.Repository {
