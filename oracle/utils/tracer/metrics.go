@@ -8,6 +8,7 @@ import (
 var (
 	StatusSuccess = "success"
 	StatusFailure = "failure"
+	StatusUnknown = "unknown"
 )
 
 var (

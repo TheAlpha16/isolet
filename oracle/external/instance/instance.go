@@ -13,6 +13,7 @@ import (
 	"github.com/TheAlpha16/isolet/tide/sdk"
 
 	"go.opentelemetry.io/otel"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -52,6 +53,9 @@ func (is *instanceSvc) Stop(ctx context.Context, inst *instanceDom.Instance) err
 	namespace := utils.GetConfig().Instances.Namespace
 
 	if err := is.client.DeleteInstance(ctx, inst.Name(), namespace); err != nil {
+		if apierrors.IsNotFound(err) {
+			return errorDom.Raise(ctx, errorDom.ErrK8sInstanceNotFound, "", err, nil)
+		}
 		return errorDom.Raise(ctx, errorDom.ErrInstanceDeletionFailed, "", err, nil)
 	}
 
@@ -68,6 +72,9 @@ func (is *instanceSvc) Extend(ctx context.Context, inst *instanceDom.Instance) e
 
 	tideInstance, err := is.client.GetInstance(ctx, inst.Name(), utils.GetConfig().Instances.Namespace)
 	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return errorDom.Raise(ctx, errorDom.ErrK8sInstanceNotFound, "", err, nil)
+		}
 		return errorDom.Raise(ctx, errorDom.ErrInstanceUpdateFailed, "failed to get instance for extension", err, nil)
 	}
 
@@ -77,6 +84,9 @@ func (is *instanceSvc) Extend(ctx context.Context, inst *instanceDom.Instance) e
 	tideInstance.Spec.Lifecycle.AllowExtension = inst.Lifecycle.AllowExtension
 
 	if err := is.client.UpdateInstance(ctx, tideInstance); err != nil {
+		if apierrors.IsNotFound(err) {
+			return errorDom.Raise(ctx, errorDom.ErrK8sInstanceNotFound, "", err, nil)
+		}
 		return errorDom.Raise(ctx, errorDom.ErrInstanceUpdateFailed, "failed to extend instance expiry", err, nil)
 	}
 
