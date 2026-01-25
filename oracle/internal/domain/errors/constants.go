@@ -251,6 +251,7 @@ var ServerErrorCodes = map[ErrorCode]struct{}{
 	ErrCacheZSetMissingMember:  {},
 	ErrInstanceCreationFailed:  {},
 	ErrK8sConnectionFailed:     {},
+	ErrK8sInstanceNotFound:     {},
 	ErrInstanceInvalid:         {},
 	ErrChallengeNameInvalid:    {},
 	ErrInstanceUpdateFailed:    {},
