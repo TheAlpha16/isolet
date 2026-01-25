@@ -1,40 +1,74 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Play, StopCircle, RefreshCw, KeyRound, Terminal } from "lucide-react";
-import showToast, { ToastStatus } from "@/utils/toastHelper";
+import { Loader2, Play, StopCircle, RefreshCw, Terminal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useInstanceStore } from "@/store/instance";
 import { CopyButton } from "@/components/utils/copy-button";
 import { GenerateChallengeEndpoint } from "@/utils/parser";
+import showToast, { ToastStatus } from "@/utils/toastHelper";
 
 interface InstanceCardProps {
   challenge_id: number;
 }
 
-export function InstanceCard({ challenge_id: challenge_id }: InstanceCardProps) {
+export function InstanceCard({ challenge_id }: InstanceCardProps) {
   const [timeLeft, setTimeLeft] = useState(0);
-  const { instanceIdMap, loading, challengeInstanceMap startInstance, stopInstance, extendInstance, setLoading } =
-    useInstanceStore();
-  const instance = instances[challenge_id];
+  const {
+    instanceIdMap,
+    loading,
+    challengeInstanceMap,
+    startInstance,
+    stopInstance,
+    extendInstance,
+  } = useInstanceStore();
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
 
-  const connectionLink = useMemo(() => {
-    if (!instance) return "";
-    return GenerateChallengeEndpoint(instance.deployment, instance.hostname, instance.port);
+  const instance_id = challengeInstanceMap[challenge_id];
+  const instance = instance_id ? instanceIdMap[instance_id] : undefined;
+
+  const isActive = instance?.expires_at ? instance.expires_at * 1000 > Date.now() : false;
+
+  const primaryEndpoint = useMemo(() => {
+    if (!instance || !instance.endpoints || instance.endpoints.length === 0) return null;
+    return instance.endpoints.find((e) => e.name === "main") || instance.endpoints[0];
   }, [instance]);
 
+  const connectionLink = useMemo(() => {
+    if (!primaryEndpoint) return "";
+    const port =
+      primaryEndpoint.port ??
+      (primaryEndpoint.protocol === "http" ? 80 : primaryEndpoint.protocol === "ssh" ? 22 : 0);
+    return GenerateChallengeEndpoint(primaryEndpoint.protocol, primaryEndpoint.hostname, port);
+  }, [primaryEndpoint]);
+
   useEffect(() => {
-    if (instance && instance.deadline) {
-      setTimeLeft(Math.max(0, Math.floor((instance.deadline - Date.now()) / 1000)));
+    if (instance?.expires_at) {
+      const expiresAtMs = instance.expires_at * 1000;
+      const active = expiresAtMs > Date.now();
+      if (active) {
+        setTimeLeft(Math.max(0, Math.floor((expiresAtMs - Date.now()) / 1000)));
+      } else {
+        setTimeLeft(0);
+      }
+    } else {
+      setTimeLeft(0);
     }
 
     let interval: NodeJS.Timeout | undefined;
-    if (instance.active) {
-      interval = setInterval(() => {
-        setTimeLeft(Math.max(0, Math.floor((instance.deadline - Date.now()) / 1000)));
-      }, 1000);
+    if (instance?.expires_at) {
+      const expiresAtMs = instance.expires_at * 1000;
+      if (expiresAtMs > Date.now()) {
+        interval = setInterval(() => {
+          const timeRemaining = Math.max(0, Math.floor((expiresAtMs - Date.now()) / 1000));
+          setTimeLeft(timeRemaining);
+
+          if (timeRemaining === 0 && interval) {
+            clearInterval(interval);
+          }
+        }, 1000);
+      }
     }
 
     return () => {
@@ -43,30 +77,15 @@ export function InstanceCard({ challenge_id: challenge_id }: InstanceCardProps) 
   }, [instance]);
 
   const handleStart = async () => {
-    setLoading(true);
-    try {
-      await startInstance(challenge_id);
-    } finally {
-      setLoading(false);
-    }
+    await startInstance(challenge_id);
   };
 
   const handleStop = async () => {
-    setLoading(true);
-    try {
-      await stopInstance(challenge_id);
-    } finally {
-      setLoading(false);
-    }
+    await stopInstance(challenge_id);
   };
 
   const handleExtend = async () => {
-    setLoading(true);
-    try {
-      await extendInstance(challenge_id);
-    } finally {
-      setLoading(false);
-    }
+    await extendInstance(challenge_id);
   };
 
   const formatTime = (seconds: number) => {
@@ -87,7 +106,7 @@ export function InstanceCard({ challenge_id: challenge_id }: InstanceCardProps) 
 
   const getStatusColor = () => {
     if (!instance) return "text-gray-500";
-    if (instance.active) return "text-green-500";
+    if (isActive) return "text-green-500";
     return "text-red-500";
   };
 
@@ -96,28 +115,28 @@ export function InstanceCard({ challenge_id: challenge_id }: InstanceCardProps) 
       <div className="flex items-center space-x-4 justify-between">
         <div className="flex space-x-2 items-center">
           <Button
-            onClick={instance.active ? handleStop : handleStart}
+            onClick={isActive ? handleStop : handleStart}
             disabled={loading}
             variant="outline"
             size="sm"
           >
             {loading ? (
               <Loader2 className="animate-spin text-yellow-500" />
-            ) : instance.active ? (
+            ) : isActive ? (
               <StopCircle className="text-red-500" />
             ) : (
               <Play className="text-green-500" />
             )}
           </Button>
 
-          {instance.active && (
+          {isActive && (
             <Button size="sm" variant="outline" onClick={handleExtend} disabled={loading}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Extend
             </Button>
           )}
 
-          {instance.active && (
+          {isActive && (
             <span className="text-sm font-mono border h-9 p-2 rounded-lg">
               {formatTime(timeLeft)}
             </span>
@@ -128,12 +147,12 @@ export function InstanceCard({ challenge_id: challenge_id }: InstanceCardProps) 
           <Tooltip>
             <TooltipTrigger asChild>
               <Badge variant="outline" className={getStatusColor()}>
-                {instance.active ? "Running" : "Stopped"}
+                {isActive ? "Running" : "Stopped"}
               </Badge>
             </TooltipTrigger>
             <TooltipContent>
               <p>
-                {instance.active
+                {isActive
                   ? "Access the instance using the details below"
                   : "Start the instance to access it"}
               </p>
@@ -142,7 +161,7 @@ export function InstanceCard({ challenge_id: challenge_id }: InstanceCardProps) 
         </TooltipProvider>
       </div>
 
-      {instance.active && (
+      {isActive && connectionLink && (
         <div className="flex items-center space-x-2">
           <div className="relative flex-grow">
             <Terminal className="h-5 w-5 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
@@ -159,7 +178,7 @@ export function InstanceCard({ challenge_id: challenge_id }: InstanceCardProps) 
           />
         </div>
       )}
-      {instance.active && instance.password && (
+      {/* {instance.active && instance.password && (
         <div className="flex items-center space-x-2">
           <div className="relative flex-grow">
             <KeyRound className="h-5 w-5 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
@@ -175,7 +194,7 @@ export function InstanceCard({ challenge_id: challenge_id }: InstanceCardProps) 
             copyToClipboard={copyToClipboard}
           />
         </div>
-      )}
+      )} */}
     </div>
   );
 }
