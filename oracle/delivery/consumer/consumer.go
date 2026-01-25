@@ -40,7 +40,8 @@ func (c *Consumer) Start(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return c.consumer.Close()
-		case ev := <-c.consumer.Events():
+		default:
+			ev := c.consumer.Poll(100)
 			eventCtx, eventSpan, logger := tracer.StartSpan(ctx, consumerTracer, "oracle.consumer.handler")
 			defer eventSpan.End()
 
@@ -105,10 +106,9 @@ func New(ctx context.Context, factUc factDom.Usecase) (*Consumer, error) {
 	config := utils.GetConfig()
 
 	c, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"bootstrap.servers":        config.Kafka.Brokers,
-		"group.id":                 config.Kafka.GroupID,
-		"auto.offset.reset":        "earliest",
-		"go.events.channel.enable": true,
+		"bootstrap.servers": config.Kafka.Brokers,
+		"group.id":          config.Kafka.GroupID,
+		"auto.offset.reset": "earliest",
 	})
 
 	if err != nil {
