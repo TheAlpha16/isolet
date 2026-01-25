@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -44,7 +43,7 @@ func (a *authImpl) Login(ctx context.Context, input *authDom.LoginInput) (*authD
 		return nil, errorDom.Raise(ctx, errorDom.ErrAuthUserBanned, "", nil, nil)
 	}
 
-	activeSessionCount, err := a.tokenUc.CountEntityTokens(ctx, tokenDom.TokenAuth, fmt.Sprintf("%d", user.ID))
+	activeSessionCount, err := a.tokenUc.CountEntityTokens(ctx, tokenDom.TokenAuth, strconv.FormatInt(user.ID, 10))
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +168,7 @@ func (a *authImpl) ForgotPassword(ctx context.Context, input *authDom.ForgotPass
 		return err
 	}
 
-	activeSessionCount, err := a.tokenUc.CountEntityTokens(ctx, tokenDom.TokenPasswordReset, fmt.Sprintf("%d", user.ID))
+	activeSessionCount, err := a.tokenUc.CountEntityTokens(ctx, tokenDom.TokenPasswordReset, strconv.FormatInt(user.ID, 10))
 	if err != nil {
 		return err
 	}
@@ -309,7 +308,7 @@ func (a *authImpl) generatePasswordResetToken(ctx context.Context, user *userDom
 	token := tokenDom.Token{
 		TokenIdentifier: tokenDom.TokenIdentifier{
 			ID:       utils.RandomUUID(),
-			EntityID: fmt.Sprintf("%d", user.ID),
+			EntityID: strconv.FormatInt(user.ID, 10),
 			Purpose:  tokenDom.TokenPasswordReset,
 		},
 	}

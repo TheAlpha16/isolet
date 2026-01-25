@@ -2,7 +2,7 @@ package instance
 
 import (
 	"context"
-	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
@@ -113,7 +113,7 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 
 	if err := i.service.Start(ctx, &inst, manifest); err != nil {
 		tracer.InstanceOperationsTotal.WithLabelValues(
-			fmt.Sprintf("%d", input.ChallengeID),
+			strconv.FormatInt(input.ChallengeID, 10),
 			"start",
 			"failure",
 		).Inc()
@@ -123,7 +123,7 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 	instance, err = i.repo.Create(ctx, &inst)
 	if err != nil {
 		tracer.InstanceOperationsTotal.WithLabelValues(
-			fmt.Sprintf("%d", input.ChallengeID),
+			strconv.FormatInt(input.ChallengeID, 10),
 			"start",
 			"failure",
 		).Inc()
@@ -131,19 +131,19 @@ func (i *instanceImpl) Start(ctx context.Context, input *instanceDom.StartInput)
 	}
 
 	tracer.InstanceOperationsTotal.WithLabelValues(
-		fmt.Sprintf("%d", input.ChallengeID),
+		strconv.FormatInt(input.ChallengeID, 10),
 		"start",
 		"success",
 	).Inc()
 
 	tracer.InstanceProvisionDurationSeconds.WithLabelValues(
-		fmt.Sprintf("%d", input.ChallengeID),
+		strconv.FormatInt(input.ChallengeID, 10),
 		"start",
 		"success",
 	).Observe(time.Since(timeNow).Seconds())
 
 	tracer.InstanceActiveTotal.WithLabelValues(
-		fmt.Sprintf("%d", input.ChallengeID),
+		strconv.FormatInt(input.ChallengeID, 10),
 	).Inc()
 
 	return instance.ToDTO(), nil
@@ -175,7 +175,7 @@ func (i *instanceImpl) Stop(ctx context.Context, input *instanceDom.StopInput) e
 	// delete from database
 	if err := i.repo.Delete(ctx, instance.ID); err != nil {
 		tracer.InstanceOperationsTotal.WithLabelValues(
-			fmt.Sprintf("%d", instance.ChallengeID),
+			strconv.FormatInt(instance.ChallengeID, 10),
 			"stop",
 			"failure",
 		).Inc()
@@ -183,14 +183,14 @@ func (i *instanceImpl) Stop(ctx context.Context, input *instanceDom.StopInput) e
 	}
 
 	tracer.InstanceOperationsTotal.WithLabelValues(
-		fmt.Sprintf("%d", instance.ChallengeID),
+		strconv.FormatInt(instance.ChallengeID, 10),
 		"stop",
 		"success",
 	).Inc()
 
 	// Gauge only needs challenge_id
 	tracer.InstanceActiveTotal.WithLabelValues(
-		fmt.Sprintf("%d", instance.ChallengeID),
+		strconv.FormatInt(instance.ChallengeID, 10),
 	).Dec()
 
 	return nil
@@ -252,7 +252,7 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 		instanceDom.ExpiresAtColumn: instance.Lifecycle.ExpiresAt.Unix(),
 	}); err != nil {
 		tracer.InstanceOperationsTotal.WithLabelValues(
-			fmt.Sprintf("%d", instance.ChallengeID),
+			strconv.FormatInt(instance.ChallengeID, 10),
 			"extend",
 			"failure",
 		).Inc()
@@ -260,7 +260,7 @@ func (i *instanceImpl) Extend(ctx context.Context, input *instanceDom.ExtendInpu
 	}
 
 	tracer.InstanceOperationsTotal.WithLabelValues(
-		fmt.Sprintf("%d", instance.ChallengeID),
+		strconv.FormatInt(instance.ChallengeID, 10),
 		"extend",
 		"success",
 	).Inc()

@@ -2,7 +2,7 @@ package instance
 
 import (
 	"context"
-	"fmt"
+	"strconv"
 
 	instanceDom "github.com/TheAlpha16/isolet/oracle/internal/domain/instance"
 	"github.com/TheAlpha16/isolet/oracle/utils/tracer"
@@ -30,7 +30,7 @@ func (i instanceImpl) handleInstanceExpired(ctx context.Context, instance *insta
 	}
 
 	if deletedRows > 0 {
-		tracer.InstanceActiveTotal.WithLabelValues(fmt.Sprintf("%d", instance.ChallengeID)).Dec()
+		tracer.InstanceActiveTotal.WithLabelValues(strconv.FormatInt(instance.ChallengeID, 10)).Dec()
 	}
 
 	return nil

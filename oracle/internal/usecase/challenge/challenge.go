@@ -3,6 +3,7 @@ package challenge
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
 
 	challengeDom "github.com/TheAlpha16/isolet/oracle/internal/domain/challenge"
@@ -143,7 +144,7 @@ func (c *challengeImpl) SubmitFlag(ctx context.Context, input *challengeDom.Subm
 	}
 
 	tracer.FlagSubmissionsTotal.WithLabelValues(
-		fmt.Sprintf("%d", input.ChallengeID),
+		strconv.FormatInt(input.ChallengeID, 10),
 		fmt.Sprintf("%t", isCorrect),
 	).Inc()
 
