@@ -139,7 +139,7 @@ tide-version:
 
 # Generate UI client from OpenAPI spec
 ui-generate:
-	npx openoracle-typescript-codegen --input {{ORACLE}}/openapi.yaml --output {{UI}}/api
+	npx openapi-typescript-codegen --input {{ORACLE}}/openapi.yaml --output {{UI}}/api
 	@echo "Generated UI client from OpenAPI spec."
 
 # Run the UI development server
