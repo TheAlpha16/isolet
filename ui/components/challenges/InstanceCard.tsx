@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useInstanceStore } from "@/store/instance";
 import { CopyButton } from "@/components/utils/copy-button";
-import { GenerateChallengeEndpoint } from "@/utils/parser";
+import { EndpointUtils } from "@/lib/endpoint";
 import showToast, { ToastStatus } from "@/utils/toastHelper";
 
 interface InstanceCardProps {
@@ -156,7 +156,7 @@ export function InstanceCard({ challenge_id }: InstanceCardProps) {
       {isActive && endpoints.length > 0 && (
         <div className="flex flex-col space-y-2">
           {endpoints.map((endpoint, index) => {
-            const connectionString = GenerateChallengeEndpoint(endpoint);
+            const connectionString = EndpointUtils.toConnectionString(endpoint);
             return (
               <div key={index} className="flex items-center space-x-2">
                 <div className="relative flex-grow">
