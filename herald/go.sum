@@ -14,6 +14,8 @@ github.com/Microsoft/hcsshim v0.11.5 h1:haEcLNpj9Ka1gd3B3tAEs9CpE0c+1IhoL59w/exY
 github.com/Microsoft/hcsshim v0.11.5/go.mod h1:MV8xMfmECjl5HdO7U/3/hFVnkmSBjAjmA09d4bExKcU=
 github.com/TheAlpha16/isolet/tide v0.0.0-20260118183829-d31dc0b1cd40 h1:Up4c9JxYsQVWbeNdjdyJtJRjA6BgXtbYmq61udPzOtY=
 github.com/TheAlpha16/isolet/tide v0.0.0-20260118183829-d31dc0b1cd40/go.mod h1:GPB3zzomAtip6slFKHPMjOjKeIdKTO1ZJoL+u2a1LCY=
+github.com/TheAlpha16/isolet/tide v0.0.0-20260125145121-00f080035d01 h1:dxApS5xRc9k7JaOBguU0tI3OsfD22HMEEIzRTNGWBqg=
+github.com/TheAlpha16/isolet/tide v0.0.0-20260125145121-00f080035d01/go.mod h1:GPB3zzomAtip6slFKHPMjOjKeIdKTO1ZJoL+u2a1LCY=
 github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d h1:licZJFw2RwpHMqeKTCYkitsPqHNxTmd4SNR5r94FGM8=
 github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d/go.mod h1:asat636LX7Bqt5lYEZ27JNDcqxfjdBQuJ/MM4CN/Lzo=
 github.com/aws/aws-sdk-go-v2 v1.26.1 h1:5554eUqIYVWpU0YmeeYZ0wU64H2VLBs8TlhRB2L+EkA=
