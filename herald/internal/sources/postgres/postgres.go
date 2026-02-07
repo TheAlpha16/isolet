@@ -39,11 +39,16 @@ func (s *pgSource) Name() string {
 }
 
 func (s *pgSource) Run(ctx context.Context, out chan<- facts.Fact) error {
+	ctx, span, log := tracer.StartSpan(ctx, pgTracer, "herald.sources.postgres.Run")
+	defer span.End()
+
 	if err := s.ensurePublication(ctx); err != nil {
+		errors.HandleSpanError(ctx, span, log, "failed to ensure publication", err)
 		return err
 	}
 
 	if err := s.ensureReplicationSlot(ctx); err != nil {
+		errors.HandleSpanError(ctx, span, log, "failed to ensure replication slot", err)
 		return err
 	}
 
@@ -53,7 +58,9 @@ func (s *pgSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 			fmt.Sprintf("publication_names '%s'", publicationName),
 		},
 	}); err != nil {
-		return errors.Raise(errors.ErrPostgresReplicationFailed, "failed to start replication", err)
+		err = errors.Raise(errors.ErrPostgresReplicationFailed, "failed to start replication", err)
+		errors.HandleSpanError(ctx, span, log, "failed to start replication", err)
+		return err
 	}
 
 	return nil
