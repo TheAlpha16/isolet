@@ -21,9 +21,9 @@ const (
 type pgSource struct {
 	sqlPool *pgxpool.Pool
 	repl    *pgconn.PgConn
-	lastLSN pglogrepl.LSN
 
-	wg *sync.WaitGroup
+	lastLSN pglogrepl.LSN
+	wg      *sync.WaitGroup
 }
 
 func (s *pgSource) Name() string {
