@@ -9,10 +9,13 @@ import (
 	"github.com/TheAlpha16/isolet/herald/pkg/facts"
 	"github.com/TheAlpha16/isolet/herald/utils"
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
+	"github.com/TheAlpha16/isolet/herald/utils/tracer"
 
 	"github.com/jackc/pglogrepl"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"go.opentelemetry.io/otel"
+	"go.uber.org/zap"
 )
 
 const (
@@ -20,6 +23,8 @@ const (
 	publicationName = "herald_pub"
 	pluginName      = "pgoutput"
 )
+
+var pgTracer = otel.Tracer("herald.sources.postgres")
 
 type pgSource struct {
 	sqlConn *pgx.Conn
@@ -34,20 +39,6 @@ func (s *pgSource) Name() string {
 }
 
 func (s *pgSource) Run(ctx context.Context, out chan<- facts.Fact) error {
-	cfg := utils.GetConfig().Postgres
-
-	conn, err := pgx.Connect(ctx, cfg.DSN)
-	if err != nil {
-		return errors.Raise(errors.ErrPostgresConnectionFailed, "", err)
-	}
-	s.sqlConn = conn
-
-	replConn, err := pgconn.Connect(ctx, cfg.ReplicationDSN)
-	if err != nil {
-		return errors.Raise(errors.ErrPostgresConnectionFailed, "", err)
-	}
-	s.repl = replConn
-
 	if err := s.ensurePublication(ctx); err != nil {
 		return err
 	}
@@ -69,7 +60,28 @@ func (s *pgSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 }
 
 func NewSource(ctx context.Context, wg *sync.WaitGroup) sources.Source {
+	ctx, span, log := tracer.StartSpan(ctx, pgTracer, "herald.sources.postgres.NewSource")
+	defer span.End()
+
+	cfg := utils.GetConfig().Postgres
+
+	conn, err := pgx.Connect(ctx, cfg.DSN)
+	if err != nil {
+		err = errors.Raise(errors.ErrPostgresConnectionFailed, "", err)
+		errors.HandleSpanError(ctx, span, log, "failed to connect to postgres", err)
+		log.Fatal("failed to connect to postgres", zap.Error(err))
+	}
+
+	replConn, err := pgconn.Connect(ctx, cfg.ReplicationDSN)
+	if err != nil {
+		err = errors.Raise(errors.ErrPostgresConnectionFailed, "", err)
+		errors.HandleSpanError(ctx, span, log, "failed to connect to postgres replication", err)
+		log.Fatal("failed to connect to postgres replication", zap.Error(err))
+	}
+
 	return &pgSource{
-		wg: wg,
+		sqlConn: conn,
+		repl:    replConn,
+		wg:      wg,
 	}
 }
