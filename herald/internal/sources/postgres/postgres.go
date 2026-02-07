@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/TheAlpha16/isolet/herald/internal/sources"
@@ -53,6 +54,15 @@ func (s *pgSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 
 	if err := s.ensureReplicationSlot(ctx); err != nil {
 		return err
+	}
+
+	if err := pglogrepl.StartReplication(ctx, s.repl, slotName, s.lastLSN, pglogrepl.StartReplicationOptions{
+		PluginArgs: []string{
+			"proto_version '1'",
+			fmt.Sprintf("publication_names '%s'", publicationName),
+		},
+	}); err != nil {
+		return errors.Raise(errors.ErrPostgresReplicationFailed, "failed to start replication", err)
 	}
 
 	return nil
