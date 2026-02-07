@@ -4,8 +4,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/TheAlpha16/isolet/herald/pkg/facts"
 	"github.com/TheAlpha16/isolet/herald/internal/sources"
+	"github.com/TheAlpha16/isolet/herald/pkg/facts"
 	"github.com/TheAlpha16/isolet/herald/utils"
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
 	"github.com/TheAlpha16/isolet/herald/utils/tracer"
@@ -52,9 +52,7 @@ func (s *k8sSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 		return err
 	}
 
-	s.wg.Add(1)
-	go func() {
-		defer s.wg.Done()
+	s.wg.Go(func() {
 		cacheCtx, cacheSpan, cacheLog := tracer.StartSpan(ctx, k8sTracer, "herald.sources.k8s.cache.Start")
 		defer cacheSpan.End()
 
@@ -63,7 +61,7 @@ func (s *k8sSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 			errors.HandleSpanError(cacheCtx, cacheSpan, cacheLog, "k8s cache failed to start", err)
 			cacheLog.Fatal("failed to start cache", zap.Error(err))
 		}
-	}()
+	})
 
 	if !s.cache.WaitForCacheSync(ctx) {
 		err := errors.Raise(errors.ErrK8sCacheFailed, "timed out waiting for caches to sync", nil)
