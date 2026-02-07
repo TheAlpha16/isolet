@@ -60,6 +60,11 @@ type Config struct {
 		FactChannelSize int    `env:"INSTANCE_LIFECYCLE_FACT_CHANNEL_SIZE" envDefault:"1024"`
 		Workers         int    `env:"INSTANCE_LIFECYCLE_WORKERS" envDefault:"10"`
 	}
+
+	Postgres struct {
+		DSN            string `env:"POSTGRES_DSN" envDefault:"postgres://postgres:postgres@localhost:5432/isolet?sslmode=disable"`
+		ReplicationDSN string `env:"POSTGRES_REPLICATION_DSN" envDefault:"postgres://postgres:postgres@localhost:5432/isolet?sslmode=disable&replication=database"`
+	}
 }
 
 func GetConfig() *Config {

@@ -7,19 +7,21 @@ import (
 	"github.com/TheAlpha16/isolet/herald/internal/sources"
 	"github.com/TheAlpha16/isolet/herald/pkg/facts"
 	"github.com/TheAlpha16/isolet/herald/utils"
+	"github.com/TheAlpha16/isolet/herald/utils/errors"
 
 	"github.com/jackc/pglogrepl"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 const (
 	slotName        = "herald_slot"
 	publicationName = "herald_pub"
+	pluginName      = "pgoutput"
 )
 
 type pgSource struct {
-	sqlPool *pgxpool.Pool
+	sqlConn *pgx.Conn
 	repl    *pgconn.PgConn
 
 	lastLSN pglogrepl.LSN
@@ -31,6 +33,28 @@ func (s *pgSource) Name() string {
 }
 
 func (s *pgSource) Run(ctx context.Context, out chan<- facts.Fact) error {
+	cfg := utils.GetConfig().Postgres
+
+	conn, err := pgx.Connect(ctx, cfg.DSN)
+	if err != nil {
+		return errors.Raise(errors.ErrPostgresConnectionFailed, "", err)
+	}
+	s.sqlConn = conn
+
+	replConn, err := pgconn.Connect(ctx, cfg.ReplicationDSN)
+	if err != nil {
+		return errors.Raise(errors.ErrPostgresConnectionFailed, "", err)
+	}
+	s.repl = replConn
+
+	if err := s.ensurePublication(ctx); err != nil {
+		return err
+	}
+
+	if err := s.ensureReplicationSlot(ctx); err != nil {
+		return err
+	}
+
 	return nil
 }
 
