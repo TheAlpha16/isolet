@@ -25,6 +25,11 @@ const (
 	// K8s errors
 	ErrK8sInformerCreationFailed ErrorCode = "K8S-01"
 	ErrK8sCacheFailed            ErrorCode = "K8S-02"
+
+	// Postgres errors
+	ErrPostgresConnectionFailed  ErrorCode = "PG-01"
+	ErrPostgresPublicationFailed ErrorCode = "PG-02"
+	ErrPostgresReplicationFailed ErrorCode = "PG-03"
 )
 
 var msgMap = map[ErrorCode]string{
@@ -42,4 +47,11 @@ var msgMap = map[ErrorCode]string{
 
 	// K8s errors
 	ErrK8sInformerCreationFailed: "failed to create k8s informer",
+
+	// Postgres errors
+	ErrPostgresConnectionFailed: "failed to connect to postgres",
 }
+
+const (
+	PgDuplicateObjectCode = "42710"
+)
