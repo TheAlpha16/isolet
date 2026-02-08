@@ -20,6 +20,14 @@ import (
 	"go.uber.org/zap"
 )
 
+type eventType string
+
+const (
+	eventTypeCreate eventType = "CREATE"
+	eventTypeUpdate eventType = "UPDATE"
+	eventTypeDelete eventType = "DELETE"
+)
+
 const (
 	slotName        = "herald_slot"
 	publicationName = "herald_pub"
@@ -181,7 +189,7 @@ func (s *pgSource) processLogicalMessage(message pglogrepl.Message, factChan cha
 
 		data := extractColumns(rel, msg.Tuple)
 		s.wg.Go(func() {
-			handler(data, factChan)
+			handler(data, factChan, eventTypeCreate)
 		})
 	default:
 	}
