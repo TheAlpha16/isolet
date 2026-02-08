@@ -187,46 +187,36 @@ func (s *pgSource) streamLoop(ctx context.Context, out chan<- facts.Fact) error 
 	}
 }
 
+func (s *pgSource) processReplicationEvent(
+	relationID uint32,
+	tuple *pglogrepl.TupleData,
+	factChan chan<- facts.Fact,
+	evtType eventType,
+) error {
+	rel, ok := s.relations[relationID]
+	if !ok {
+		return errors.Raise(errors.ErrPostgresRelationMissing, "", nil)
+	}
+	handler, ok := tableHandlerMap[table(rel.RelationName)]
+	if !ok {
+		return errors.Raise(errors.ErrPostgresHandlerMissing, "", nil)
+	}
+
+	handler(extractColumns(rel, tuple), factChan, evtType)
+
+	return nil
+}
+
 func (s *pgSource) processLogicalMessage(message pglogrepl.Message, factChan chan<- facts.Fact) error {
 	switch msg := message.(type) {
 	case *pglogrepl.RelationMessage:
 		s.relations[msg.RelationID] = msg
 	case *pglogrepl.InsertMessage:
-		rel, ok := s.relations[msg.RelationID]
-		if !ok {
-			return errors.Raise(errors.ErrPostgresRelationMissing, "", nil)
-		}
-		handler, ok := tableHandlerMap[table(rel.RelationName)]
-		if !ok {
-			return errors.Raise(errors.ErrPostgresHandlerMissing, "", nil)
-		}
-
-		data := extractColumns(rel, msg.Tuple)
-		handler(data, factChan, eventTypeCreate)
+		return s.processReplicationEvent(msg.RelationID, msg.Tuple, factChan, eventTypeCreate)
 	case *pglogrepl.UpdateMessage:
-		rel, ok := s.relations[msg.RelationID]
-		if !ok {
-			return errors.Raise(errors.ErrPostgresRelationMissing, "", nil)
-		}
-		handler, ok := tableHandlerMap[table(rel.RelationName)]
-		if !ok {
-			return errors.Raise(errors.ErrPostgresHandlerMissing, "", nil)
-		}
-
-		data := extractColumns(rel, msg.NewTuple)
-		handler(data, factChan, eventTypeUpdate)
+		return s.processReplicationEvent(msg.RelationID, msg.NewTuple, factChan, eventTypeUpdate)
 	case *pglogrepl.DeleteMessage:
-		rel, ok := s.relations[msg.RelationID]
-		if !ok {
-			return errors.Raise(errors.ErrPostgresRelationMissing, "", nil)
-		}
-		handler, ok := tableHandlerMap[table(rel.RelationName)]
-		if !ok {
-			return errors.Raise(errors.ErrPostgresHandlerMissing, "", nil)
-		}
-
-		data := extractColumns(rel, msg.OldTuple)
-		handler(data, factChan, eventTypeDelete)
+		return s.processReplicationEvent(msg.RelationID, msg.OldTuple, factChan, eventTypeDelete)
 	default:
 	}
 
