@@ -202,9 +202,7 @@ func (s *pgSource) processLogicalMessage(message pglogrepl.Message, factChan cha
 		}
 
 		data := extractColumns(rel, msg.Tuple)
-		s.wg.Go(func() {
-			handler(data, factChan, eventTypeCreate)
-		})
+		handler(data, factChan, eventTypeCreate)
 	case *pglogrepl.UpdateMessage:
 		rel, ok := s.relations[msg.RelationID]
 		if !ok {
@@ -216,9 +214,7 @@ func (s *pgSource) processLogicalMessage(message pglogrepl.Message, factChan cha
 		}
 
 		data := extractColumns(rel, msg.NewTuple)
-		s.wg.Go(func() {
-			handler(data, factChan, eventTypeUpdate)
-		})
+		handler(data, factChan, eventTypeUpdate)
 	case *pglogrepl.DeleteMessage:
 		rel, ok := s.relations[msg.RelationID]
 		if !ok {
@@ -230,9 +226,7 @@ func (s *pgSource) processLogicalMessage(message pglogrepl.Message, factChan cha
 		}
 
 		data := extractColumns(rel, msg.OldTuple)
-		s.wg.Go(func() {
-			handler(data, factChan, eventTypeDelete)
-		})
+		handler(data, factChan, eventTypeDelete)
 	default:
 	}
 
