@@ -32,6 +32,7 @@ const (
 	ErrPostgresReplicationFailed ErrorCode = "PG-03"
 	ErrPostgresStandbyFailed     ErrorCode = "PG-04"
 	ErrPostgresRelationMissing   ErrorCode = "PG-05"
+	ErrPostgresHandlerMissing    ErrorCode = "PG-06"
 )
 
 var msgMap = map[ErrorCode]string{
@@ -54,6 +55,7 @@ var msgMap = map[ErrorCode]string{
 	ErrPostgresConnectionFailed: "failed to connect to postgres",
 	ErrPostgresStandbyFailed:    "failed to send standby status update to postgres",
 	ErrPostgresRelationMissing:  "unknown relation in replication message",
+	ErrPostgresHandlerMissing:   "no handler for table in replication message",
 }
 
 const (
