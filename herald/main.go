@@ -6,6 +6,7 @@ import (
 
 	"github.com/TheAlpha16/isolet/herald/internal/app"
 	"github.com/TheAlpha16/isolet/herald/internal/sources/k8s"
+	"github.com/TheAlpha16/isolet/herald/internal/sources/postgres"
 	"github.com/TheAlpha16/isolet/herald/utils"
 	"github.com/TheAlpha16/isolet/herald/utils/cache"
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
@@ -43,6 +44,13 @@ func main() {
 
 	app.RunPipeline(globalCtx, kafkaClient, wg, app.AppConfig{
 		Source:      k8s.NewSource(globalCtx, wg),
+		Workers:     config.InstanceLifecycle.Workers,
+		ChannelSize: config.InstanceLifecycle.FactChannelSize,
+		KafkaTopic:  config.InstanceLifecycle.KafkaTopic,
+	})
+
+	app.RunPipeline(globalCtx, kafkaClient, wg, app.AppConfig{
+		Source:      postgres.NewSource(globalCtx, wg),
 		Workers:     config.InstanceLifecycle.Workers,
 		ChannelSize: config.InstanceLifecycle.FactChannelSize,
 		KafkaTopic:  config.InstanceLifecycle.KafkaTopic,
