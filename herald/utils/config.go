@@ -62,8 +62,9 @@ type Config struct {
 	}
 
 	Postgres struct {
-		DSN            string `env:"POSTGRES_DSN" envDefault:"postgres://postgres:postgres@localhost:5432/isolet?sslmode=disable"`
-		ReplicationDSN string `env:"POSTGRES_REPLICATION_DSN" envDefault:"postgres://postgres:postgres@localhost:5432/isolet?sslmode=disable&replication=database"`
+		DSN            string        `env:"POSTGRES_DSN" envDefault:"postgres://postgres:postgres@localhost:5432/isolet?sslmode=disable"`
+		ReplicationDSN string        `env:"POSTGRES_REPLICATION_DSN" envDefault:"postgres://postgres:postgres@localhost:5432/isolet?sslmode=disable&replication=database"`
+		StandbyTimeout time.Duration `env:"POSTGRES_STANDBY_TIMEOUT" envDefault:"5s"`
 	}
 }
 
