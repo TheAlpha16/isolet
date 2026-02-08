@@ -115,13 +115,8 @@ func (f *Notification) Validate() error {
 		}
 	}
 
-	if f.Severity != "" {
-		switch f.Severity {
-		case SeverityInfo, SeverityWarning, SeveritySuccess:
-			// valid severity
-		default:
-			return errors.Raise(errors.ErrFactInvalidField, "Notification has invalid Severity", nil)
-		}
+	if f.Message != nil && f.Severity == "" {
+		f.Severity = SeverityInfo
 	}
 
 	if len(f.TeamIDs) > 0 {
