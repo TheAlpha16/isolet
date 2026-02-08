@@ -92,6 +92,7 @@ func NewInstanceModel(in *instanceDom.Instance) (*Instance, error) {
 type Endpoint struct {
 	postgres.BaseModel
 	InstanceID int64  `gorm:"not null;index"`
+	TeamID     *int64 `gorm:"column:team_id"`
 	Name       string `gorm:"not null"`
 	Protocol   string `gorm:"type:protocol_type;not null"`
 	TargetPort int32  `gorm:"not null"`
@@ -99,7 +100,8 @@ type Endpoint struct {
 	Port       *int32 `gorm:"column:port"`
 	Ready      bool   `gorm:"default:false;not null"`
 
-	Instance Instance `gorm:"foreignKey:InstanceID;references:ID"`
+	Instance Instance       `gorm:"foreignKey:InstanceID;references:ID"`
+	Team     *teamRepo.Team `gorm:"foreignKey:TeamID;references:ID"`
 }
 
 func (ep *Endpoint) ToDomain() *instanceDom.Endpoint {
@@ -110,6 +112,7 @@ func (ep *Endpoint) ToDomain() *instanceDom.Endpoint {
 		},
 		ID:         ep.ID,
 		InstanceID: ep.InstanceID,
+		TeamID:     ep.TeamID,
 		Name:       ep.Name,
 		Protocol:   manifestDom.Protocol(ep.Protocol),
 		TargetPort: ep.TargetPort,
@@ -122,6 +125,7 @@ func (ep *Endpoint) ToDomain() *instanceDom.Endpoint {
 func NewEndpointModel(ep *instanceDom.Endpoint) *Endpoint {
 	return &Endpoint{
 		InstanceID: ep.InstanceID,
+		TeamID:     ep.TeamID,
 		Name:       ep.Name,
 		Protocol:   string(ep.Protocol),
 		TargetPort: ep.TargetPort,

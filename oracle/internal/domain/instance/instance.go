@@ -87,6 +87,7 @@ type Lifecycle struct {
 type Endpoint struct {
 	ID         int64
 	InstanceID int64
+	TeamID     *int64
 	Name       string
 	Protocol   manifestDom.Protocol
 	TargetPort int32

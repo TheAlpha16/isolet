@@ -40,7 +40,9 @@ func (is *instanceSvc) Start(ctx context.Context, inst *instanceDom.Instance, ma
 
 	inst.Endpoints = make([]*instanceDom.Endpoint, 0, len(tideInstance.Status.Endpoints))
 	for _, epStatus := range tideInstance.Status.Endpoints {
-		inst.Endpoints = append(inst.Endpoints, fromTideEndpointStatus(epStatus))
+		ep := fromTideEndpointStatus(epStatus)
+		ep.TeamID = inst.TeamID
+		inst.Endpoints = append(inst.Endpoints, ep)
 	}
 
 	return nil
