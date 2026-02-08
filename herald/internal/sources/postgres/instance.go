@@ -16,7 +16,7 @@ import (
 type InstanceRow struct {
 	ID          int64  `json:"id"`
 	ChallengeID int64  `json:"challenge_id"`
-	TeamID      *int64 `json:"team_id"`
+	TeamID      *int64 `json:"team_id,omitempty"`
 	ExpiresAt   int64  `json:"expires_at"`
 }
 
