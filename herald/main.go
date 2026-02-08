@@ -51,9 +51,9 @@ func main() {
 
 	app.RunPipeline(globalCtx, kafkaClient, wg, app.AppConfig{
 		Source:      postgres.NewSource(globalCtx, wg),
-		Workers:     config.InstanceLifecycle.Workers,
-		ChannelSize: config.InstanceLifecycle.FactChannelSize,
-		KafkaTopic:  config.InstanceLifecycle.KafkaTopic,
+		Workers:     config.Notification.Workers,
+		ChannelSize: config.Notification.FactChannelSize,
+		KafkaTopic:  config.Notification.KafkaTopic,
 	})
 
 	utils.InterruptHandler()
