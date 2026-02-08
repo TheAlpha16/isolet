@@ -69,7 +69,7 @@ func (s *pgSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 		replicationCtx, replicationSpan, replicationLog := tracer.StartSpan(ctx, pgTracer, "herald.sources.postgres.replication")
 		defer replicationSpan.End()
 
-		if err := s.handleReplication(replicationCtx, out); err != nil {
+		if err := s.streamLoop(replicationCtx, out); err != nil {
 			errors.HandleSpanError(replicationCtx, replicationSpan, replicationLog, "replication handling failed", err)
 		}
 	})
