@@ -6,7 +6,6 @@ import (
 
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
 	"github.com/goccy/go-json"
-	"github.com/google/uuid"
 )
 
 const (
@@ -41,6 +40,7 @@ type Entity struct {
 
 type Notification struct {
 	BaseFact
+	ID       string               `json:"id"`
 	Entity   *Entity              `json:"entity,omitempty"`
 	Action   *Action              `json:"action,omitempty"`
 	Message  *string              `json:"message,omitempty"`
@@ -69,7 +69,7 @@ func (f *Notification) Key() []byte {
 		if f.Entity != nil {
 			key = string(f.Entity.Name) + ":" + strconv.FormatInt(f.Entity.ID, 10)
 		} else {
-			key = uuid.NewString()
+			key = f.ID
 		}
 	}
 
@@ -79,6 +79,10 @@ func (f *Notification) Key() []byte {
 func (f *Notification) Validate() error {
 	if err := f.BaseFact.Validate(); err != nil {
 		return err
+	}
+
+	if f.ID == "" {
+		return errors.Raise(errors.ErrFactInvalidKey, "Notification has invalid ID", nil)
 	}
 
 	if f.Message == nil && f.Entity == nil {

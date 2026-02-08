@@ -8,6 +8,7 @@ import (
 	"github.com/TheAlpha16/isolet/herald/pkg/facts"
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
 	"github.com/TheAlpha16/isolet/herald/utils/tracer"
+	"github.com/google/uuid"
 
 	"go.uber.org/zap"
 )
@@ -43,6 +44,7 @@ func instancesHandler(data map[string]any, factChan chan<- facts.Fact, eventType
 	)
 
 	fact := &facts.Notification{
+		ID: uuid.NewString(),
 		BaseFact: facts.BaseFact{
 			Type: facts.NotificationFactType,
 			At:   time.Now(),
