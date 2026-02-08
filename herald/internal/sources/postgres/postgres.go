@@ -191,6 +191,34 @@ func (s *pgSource) processLogicalMessage(message pglogrepl.Message, factChan cha
 		s.wg.Go(func() {
 			handler(data, factChan, eventTypeCreate)
 		})
+	case *pglogrepl.UpdateMessage:
+		rel, ok := s.relations[msg.RelationID]
+		if !ok {
+			return errors.Raise(errors.ErrPostgresRelationMissing, "", nil)
+		}
+		handler, ok := tableHandlerMap[table(rel.RelationName)]
+		if !ok {
+			return errors.Raise(errors.ErrPostgresHandlerMissing, "", nil)
+		}
+
+		data := extractColumns(rel, msg.NewTuple)
+		s.wg.Go(func() {
+			handler(data, factChan, eventTypeUpdate)
+		})
+	case *pglogrepl.DeleteMessage:
+		rel, ok := s.relations[msg.RelationID]
+		if !ok {
+			return errors.Raise(errors.ErrPostgresRelationMissing, "", nil)
+		}
+		handler, ok := tableHandlerMap[table(rel.RelationName)]
+		if !ok {
+			return errors.Raise(errors.ErrPostgresHandlerMissing, "", nil)
+		}
+
+		data := extractColumns(rel, msg.OldTuple)
+		s.wg.Go(func() {
+			handler(data, factChan, eventTypeDelete)
+		})
 	default:
 	}
 
