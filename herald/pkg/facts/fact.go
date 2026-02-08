@@ -44,4 +44,5 @@ func (f *BaseFact) Validate() error {
 
 var allowedTypes = map[FactType]struct{}{
 	InstanceExpiredFactType: {},
+	NotificationFactType:    {},
 }
