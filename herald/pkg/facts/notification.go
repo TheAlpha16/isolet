@@ -18,6 +18,7 @@ type NotificationSeverity string
 
 const (
 	EntityInstance EntityName = "instance"
+	EntityEndpoint EntityName = "endpoint"
 )
 
 const (
@@ -103,7 +104,7 @@ func (f *Notification) Validate() error {
 		}
 
 		switch f.Entity.Name {
-		case EntityInstance:
+		case EntityInstance, EntityEndpoint:
 			// valid entity
 		default:
 			return errors.Raise(errors.ErrFactInvalidField, "Notification has invalid Entity Name", nil)
