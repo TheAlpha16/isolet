@@ -33,6 +33,7 @@ const (
 	ErrPostgresStandbyFailed     ErrorCode = "PG-04"
 	ErrPostgresRelationMissing   ErrorCode = "PG-05"
 	ErrPostgresHandlerMissing    ErrorCode = "PG-06"
+	ErrPostgresInvalidValue      ErrorCode = "PG-07"
 )
 
 var msgMap = map[ErrorCode]string{
