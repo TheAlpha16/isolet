@@ -54,6 +54,12 @@ func (s *pgSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 	ctx, span, log := tracer.StartSpan(ctx, pgTracer, "herald.sources.postgres.Run")
 	defer span.End()
 
+	if err := s.sqlConn.Ping(ctx); err != nil {
+		err = errors.Raise(errors.ErrPostgresConnectionFailed, "postgres connection health check failed", err)
+		errors.HandleSpanError(ctx, span, log, "postgres connection health check failed", err)
+		return err
+	}
+
 	if err := s.ensurePublication(ctx); err != nil {
 		errors.HandleSpanError(ctx, span, log, "failed to ensure publication", err)
 		return err
