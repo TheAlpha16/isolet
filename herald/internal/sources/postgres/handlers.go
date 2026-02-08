@@ -13,6 +13,16 @@ import (
 	"github.com/jackc/pgx/v5/pgproto3"
 )
 
+type table string
+
+const (
+	tableInstances table = "instances"
+)
+
+var tableHandlerMap = map[table]func(data []byte) ([]facts.Fact, error){
+	tableInstances: nil, // TODO: implement handler for instances table
+}
+
 func (s *pgSource) handleReplication(ctx context.Context, out chan<- facts.Fact) error {
 	ctx, span, log := tracer.StartSpan(ctx, pgTracer, "herald.sources.postgres.handleReplication")
 	defer span.End()

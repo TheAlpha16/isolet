@@ -4,6 +4,7 @@ import (
 	"context"
 	goerrors "errors"
 	"fmt"
+	"strings"
 
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
 	"github.com/jackc/pglogrepl"
@@ -20,7 +21,10 @@ func (s *pgSource) ensurePublication(ctx context.Context) error {
 	}
 
 	if !exists {
-		if _, err := s.sqlConn.Exec(ctx, fmt.Sprintf("CREATE PUBLICATION %s", publicationName)); err != nil {
+		if _, err := s.sqlConn.Exec(
+			ctx,
+			fmt.Sprintf("CREATE PUBLICATION %s FOR TABLE %s", publicationName, s.getTables()),
+		); err != nil {
 			return errors.Raise(errors.ErrPostgresPublicationFailed, "failed to create publication", err)
 		}
 	}
@@ -63,4 +67,13 @@ func (s *pgSource) sendStandby(ctx context.Context, span trace.Span, log *zap.Lo
 	}
 
 	log.Debug("sent standby status update", zap.String("lsn", s.lastLSN.String()))
+}
+
+func (s *pgSource) getTables() string {
+	tables := []string{}
+	for key := range tableHandlerMap {
+		tables = append(tables, fmt.Sprintf("\"%s\"", key))
+	}
+
+	return strings.Join(tables, ", ")
 }
