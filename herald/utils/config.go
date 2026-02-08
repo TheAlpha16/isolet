@@ -25,6 +25,7 @@ type Config struct {
 	Environment Environment `env:"ENVIRONMENT" envDefault:"local"`
 	Version     string      `env:"VERSION" envDefault:"0.1.0"`
 	LogLevel    string      `env:"LOG_LEVEL" envDefault:"DEBUG"`
+	Identity    string      `env:"IDENTITY" envDefault:"k8s_source"`
 
 	Sentry struct {
 		DSN             string  `env:"SENTRY_DSN" envDefault:""`

@@ -42,19 +42,22 @@ func main() {
 		appLogger.Info("all components stopped")
 	}
 
-	app.RunPipeline(globalCtx, kafkaClient, wg, app.AppConfig{
-		Source:      k8s.NewSource(globalCtx, wg),
-		Workers:     config.InstanceLifecycle.Workers,
-		ChannelSize: config.InstanceLifecycle.FactChannelSize,
-		KafkaTopic:  config.InstanceLifecycle.KafkaTopic,
-	})
-
-	app.RunPipeline(globalCtx, kafkaClient, wg, app.AppConfig{
-		Source:      postgres.NewSource(globalCtx, wg),
-		Workers:     config.Notification.Workers,
-		ChannelSize: config.Notification.FactChannelSize,
-		KafkaTopic:  config.Notification.KafkaTopic,
-	})
+	switch config.Identity {
+	case utils.SourceK8s:
+		app.RunPipeline(globalCtx, kafkaClient, wg, app.AppConfig{
+			Source:      k8s.NewSource(globalCtx, wg),
+			Workers:     config.InstanceLifecycle.Workers,
+			ChannelSize: config.InstanceLifecycle.FactChannelSize,
+			KafkaTopic:  config.InstanceLifecycle.KafkaTopic,
+		})
+	case utils.SourcePostgres:
+		app.RunPipeline(globalCtx, kafkaClient, wg, app.AppConfig{
+			Source:      postgres.NewSource(globalCtx, wg),
+			Workers:     config.Notification.Workers,
+			ChannelSize: config.Notification.FactChannelSize,
+			KafkaTopic:  config.Notification.KafkaTopic,
+		})
+	}
 
 	utils.InterruptHandler()
 	appLogger.Info("herald shut down successfully")
