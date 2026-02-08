@@ -6,9 +6,10 @@ import (
 	"fmt"
 
 	"github.com/TheAlpha16/isolet/herald/utils/errors"
-
 	"github.com/jackc/pglogrepl"
 	"github.com/jackc/pgx/v5/pgconn"
+	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
 )
 
 func (s *pgSource) ensurePublication(ctx context.Context) error {
@@ -46,4 +47,20 @@ func (s *pgSource) ensureReplicationSlot(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (s *pgSource) sendStandby(ctx context.Context, span trace.Span, log *zap.Logger) {
+	if err := pglogrepl.SendStandbyStatusUpdate(ctx, s.repl,
+		pglogrepl.StandbyStatusUpdate{
+			WALWritePosition: s.lastLSN,
+			WALFlushPosition: s.lastLSN,
+			WALApplyPosition: s.lastLSN,
+		},
+	); err != nil {
+		err = errors.Raise(errors.ErrPostgresStandbyFailed, "", err)
+		errors.HandleSpanError(ctx, span, log, "failed to send standby status update to postgres", err)
+		return
+	}
+
+	log.Debug("sent standby status update", zap.String("lsn", s.lastLSN.String()))
 }
