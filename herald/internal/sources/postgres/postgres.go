@@ -151,12 +151,14 @@ func (s *pgSource) streamLoop(ctx context.Context, out chan<- facts.Fact) error 
 				case pglogrepl.XLogDataByteID:
 					logData, err := pglogrepl.ParseXLogData(m.Data[1:])
 					if err != nil {
+						errors.HandleSpanError(ctx, span, log, "failed to parse XLogData", err)
 						continue
 					}
 					s.lastLSN = logData.WALStart + pglogrepl.LSN(len(logData.WALData))
 
 					message, err := pglogrepl.Parse(logData.WALData)
 					if err != nil {
+						errors.HandleSpanError(ctx, span, log, "failed to parse WAL message", err)
 						continue
 					}
 
@@ -171,6 +173,7 @@ func (s *pgSource) streamLoop(ctx context.Context, out chan<- facts.Fact) error 
 				case pglogrepl.PrimaryKeepaliveMessageByteID:
 					keepAliveMsg, err := pglogrepl.ParsePrimaryKeepaliveMessage(m.Data[1:])
 					if err != nil {
+						errors.HandleSpanError(ctx, span, log, "failed to parse primary keepalive message", err)
 						continue
 					}
 					if keepAliveMsg.ReplyRequested {
