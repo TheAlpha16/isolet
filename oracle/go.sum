@@ -16,8 +16,6 @@ github.com/TheAlpha16/cnc-go v0.1.1 h1:x2kw33p1WQ5sx4QwBUjx6tqJo8FGpRUIukZLlOhsT
 github.com/TheAlpha16/cnc-go v0.1.1/go.mod h1:kRLkTlJ9gmq0pLe/9wNzDH3lS16ovLY5aQ6boNaNK9Y=
 github.com/TheAlpha16/isolet/herald v0.0.0-20260118183829-d31dc0b1cd40 h1:b8OxgZhDGzRM28fkP9ZJ32yD3+DIaTuKLe0LFNkNHEQ=
 github.com/TheAlpha16/isolet/herald v0.0.0-20260118183829-d31dc0b1cd40/go.mod h1:jVIcl5mWgu9+RqI6lXS1gGCEAQYZyseCLFhBQdKxr0M=
-github.com/TheAlpha16/isolet/tide v0.0.0-20260118183829-d31dc0b1cd40 h1:Up4c9JxYsQVWbeNdjdyJtJRjA6BgXtbYmq61udPzOtY=
-github.com/TheAlpha16/isolet/tide v0.0.0-20260118183829-d31dc0b1cd40/go.mod h1:GPB3zzomAtip6slFKHPMjOjKeIdKTO1ZJoL+u2a1LCY=
 github.com/TheAlpha16/isolet/tide v0.0.0-20260125145121-00f080035d01 h1:dxApS5xRc9k7JaOBguU0tI3OsfD22HMEEIzRTNGWBqg=
 github.com/TheAlpha16/isolet/tide v0.0.0-20260125145121-00f080035d01/go.mod h1:GPB3zzomAtip6slFKHPMjOjKeIdKTO1ZJoL+u2a1LCY=
 github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d h1:licZJFw2RwpHMqeKTCYkitsPqHNxTmd4SNR5r94FGM8=
