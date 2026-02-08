@@ -97,7 +97,12 @@ func (s *pgSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 	}
 
 	span.AddEvent("postgres.source.started")
-	log.Info("Postgres source started")
+	log.Info("Postgres source started",
+		zap.String("slot", slotName),
+		zap.String("publication", publicationName),
+		zap.String("plugin", pluginName),
+		zap.String("tables", s.getTables()),
+	)
 
 	<-ctx.Done()
 	span.AddEvent("postgres.source.shutdown")
