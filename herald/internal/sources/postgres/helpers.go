@@ -77,3 +77,22 @@ func (s *pgSource) getTables() string {
 
 	return strings.Join(tables, ", ")
 }
+
+func extractColumns(rel *pglogrepl.RelationMessage, tuple *pglogrepl.TupleData) map[string]any {
+	result := make(map[string]any)
+
+	for i, col := range rel.Columns {
+		val := tuple.Columns[i]
+
+		switch val.DataType {
+		case 'n': // NULL
+			result[col.Name] = nil
+		case 'u': // unchanged TOAST
+			continue
+		case 't': // text format
+			result[col.Name] = string(val.Data)
+		}
+	}
+
+	return result
+}
