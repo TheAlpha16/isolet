@@ -32,6 +32,8 @@ type pgSource struct {
 
 	lastLSN pglogrepl.LSN
 	wg      *sync.WaitGroup
+
+	relations map[uint32]*pglogrepl.RelationMessage
 }
 
 func (s *pgSource) Name() string {
@@ -119,8 +121,9 @@ func NewSource(ctx context.Context, wg *sync.WaitGroup) sources.Source {
 	}
 
 	return &pgSource{
-		sqlConn: conn,
-		repl:    replConn,
-		wg:      wg,
+		sqlConn:   conn,
+		repl:      replConn,
+		wg:        wg,
+		relations: make(map[uint32]*pglogrepl.RelationMessage, len(tableHandlerMap)),
 	}
 }
