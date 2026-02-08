@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/TheAlpha16/isolet/herald/internal/sources"
 	"github.com/TheAlpha16/isolet/herald/pkg/facts"
@@ -14,6 +15,7 @@ import (
 	"github.com/jackc/pglogrepl"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgproto3"
 	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 )
@@ -95,6 +97,93 @@ func (s *pgSource) Stop(ctx context.Context) error {
 
 	if err := s.repl.Close(ctx); err != nil {
 		return errors.Raise(errors.ErrPostgresConnectionFailed, "failed to close postgres replication connection", err)
+	}
+
+	return nil
+}
+
+func (s *pgSource) streamLoop(ctx context.Context, out chan<- facts.Fact) error {
+	ctx, span, log := tracer.StartSpan(ctx, pgTracer, "herald.sources.postgres.handleReplication")
+	defer span.End()
+
+	standbyTimeout := time.NewTicker(utils.GetConfig().Postgres.StandbyTimeout)
+	defer standbyTimeout.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+
+		case <-standbyTimeout.C:
+			// periodic standby update (heartbeat)
+			if s.lastLSN > 0 {
+				s.sendStandby(ctx, span, log)
+			}
+
+		default:
+			msg, err := s.repl.ReceiveMessage(ctx)
+			if err != nil {
+				return err
+			}
+
+			switch m := msg.(type) {
+			case *pgproto3.CopyData:
+				switch m.Data[0] {
+				case pglogrepl.XLogDataByteID:
+					logData, err := pglogrepl.ParseXLogData(m.Data[1:])
+					if err != nil {
+						continue
+					}
+					s.lastLSN = logData.WALStart + pglogrepl.LSN(len(logData.WALData))
+
+					message, err := pglogrepl.Parse(logData.WALData)
+					if err != nil {
+						continue
+					}
+
+					if err := s.processLogicalMessage(message, out); err != nil {
+						errors.HandleSpanError(ctx, span, log, "failed to process logical replication message", err)
+						continue
+					}
+
+					s.sendStandby(ctx, span, log)
+					standbyTimeout.Reset(utils.GetConfig().Postgres.StandbyTimeout)
+
+				case pglogrepl.PrimaryKeepaliveMessageByteID:
+					keepAliveMsg, err := pglogrepl.ParsePrimaryKeepaliveMessage(m.Data[1:])
+					if err != nil {
+						continue
+					}
+					if keepAliveMsg.ReplyRequested {
+						s.sendStandby(ctx, span, log)
+						standbyTimeout.Reset(utils.GetConfig().Postgres.StandbyTimeout)
+					}
+				}
+			default:
+			}
+		}
+	}
+}
+
+func (s *pgSource) processLogicalMessage(message pglogrepl.Message, factChan chan<- facts.Fact) error {
+	switch msg := message.(type) {
+	case *pglogrepl.RelationMessage:
+		s.relations[msg.RelationID] = msg
+	case *pglogrepl.InsertMessage:
+		rel, ok := s.relations[msg.RelationID]
+		if !ok {
+			return errors.Raise(errors.ErrPostgresRelationMissing, "", nil)
+		}
+		handler, ok := tableHandlerMap[table(rel.RelationName)]
+		if !ok {
+			return errors.Raise(errors.ErrPostgresHandlerMissing, "", nil)
+		}
+
+		data := extractColumns(rel, msg.Tuple)
+		s.wg.Go(func() {
+			handler(data, factChan)
+		})
+	default:
 	}
 
 	return nil
