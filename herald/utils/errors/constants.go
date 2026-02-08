@@ -30,6 +30,7 @@ const (
 	ErrPostgresConnectionFailed  ErrorCode = "PG-01"
 	ErrPostgresPublicationFailed ErrorCode = "PG-02"
 	ErrPostgresReplicationFailed ErrorCode = "PG-03"
+	ErrPostgresStandbyFailed     ErrorCode = "PG-04"
 )
 
 var msgMap = map[ErrorCode]string{
@@ -50,6 +51,7 @@ var msgMap = map[ErrorCode]string{
 
 	// Postgres errors
 	ErrPostgresConnectionFailed: "failed to connect to postgres",
+	ErrPostgresStandbyFailed:    "failed to send standby status update to postgres",
 }
 
 const (

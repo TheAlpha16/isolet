@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/TheAlpha16/isolet/herald/internal/sources"
 	"github.com/TheAlpha16/isolet/herald/pkg/facts"
@@ -14,6 +15,7 @@ import (
 	"github.com/jackc/pglogrepl"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgproto3"
 	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 )
@@ -63,7 +65,96 @@ func (s *pgSource) Run(ctx context.Context, out chan<- facts.Fact) error {
 		return err
 	}
 
+	s.wg.Go(func() {
+		replicationCtx, replicationSpan, replicationLog := tracer.StartSpan(ctx, pgTracer, "herald.sources.postgres.replication")
+		defer replicationSpan.End()
+
+		if err := s.handleReplication(replicationCtx, out); err != nil {
+			errors.HandleSpanError(replicationCtx, replicationSpan, replicationLog, "replication handling failed", err)
+		}
+	})
+
+	utils.InterruptHandlerChannel <- func() {
+		if err := s.Stop(ctx); err != nil {
+			log.Error("failed to stop postgres source", zap.Error(err))
+		}
+	}
+
+	span.AddEvent("postgres.source.started")
+	log.Info("Postgres source started")
+
+	<-ctx.Done()
+	span.AddEvent("postgres.source.shutdown")
 	return nil
+}
+
+func (s *pgSource) Stop(ctx context.Context) error {
+	if err := s.sqlConn.Close(ctx); err != nil {
+		return errors.Raise(errors.ErrPostgresConnectionFailed, "failed to close postgres connection", err)
+	}
+
+	if err := s.repl.Close(ctx); err != nil {
+		return errors.Raise(errors.ErrPostgresConnectionFailed, "failed to close postgres replication connection", err)
+	}
+
+	return nil
+}
+
+func (s *pgSource) handleReplication(ctx context.Context, out chan<- facts.Fact) error {
+	ctx, span, log := tracer.StartSpan(ctx, pgTracer, "herald.sources.postgres.handleReplication")
+	defer span.End()
+
+	standbyTimeout := time.NewTicker(utils.GetConfig().Postgres.StandbyTimeout)
+	defer standbyTimeout.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+
+		case <-standbyTimeout.C:
+			// periodic standby update (heartbeat)
+			if s.lastLSN > 0 {
+				s.sendStandby(ctx, span, log)
+			}
+
+		default:
+			msg, err := s.repl.ReceiveMessage(ctx)
+			if err != nil {
+				return err
+			}
+
+			switch m := msg.(type) {
+			case *pgproto3.CopyData:
+				// handle replication messages in the CopyData response
+
+				switch m.Data[0] {
+				case pglogrepl.XLogDataByteID:
+					logData, err := pglogrepl.ParseXLogData(m.Data[1:])
+					if err != nil {
+						continue
+					}
+					s.lastLSN = logData.WALStart + pglogrepl.LSN(len(logData.WALData))
+
+					fmt.Printf("Received WAL data at LSN %s\n", logData.WALStart)
+					fmt.Printf("Raw: %v\n", logData.WALData)
+
+					s.sendStandby(ctx, span, log)
+
+				case pglogrepl.PrimaryKeepaliveMessageByteID:
+					keepAliveMsg, err := pglogrepl.ParsePrimaryKeepaliveMessage(m.Data[1:])
+					if err != nil {
+						continue
+					}
+					if keepAliveMsg.ReplyRequested {
+						s.sendStandby(ctx, span, log)
+						standbyTimeout.Reset(utils.GetConfig().Postgres.StandbyTimeout)
+					}
+				}
+			default:
+			}
+		}
+	}
 }
 
 func NewSource(ctx context.Context, wg *sync.WaitGroup) sources.Source {
