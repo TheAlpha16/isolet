@@ -43,3 +43,58 @@ func parseInstanceRow(data map[string]any) (*InstanceRow, error) {
 
 	return &instance, nil
 }
+
+func parseEndpointRow(data map[string]any) (*EndpointRow, error) {
+	endpoint := EndpointRow{}
+
+	if idStr, ok := data["id"].(string); ok {
+		id, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			return nil, errors.Raise(errors.ErrPostgresInvalidValue, "received invalid id value for endpoint", err)
+		}
+		endpoint.ID = id
+	}
+
+	if instanceIdStr, ok := data["instance_id"].(string); ok {
+		instanceId, err := strconv.ParseInt(instanceIdStr, 10, 64)
+		if err != nil {
+			return nil, errors.Raise(errors.ErrPostgresInvalidValue, "received invalid instance_id value for endpoint", err)
+		}
+		endpoint.InstanceID = instanceId
+	}
+
+	if name, ok := data["name"].(string); ok {
+		endpoint.Name = name
+	}
+
+	if protocol, ok := data["protocol"].(string); ok {
+		endpoint.Protocol = protocol
+	}
+
+	if hostname, ok := data["hostname"].(string); ok {
+		endpoint.Hostname = hostname
+	}
+
+	if portStr, ok := data["port"].(string); ok {
+		port, err := strconv.ParseInt(portStr, 10, 32)
+		if err != nil {
+			return nil, errors.Raise(errors.ErrPostgresInvalidValue, "received invalid port value for endpoint", err)
+		}
+		port32 := int32(port)
+		endpoint.Port = &port32
+	}
+
+	if teamIDStr, ok := data["team_id"].(string); ok {
+		teamID, err := strconv.ParseInt(teamIDStr, 10, 64)
+		if err != nil {
+			return nil, errors.Raise(errors.ErrPostgresInvalidValue, "received invalid team_id value for endpoint", err)
+		}
+		endpoint.TeamID = &teamID
+	}
+
+	if ready, ok := data["ready"].(bool); ok {
+		endpoint.Ready = ready
+	}
+
+	return &endpoint, nil
+}
