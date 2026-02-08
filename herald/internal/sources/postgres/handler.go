@@ -8,10 +8,12 @@ type table string
 
 const (
 	tableInstances table = "instances"
+	tableEndpoints table = "endpoints"
 )
 
 var tableHandlerMap = map[table]func(data map[string]any, factChan chan<- facts.Fact, eventType eventType){
 	tableInstances: instancesHandler,
+	tableEndpoints: endpointsHandler,
 }
 
 var actionMap = map[eventType]facts.Action{
