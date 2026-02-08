@@ -66,6 +66,12 @@ type Config struct {
 		ReplicationDSN string        `env:"POSTGRES_REPLICATION_DSN" envDefault:"postgres://postgres:postgres@localhost:5432/isolet?sslmode=disable&replication=database"`
 		StandbyTimeout time.Duration `env:"POSTGRES_STANDBY_TIMEOUT" envDefault:"5s"`
 	}
+
+	Notification struct {
+		KafkaTopic      string `env:"NOTIFICATION_KAFKA_TOPIC" envDefault:"herald.notifications"`
+		FactChannelSize int    `env:"NOTIFICATION_FACT_CHANNEL_SIZE" envDefault:"1024"`
+		Workers         int    `env:"NOTIFICATION_WORKERS" envDefault:"10"`
+	}
 }
 
 func GetConfig() *Config {
