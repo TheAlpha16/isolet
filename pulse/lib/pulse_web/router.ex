@@ -1,4 +1,4 @@
- defmodule PulseWeb.Router do
+defmodule PulseWeb.Router do
   use PulseWeb, :router
 
   pipeline :api do
