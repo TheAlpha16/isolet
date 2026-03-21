@@ -8,8 +8,13 @@ defmodule PulseWeb.UserSocket do
   channel "global", PulseWeb.GlobalChannel
 
   @impl true
-  def connect(%{"token" => token}, socket, _connect_info) do
-    with {:ok, claims} <- Auth.verify_jwt(token),
+  def connect(params, socket, connect_info) do
+    # Token can be provided via query params (for non-browser clients/tests)
+    # or via the HttpOnly cookie extracted securely during the upgrade handshake
+    token = params["token"] || get_in(connect_info, [:session, "token"])
+
+    with {:ok, t} when not is_nil(t) <- {:ok, token},
+         {:ok, claims} <- Auth.verify_jwt(t),
          :ok <- Auth.validate_claims(claims),
          :ok <- Auth.validate_session(claims) do
       {:ok,
@@ -22,8 +27,6 @@ defmodule PulseWeb.UserSocket do
       _ -> :error
     end
   end
-
-  def connect(_params, _socket, _connect_info), do: :error
 
   @impl true
   def id(socket), do: "user_socket:#{socket.assigns.user_id}"
