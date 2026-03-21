@@ -12,20 +12,18 @@ Pulse is a **stateless, event-driven realtime gateway**.
 
 It:
 
-* maintains WebSocket connections with clients
-* authenticates users via JWT
-* consumes **Notification facts** from Kafka
-* derives a **semantic event name**
-* forwards events to the correct audience (team / global)
+* Maintains WebSocket connections with clients
+* Authenticates users via JWT + Redis session validation (Oracle invariants)
+* Consumes **Notification facts** from Kafka
+* Derives a **semantic event name** dynamically
+* Forwards events to the correct audience (team / global)
 
 It does **not**:
 
-* store state
-* implement business logic
-* act as a source of truth
-* reshape or interpret payloads
-
-> Pulse is a **delivery layer**, not a decision-maker.
+* Store state
+* Implement business logic
+* Act as a source of truth
+* Reshape or interpret payloads
 
 ---
 
@@ -58,137 +56,59 @@ Example:
   "entity": {
     "name": "instance",
     "id": 200,
-    "data": {
-      "id": 200,
-      "challenge_id": 5,
-      "team_id": 9
-    }
+    "data": { ... }
   },
   "action": "created",
   "team_ids": [9]
 }
 ```
 
-These are:
-
-* canonical
-* system-oriented
-* multi-consumer
+These are **canonical**, **system-oriented**, and **multi-consumer**.
 
 ---
 
-### 2️⃣ Event Derivation
+### 2️⃣ Dynamic Event Derivation
 
-Pulse derives a **semantic event name** from the Notification:
+Pulse derives a **semantic event name** dynamically from the Notification:
 
-```
-event = entity.name + "." + action
-```
+1.  If `severity` is present: `notification.<severity>` (e.g., `notification.warning`)
+2.  If `entity` and `action` are present: `<entity>.<action>` (e.g., `instance.created`)
+3.  Fallback: `unknown.unknown`
 
-Example:
-
-```
-instance.created
-instance.updated
-instance.deleted
-```
-
-For message-based notifications:
-
-```
-event = "notification." + severity
-```
-
-Examples:
-
-```
-notification.info
-notification.warning
-notification.success
-```
+This design is **domain-agnostic**; new entities or actions added to Herald are automatically supported by Pulse without code changes.
 
 ---
 
 ### 3️⃣ Delivered Event Shape
 
-Pulse **does not modify the payload**.
-It only adds an `event` field.
-
-```json
-{
-  "type": "Notification",
-  "id": "uuid",
-  "at": "timestamp",
-
-  "event": "instance.created",
-
-  "entity": {
-    "name": "instance",
-    "id": 200,
-    "data": {
-      "id": 200,
-      "challenge_id": 5,
-      "team_id": 9
-    }
-  },
-
-  "action": "created",
-  "message": null,
-  "severity": null,
-  "team_ids": [9]
-}
-```
+Pulse **does not modify the payload**. It only adds an `event` field for client-side routing.
 
 ---
 
 ### 4️⃣ Channels
 
-Pulse uses Phoenix Channels for routing.
-
 * `team:<team_id>` → team-scoped events
 * `global` → broadcast events
 
-Clients subscribe to relevant topics and receive updates instantly.
+All channels are **read-only** for clients. Clients cannot push business events directly to Pulse.
 
 ---
 
 ## 🔐 Authentication
 
-* Clients authenticate via **JWT on connection**
-* Unauthorized connections are rejected
-* Team context is derived from token claims
+* **JWT Verification**: Clients must provide a valid JWT.
+* **Redis Session Validation**: Pulse verifies the token against Redis (`redix`) to ensure the session is still valid in Oracle.
+* **Context**: User ID, Team ID, and Role are extracted from claims and assigned to the socket.
 
 ---
 
 ## 🔁 Event Flow
 
-1. Instance changes state
-
-2. Herald emits a `Notification` fact
-
-3. Kafka partitions event by `team:<id>`
-
-4. Pulse consumes event
-
-5. Pulse:
-
-   * derives `event` (`entity.name + action`)
-   * forwards event as-is
-   * broadcasts to `team:<id>`
-
-6. Clients interpret and update UI
-
----
-
-## 📈 Ordering Guarantees
-
-Pulse relies on Kafka partitioning:
-
-* Events for a team share the same key: `team:<id>`
-* Kafka preserves ordering within a partition
-* Pulse processes events sequentially per partition
-
-> This ensures **consistent ordering per team** without additional coordination.
+1.  **Event Emitted**: Herald publishes a `Notification` to Kafka.
+2.  **Consumption**: Pulse (`:brod`) consumes the message.
+3.  **Processing**: Pulse decodes JSON and derives the semantic `event`.
+4.  **Broadcast**: Pulse publishes the enrichment payload to the appropriate Phoenix Channel.
+5.  **Delivery**: Connected WebSocket clients receive the update.
 
 ---
 
@@ -196,21 +116,8 @@ Pulse relies on Kafka partitioning:
 
 * **Low latency** — near-instant updates
 * **Scalable** — thousands of concurrent connections
-* **Lightweight** — minimal resource usage
-* **Decoupled** — no dependency on core logic
-* **Stable** — no changes required for new entities
-
----
-
-## 🚫 Non-Goals
-
-* No persistence
-* No business rules
-* No payload transformation
-* No state reconciliation
-* No guaranteed delivery
-
-Missed events can always be recovered via API refresh.
+* **Decoupled** — 100% domain-agnostic; zero maintenance for new business rules
+* **Stable** — resilient to malformed messages or missing fields
 
 ---
 
@@ -226,57 +133,9 @@ const socket = new Socket("/socket", {
 socket.connect()
 
 const channel = socket.channel("team:9")
-
-channel.on("notification", (event) => {
-  dispatch(event)
+channel.on("notification", (payload) => {
+  console.log("Received event:", payload.event, payload)
 })
 
 channel.join()
 ```
-
----
-
-## 📊 Scaling Model
-
-* Horizontally scalable (multiple Pulse instances)
-* Stateless — no shared state between nodes
-* Kafka handles distribution
-* Phoenix PubSub handles fan-out
-
----
-
-## 🧭 Philosophy
-
-Pulse follows a simple principle:
-
-> **Facts are canonical. Events are derived. UI assigns meaning.**
-
-* Kafka carries **facts**
-* Pulse adds **event context**
-* UI defines **behavior**
-* API remains the **source of truth**
-
----
-
-## 🧩 Role in Isolet
-
-Pulse complements:
-
-* **Oracle** → API & business logic
-* **Herald** → fact production
-* **Tide** → instance orchestration
-
----
-
-## 🏁 Summary
-
-Pulse is:
-
-* simple
-* fast
-* stable
-* predictable
-
-It exists to do one thing well:
-
-> **deliver realtime facts with minimal transformation and let clients decide what they mean.**

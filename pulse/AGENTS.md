@@ -96,4 +96,11 @@ custom classes must fully style the input
 - `Phoenix.View` no longer is needed or included with Phoenix, don't use it
 <!-- phoenix:phoenix-end -->
 
+## Pulse project guidelines
+
+- **Authentication**: Always use `Pulse.Auth` for JWT signature verification and Redis-based session validation. This ensures "Oracle invariants" are maintained.
+- **Channels**: All channels (Team, Global) are **read-only** for clients. Clients should never be allowed to push business events directly to channels.
+- **Kafka**: Use `Pulse.Kafka.Config` to manage Kafka connection parameters. The consumer uses `:brod_group_subscriber`.
+- **Decoupling**: Pulse is domain-agnostic. `Pulse.Notification.from_map/1` and `Pulse.Event.derive/1` must remain generic and not be coupled to specific business entity names or action enums.
+
 <!-- usage-rules-end -->
