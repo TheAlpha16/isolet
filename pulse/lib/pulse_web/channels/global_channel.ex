@@ -2,9 +2,14 @@ defmodule PulseWeb.GlobalChannel do
   use PulseWeb, :channel
 
   @impl true
-  def join("global", _params, socket) do
+  def join("global", _payload, socket) do
     # Open to all authenticated users (who have already passed UserSocket.connect)
     {:ok, socket}
+  end
+
+  @impl true
+  def handle_in(_event, _payload, socket) do
+    {:reply, {:error, %{reason: "read_only"}}, socket}
   end
 
   # Channels in Pulse are read-only for clients.
