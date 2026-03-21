@@ -1,4 +1,4 @@
-defmodule PulseWeb.Router do
+ defmodule PulseWeb.Router do
   use PulseWeb, :router
 
   pipeline :api do
@@ -7,6 +7,8 @@ defmodule PulseWeb.Router do
 
   scope "/api", PulseWeb do
     pipe_through :api
+
+    get "/health", HealthController, :index
   end
 
   # Enable LiveDashboard in development
