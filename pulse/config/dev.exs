@@ -49,6 +49,10 @@ config :logger, :default_formatter, format: "[$level] $message\n"
 # in production as building large stacktraces may be expensive.
 config :phoenix, :stacktrace_depth, 20
 
+# Keep compile-time and runtime config aligned for LiveView checks.
+config :phoenix_live_view,
+  enable_expensive_runtime_checks: true
+
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
 
