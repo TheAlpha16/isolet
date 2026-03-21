@@ -8,6 +8,10 @@ defmodule Pulse.Application do
   @impl true
   def start(_type, _args) do
     redis_url = Application.fetch_env!(:pulse, :redis_url)
+    kafka_brokers = Pulse.Kafka.Config.brokers()
+    kafka_client_config = Pulse.Kafka.Config.client_config()
+
+    kafka_client_id = Pulse.Kafka.Config.client_id()
 
     children = [
       PulseWeb.Telemetry,
@@ -15,6 +19,10 @@ defmodule Pulse.Application do
       {Phoenix.PubSub, name: Pulse.PubSub},
       # Redis — must start before the endpoint so session validation is available
       {Redix, {redis_url, [name: :redix]}},
+      # Kafka client
+      {:brod_client, kafka_brokers, kafka_client_id, kafka_client_config},
+      # Kafka consumer
+      {Pulse.Kafka.Consumer, []},
       # Start to serve requests, typically the last entry
       PulseWeb.Endpoint
     ]

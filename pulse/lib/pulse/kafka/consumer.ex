@@ -15,12 +15,11 @@ defmodule Pulse.Kafka.Consumer do
   # brod_group_subscriber callbacks
   @behaviour :brod_group_subscriber
 
-  @client_id :pulse_kafka_client
-
   @doc """
   Starts the consumer as part of the supervision tree.
   """
   def start_link(_opts \\ []) do
+    client_id = Config.client_id()
     topic = Config.topic()
     group_id = Config.group_id()
 
@@ -35,7 +34,7 @@ defmodule Pulse.Kafka.Consumer do
     ]
 
     :brod_group_subscriber.start_link(
-      @client_id,
+      client_id,
       group_id,
       [topic],
       group_config,
@@ -61,7 +60,6 @@ defmodule Pulse.Kafka.Consumer do
       {:error, reason} ->
         Logger.error("Failed to process Kafka message on #{topic}:#{partition}. Reason: #{inspect(reason)}")
         # We ack even on error to avoid blocking the partition infinitely.
-        # Alternatively, we could retry or use a DLQ.
         {:ok, :ack, state}
     end
   end

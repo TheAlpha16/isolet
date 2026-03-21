@@ -27,6 +27,31 @@ if redis_url = System.get_env("REDIS_URL") do
   config :pulse, redis_url: redis_url
 end
 
+# Kafka
+if brokers = System.get_env("KAFKA_BROKERS") do
+  parsed_brokers =
+    brokers
+    |> String.split(",")
+    |> Enum.map(fn s ->
+      [host, port] = String.split(s, ":")
+      {host, String.to_integer(port)}
+    end)
+
+  config :pulse, kafka_brokers: parsed_brokers
+end
+
+if topic = System.get_env("KAFKA_TOPIC") do
+  config :pulse, kafka_topic: topic
+end
+
+if group_id = System.get_env("KAFKA_GROUP_ID") do
+  config :pulse, kafka_group_id: group_id
+end
+
+if client_id = System.get_env("KAFKA_CLIENT_ID") do
+  config :pulse, kafka_client_id: String.to_atom(client_id)
+end
+
 # JWT
 if jwt_secret = System.get_env("JWT_SECRET") do
   config :pulse, jwt_secret: jwt_secret
