@@ -1,9 +1,6 @@
 defmodule Pulse.Notification do
   @moduledoc """
-  Represents a canonical Notification fact consumed from Kafka.
-
-  These are emitted by Herald and carry domain events to Pulse
-  for realtime delivery to connected clients.
+  Represents a generic Notification fact consumed from Kafka.
   """
 
   @type t :: %__MODULE__{
@@ -20,25 +17,36 @@ defmodule Pulse.Notification do
   defstruct [:type, :id, :at, :entity, :action, :message, :severity, team_ids: []]
 
   @doc """
-  Decodes a raw JSON-decoded map into a `Pulse.Notification` struct.
-
-  Returns `{:ok, notification}` or `{:error, reason}`.
+  Decodes a JSON map into a `Pulse.Notification` struct.
+  Performs only minimal validation required for system stability.
   """
   @spec from_map(map()) :: {:ok, t()} | {:error, term()}
-  def from_map(%{"type" => type, "id" => id, "at" => at} = map) do
-    notification = %__MODULE__{
-      type: type,
-      id: id,
-      at: at,
-      entity: map["entity"],
-      action: map["action"],
-      message: map["message"],
-      severity: map["severity"],
-      team_ids: map["team_ids"] || []
-    }
+  def from_map(%{"type" => "Notification", "id" => id, "at" => at} = map)
+      when is_binary(id) and id != "" do
+    team_ids = map["team_ids"] || []
 
-    {:ok, notification}
+    if is_list(team_ids) and Enum.all?(team_ids, &is_integer/1) do
+      notification = %__MODULE__{
+        type: "Notification",
+        id: id,
+        at: at,
+        entity: map["entity"],
+        action: map["action"],
+        message: map["message"],
+        severity: normalize_severity(map["severity"], map["message"]),
+        team_ids: team_ids
+      }
+
+      {:ok, notification}
+    else
+      {:error, :invalid_team_ids}
+    end
   end
 
-  def from_map(_), do: {:error, :invalid_notification}
+  def from_map(%{"type" => "Notification"}), do: {:error, :invalid_id}
+  def from_map(_), do: {:error, :invalid_notification_type}
+
+  defp normalize_severity(nil, message) when not is_nil(message), do: "info"
+  defp normalize_severity("", message) when not is_nil(message), do: "info"
+  defp normalize_severity(severity, _), do: severity
 end
