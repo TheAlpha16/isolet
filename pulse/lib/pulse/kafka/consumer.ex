@@ -104,15 +104,16 @@ defmodule Pulse.Kafka.Consumer do
   end
 
   defp decode_payload_and_broadcast(value) do
-    with {:ok, notification} <- Jason.decode(value) do
+    with {:ok, raw} <- Jason.decode(value),
+         {:ok, notification} <- Pulse.Notification.from_map(raw) do
       event_name = Event.derive(notification)
-      payload = Map.put(notification, "event", event_name)
+      payload = Map.put(raw, "event", event_name)
 
       broadcast(notification, payload)
     end
   end
 
-  defp broadcast(%{"team_ids" => team_ids} = _notification, payload)
+  defp broadcast(%Pulse.Notification{team_ids: team_ids}, payload)
        when is_list(team_ids) and team_ids != [] do
     Enum.each(team_ids, fn team_id ->
       PulseWeb.Endpoint.broadcast!("team:#{team_id}", "notification", payload)
