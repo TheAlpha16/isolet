@@ -15,6 +15,13 @@ defmodule Pulse.Kafka.Consumer do
   # brod_group_subscriber callbacks
   @behaviour :brod_group_subscriber
 
+  def child_spec(opts) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [opts]}
+    }
+  end
+
   @doc """
   Starts the consumer as part of the supervision tree.
   """

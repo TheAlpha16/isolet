@@ -19,8 +19,11 @@ defmodule Pulse.Application do
       {Phoenix.PubSub, name: Pulse.PubSub},
       # Redis — must start before the endpoint so session validation is available
       {Redix, {redis_url, [name: :redix]}},
-      # Kafka client
-      {:brod_client, kafka_brokers, kafka_client_id, kafka_client_config},
+      # Kafka client — must use map-based child spec for :brod_client
+      %{
+        id: kafka_client_id,
+        start: {:brod_client, :start_link, [kafka_brokers, kafka_client_id, kafka_client_config]}
+      },
       # Kafka consumer
       {Pulse.Kafka.Consumer, []},
       # Start to serve requests, typically the last entry
