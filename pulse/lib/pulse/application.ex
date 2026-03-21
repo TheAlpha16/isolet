@@ -7,12 +7,14 @@ defmodule Pulse.Application do
 
   @impl true
   def start(_type, _args) do
+    redis_url = Application.fetch_env!(:pulse, :redis_url)
+
     children = [
       PulseWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:pulse, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Pulse.PubSub},
-      # Start a worker by calling: Pulse.Worker.start_link(arg)
-      # {Pulse.Worker, arg},
+      # Redis — must start before the endpoint so session validation is available
+      {Redix, {redis_url, [name: :redix]}},
       # Start to serve requests, typically the last entry
       PulseWeb.Endpoint
     ]

@@ -51,3 +51,6 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# Redis (local default)
+config :pulse, redis_url: "redis://localhost:6379"
