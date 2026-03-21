@@ -41,8 +41,8 @@ spec:
               value: ui-svc
             - name: API_URL
               value: oracle-svc
-            - name: SOCKY_URL
-              value: socky-svc
+            - name: PULSE_URL
+              value: pulse-svc
             - name: PHOROS_URL
               value: fileserver-svc
 

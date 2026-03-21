@@ -9,7 +9,7 @@ ORACLE := "oracle"
 UI := "ui"
 TIDE := "tide"
 PROXY := "proxy"
-SOCKY := "socky"
+PULSE := "pulse"
 HERALD := "herald"
 
 # Default target
@@ -73,7 +73,7 @@ build-all:
 	just docker-build {{UI}}
 	just docker-build {{TIDE}}
 	just docker-build {{PROXY}}
-	just docker-build {{SOCKY}}
+	just docker-build {{PULSE}}
 	just docker-build {{HERALD}}
 
 # Push all services
@@ -82,7 +82,7 @@ push-all:
 	just docker-push {{UI}}
 	just docker-push {{TIDE}}
 	just docker-push {{PROXY}}
-	just docker-push {{SOCKY}}
+	just docker-push {{PULSE}}
 	just docker-push {{HERALD}}
 # --- API commands ---
 
@@ -165,19 +165,19 @@ proxy-restart:
 proxy-version:
 	@cat {{PROXY}}/VERSION
 
-# --- Socky commands ---
+# --- Pulse commands ---
 
-# Run the Socky service locally
-socky-run:
-	sh -c 'cd {{SOCKY}} && npm install && npm run dev'
+# Run the Pulse service locally
+pulse-run:
+	sh -c 'cd {{PULSE}} && mix run'
 
-# Build the Socky service
-socky-build:
-	sh -c 'cd {{SOCKY}} && npm install && npm run build'
+# Build the Pulse service
+pulse-build:
+	sh -c 'cd {{PULSE}} && mix deps.get && mix compile'
 
-# Show current Socky version
-socky-version:
-	@cat {{SOCKY}}/VERSION
+# Show current Pulse version
+pulse-version:
+	@cat {{PULSE}}/VERSION
 
 # --- Herald commands ---
 
@@ -232,7 +232,7 @@ clean:
 	rm -rf {{ORACLE}}/tmp
 	rm -rf {{UI}}/.next
 	rm -rf {{UI}}/node_modules
-	rm -rf {{SOCKY}}/node_modules
+	rm -rf {{PULSE}}/node_modules
 	rm -rf {{TIDE}}/bin
 
 # Show all versions
@@ -241,5 +241,5 @@ versions:
 	@echo "UI:    $(cat {{UI}}/VERSION)"
 	@echo "Tide:  $(cat {{TIDE}}/VERSION)"
 	@echo "Proxy: $(cat {{PROXY}}/VERSION)"
-	@echo "Socky: $(cat {{SOCKY}}/VERSION)"
+	@echo "Pulse: $(cat {{PULSE}}/VERSION)"
 	@echo "Herald: $(cat {{HERALD}}/VERSION)"

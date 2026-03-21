@@ -62,7 +62,6 @@ services:
     environment:
       UI_URL: ui:3000
       API_URL: oracle:8000
-      SOCKY_URL: ui:3000
       PHOROS_URL: ui:3000
       PROXY_SERVER_NAME: "isolet.dev localhost"
       # In case there're no trusted proxies, pass these as empty strings

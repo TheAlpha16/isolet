@@ -2,28 +2,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: socky-deployment
+  name: pulse-deployment
   namespace: platform
   labels:
     app.kubernetes.io/component: deployment
-    app.kubernetes.io/part-of: socky
+    app.kubernetes.io/part-of: pulse
     {{- include "charts.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/component: deployment
-      app.kubernetes.io/part-of: socky
+      app.kubernetes.io/part-of: pulse
   template:
     metadata:
-      name: socky-deployment
+      name: pulse-deployment
       labels:
         app.kubernetes.io/component: deployment
-        app.kubernetes.io/part-of: socky
+        app.kubernetes.io/part-of: pulse
     spec:
       containers:
-        - name: socky
-          image: "{{ .Values.platform.socky.image }}:{{ .Values.platform.socky.version | default "latest" }}"
+        - name: pulse
+          image: "{{ .Values.platform.pulse.image }}:{{ .Values.platform.pulse.version | default "latest" }}"
           imagePullPolicy: Always
           resources:
             limits:
@@ -33,48 +33,18 @@ spec:
               memory: "128Mi"
               cpu: "30m"
           ports:
-            - containerPort: 8888
-          env:
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: oracle-secrets
-                  key: DB_PASSWORD
-
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: oracle-secrets
-                  key: DB_USER
-
-            - name: POSTGRES_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: oracle-config
-                  key: DB_HOST
-
-            - name: POSTGRES_DATABASE
-              valueFrom:
-                configMapKeyRef:
-                  name: oracle-config
-                  key: DB_NAME
-
-            - name: SESSION_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: oracle-secrets
-                  key: TOKEN_SIGNING_KEY
+            - containerPort: 4000
           livenessProbe:
             httpGet:
-              path: /ping
-              port: 8888
+              path: /health
+              port: 4000
             initialDelaySeconds: 40
             failureThreshold: 5
             periodSeconds: 10
           startupProbe:
             httpGet:
-              path: /ping
-              port: 8888
+              path: /health
+              port: 4000
             failureThreshold: 30
             periodSeconds: 10
 
@@ -82,35 +52,35 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: socky-svc
+  name: pulse-svc
   namespace: platform
   labels:
     app.kubernetes.io/component: service
-    app.kubernetes.io/part-of: socky
+    app.kubernetes.io/part-of: pulse
     {{- include "charts.labels" . | nindent 4 }}
 spec:
   ports:
     - port: 80
-      targetPort: 8888
+      targetPort: 4000
   selector:
     app.kubernetes.io/component: deployment
-    app.kubernetes.io/part-of: socky
+    app.kubernetes.io/part-of: pulse
 
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: socky-hpa
+  name: pulse-hpa
   namespace: platform
   labels:
     app.kubernetes.io/component: hpa
-    app.kubernetes.io/part-of: socky
+    app.kubernetes.io/part-of: pulse
     {{- include "charts.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: socky-deployment
+    name: pulse-deployment
   minReplicas: 1
   maxReplicas: 4
   metrics:

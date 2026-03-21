@@ -73,8 +73,8 @@ platform:
     image: docker.io/thealpha16/isolet-proxy
     version: 2.0.0
 
-  socky:
-    image: docker.io/thealpha16/isolet-socky
+  pulse:
+    image: docker.io/thealpha16/isolet-pulse
     version: 1.2.0
 
   valkey:
