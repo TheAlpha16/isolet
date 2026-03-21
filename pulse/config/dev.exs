@@ -54,3 +54,6 @@ config :phoenix, :plug_init_mode, :runtime
 
 # Redis (local default)
 config :pulse, redis_url: "redis://localhost:6379"
+
+# JWT (dev secret — never use in production)
+config :pulse, jwt_secret: "trustmebro"

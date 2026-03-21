@@ -19,3 +19,6 @@ config :phoenix,
 
 # Redis (local default for tests)
 config :pulse, redis_url: "redis://localhost:6379"
+
+# JWT (test secret)
+config :pulse, jwt_secret: "trustmebro"

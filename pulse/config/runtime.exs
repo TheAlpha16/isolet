@@ -27,6 +27,11 @@ if redis_url = System.get_env("REDIS_URL") do
   config :pulse, redis_url: redis_url
 end
 
+# JWT
+if jwt_secret = System.get_env("JWT_SECRET") do
+  config :pulse, jwt_secret: jwt_secret
+end
+
 if config_env() == :prod do
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you
