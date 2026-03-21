@@ -60,7 +60,7 @@ defmodule Pulse.Kafka.Consumer do
 
   @impl true
   def handle_message(topic, partition, message, state) do
-    case decode_and_broadcast(message) do
+    case process_message(message) do
       :ok ->
         {:ok, :ack, state}
 
@@ -76,7 +76,34 @@ defmodule Pulse.Kafka.Consumer do
 
   # --- Internal Helpers ---
 
+  # `:brod_group_subscriber` may deliver either a single kafka message or a kafka message set.
+  defp process_message({:kafka_message_set, _topic, _partition, _offset, messages})
+       when is_list(messages) do
+    Enum.reduce_while(messages, :ok, fn message, :ok ->
+      case decode_and_broadcast(message) do
+        :ok -> {:cont, :ok}
+        {:error, reason} -> {:halt, {:error, reason}}
+      end
+    end)
+  end
+
+  defp process_message({:kafka_message_set, _topic, _partition, _offset, {:incomplete_batch, _}}) do
+    :ok
+  end
+
+  defp process_message(message), do: decode_and_broadcast(message)
+
+  # Newer brod versions include headers in the kafka message tuple.
+  defp decode_and_broadcast({:kafka_message, _offset, _key, value, _ts_type, _ts, _headers}) do
+    decode_payload_and_broadcast(value)
+  end
+
+  # Keep compatibility with older brod tuple shape.
   defp decode_and_broadcast({:kafka_message, _offset, _key, value, _ts_type, _ts}) do
+    decode_payload_and_broadcast(value)
+  end
+
+  defp decode_payload_and_broadcast(value) do
     with {:ok, notification} <- Jason.decode(value) do
       event_name = Event.derive(notification)
       payload = Map.put(notification, "event", event_name)
