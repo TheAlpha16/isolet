@@ -75,6 +75,7 @@ build-all:
 	just docker-build {{PROXY}}
 	just docker-build {{SOCKY}}
 	just docker-build {{HERALD}}
+
 # Push all services
 push-all:
 	just docker-push {{ORACLE}}
@@ -180,9 +181,13 @@ socky-version:
 
 # --- Herald commands ---
 
-# Run the Herald service
-herald-run:
-	cd {{HERALD}} && {{GORUN_COMMAND}} main.go
+# Run the Herald service with k8s source
+herald-k8s:
+	cd {{HERALD}} && IDENTITY=k8s_source {{GORUN_COMMAND}} main.go
+
+# Run the Herald service with postgres source
+herald-postgres:
+	cd {{HERALD}} && IDENTITY=postgres_source {{GORUN_COMMAND}} main.go
 
 # Tidy Herald Go modules
 herald-tidy:
