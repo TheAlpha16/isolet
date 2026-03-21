@@ -65,7 +65,10 @@ defmodule Pulse.Kafka.Consumer do
         {:ok, :ack, state}
 
       {:error, reason} ->
-        Logger.error("Failed to process Kafka message on #{topic}:#{partition}. Reason: #{inspect(reason)}")
+        Logger.error(
+          "Failed to process Kafka message on #{topic}:#{partition}. Reason: #{inspect(reason)}"
+        )
+
         # We ack even on error to avoid blocking the partition infinitely.
         {:ok, :ack, state}
     end
@@ -82,7 +85,8 @@ defmodule Pulse.Kafka.Consumer do
     end
   end
 
-  defp broadcast(%{"team_ids" => team_ids} = _notification, payload) when is_list(team_ids) and team_ids != [] do
+  defp broadcast(%{"team_ids" => team_ids} = _notification, payload)
+       when is_list(team_ids) and team_ids != [] do
     Enum.each(team_ids, fn team_id ->
       PulseWeb.Endpoint.broadcast!("team:#{team_id}", "notification", payload)
     end)
