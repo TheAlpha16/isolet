@@ -34,6 +34,7 @@
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/phoenix": "^1.6.7",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/react-toastify": "^4.0.2",
