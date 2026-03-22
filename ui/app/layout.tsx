@@ -5,6 +5,7 @@ import NavBar from "@/components/NavBar";
 import { NotificationContainer } from "@/components/NotificationContainer";
 import { ThemeProvider } from "@/components/theme-provider";
 import { useChallengeStore, useEventStore, useProfileStore } from "@/store";
+import { useRealtimeClient } from "@/hooks/useRealtimeClient";
 import "@/styles/globals.css";
 import "@/styles/hint-toast.css";
 import "@/styles/notification.css";
@@ -30,6 +31,8 @@ export default function RootLayout({
   const { user, team, fetchMe } = useProfileStore();
   const { fetchChallenges } = useChallengeStore();
   const { loaded, fetchInfo } = useEventStore();
+
+  useRealtimeClient(team?.id, user);
 
   // always fetch user profile on mount to ensure proper authentication state
   useEffect(() => {
