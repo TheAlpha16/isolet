@@ -1,3 +1,8 @@
+export interface RealtimeMessage {
+  event: string;
+  [key: string]: any;
+}
+
 export type Notification = {
   id: string;
   event: string;
