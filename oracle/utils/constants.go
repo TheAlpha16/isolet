@@ -67,11 +67,12 @@ const (
 
 // rest constants
 const (
-	AuthTokenCookieName = "token"
-	TokenQueryKey       = "token"
-	PageQueryKey        = "page"
-	PageSizeQueryKey    = "page_size"
-	IPHeaderKey         = "X-Real-IP"
+	AuthTokenCookieName     = "token"
+	TokenQueryKey           = "token"
+	PageQueryKey            = "page"
+	PageSizeQueryKey        = "page_size"
+	IPHeaderKey             = "X-Real-IP"
+	RealtimeTokenCookieName = "realtime_token"
 )
 
 // front-end routes

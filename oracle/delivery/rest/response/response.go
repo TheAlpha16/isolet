@@ -47,3 +47,13 @@ func BuildAuthCookie(session *authDom.Session) *fiber.Cookie {
 		HTTPOnly: true,
 	}
 }
+
+func BuildRealtimeCookie(session *authDom.Session) *fiber.Cookie {
+	return &fiber.Cookie{
+		Name:     utils.RealtimeTokenCookieName,
+		Value:    session.RealtimeToken,
+		Expires:  time.Unix(session.ExpiresAt, 0),
+		SameSite: fiber.CookieSameSiteStrictMode,
+		HTTPOnly: false,
+	}
+}
