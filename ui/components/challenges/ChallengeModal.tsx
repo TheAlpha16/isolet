@@ -144,7 +144,8 @@ export function ChallengeModal({ challenge, onClose }: ChallengeModalProps) {
             <div className="flex gap-2">
               <Input
                 type="text"
-                placeholder="Enter flag"
+                placeholder="flag{...}"
+                className="font-mono"
                 value={flag}
                 onChange={(e) => setFlag(e.target.value)}
                 disabled={
