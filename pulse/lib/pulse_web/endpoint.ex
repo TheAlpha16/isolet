@@ -11,17 +11,12 @@ defmodule PulseWeb.Endpoint do
     same_site: "Lax"
   ]
 
-  @raw_cookie_options [
-    store: PulseWeb.RawCookieStore,
-    key: "auth_token"
-  ]
-
   socket "/live", Phoenix.LiveView.Socket,
     websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]
 
   socket "/socket", PulseWeb.UserSocket,
-    websocket: [connect_info: [session: @raw_cookie_options]],
+    websocket: true,
     longpoll: false
 
   # Serve at "/" the static files from "priv/static" directory.

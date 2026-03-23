@@ -17,13 +17,13 @@ defmodule PulseWeb.UserSocketTest do
       claims = %{
         "user_id" => "u1",
         "role" => "admin",
-        "purpose" => "auth",
+        "purpose" => "realtime",
         "sub" => "u1",
         "jti" => "t1"
       }
 
       token = generate_token(claims)
-      key = "token:auth:u1:t1"
+      key = "token:realtime:u1:t1"
 
       # Setup Redis session
       case Redix.command(:redix, ["SET", key, "valid"]) do
