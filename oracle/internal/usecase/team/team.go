@@ -151,12 +151,14 @@ func (t *teamImpl) reissueAuthSession(ctx context.Context, user *userDom.User) (
 		return nil, err
 	}
 
-	token, jwtToken, err := t.authUc.GenerateAuthToken(ctx, user)
+	var sessionID = utils.RandomUUID()
+
+	token, jwtToken, err := t.authUc.GenerateAuthToken(ctx, user, &sessionID)
 	if err != nil {
 		return nil, err
 	}
 
-	_, realtimeJwtToken, err := t.authUc.GenerateRealtimeToken(ctx, user)
+	_, realtimeJwtToken, err := t.authUc.GenerateRealtimeToken(ctx, user, &sessionID)
 	if err != nil {
 		return nil, err
 	}

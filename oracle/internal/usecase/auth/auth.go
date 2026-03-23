@@ -51,12 +51,14 @@ func (a *authImpl) Login(ctx context.Context, input *authDom.LoginInput) (*authD
 		return nil, errorDom.Raise(ctx, errorDom.ErrAuthMaxSessionsReached, "max auth sessions reached", nil, nil)
 	}
 
-	token, jwtToken, err := a.GenerateAuthToken(ctx, user)
+	var sessionID = utils.RandomUUID()
+
+	token, jwtToken, err := a.GenerateAuthToken(ctx, user, &sessionID)
 	if err != nil {
 		return nil, err
 	}
 
-	_, realtimeJwtToken, err := a.GenerateRealtimeToken(ctx, user)
+	_, realtimeJwtToken, err := a.GenerateRealtimeToken(ctx, user, &sessionID)
 	if err != nil {
 		return nil, err
 	}
@@ -107,12 +109,14 @@ func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (
 		return nil, err
 	}
 
-	token, jwtToken, err := a.GenerateAuthToken(ctx, user)
+	var sessionID = utils.RandomUUID()
+
+	token, jwtToken, err := a.GenerateAuthToken(ctx, user, &sessionID)
 	if err != nil {
 		return nil, err
 	}
 
-	_, realtimeJwtToken, err := a.GenerateRealtimeToken(ctx, user)
+	_, realtimeJwtToken, err := a.GenerateRealtimeToken(ctx, user, &sessionID)
 	if err != nil {
 		return nil, err
 	}
@@ -243,11 +247,18 @@ func (a *authImpl) ResetPassword(ctx context.Context, input *authDom.ResetPasswo
 	return a.tokenUc.Delete(ctx, tokenIdentifier)
 }
 
-func (a *authImpl) GenerateAuthToken(ctx context.Context, user *userDom.User) (*tokenDom.Token, string, error) {
+func (a *authImpl) GenerateAuthToken(ctx context.Context, user *userDom.User, sessionID *string) (*tokenDom.Token, string, error) {
+	var tokenID string
+	if sessionID != nil {
+		tokenID = *sessionID
+	} else {
+		tokenID = utils.RandomUUID()
+	}
+
 	config := utils.GetConfig()
 	token := tokenDom.Token{
 		TokenIdentifier: tokenDom.TokenIdentifier{
-			ID:       utils.RandomUUID(),
+			ID:       tokenID,
 			EntityID: strconv.FormatInt(user.ID, 10),
 			Purpose:  tokenDom.TokenAuth,
 		},
@@ -267,7 +278,7 @@ func (a *authImpl) GenerateAuthToken(ctx context.Context, user *userDom.User) (*
 	return &token, jwtToken, nil
 }
 
-func (a *authImpl) GenerateRealtimeToken(ctx context.Context, user *userDom.User) (*tokenDom.Token, string, error) {
+func (a *authImpl) GenerateRealtimeToken(ctx context.Context, user *userDom.User, sessionID *string) (*tokenDom.Token, string, error) {
 	// TODO implement this
 	return nil, "", nil
 }

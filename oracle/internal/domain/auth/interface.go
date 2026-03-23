@@ -15,6 +15,6 @@ type Usecase interface {
 	ResetPassword(ctx context.Context, input *ResetPasswordInput) error
 	Logout(context.Context) error
 
-	GenerateAuthToken(ctx context.Context, user *userDom.User) (*tokenDom.Token, string, error)
-	GenerateRealtimeToken(ctx context.Context, user *userDom.User) (*tokenDom.Token, string, error)
+	GenerateAuthToken(ctx context.Context, user *userDom.User, sessionID *string) (*tokenDom.Token, string, error)
+	GenerateRealtimeToken(ctx context.Context, user *userDom.User, sessionID *string) (*tokenDom.Token, string, error)
 }
