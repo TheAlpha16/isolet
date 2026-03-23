@@ -8,6 +8,7 @@ export interface EndpointEventData {
   port?: number | null;
   ready: boolean;
   instance_id: number;
+  team_id?: number;
 }
 
 export type EndpointNotification = Notification<EndpointEventData>;
