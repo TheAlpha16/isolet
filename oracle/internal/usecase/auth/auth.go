@@ -56,10 +56,16 @@ func (a *authImpl) Login(ctx context.Context, input *authDom.LoginInput) (*authD
 		return nil, err
 	}
 
+	_, realtimeJwtToken, err := a.GenerateRealtimeToken(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
 	return &authDom.Session{
-		UserID:    user.ID,
-		Token:     jwtToken,
-		ExpiresAt: token.ExpiresAt.Unix(),
+		UserID:        user.ID,
+		Token:         jwtToken,
+		ExpiresAt:     token.ExpiresAt.Unix(),
+		RealtimeToken: realtimeJwtToken,
 	}, nil
 }
 
@@ -106,10 +112,16 @@ func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (
 		return nil, err
 	}
 
+	_, realtimeJwtToken, err := a.GenerateRealtimeToken(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
 	return &authDom.Session{
-		UserID:    user.ID,
-		Token:     jwtToken,
-		ExpiresAt: token.ExpiresAt.Unix(),
+		UserID:        user.ID,
+		Token:         jwtToken,
+		ExpiresAt:     token.ExpiresAt.Unix(),
+		RealtimeToken: realtimeJwtToken,
 	}, nil
 }
 
@@ -270,7 +282,21 @@ func (a *authImpl) Logout(ctx context.Context) error {
 		Purpose:  tokenDom.TokenAuth,
 	}
 
-	return a.tokenUc.Delete(ctx, tokenIdentifier)
+	realtimeTokenId := &tokenDom.TokenIdentifier{
+		ID:       sessionID,
+		EntityID: strconv.FormatInt(userID, 10),
+		Purpose:  tokenDom.TokenRealtime,
+	}
+
+	if err := a.tokenUc.Delete(ctx, tokenIdentifier); err != nil {
+		return err
+	}
+
+	if err := a.tokenUc.Delete(ctx, realtimeTokenId); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (a *authImpl) generateEmailVerificationToken(ctx context.Context, email, username, password string) (*tokenDom.Token, string, error) {

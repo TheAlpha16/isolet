@@ -146,15 +146,26 @@ func (t *teamImpl) reissueAuthSession(ctx context.Context, user *userDom.User) (
 		return nil, err
 	}
 
+	// revoke all the realtime tokens
+	if err := t.tokenUc.RevokeEntityTokens(ctx, tokenDom.TokenRealtime, strconv.FormatInt(user.ID, 10)); err != nil {
+		return nil, err
+	}
+
 	token, jwtToken, err := t.authUc.GenerateAuthToken(ctx, user)
 	if err != nil {
 		return nil, err
 	}
 
+	_, realtimeJwtToken, err := t.authUc.GenerateRealtimeToken(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
 	return &authDom.Session{
-		UserID:    user.ID,
-		Token:     jwtToken,
-		ExpiresAt: token.ExpiresAt.Unix(),
+		UserID:        user.ID,
+		Token:         jwtToken,
+		ExpiresAt:     token.ExpiresAt.Unix(),
+		RealtimeToken: realtimeJwtToken,
 	}, nil
 }
 
