@@ -14,7 +14,7 @@ defmodule Pulse.AuthTest do
 
   describe "verify_jwt/1" do
     test "verifies a valid token" do
-      claims = %{"user_id" => "123", "role" => "admin", "purpose" => "auth"}
+      claims = %{"user_id" => "123", "role" => "admin", "purpose" => "realtime"}
       signer = Joken.Signer.create("HS256", get_secret())
       {:ok, token, _} = Joken.generate_and_sign(Joken.Config.default_claims(), claims, signer)
 
@@ -29,12 +29,12 @@ defmodule Pulse.AuthTest do
 
   describe "validate_claims/1" do
     test "returns :ok for valid claims" do
-      claims = %{"purpose" => "auth", "user_id" => "123", "role" => "user"}
+      claims = %{"purpose" => "realtime", "user_id" => "123", "role" => "user"}
       assert Auth.validate_claims(claims) == :ok
     end
 
     test "returns :error for missing user_id" do
-      claims = %{"purpose" => "auth", "role" => "user"}
+      claims = %{"purpose" => "realtime", "role" => "user"}
       assert Auth.validate_claims(claims) == :error
     end
 
@@ -46,8 +46,8 @@ defmodule Pulse.AuthTest do
 
   describe "validate_session/1" do
     test "returns :ok if session exists in Redis" do
-      claims = %{"sub" => "user123", "jti" => "token456", "purpose" => "auth"}
-      key = "token:auth:user123:token456"
+      claims = %{"sub" => "user123", "jti" => "token456", "purpose" => "realtime"}
+      key = "token:realtime:user123:token456"
 
       # We assume :redix is started in test env.
       # If not, this test might fail or need a mock.
@@ -63,7 +63,7 @@ defmodule Pulse.AuthTest do
     end
 
     test "returns :error if session missing" do
-      claims = %{"sub" => "user123", "jti" => "missing", "purpose" => "auth"}
+      claims = %{"sub" => "user123", "jti" => "missing", "purpose" => "realtime"}
       assert Auth.validate_session(claims) == :error
     end
   end

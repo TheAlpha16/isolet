@@ -3,7 +3,7 @@ defmodule Pulse.Auth do
   JWT and Redis session authentication helpers for Pulse WebSocket connections.
 
   Enforces the same token invariants as Oracle:
-    - `purpose` must be `"auth"`
+    - `purpose` must be `"realtime"`
     - `jti`, `sub`, `exp`, `iat` must exist
     - `user_id` and `role` must exist
     - `team_id` is optional
@@ -30,11 +30,11 @@ defmodule Pulse.Auth do
 
   @doc """
   Validates that the JWT claims meet Pulse's requirements:
-    - `purpose` must be `"auth"`
+    - `purpose` must be `"realtime"`
     - `user_id` and `role` must be present
   """
   @spec validate_claims(map()) :: :ok | :error
-  def validate_claims(%{"purpose" => "auth", "user_id" => user_id, "role" => role})
+  def validate_claims(%{"purpose" => "realtime", "user_id" => user_id, "role" => role})
       when not is_nil(user_id) and not is_nil(role) do
     :ok
   end
