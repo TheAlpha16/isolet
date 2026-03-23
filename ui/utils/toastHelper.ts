@@ -6,6 +6,7 @@ export enum ToastStatus {
   Success,
   Warning,
   Failure,
+  Info,
 }
 
 function showToast(status: ToastStatus, message: string) {
@@ -19,8 +20,11 @@ function showToast(status: ToastStatus, message: string) {
     case ToastStatus.Warning:
       toast.warn(message, { containerId: "notification-toast" });
       break;
+    case ToastStatus.Info:
+      toast.info(message, { containerId: "notification-toast" });
+      break;
     default:
-      toast.warn(message, { containerId: "notification-toast" });
+      toast.info(message, { containerId: "notification-toast" });
   }
 }
 
