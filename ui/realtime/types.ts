@@ -19,6 +19,17 @@ export const Action = {
 
 export type ActionType = (typeof Action)[keyof typeof Action];
 
+/**
+ * Notification severity constants - matches backend NotificationSeverity
+ */
+export const Severity = {
+  INFO: "info",
+  WARNING: "warning",
+  SUCCESS: "success",
+} as const;
+
+export type SeverityType = (typeof Severity)[keyof typeof Severity];
+
 export type NotificationEntity<T = any> = {
   name: EntityTypeName;
   id: number;
@@ -31,7 +42,7 @@ export type Notification<T = any> = {
   entity?: NotificationEntity<T>;
   action?: ActionType;
   message?: string;
-  severity?: string;
+  severity?: SeverityType;
   team_ids?: number[];
   type?: string;
   at?: string;
