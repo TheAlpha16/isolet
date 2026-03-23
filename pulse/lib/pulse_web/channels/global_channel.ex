@@ -1,9 +1,11 @@
 defmodule PulseWeb.GlobalChannel do
   use PulseWeb, :channel
+  require Logger
 
   @impl true
   def join("global", _payload, socket) do
     # Open to all authenticated users (who have already passed UserSocket.connect)
+    Logger.debug("User #{socket.assigns.user_id} joined global channel")
     {:ok, socket}
   end
 

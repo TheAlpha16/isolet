@@ -60,6 +60,8 @@ defmodule Pulse.Kafka.Consumer do
 
   @impl true
   def handle_message(topic, partition, message, state) do
+    Logger.debug("Received message from Kafka: topic=#{topic}, partition=#{partition}")
+
     case process_message(message) do
       :ok ->
         {:ok, :ack, state}
@@ -104,18 +106,26 @@ defmodule Pulse.Kafka.Consumer do
   end
 
   defp decode_payload_and_broadcast(value) do
-    with {:ok, raw} <- Jason.decode(value),
-         {:ok, notification} <- Pulse.Notification.from_map(raw) do
-      event_name = Event.derive(notification)
-      payload = Map.put(raw, "event", event_name)
+    with {:ok, raw} <- Jason.decode(value) do
+      Logger.debug("Decoded Kafka payload: #{inspect(raw)}")
 
-      broadcast(notification, payload)
+      case Pulse.Notification.from_map(raw) do
+        {:ok, notification} ->
+          event_name = Event.derive(notification)
+          payload = Map.put(raw, "event", event_name)
+
+          broadcast(notification, payload)
+
+        {:error, reason} ->
+          {:error, reason}
+      end
     end
   end
 
   defp broadcast(%Pulse.Notification{team_ids: team_ids}, payload)
        when is_list(team_ids) and team_ids != [] do
     Enum.each(team_ids, fn team_id ->
+      Logger.debug("Broadcasting to team:#{team_id}, event=#{payload["event"]}")
       PulseWeb.Endpoint.broadcast!("team:#{team_id}", "notification", payload)
     end)
 
@@ -124,6 +134,7 @@ defmodule Pulse.Kafka.Consumer do
 
   defp broadcast(_notification, payload) do
     # Fallback to global if no team_ids or team_ids is empty
+    Logger.debug("Broadcasting to global, event=#{payload["event"]}")
     PulseWeb.Endpoint.broadcast!("global", "notification", payload)
     :ok
   end

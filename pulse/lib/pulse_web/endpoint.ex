@@ -16,7 +16,7 @@ defmodule PulseWeb.Endpoint do
     longpoll: [connect_info: [session: @session_options]]
 
   socket "/socket", PulseWeb.UserSocket,
-    websocket: true,
+    websocket: [log: false],
     longpoll: false
 
   # Serve at "/" the static files from "priv/static" directory.
