@@ -3,6 +3,7 @@ import { Instance, Endpoint } from "@/api";
 import { InstanceService } from "@/services/instance";
 import { InstanceNotification, parseInstanceFromNotification } from "@/models/instance";
 import { EndpointNotification, parseEndpointFromNotification } from "@/models/endpoint";
+import { Action } from "@/realtime/types";
 
 interface InstanceStore {
   loading: boolean;
@@ -14,11 +15,8 @@ interface InstanceStore {
   stopInstance: (challenge_id: number) => Promise<void>;
   extendInstance: (challenge_id: number) => Promise<void>;
 
-  // Realtime event handlers
-  handleInstanceCreated: (notification: InstanceNotification) => void;
-  handleInstanceUpdated: (notification: InstanceNotification) => void;
-  handleInstanceDeleted: (notification: InstanceNotification) => void;
-  handleEndpointUpdated: (notification: EndpointNotification) => void;
+  handleInstanceEvent: (notification: InstanceNotification) => void;
+  handleEndpointEvent: (notification: EndpointNotification) => void;
 }
 
 export const useInstanceStore = create<InstanceStore>((set, get) => ({
@@ -121,96 +119,120 @@ export const useInstanceStore = create<InstanceStore>((set, get) => ({
     }
   },
 
-  // Realtime event handlers
-  handleInstanceCreated: (notification: InstanceNotification) => {
-    const instance = parseInstanceFromNotification(notification);
-    if (!instance) {
-      return;
-    }
+  handleInstanceEvent: (notification: InstanceNotification) => {
+    const action = notification.action;
 
-    set((state) => {
-      const newState = {
-        instanceIdMap: {
-          ...state.instanceIdMap,
-          [instance.id]: instance,
-        },
-        challengeInstanceMap: {
-          ...state.challengeInstanceMap,
-          [instance.challenge_id]: instance.id,
-        },
-      };
+    switch (action) {
+      case Action.CREATED: {
+        const instance = parseInstanceFromNotification(notification);
+        if (!instance) return;
 
-      return newState;
-    });
-  },
+        set((state) => {
+          const existingInstance = state.instanceIdMap[instance.id];
 
-  handleInstanceUpdated: (notification: InstanceNotification) => {
-    const instance = parseInstanceFromNotification(notification);
-    if (!instance) {
-      return;
-    }
+          const mergedInstance = existingInstance
+            ? {
+                ...instance,
+                endpoints:
+                  existingInstance.endpoints.length > 0
+                    ? existingInstance.endpoints
+                    : instance.endpoints,
+              }
+            : instance;
 
-    set((state) => {
-      const existingInstance = state.instanceIdMap[instance.id];
-      if (!existingInstance) {
-        return state;
+          return {
+            instanceIdMap: {
+              ...state.instanceIdMap,
+              [instance.id]: mergedInstance,
+            },
+            challengeInstanceMap: {
+              ...state.challengeInstanceMap,
+              [instance.challenge_id]: instance.id,
+            },
+          };
+        });
+        break;
       }
 
-      return {
-        instanceIdMap: {
-          ...state.instanceIdMap,
-          [instance.id]: {
-            ...instance,
-            endpoints: existingInstance.endpoints,
-          },
-        },
-      };
-    });
-  },
+      case Action.UPDATED: {
+        const instance = parseInstanceFromNotification(notification);
+        if (!instance) return;
 
-  handleInstanceDeleted: (notification: InstanceNotification) => {
-    const instanceId = notification.entity?.id;
-    if (!instanceId) {
-      return;
-    }
+        set((state) => {
+          const existingInstance = state.instanceIdMap[instance.id];
+          if (!existingInstance) return state;
 
-    set((state) => {
-      const instance = state.instanceIdMap[instanceId];
-      if (!instance) {
-        return state;
+          return {
+            instanceIdMap: {
+              ...state.instanceIdMap,
+              [instance.id]: {
+                ...instance,
+                endpoints: existingInstance.endpoints,
+              },
+            },
+          };
+        });
+        break;
       }
 
-      const newInstanceIdMap = { ...state.instanceIdMap };
-      const newChallengeInstanceMap = { ...state.challengeInstanceMap };
+      case Action.DELETED: {
+        const instanceId = notification.entity?.id;
+        if (!instanceId) return;
 
-      delete newInstanceIdMap[instanceId];
-      delete newChallengeInstanceMap[instance.challenge_id];
+        set((state) => {
+          const instance = state.instanceIdMap[instanceId];
+          if (!instance) return state;
 
-      return {
-        instanceIdMap: newInstanceIdMap,
-        challengeInstanceMap: newChallengeInstanceMap,
-      };
-    });
+          const newInstanceIdMap = { ...state.instanceIdMap };
+          const newChallengeInstanceMap = { ...state.challengeInstanceMap };
+
+          delete newInstanceIdMap[instanceId];
+          delete newChallengeInstanceMap[instance.challenge_id];
+
+          return {
+            instanceIdMap: newInstanceIdMap,
+            challengeInstanceMap: newChallengeInstanceMap,
+          };
+        });
+        break;
+      }
+    }
   },
 
-  handleEndpointUpdated: (notification: EndpointNotification) => {
+  handleEndpointEvent: (notification: EndpointNotification) => {
     const endpoint = parseEndpointFromNotification(notification);
     const instanceId = notification.entity?.data?.instance_id;
+    const action = notification.action;
 
     if (!endpoint || !instanceId) {
       return;
     }
 
     set((state) => {
-      const instance = state.instanceIdMap[instanceId];
+      let instance = state.instanceIdMap[instanceId];
+
+      // If instance doesn't exist yet (endpoint event arrived first), create a partial instance
       if (!instance) {
-        return state;
+        const entityData = notification.entity?.data;
+        if (!entityData) {
+          return state;
+        }
+
+        instance = {
+          id: instanceId,
+          team_id: entityData.team_id,
+          challenge_id: 0,
+          endpoints: [],
+        };
       }
 
       const existingEndpointIndex = instance.endpoints.findIndex((e) => e.name === endpoint.name);
 
       let updatedEndpoints: Endpoint[];
-      if (existingEndpointIndex >= 0) {
+
+      if (action === Action.DELETED) {
+        updatedEndpoints = instance.endpoints.filter((e) => e.name !== endpoint.name);
+      } else if (existingEndpointIndex >= 0) {
         updatedEndpoints = [...instance.endpoints];
         updatedEndpoints[existingEndpointIndex] = endpoint;
       } else {
