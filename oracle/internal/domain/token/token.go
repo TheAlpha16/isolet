@@ -25,6 +25,7 @@ const (
 	TokenPasswordReset     TokenPurpose = "password_reset"
 	TokenEmailVerification TokenPurpose = "email_verification"
 	TokenTeamInvite        TokenPurpose = "team_invite"
+	TokenRealtime          TokenPurpose = "realtime"
 )
 
 var validPurposes = map[TokenPurpose]struct{}{
@@ -32,6 +33,7 @@ var validPurposes = map[TokenPurpose]struct{}{
 	TokenPasswordReset:     {},
 	TokenEmailVerification: {},
 	TokenTeamInvite:        {},
+	TokenRealtime:          {},
 }
 
 type TokenIdentifier struct {
