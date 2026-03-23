@@ -3,7 +3,7 @@ defmodule PulseWeb.TeamChannel do
 
   @impl true
   def join("team:" <> team_id, _payload, socket) do
-    if socket.assigns.team_id == team_id do
+    if to_string(socket.assigns.team_id) == team_id do
       {:ok, socket}
     else
       {:error, %{reason: "unauthorized"}}
