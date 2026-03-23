@@ -1,17 +1,13 @@
 import { useInstanceStore } from "@/store/instance";
 import { InstanceNotification } from "@/models/instance";
 
+export function handleInstanceEvent(payload: InstanceNotification) {
+  console.log(`Instance ${payload.action}:`, payload);
+  useInstanceStore.getState().handleInstanceEvent(payload);
+}
+
 export const instanceHandlers = {
-  "instance.created": (payload: InstanceNotification) => {
-    console.log("Instance created:", payload);
-    useInstanceStore.getState().handleInstanceCreated(payload);
-  },
-  "instance.updated": (payload: InstanceNotification) => {
-    console.log("Instance updated:", payload);
-    useInstanceStore.getState().handleInstanceUpdated(payload);
-  },
-  "instance.deleted": (payload: InstanceNotification) => {
-    console.log("Instance deleted:", payload);
-    useInstanceStore.getState().handleInstanceDeleted(payload);
-  },
+  "instance.created": handleInstanceEvent,
+  "instance.updated": handleInstanceEvent,
+  "instance.deleted": handleInstanceEvent,
 };
