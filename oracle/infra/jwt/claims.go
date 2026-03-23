@@ -184,3 +184,16 @@ func NewTeamInviteClaims(jwtID string, teamID int64, expiresAt time.Time) *Claim
 		ExpiresAt: expiresAt,
 	}
 }
+
+func NewRealtimeClaims(jwtID string, userID int64, teamID *int64, role userDom.Role, expiresAt time.Time) *Claims {
+	return &Claims{
+		JWTID:     jwtID,
+		Subject:   strconv.FormatInt(userID, 10),
+		UserID:    &userID,
+		TeamID:    teamID,
+		Role:      &role,
+		Purpose:   tokenDom.TokenRealtime,
+		CreatedAt: time.Now(),
+		ExpiresAt: expiresAt,
+	}
+}

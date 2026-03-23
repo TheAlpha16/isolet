@@ -71,6 +71,7 @@ type Config struct {
 		AuthValidity              time.Duration `env:"TOKEN_AUTH_VALIDITY" envDefault:"24h"`
 		PasswordResetValidity     time.Duration `env:"TOKEN_PASSWORD_RESET_VALIDITY" envDefault:"30m"`
 		TeamInviteValidity        time.Duration `env:"TOKEN_TEAM_INVITE_VALIDITY" envDefault:"1h"`
+		RealtimeValidity          time.Duration `env:"TOKEN_REALTIME_VALIDITY" envDefault:"24h"`
 	}
 
 	CNC struct {

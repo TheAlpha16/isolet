@@ -275,12 +275,40 @@ func (a *authImpl) GenerateAuthToken(ctx context.Context, user *userDom.User, se
 	if err != nil {
 		return nil, "", err
 	}
+
 	return &token, jwtToken, nil
 }
 
 func (a *authImpl) GenerateRealtimeToken(ctx context.Context, user *userDom.User, sessionID *string) (*tokenDom.Token, string, error) {
-	// TODO implement this
-	return nil, "", nil
+	var tokenID string
+	if sessionID != nil {
+		tokenID = *sessionID
+	} else {
+		tokenID = utils.RandomUUID()
+	}
+
+	config := utils.GetConfig()
+	token := tokenDom.Token{
+		TokenIdentifier: tokenDom.TokenIdentifier{
+			ID:       tokenID,
+			EntityID: strconv.FormatInt(user.ID, 10),
+			Purpose:  tokenDom.TokenRealtime,
+		},
+	}
+	token.UpdateTime()
+	token.ExpiresAt = token.CreatedAt.Add(config.Token.RealtimeValidity)
+
+	err := a.tokenUc.Create(ctx, &token, nil)
+	if err != nil {
+		return nil, "", err
+	}
+
+	jwtToken, err := a.jwtSvc.Sign(ctx, jwt.NewRealtimeClaims(token.ID, user.ID, user.TeamID, user.Role, token.ExpiresAt))
+	if err != nil {
+		return nil, "", err
+	}
+
+	return &token, jwtToken, nil
 }
 
 func (a *authImpl) Logout(ctx context.Context) error {
