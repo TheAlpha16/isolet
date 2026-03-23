@@ -1,12 +1,17 @@
+import { useInstanceStore } from "@/store/instance";
+import { InstanceNotification } from "@/models/instance";
+
 export const instanceHandlers = {
-  "instance.created": (payload: any) => {
+  "instance.created": (payload: InstanceNotification) => {
     console.log("Instance created:", payload);
-    // TODO: implement state updates, e.g. mutate react-query cache or redux store
+    useInstanceStore.getState().handleInstanceCreated(payload);
   },
-  "instance.updated": (payload: any) => {
+  "instance.updated": (payload: InstanceNotification) => {
     console.log("Instance updated:", payload);
+    useInstanceStore.getState().handleInstanceUpdated(payload);
   },
-  "instance.deleted": (payload: any) => {
+  "instance.deleted": (payload: InstanceNotification) => {
     console.log("Instance deleted:", payload);
+    useInstanceStore.getState().handleInstanceDeleted(payload);
   },
 };
