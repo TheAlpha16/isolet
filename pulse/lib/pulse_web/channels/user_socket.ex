@@ -5,8 +5,8 @@ defmodule PulseWeb.UserSocket do
   require Logger
 
   ## Channels
-  channel "team:*", PulseWeb.TeamChannel
-  channel "global", PulseWeb.GlobalChannel
+  channel("team:*", PulseWeb.TeamChannel)
+  channel("global", PulseWeb.GlobalChannel)
 
   @impl true
   def connect(params, socket, _connect_info) do

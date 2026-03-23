@@ -2,13 +2,13 @@ defmodule PulseWeb.Router do
   use PulseWeb, :router
 
   pipeline :api do
-    plug :accepts, ["json"]
+    plug(:accepts, ["json"])
   end
 
   scope "/api", PulseWeb do
-    pipe_through :api
+    pipe_through(:api)
 
-    get "/health", HealthController, :index
+    get("/health", HealthController, :index)
   end
 
   # Enable LiveDashboard in development
@@ -21,9 +21,9 @@ defmodule PulseWeb.Router do
     import Phoenix.LiveDashboard.Router
 
     scope "/dev" do
-      pipe_through [:fetch_session, :protect_from_forgery]
+      pipe_through([:fetch_session, :protect_from_forgery])
 
-      live_dashboard "/dashboard", metrics: PulseWeb.Telemetry
+      live_dashboard("/dashboard", metrics: PulseWeb.Telemetry)
     end
   end
 end
