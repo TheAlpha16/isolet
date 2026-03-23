@@ -255,6 +255,11 @@ func (a *authImpl) GenerateAuthToken(ctx context.Context, user *userDom.User) (*
 	return &token, jwtToken, nil
 }
 
+func (a *authImpl) GenerateRealtimeToken(ctx context.Context, user *userDom.User) (*tokenDom.Token, string, error) {
+	// TODO implement this
+	return nil, "", nil
+}
+
 func (a *authImpl) Logout(ctx context.Context) error {
 	userID := common.GetFieldFromExtraData[int64](ctx, utils.ContextKeyUserID)
 	sessionID := common.GetFieldFromExtraData[string](ctx, utils.ContextKeySessionID)

@@ -37,6 +37,7 @@ func (h *teamHandler) Create(c *fiber.Ctx) error {
 	}
 
 	c.Cookie(response.BuildAuthCookie(session))
+	c.Cookie(response.BuildRealtimeCookie(session))
 
 	return c.Status(fiber.StatusCreated).JSON(response.Success("team created successfully", session))
 }
@@ -55,6 +56,7 @@ func (h *teamHandler) Join(c *fiber.Ctx) error {
 	}
 
 	c.Cookie(response.BuildAuthCookie(session))
+	c.Cookie(response.BuildRealtimeCookie(session))
 
 	return c.Status(fiber.StatusCreated).JSON(response.Success("team joined successfully", session))
 }
@@ -80,6 +82,7 @@ func (h *teamHandler) AcceptInvite(c *fiber.Ctx) error {
 	}
 
 	c.Cookie(response.BuildAuthCookie(session))
+	c.Cookie(response.BuildRealtimeCookie(session))
 
 	return c.Status(fiber.StatusCreated).JSON(response.Success("team joined successfully", session))
 }

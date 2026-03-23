@@ -16,4 +16,5 @@ type Usecase interface {
 	Logout(context.Context) error
 
 	GenerateAuthToken(ctx context.Context, user *userDom.User) (*tokenDom.Token, string, error)
+	GenerateRealtimeToken(ctx context.Context, user *userDom.User) (*tokenDom.Token, string, error)
 }

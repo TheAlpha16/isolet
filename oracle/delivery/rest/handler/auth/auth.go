@@ -38,6 +38,7 @@ func (h *authHandler) Login(c *fiber.Ctx) error {
 	}
 
 	c.Cookie(response.BuildAuthCookie(output))
+	c.Cookie(response.BuildRealtimeCookie(output))
 
 	return c.Status(fiber.StatusOK).JSON(response.Success("login successful", output))
 }
@@ -58,6 +59,7 @@ func (h *authHandler) Register(c *fiber.Ctx) error {
 	}
 
 	c.Cookie(response.BuildAuthCookie(session))
+	c.Cookie(response.BuildRealtimeCookie(session))
 
 	return c.Status(fiber.StatusOK).JSON(response.Success("registration successful", session))
 }
@@ -111,6 +113,7 @@ func (h *authHandler) Logout(c *fiber.Ctx) error {
 	}
 
 	c.Cookie(response.BuildAuthCookie(&authDom.Session{}))
+	c.Cookie(response.BuildRealtimeCookie(&authDom.Session{}))
 
 	return c.SendStatus(fiber.StatusNoContent)
 }
