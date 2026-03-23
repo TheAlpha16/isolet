@@ -11,7 +11,7 @@ config :pulse,
   generators: [timestamp_type: :utc_datetime],
   # Kafka defaults
   kafka_brokers: [{"localhost", 9092}],
-  kafka_topic: "notifications",
+  kafka_topic: "herald.notifications",
   kafka_group_id: "pulse",
   kafka_client_id: :pulse_kafka_client,
   # Redis defaults
