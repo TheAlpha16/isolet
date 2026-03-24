@@ -11,12 +11,32 @@ defmodule Pulse.Application do
 
     kafka_client_id = Pulse.Kafka.Config.client_id()
 
+    pubsub_config =
+      case Application.get_env(:pulse, :pubsub_adapter, :redis) do
+        :redis ->
+          node_name =
+            System.get_env("HOSTNAME") ||
+              System.get_env("POD_NAME") ||
+              "pulse_#{:erlang.phash2(Node.self())}"
+
+          [
+            name: Pulse.PubSub,
+            adapter: Phoenix.PubSub.Redis,
+            url: redis_url,
+            node_name: node_name
+          ]
+
+        :local ->
+          [name: Pulse.PubSub]
+      end
+
     children = [
       PulseWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:pulse, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: Pulse.PubSub},
-      # Redis — must start before the endpoint so session validation is available
+      # Redis — must start before PubSub and endpoint
       {Redix, {redis_url, [name: :redix]}},
+      # Redis-backed PubSub for cluster-wide event distribution across pods
+      {Phoenix.PubSub, pubsub_config},
       # Kafka client — must use map-based child spec for :brod_client
       %{
         id: kafka_client_id,

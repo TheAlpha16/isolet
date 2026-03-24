@@ -20,5 +20,8 @@ config :phoenix,
 # Redis (local default for tests)
 config :pulse, redis_url: "redis://localhost:6379"
 
+# Use local PubSub adapter for tests (no Redis dependency)
+config :pulse, pubsub_adapter: :local
+
 # JWT (test secret)
 config :pulse, jwt_secret: "trustmebro"
