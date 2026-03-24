@@ -43,10 +43,11 @@ var _ = Describe("Instance Webhook", func() {
 			},
 			Spec: challengesv1.InstanceSpec{
 				Challenge: challengesv1.Challenge{
-					ID:    1,
-					Slug:  "test-challenge",
-					Type:  challengesv1.ChallengeTypeDynamic,
-					Image: "nginx:latest",
+					ID:     1,
+					Slug:   "test-challenge",
+					Type:   challengesv1.ChallengeTypeDynamic,
+					Image:  "nginx:latest",
+					Domain: "isolet.dev",
 				},
 			},
 		}
@@ -106,6 +107,20 @@ var _ = Describe("Instance Webhook", func() {
 	})
 
 	Context("When creating Instance under Validating Webhook", func() {
+		It("Should reject missing domain", func() {
+			By("Creating an instance without a domain")
+			obj := createValidInstance()
+			obj.Spec.Challenge.Domain = ""
+
+			By("Validating the instance")
+			warnings, err := validator.ValidateCreate(ctx, obj)
+
+			By("Checking that validation fails for missing domain")
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("challenge.domain is required"))
+			Expect(warnings).To(BeNil())
+		})
+
 		It("Should accept valid dynamic challenge instance", func() {
 			By("Creating a valid dynamic challenge instance")
 			obj := createValidInstance()
@@ -161,6 +176,23 @@ var _ = Describe("Instance Webhook", func() {
 			By("Checking that validation fails for duplicate names")
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("duplicate endpoint name: web"))
+			Expect(warnings).To(BeNil())
+		})
+
+		It("Should reject duplicate endpoint target ports", func() {
+			By("Creating an instance with duplicate target ports")
+			obj := createValidInstance()
+			obj.Spec.Endpoints = []challengesv1.EndpointSpec{
+				{Name: "http", Protocol: challengesv1.ProtocolHTTP, TargetPort: 8080},
+				{Name: "alt", Protocol: challengesv1.ProtocolHTTPS, TargetPort: 8080},
+			}
+
+			By("Validating the instance")
+			warnings, err := validator.ValidateCreate(ctx, obj)
+
+			By("Checking that validation fails for duplicate target ports")
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("duplicate endpoint targetPort: 8080"))
 			Expect(warnings).To(BeNil())
 		})
 
@@ -386,6 +418,21 @@ var _ = Describe("Instance Webhook", func() {
 			By("Checking that validation fails for immutable field")
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("challenge.image is immutable"))
+			Expect(warnings).To(BeNil())
+		})
+
+		It("Should reject challenge.domain change", func() {
+			By("Creating instances with different challenge domains")
+			oldObj := createValidInstance()
+			newObj := createValidInstance()
+			newObj.Spec.Challenge.Domain = "other.dev"
+
+			By("Validating the update")
+			warnings, err := validator.ValidateUpdate(ctx, oldObj, newObj)
+
+			By("Checking that validation fails for immutable domain")
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("challenge.domain is immutable"))
 			Expect(warnings).To(BeNil())
 		})
 
