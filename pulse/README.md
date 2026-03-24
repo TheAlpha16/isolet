@@ -59,7 +59,7 @@ In Kubernetes with multiple Pulse pods:
 
 This architecture ensures:
 
-- ✅ No missed events across pods
+- ✅ No missed events due to clients being connected to different pods (while pods are healthy/connected)
 - ✅ Horizontal scalability
 - ✅ Works in Kubernetes without node discovery
 - ✅ Clean separation: Kafka for ingestion, PubSub for distribution
