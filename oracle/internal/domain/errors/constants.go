@@ -125,6 +125,10 @@ const (
 
 	// Fact errors
 	ErrFactDeserialization ErrorCode = "FACT-00"
+
+	// Event errors
+	ErrEventNotStarted ErrorCode = "EVENT-00"
+	ErrEventEnded      ErrorCode = "EVENT-01"
 )
 
 // Map of error codes to user-facing messages
