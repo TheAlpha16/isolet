@@ -5,6 +5,18 @@ defmodule PulseWeb.Router do
     plug(:accepts, ["json"])
   end
 
+  pipeline :dashboard do
+    plug(Plug.Session,
+      store: :cookie,
+      key: "_pulse_key",
+      signing_salt: "z451qUF9",
+      same_site: "Lax"
+    )
+
+    plug(:fetch_session)
+    plug(:protect_from_forgery)
+  end
+
   scope "/api", PulseWeb do
     pipe_through(:api)
 
@@ -21,7 +33,7 @@ defmodule PulseWeb.Router do
     import Phoenix.LiveDashboard.Router
 
     scope "/dev" do
-      pipe_through([:fetch_session, :protect_from_forgery])
+      pipe_through(:dashboard)
 
       live_dashboard("/dashboard", metrics: PulseWeb.Telemetry)
     end
