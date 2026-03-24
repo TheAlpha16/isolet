@@ -125,6 +125,10 @@ const (
 
 	// Fact errors
 	ErrFactDeserialization ErrorCode = "FACT-00"
+
+	// Event errors
+	ErrEventNotStarted ErrorCode = "EVENT-00"
+	ErrEventEnded      ErrorCode = "EVENT-01"
 )
 
 // Map of error codes to user-facing messages
@@ -224,6 +228,10 @@ var msgMap = map[ErrorCode]string{
 
 	// Fact errors
 	ErrFactDeserialization: "failed to deserialize fact",
+
+	// Event errors
+	ErrEventNotStarted: "event has not started yet",
+	ErrEventEnded:      "event has already ended",
 }
 
 // Map of server-side error codes that need to be filtered
@@ -277,6 +285,8 @@ var ForbiddenErrorCodes = map[ErrorCode]struct{}{
 	ErrUserInsufficentRole:       {},
 	ErrTeamRequired:              {},
 	ErrAuthUserBanned:            {},
+	ErrEventNotStarted:           {},
+	ErrEventEnded:                {},
 }
 
 // postgres error codes
