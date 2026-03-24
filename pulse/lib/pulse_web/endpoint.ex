@@ -1,9 +1,6 @@
 defmodule PulseWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :pulse
 
-  # The session will be stored in the cookie and signed,
-  # this means its contents can be read but not tampered with.
-  # Set :encryption_salt if you would also like to encrypt it.
   @session_options [
     store: :cookie,
     key: "_pulse_key",
@@ -21,8 +18,6 @@ defmodule PulseWeb.Endpoint do
     longpoll: false
   )
 
-  # Code reloading can be explicitly enabled under the
-  # :code_reloader configuration of your endpoint.
   if code_reloading? do
     plug(Phoenix.CodeReloader)
   end
