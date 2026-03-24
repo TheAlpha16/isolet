@@ -285,6 +285,8 @@ var ForbiddenErrorCodes = map[ErrorCode]struct{}{
 	ErrUserInsufficentRole:       {},
 	ErrTeamRequired:              {},
 	ErrAuthUserBanned:            {},
+	ErrEventNotStarted:           {},
+	ErrEventEnded:                {},
 }
 
 // postgres error codes
