@@ -1,8 +1,11 @@
 package middleware
 
-import "github.com/gofiber/fiber/v2"
+import (
+	cvDom "github.com/TheAlpha16/isolet/oracle/internal/domain/configvars"
+	"github.com/gofiber/fiber/v2"
+)
 
-func CheckTimingsMiddleware() fiber.Handler {
+func CheckTimingsMiddleware(cvUc cvDom.Usecase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		return c.Next()
 	}
