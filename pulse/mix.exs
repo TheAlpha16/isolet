@@ -52,7 +52,9 @@ defmodule Pulse.MixProject do
       {:joken, "~> 2.6"},
       {:jose, "~> 1.11"},
       # Redis
-      {:redix, "~> 1.5"}
+      {:redix, "~> 1.5"},
+      # Redis-backed PubSub for multi-pod event distribution
+      {:phoenix_pubsub_redis, "~> 3.0"}
     ]
   end
 
