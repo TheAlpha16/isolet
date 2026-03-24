@@ -228,6 +228,10 @@ var msgMap = map[ErrorCode]string{
 
 	// Fact errors
 	ErrFactDeserialization: "failed to deserialize fact",
+
+	// Event errors
+	ErrEventNotStarted: "event has not started yet",
+	ErrEventEnded:      "event has already ended",
 }
 
 // Map of server-side error codes that need to be filtered
