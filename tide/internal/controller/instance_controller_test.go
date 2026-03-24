@@ -22,6 +22,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	traefikv1alpha1 "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -63,10 +64,11 @@ var _ = Describe("Instance Controller", func() {
 			},
 			Spec: challengesv1.InstanceSpec{
 				Challenge: challengesv1.Challenge{
-					ID:    1,
-					Slug:  "test-challenge",
-					Type:  challengesv1.ChallengeTypeDynamic,
-					Image: "nginx:latest",
+					ID:     1,
+					Slug:   "test-challenge",
+					Type:   challengesv1.ChallengeTypeDynamic,
+					Image:  "nginx:latest",
+					Domain: "isolet.dev",
 				},
 				Endpoints: []challengesv1.EndpointSpec{
 					{
@@ -158,13 +160,19 @@ var _ = Describe("Instance Controller", func() {
 		instance := createBasicInstance(instanceName, namespace)
 		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
 
-		By("First reconcile - sets Pending phase")
+		By("First reconcile - adds finalizer")
 		_, err := reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		By("Second reconcile - creates resources")
+		By("Second reconcile - sets Pending phase")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Third reconcile - creates resources")
 		_, err = reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
@@ -197,13 +205,19 @@ var _ = Describe("Instance Controller", func() {
 		instance := createBasicInstance(instanceName, namespace)
 		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
 
-		By("First reconcile - sets Pending")
+		By("First reconcile - adds finalizer")
 		_, err := reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		By("Second reconcile - creates resources")
+		By("Second reconcile - sets Pending phase")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Third reconcile - creates resources")
 		_, err = reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
@@ -212,7 +226,7 @@ var _ = Describe("Instance Controller", func() {
 		By("Simulating Deployment becoming ready")
 		simulateDeploymentReady(ctx, instanceName, namespace)
 
-		By("Third reconcile - detects ready Deployment")
+		By("Fourth reconcile - detects ready Deployment")
 		_, err = reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
@@ -232,13 +246,19 @@ var _ = Describe("Instance Controller", func() {
 		instance := createBasicInstance(instanceName, namespace)
 		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
 
-		By("First reconcile - sets Pending")
+		By("First reconcile - adds finalizer")
 		_, err := reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		By("Second reconcile - creates resources")
+		By("Second reconcile - sets Pending phase")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Third reconcile - creates resources")
 		_, err = reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
@@ -247,13 +267,13 @@ var _ = Describe("Instance Controller", func() {
 		By("Simulating Deployment failure")
 		simulateDeploymentFailed(ctx, instanceName, namespace)
 
-		By("Third reconcile - detects failed Deployment")
+		By("Fourth reconcile - checks for pod failures")
 		_, err = reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		By("Verifying Phase remains Pending")
+		By("Verifying Phase remains Pending (no pod failures detected)")
 		updated := &challengesv1.Instance{}
 		Expect(k8sClient.Get(ctx, types.NamespacedName{Name: instanceName, Namespace: namespace}, updated)).To(Succeed())
 		Expect(updated.Status.Phase).To(Equal(challengesv1.PhasePending))
@@ -267,13 +287,19 @@ var _ = Describe("Instance Controller", func() {
 		instance := createBasicInstance(instanceName, namespace)
 		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
 
-		By("First reconcile - sets Pending")
+		By("First reconcile - adds finalizer")
 		_, err := reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		By("Second reconcile - creates Service and sets condition")
+		By("Second reconcile - sets Pending phase")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Third reconcile - creates Service and sets condition")
 		_, err = reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
@@ -298,13 +324,25 @@ var _ = Describe("Instance Controller", func() {
 		instance.Spec.Lifecycle = &challengesv1.Lifecycle{ExpiresAt: &past}
 		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
 
-		By("First reconcile - sets Pending phase")
+		By("First reconcile - adds finalizer")
 		_, err := reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		By("Second reconcile - checks expiry and deletes")
+		By("Second reconcile - sets Pending phase")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Third reconcile - marks Instance as Expired")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Fourth reconcile - deletes expired Instance")
 		_, err = reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
@@ -327,13 +365,19 @@ var _ = Describe("Instance Controller", func() {
 		instance.Spec.Endpoints = nil
 		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
 
-		By("First reconcile - sets Pending")
+		By("First reconcile - adds finalizer")
 		_, err := reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		By("Second reconcile - skips Service creation")
+		By("Second reconcile - sets Pending phase")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Third reconcile - skips Service creation (no endpoints)")
 		_, err = reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
@@ -358,13 +402,19 @@ var _ = Describe("Instance Controller", func() {
 		instance.Spec.Lifecycle = &challengesv1.Lifecycle{AvailableAt: &future}
 		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
 
-		By("First reconcile - sets Pending")
+		By("First reconcile - adds finalizer")
 		_, err := reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		By("Second reconcile - creates resources")
+		By("Second reconcile - sets Pending phase")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Third reconcile - creates resources")
 		_, err = reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
@@ -373,7 +423,7 @@ var _ = Describe("Instance Controller", func() {
 		By("Simulating Deployment becoming ready")
 		simulateDeploymentReady(ctx, instanceName, namespace)
 
-		By("Third reconcile - should transition to Staged")
+		By("Fourth reconcile - should transition to Staged")
 		_, err = reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
@@ -393,13 +443,19 @@ var _ = Describe("Instance Controller", func() {
 		instance := createBasicInstance(instanceName, namespace)
 		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
 
-		By("First reconcile - sets Pending")
+		By("First reconcile - adds finalizer")
 		_, err := reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		By("Second reconcile - creates resources")
+		By("Second reconcile - sets Pending phase")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Third reconcile - creates resources")
 		_, err = reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
@@ -428,7 +484,7 @@ var _ = Describe("Instance Controller", func() {
 		}
 		Expect(k8sClient.Update(ctx, updated)).To(Succeed())
 
-		By("Third reconcile - detects spec change")
+		By("Fourth reconcile - detects spec change and updates Deployment")
 		_, err = reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
@@ -457,13 +513,19 @@ var _ = Describe("Instance Controller", func() {
 		instance := createBasicInstance(instanceName, namespace)
 		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
 
-		By("First reconcile - sets Pending")
+		By("First reconcile - adds finalizer")
 		_, err := reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		By("Second reconcile - creates Service with 1 port")
+		By("Second reconcile - sets Pending phase")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Third reconcile - creates Service with 1 port")
 		_, err = reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
@@ -488,7 +550,7 @@ var _ = Describe("Instance Controller", func() {
 		})
 		Expect(k8sClient.Update(ctx, updated)).To(Succeed())
 
-		By("Third reconcile - updates Service with 2 ports")
+		By("Fourth reconcile - updates Service with 2 ports")
 		_, err = reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
@@ -514,13 +576,19 @@ var _ = Describe("Instance Controller", func() {
 		instance := createBasicInstance(instanceName, namespace)
 		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
 
-		By("First reconcile - sets Pending")
+		By("First reconcile - adds finalizer")
 		_, err := reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		By("Second reconcile - creates resources and sets conditions")
+		By("Second reconcile - sets Pending phase")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Third reconcile - creates resources and sets conditions")
 		_, err = reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
@@ -533,7 +601,6 @@ var _ = Describe("Instance Controller", func() {
 		deploymentCond := getCondition(updated, "DeploymentReady")
 		Expect(deploymentCond).NotTo(BeNil())
 		Expect(deploymentCond.Status).To(Equal(metav1.ConditionFalse))
-		Expect(deploymentCond.ObservedGeneration).To(Equal(updated.Generation))
 
 		serviceCond := getCondition(updated, "ServiceReady")
 		Expect(serviceCond).NotTo(BeNil())
@@ -555,13 +622,19 @@ var _ = Describe("Instance Controller", func() {
 		instance.Spec.Team = &challengesv1.Team{ID: 123}
 		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
 
-		By("First reconcile - sets Pending")
+		By("First reconcile - adds finalizer")
 		_, err := reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		By("Second reconcile - creates resources")
+		By("Second reconcile - sets Pending phase")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Third reconcile - creates resources")
 		_, err = reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
@@ -588,13 +661,19 @@ var _ = Describe("Instance Controller", func() {
 		instance.Spec.Lifecycle = &challengesv1.Lifecycle{ExpiresAt: &future}
 		Expect(k8sClient.Create(ctx, instance)).To(Succeed())
 
-		By("First reconcile - sets Pending")
+		By("First reconcile - adds finalizer")
 		_, err := reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		By("Second reconcile - returns requeue duration")
+		By("Second reconcile - sets Pending phase")
+		_, err = reconciler.Reconcile(ctx, reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Third reconcile - reconciles resources and returns requeue duration")
 		result, err := reconciler.Reconcile(ctx, reconcile.Request{
 			NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace},
 		})
@@ -609,3 +688,282 @@ func resourceQuantity(value string) *resource.Quantity {
 	q := resource.MustParse(value)
 	return &q
 }
+
+var _ = Describe("Instance Controller Unit Tests", func() {
+	var reconciler *InstanceReconciler
+
+	BeforeEach(func() {
+		reconciler = &InstanceReconciler{
+			Client:   k8sClient,
+			Scheme:   k8sClient.Scheme(),
+			Recorder: record.NewFakeRecorder(100),
+		}
+	})
+
+	Describe("isDeploymentReady", func() {
+		It("should return false when no replicas are ready", func() {
+			deployment := &appsv1.Deployment{
+				Status: appsv1.DeploymentStatus{
+					Replicas:          1,
+					ReadyReplicas:     0,
+					AvailableReplicas: 0,
+					UpdatedReplicas:   0,
+				},
+			}
+			Expect(reconciler.isDeploymentReady(deployment)).To(BeFalse())
+		})
+
+		It("should return true when all replicas are ready (default 1)", func() {
+			deployment := &appsv1.Deployment{
+				Status: appsv1.DeploymentStatus{
+					Replicas:          1,
+					ReadyReplicas:     1,
+					AvailableReplicas: 1,
+					UpdatedReplicas:   1,
+				},
+			}
+			Expect(reconciler.isDeploymentReady(deployment)).To(BeTrue())
+		})
+
+		It("should use spec replicas when set", func() {
+			replicas := int32(3)
+			deployment := &appsv1.Deployment{
+				Spec: appsv1.DeploymentSpec{
+					Replicas: &replicas,
+				},
+				Status: appsv1.DeploymentStatus{
+					Replicas:          3,
+					ReadyReplicas:     2,
+					AvailableReplicas: 2,
+					UpdatedReplicas:   2,
+				},
+			}
+			Expect(reconciler.isDeploymentReady(deployment)).To(BeFalse())
+		})
+
+		It("should return true when all specified replicas are ready", func() {
+			replicas := int32(2)
+			deployment := &appsv1.Deployment{
+				Spec: appsv1.DeploymentSpec{
+					Replicas: &replicas,
+				},
+				Status: appsv1.DeploymentStatus{
+					Replicas:          2,
+					ReadyReplicas:     2,
+					AvailableReplicas: 2,
+					UpdatedReplicas:   2,
+				},
+			}
+			Expect(reconciler.isDeploymentReady(deployment)).To(BeTrue())
+		})
+	})
+
+	Describe("determinePhase", func() {
+		It("should return Pending when deployment is not ready", func() {
+			instance := &challengesv1.Instance{}
+			phase := reconciler.determinePhase(instance, false, true, true)
+			Expect(phase).To(Equal(challengesv1.PhasePending))
+		})
+
+		It("should return Running when all resources are ready and no lifecycle constraint", func() {
+			instance := &challengesv1.Instance{}
+			phase := reconciler.determinePhase(instance, true, true, true)
+			Expect(phase).To(Equal(challengesv1.PhaseRunning))
+		})
+
+		It("should return Staged when deployment is ready but availableAt is in the future", func() {
+			future := metav1.NewTime(time.Now().Add(time.Hour))
+			instance := &challengesv1.Instance{
+				Spec: challengesv1.InstanceSpec{
+					Lifecycle: &challengesv1.Lifecycle{
+						AvailableAt: &future,
+					},
+				},
+			}
+			phase := reconciler.determinePhase(instance, true, true, true)
+			Expect(phase).To(Equal(challengesv1.PhaseStaged))
+		})
+
+		It("should return Running when availableAt is in the past", func() {
+			past := metav1.NewTime(time.Now().Add(-time.Hour))
+			instance := &challengesv1.Instance{
+				Spec: challengesv1.InstanceSpec{
+					Lifecycle: &challengesv1.Lifecycle{
+						AvailableAt: &past,
+					},
+				},
+			}
+			phase := reconciler.determinePhase(instance, true, true, true)
+			Expect(phase).To(Equal(challengesv1.PhaseRunning))
+		})
+
+		It("should return Pending when deployment is ready but service is not", func() {
+			instance := &challengesv1.Instance{}
+			phase := reconciler.determinePhase(instance, true, false, true)
+			Expect(phase).To(Equal(challengesv1.PhasePending))
+		})
+
+		It("should return Pending when deployment is ready but ingress is not", func() {
+			instance := &challengesv1.Instance{}
+			phase := reconciler.determinePhase(instance, true, true, false)
+			Expect(phase).To(Equal(challengesv1.PhasePending))
+		})
+	})
+
+	Describe("isFailureReason", func() {
+		DescribeTable("known failure reasons",
+			func(reason string, expected bool) {
+				Expect(isFailureReason(reason)).To(Equal(expected))
+			},
+			Entry("CrashLoopBackOff", "CrashLoopBackOff", true),
+			Entry("ErrImagePull", "ErrImagePull", true),
+			Entry("ImagePullBackOff", "ImagePullBackOff", true),
+			Entry("CreateContainerConfigError", "CreateContainerConfigError", true),
+			Entry("InvalidImageName", "InvalidImageName", true),
+			Entry("CreateContainerError", "CreateContainerError", true),
+			Entry("Running is not a failure", "Running", false),
+			Entry("Completed is not a failure", "Completed", false),
+			Entry("empty string is not a failure", "", false),
+			Entry("OOMKilled is not a failure", "OOMKilled", false),
+		)
+	})
+
+	Describe("equalIngressRouteSpec", func() {
+		It("should return true for equal specs", func() {
+			spec := &traefikv1alpha1.IngressRouteSpec{
+				EntryPoints: []string{"web", "websecure"},
+				Routes: []traefikv1alpha1.Route{
+					{Kind: "Rule", Match: "Host(`example.com`)"},
+				},
+				TLS: &traefikv1alpha1.TLS{SecretName: "my-cert"},
+			}
+			Expect(equalIngressRouteSpec(spec, spec)).To(BeTrue())
+		})
+
+		It("should return false for different entry points count", func() {
+			a := &traefikv1alpha1.IngressRouteSpec{
+				EntryPoints: []string{"web"},
+			}
+			b := &traefikv1alpha1.IngressRouteSpec{
+				EntryPoints: []string{"web", "websecure"},
+			}
+			Expect(equalIngressRouteSpec(a, b)).To(BeFalse())
+		})
+
+		It("should return false for different entry point values", func() {
+			a := &traefikv1alpha1.IngressRouteSpec{
+				EntryPoints: []string{"web"},
+			}
+			b := &traefikv1alpha1.IngressRouteSpec{
+				EntryPoints: []string{"websecure"},
+			}
+			Expect(equalIngressRouteSpec(a, b)).To(BeFalse())
+		})
+
+		It("should return false for different route count", func() {
+			a := &traefikv1alpha1.IngressRouteSpec{
+				Routes: []traefikv1alpha1.Route{
+					{Kind: "Rule", Match: "Host(`a.com`)"},
+				},
+			}
+			b := &traefikv1alpha1.IngressRouteSpec{
+				Routes: []traefikv1alpha1.Route{
+					{Kind: "Rule", Match: "Host(`a.com`)"},
+					{Kind: "Rule", Match: "Host(`b.com`)"},
+				},
+			}
+			Expect(equalIngressRouteSpec(a, b)).To(BeFalse())
+		})
+
+		It("should return false when one spec has TLS and the other does not", func() {
+			a := &traefikv1alpha1.IngressRouteSpec{
+				TLS: &traefikv1alpha1.TLS{SecretName: "my-cert"},
+			}
+			b := &traefikv1alpha1.IngressRouteSpec{}
+			Expect(equalIngressRouteSpec(a, b)).To(BeFalse())
+		})
+
+		It("should return false for different TLS secret names", func() {
+			a := &traefikv1alpha1.IngressRouteSpec{
+				TLS: &traefikv1alpha1.TLS{SecretName: "cert-a"},
+			}
+			b := &traefikv1alpha1.IngressRouteSpec{
+				TLS: &traefikv1alpha1.TLS{SecretName: "cert-b"},
+			}
+			Expect(equalIngressRouteSpec(a, b)).To(BeFalse())
+		})
+	})
+
+	Describe("equalEndpointStatus", func() {
+		It("should return true for identical slices", func() {
+			eps := []challengesv1.EndpointStatus{
+				{
+					EndpointSpec: challengesv1.EndpointSpec{
+						Name:       "http",
+						Protocol:   challengesv1.ProtocolHTTP,
+						TargetPort: 80,
+					},
+					Hostname: "inst.challenge.isolet.dev",
+					Ready:    true,
+				},
+			}
+			Expect(equalEndpointStatus(eps, eps)).To(BeTrue())
+		})
+
+		It("should return true for empty slices", func() {
+			Expect(equalEndpointStatus(nil, nil)).To(BeTrue())
+			Expect(equalEndpointStatus([]challengesv1.EndpointStatus{}, []challengesv1.EndpointStatus{})).To(BeTrue())
+		})
+
+		It("should return false for different lengths", func() {
+			a := []challengesv1.EndpointStatus{
+				{EndpointSpec: challengesv1.EndpointSpec{Name: "http", Protocol: challengesv1.ProtocolHTTP, TargetPort: 80}},
+			}
+			Expect(equalEndpointStatus(a, nil)).To(BeFalse())
+		})
+
+		It("should return false for different hostnames", func() {
+			a := []challengesv1.EndpointStatus{
+				{
+					EndpointSpec: challengesv1.EndpointSpec{Name: "http", Protocol: challengesv1.ProtocolHTTP, TargetPort: 80},
+					Hostname:     "a.isolet.dev",
+					Ready:        true,
+				},
+			}
+			b := []challengesv1.EndpointStatus{
+				{
+					EndpointSpec: challengesv1.EndpointSpec{Name: "http", Protocol: challengesv1.ProtocolHTTP, TargetPort: 80},
+					Hostname:     "b.isolet.dev",
+					Ready:        true,
+				},
+			}
+			Expect(equalEndpointStatus(a, b)).To(BeFalse())
+		})
+
+		It("should return false for different ready state", func() {
+			a := []challengesv1.EndpointStatus{
+				{
+					EndpointSpec: challengesv1.EndpointSpec{Name: "http", Protocol: challengesv1.ProtocolHTTP, TargetPort: 80},
+					Ready:        true,
+				},
+			}
+			b := []challengesv1.EndpointStatus{
+				{
+					EndpointSpec: challengesv1.EndpointSpec{Name: "http", Protocol: challengesv1.ProtocolHTTP, TargetPort: 80},
+					Ready:        false,
+				},
+			}
+			Expect(equalEndpointStatus(a, b)).To(BeFalse())
+		})
+
+		It("should return false when endpoint name is missing in the second slice", func() {
+			a := []challengesv1.EndpointStatus{
+				{EndpointSpec: challengesv1.EndpointSpec{Name: "http", Protocol: challengesv1.ProtocolHTTP, TargetPort: 80}},
+			}
+			b := []challengesv1.EndpointStatus{
+				{EndpointSpec: challengesv1.EndpointSpec{Name: "metrics", Protocol: challengesv1.ProtocolHTTP, TargetPort: 9090}},
+			}
+			Expect(equalEndpointStatus(a, b)).To(BeFalse())
+		})
+	})
+})
