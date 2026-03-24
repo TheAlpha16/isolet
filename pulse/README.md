@@ -228,7 +228,8 @@ In production/dev, the Redis adapter is used by default:
 pubsub_config = [
   name: Pulse.PubSub,
   adapter: Phoenix.PubSub.Redis,
-  url: redis_url
+  url: redis_url,
+  node_name: System.get_env("PULSE_NODE_NAME") || "pulse_node_1"
 ]
 ```
 
