@@ -17,7 +17,10 @@ defmodule Pulse.Application do
           node_name =
             System.get_env("HOSTNAME") ||
               System.get_env("POD_NAME") ||
-              "pulse_#{:erlang.phash2(Node.self())}"
+              "pulse_#{to_string(:os.getpid())}_#{:erlang.unique_integer([:positive, :monotonic])}"
+
+          require Logger
+          Logger.info("Using Redis PubSub adapter with node name: #{node_name}")
 
           [
             name: Pulse.PubSub,
