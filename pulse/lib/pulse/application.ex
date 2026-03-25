@@ -19,6 +19,9 @@ defmodule Pulse.Application do
               System.get_env("POD_NAME") ||
               "pulse_#{to_string(:os.getpid())}_#{:erlang.unique_integer([:positive, :monotonic])}"
 
+          require Logger
+          Logger.info("Using Redis PubSub adapter with node name: #{node_name}")
+
           [
             name: Pulse.PubSub,
             adapter: Phoenix.PubSub.Redis,
