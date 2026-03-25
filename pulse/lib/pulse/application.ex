@@ -36,18 +36,13 @@ defmodule Pulse.Application do
     children = [
       PulseWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:pulse, :dns_cluster_query) || :ignore},
-      # Redis — must start before PubSub and endpoint
       {Redix, {redis_url, [name: :redix]}},
-      # Redis-backed PubSub for cluster-wide event distribution across pods
       {Phoenix.PubSub, pubsub_config},
-      # Kafka client — must use map-based child spec for :brod_client
       %{
         id: kafka_client_id,
         start: {:brod_client, :start_link, [kafka_brokers, kafka_client_id, kafka_client_config]}
       },
-      # Kafka consumer
       {Pulse.Kafka.Consumer, []},
-      # Start to serve requests, typically the last entry
       PulseWeb.Endpoint
     ]
 
@@ -55,8 +50,6 @@ defmodule Pulse.Application do
     Supervisor.start_link(children, opts)
   end
 
-  # Tell Phoenix to update the endpoint configuration
-  # whenever the application is updated.
   @impl true
   def config_change(changed, _new, removed) do
     PulseWeb.Endpoint.config_change(changed, removed)

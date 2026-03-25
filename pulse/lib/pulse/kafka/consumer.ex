@@ -71,7 +71,6 @@ defmodule Pulse.Kafka.Consumer do
           "Failed to process Kafka message on #{topic}:#{partition}. Reason: #{inspect(reason)}"
         )
 
-        # We ack even on error to avoid blocking the partition infinitely.
         {:ok, :ack, state}
     end
   end
@@ -95,7 +94,6 @@ defmodule Pulse.Kafka.Consumer do
 
   defp process_message(message), do: decode_and_broadcast(message)
 
-  # Newer brod versions include headers in the kafka message tuple.
   defp decode_and_broadcast({:kafka_message, _offset, _key, value, _ts_type, _ts, _headers}) do
     decode_payload_and_broadcast(value)
   end
