@@ -65,7 +65,7 @@ bump RESOURCE LEVEL:
 	echo $NEW > {{RESOURCE}}/VERSION
 	echo "Bumped {{RESOURCE}} version: $OLD → $NEW"
 	git add {{RESOURCE}}/VERSION
-	git commit -m "chore[{{RESOURCE}}]: bump version to $NEW"
+	git commit -m "chore({{RESOURCE}}): bump version to $NEW"
 
 # Build all services
 build-all:

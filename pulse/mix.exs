@@ -14,9 +14,6 @@ defmodule Pulse.MixProject do
     ]
   end
 
-  # Configuration for the OTP application.
-  #
-  # Type `mix help compile.app` for more information.
   def application do
     [
       mod: {Pulse.Application, []},
@@ -30,13 +27,9 @@ defmodule Pulse.MixProject do
     ]
   end
 
-  # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
-  # Specifies your project dependencies.
-  #
-  # Type `mix help deps` for examples and options.
   defp deps do
     [
       {:phoenix, "~> 1.8.5"},
@@ -46,22 +39,14 @@ defmodule Pulse.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
-      # Kafka
       {:brod, "~> 3.19"},
-      # JWT
       {:joken, "~> 2.6"},
       {:jose, "~> 1.11"},
-      # Redis
-      {:redix, "~> 1.5"}
+      {:redix, "~> 1.5"},
+      {:phoenix_pubsub_redis, "~> 3.0"}
     ]
   end
 
-  # Aliases are shortcuts or tasks specific to the current project.
-  # For example, to install project dependencies and perform other setup tasks, run:
-  #
-  #     $ mix setup
-  #
-  # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
       setup: ["deps.get"],
