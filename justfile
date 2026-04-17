@@ -21,23 +21,35 @@ help:
 
 # --- Common commands ---
 
-# Ensure a multi-platform buildx builder exists
-setup-builder:
+# Set up a multi-platform buildx builder.
+# Optionally pass a CA cert path to trust during builds (for TLS-intercepting corporate proxies):
+#   just setup-builder /path/to/ca.pem
+setup-builder CERT="":
 	#!/usr/bin/env bash
-	if docker buildx inspect isolet-builder > /dev/null 2>&1; then
-		echo "[#] buildx builder 'isolet-builder' already exists"
-	else
-		docker buildx create --name isolet-builder --use --driver docker-container --bootstrap
+	set -euo pipefail
+	if ! docker buildx inspect isolet-builder > /dev/null 2>&1; then
+		docker buildx create --name isolet-builder --driver docker-container --bootstrap --use
 		echo "[#] created buildx builder 'isolet-builder'"
+	else
+		docker buildx inspect --bootstrap isolet-builder > /dev/null
+		docker buildx use isolet-builder
 	fi
-	docker buildx use isolet-builder
+	if [ -n "{{CERT}}" ] && [ -f "{{CERT}}" ]; then
+		CONTAINER="buildx_buildkit_isolet-builder0"
+		echo "[#] installing CA cert into buildx builder"
+		docker cp "{{CERT}}" "$CONTAINER:/usr/local/share/ca-certificates/extra.crt"
+		docker exec "$CONTAINER" sh -c "apk add --no-cache ca-certificates > /dev/null 2>&1; update-ca-certificates > /dev/null"
+		docker restart "$CONTAINER" > /dev/null
+		sleep 2
+		echo "[#] builder ready with CA cert"
+	fi
 
-# Build and push the docker image (linux/amd64 + linux/arm64)
-# Optionally pass a path to a CA cert to trust during build: just docker-build oracle "" /path/to/ca.pem
+# Build and push the docker image (linux/amd64 + linux/arm64).
+# Optionally pass a CA cert path to trust during builds: just docker-build oracle "" /path/to/ca.pem
 docker-build RESOURCE TAG="" CERT="":
 	#!/usr/bin/env bash
 	set -euo pipefail
-	just setup-builder
+	just setup-builder {{CERT}}
 	cd {{RESOURCE}}
 	if [ -z "{{TAG}}" ]; then
 		TAG=$(cat VERSION)
