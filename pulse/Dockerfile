@@ -2,13 +2,15 @@ FROM elixir:1.15-slim AS build
 
 ARG EXTRA_CA_CERT=""
 
+# apt uses HTTP — no TLS cert needed; install ca-certificates so update-ca-certificates is available
+RUN apt-get update -y && apt-get install -y ca-certificates build-essential git \
+    && apt-get clean && rm -f /var/lib/apt/lists/*_*
+
+# Inject extra CA cert before any HTTPS calls (mix deps.get, mix local.hex, etc.)
 RUN if [ -n "$EXTRA_CA_CERT" ]; then \
-        echo "$EXTRA_CA_CERT" >> /etc/ssl/certs/ca-certificates.crt && \
+        echo "$EXTRA_CA_CERT" > /usr/local/share/ca-certificates/extra.crt && \
         update-ca-certificates; \
     fi
-
-RUN apt-get update -y && apt-get install -y build-essential git \
-    && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
 WORKDIR /app
 
