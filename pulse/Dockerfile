@@ -16,6 +16,10 @@ RUN if [ -n "$EXTRA_CA_CERT" ]; then \
 # prepare build dir
 WORKDIR /app
 
+# Under QEMU (cross-platform builds), Erlang's multi-scheduler can cause
+# module-loading race conditions. +S 1 forces single-threaded compilation.
+ENV ELIXIR_ERL_OPTIONS="+S 1"
+
 # rebar3 is needed to compile erlang deps (brod); hex is already installed in the base image
 RUN mix local.rebar --force
 
