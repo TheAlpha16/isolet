@@ -1,4 +1,4 @@
-FROM elixir:1.15-slim AS build
+FROM elixir:1.17-slim AS build
 
 ARG EXTRA_CA_CERT=""
 
