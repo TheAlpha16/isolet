@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,10 +10,11 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LoadingButton } from "@/components/ui/loading-button";
+import { PasswordInput } from "@/components/ui/password-input";
 import useTeamOnboard, { ActionType } from "@/hooks/useTeamOnboard";
 import { useProfileStore } from "@/store";
 import { UI_ROUTES } from "@/utils/routes";
-import { Eye, EyeClosed, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -22,7 +22,6 @@ export default function TeamInit() {
   const [teamname, setTeamName] = useState("");
   const [password, setPassword] = useState("");
   const { loading, teamOnboard } = useTeamOnboard();
-  const [showPasswd, setShowPasswd] = useState(false);
   const router = useRouter();
   const { fetchMe } = useProfileStore();
 
@@ -49,64 +48,46 @@ export default function TeamInit() {
               type="text"
               placeholder="teamname"
               name="teamname"
-              autoComplete="teamname"
-              onChange={(event) => {
-                setTeamName(event.target.value);
-              }}
+              autoComplete="off"
+              onChange={(event) => setTeamName(event.target.value)}
               required
             />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPasswd ? "text" : "password"}
-                placeholder="password"
-                name="password"
-                autoComplete="current-password"
-                onChange={(event) => {
-                  setPassword(event.target.value);
-                }}
-                className="pr-10"
-                required
-              />
-              <Button
-                variant={"ghost"}
-                size="icon"
-                className="absolute inset-y-0 right-0"
-                onClick={() => setShowPasswd(!showPasswd)}
-              >
-                {showPasswd ? <Eye className="h-5 w-5" /> : <EyeClosed className="h-5 w-5" />}
-              </Button>
-            </div>
+            <PasswordInput
+              id="password"
+              name="password"
+              placeholder="password"
+              autoComplete="off"
+              onChange={(event) => setPassword(event.target.value)}
+              required
+            />
           </div>
         </CardContent>
         <CardFooter>
-          <div className="flex gap-2">
-            <Button
+          <div className="flex gap-2 w-full">
+            <LoadingButton
               className="w-full"
+              loading={loading}
               onClick={(event) => {
                 event.preventDefault();
                 onSubmit(ActionType.JOIN);
               }}
-              disabled={loading}
             >
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Join
-            </Button>
-            <Button
+            </LoadingButton>
+            <LoadingButton
               className="w-full"
-              variant={"secondary"}
+              variant="secondary"
+              loading={loading}
               onClick={(event) => {
                 event.preventDefault();
                 onSubmit(ActionType.CREATE);
               }}
-              disabled={loading}
             >
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create
-            </Button>
+            </LoadingButton>
           </div>
         </CardFooter>
       </Card>

@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { generateChartColors } from "@/utils/chartColors";
 import type { CategoryProgress as CategoryProgressType } from "@/models/score";
 import React, { useMemo } from "react";
 
@@ -10,13 +11,8 @@ interface CategoryProgressProps {
   title: string;
 }
 
-const generateColors = (count: number) => {
-  const hueStep = 360 / count;
-  return Array.from({ length: count }, (_, i) => `hsl(${i * hueStep}, 70%, 50%)`);
-};
-
 export function CategoryProgress({ categories, title }: CategoryProgressProps) {
-  const colors = useMemo(() => generateColors(categories.length), [categories.length]);
+  const colors = useMemo(() => generateChartColors(categories.length), [categories.length]);
 
   return (
     <Card>

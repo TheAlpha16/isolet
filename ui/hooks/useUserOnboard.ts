@@ -33,7 +33,7 @@ export default function useUserOnboard() {
         return false;
       }
       return true;
-    } catch (err: any) {
+    } catch {
       return false;
     } finally {
       setLoading(false);

@@ -80,7 +80,7 @@ export default function ProfilePage() {
   const loading = teamLoading || challengeLoading;
 
   return (
-    <div className="container mx-auto p-4 space-y-8">
+    <div className="container p-4 space-y-8">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="user">User</TabsTrigger>
@@ -89,7 +89,7 @@ export default function ProfilePage() {
 
         {/* USER TAB */}
         <TabsContent value="user" className="space-y-4">
-          <UserProfile user={user!} team={team!} score={score} rank={rank} />
+          {user && <UserProfile user={user} team={team ?? null} score={score} rank={rank} />}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {loading ? <ChartSkeleton /> : <SubmissionStats {...userSubmissionStats} />}
             {loading ? (
@@ -102,8 +102,8 @@ export default function ProfilePage() {
 
         {/* TEAM TAB */}
         <TabsContent value="team" className="space-y-4">
-          <TeamProfile team={team!} members={members} score={score} rank={rank} />
-          <TeamManagement user={user!} members={members} />
+          {team && <TeamProfile team={team} members={members} score={score} rank={rank} />}
+          {user && <TeamManagement user={user} members={members} />}
           {loading ? <ChartSkeleton /> : <ScoreGraph data={teamGraph} />}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {loading ? <ChartSkeleton /> : <SubmissionStats {...teamSubmissionStats} />}

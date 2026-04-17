@@ -39,7 +39,7 @@ export default function useTeamOnboard() {
         return false;
       }
       return true;
-    } catch (err: any) {
+    } catch {
       return false;
     } finally {
       setLoading(false);

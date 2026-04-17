@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,24 +8,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import useResetPassword from "@/hooks/useResetPssword";
+import { LoadingButton } from "@/components/ui/loading-button";
+import { PasswordInput } from "@/components/ui/password-input";
+import useResetPassword from "@/hooks/useResetPassword";
 import showToast, { ToastStatus } from "@/utils/toastHelper";
-import { Eye, EyeClosed, Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import React, { useState } from "react";
 
-export default function Register() {
+export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const { loading, resetPassword } = useResetPassword();
-  const [showPasswd, setShowPasswd] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
-  async function onSubmit(event: React.SyntheticEvent) {
+  async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     if (loading) return;
 
@@ -49,62 +46,31 @@ export default function Register() {
           <CardContent className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPasswd ? "text" : "password"}
-                  name="password"
-                  placeholder="password"
-                  autoComplete="new-password"
-                  onChange={(event) => {
-                    setPassword(event.target.value);
-                  }}
-                  className="pr-10"
-                  required
-                />
-                <Button
-                  type="button"
-                  variant={"ghost"}
-                  size="icon"
-                  className="absolute inset-y-0 right-0"
-                  onClick={() => setShowPasswd(!showPasswd)}
-                >
-                  {showPasswd ? <Eye className="h-5 w-5" /> : <EyeClosed className="h-5 w-5" />}
-                </Button>
-              </div>
+              <PasswordInput
+                id="password"
+                name="password"
+                placeholder="password"
+                autoComplete="new-password"
+                onChange={(event) => setPassword(event.target.value)}
+                required
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="confirm-password">Confirm</Label>
-              <div className="relative">
-                <Input
-                  id="confirm-password"
-                  type={showConfirm ? "text" : "password"}
-                  name="confirm-password"
-                  placeholder="confirm password"
-                  autoComplete="on"
-                  onChange={(event) => {
-                    setConfirm(event.target.value);
-                  }}
-                  className="pr-10"
-                  required
-                />
-                <Button
-                  type="button"
-                  variant={"ghost"}
-                  size="icon"
-                  className="absolute inset-y-0 right-0"
-                  onClick={() => setShowConfirm(!showConfirm)}
-                >
-                  {showConfirm ? <Eye className="h-5 w-5" /> : <EyeClosed className="h-5 w-5" />}
-                </Button>
-              </div>
+              <PasswordInput
+                id="confirm-password"
+                name="confirm-password"
+                placeholder="confirm password"
+                autoComplete="new-password"
+                onChange={(event) => setConfirm(event.target.value)}
+                required
+              />
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full" onClick={onSubmit} disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <LoadingButton type="submit" className="w-full" loading={loading}>
               Reset
-            </Button>
+            </LoadingButton>
           </CardFooter>
         </form>
       </Card>

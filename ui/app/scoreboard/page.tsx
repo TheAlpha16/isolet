@@ -3,9 +3,9 @@
 import { ScoreGraph } from "@/components/charts/ScoreGraph";
 import { ScoreGraphSkeleton } from "@/components/skeletons/scoreboard";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PageNavigation } from "@/components/ui/page-navigation";
 import {
   Table,
   TableBody,
@@ -17,15 +17,23 @@ import {
 import { ChartData } from "@/models/score";
 import { useEventStore, useScoreStore } from "@/store";
 import { toChartData } from "@/utils/scoreTransform";
-import { ChevronLeft, ChevronRight, Trophy } from "lucide-react";
+import { Loader2, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Scoreboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [chartData, setChartData] = useState<ChartData>({ labels: [], points: [] });
 
-  const { graphLoading, currentPage, totalPages, scores, graphScores, fetchPage, fetchGraph } =
-    useScoreStore();
+  const {
+    graphLoading,
+    scoresLoading,
+    currentPage,
+    totalPages,
+    scores,
+    graphScores,
+    fetchPage,
+    fetchGraph,
+  } = useScoreStore();
   const {
     info: { event_start },
   } = useEventStore();
@@ -33,15 +41,10 @@ export default function Scoreboard() {
   useEffect(() => {
     fetchPage(currentPage);
     fetchGraph();
-
-    return () => {};
   }, []);
 
   useEffect(() => {
-    const transformedData = toChartData(graphScores);
-    setChartData(transformedData);
-
-    return () => {};
+    setChartData(toChartData(graphScores));
   }, [graphScores, event_start]);
 
   const handlePageChange = async (newPage: number) => {
@@ -53,39 +56,15 @@ export default function Scoreboard() {
     score.team_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const PageNavigation = () => (
-    <div className="flex items-center justify-center gap-1">
-      <Button
-        onClick={() => handlePageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-        variant={"ghost"}
-      >
-        <ChevronLeft className="w-6 h-6" />
-      </Button>
-      <span className="text-sm text-gray-500">
-        Page {currentPage} of {totalPages}
-      </span>
-      <Button
-        onClick={() => handlePageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-        variant={"ghost"}
-      >
-        <ChevronRight className="w-6 h-6" />
-      </Button>
-    </div>
-  );
-
   return (
-    <div className="container mx-auto p-4 space-y-4">
+    <div className="container p-4 space-y-4">
       {graphLoading ? (
         <ScoreGraphSkeleton />
       ) : (
         graphScores.length !== 0 && <ScoreGraph data={chartData} />
       )}
 
-      <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <Input
           type="text"
           placeholder="Search teams..."
@@ -93,7 +72,11 @@ export default function Scoreboard() {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="max-w-sm"
         />
-        <PageNavigation />
+        <PageNavigation
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       </div>
 
       <Card>
@@ -107,39 +90,57 @@ export default function Scoreboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredScores.map((entry) => (
-                <TableRow key={entry.team_id}>
-                  <TableCell className="text-center">
-                    <div className="flex justify-center items-center">
-                      {entry.rank <= 3 ? (
-                        <Trophy
-                          className={`w-6 h-6 ${
-                            entry.rank === 1
-                              ? "text-yellow-500"
-                              : entry.rank === 2
-                                ? "text-gray-400"
-                                : "text-orange-500"
-                          }`}
-                        />
-                      ) : (
-                        <Badge variant="secondary" className="w-8 flex justify-center">
-                          #{entry.rank}
-                        </Badge>
-                      )}
-                    </div>
+              {scoresLoading ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="h-32 text-center">
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                   </TableCell>
-                  <TableCell className="font-medium text-center">
-                    <span className="truncate block max-w-xs mx-auto">{entry.team_name}</span>
-                  </TableCell>
-                  <TableCell className="text-center">{entry.score}</TableCell>
                 </TableRow>
-              ))}
+              ) : filteredScores.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="h-32 text-center text-muted-foreground">
+                    {searchQuery ? "No teams match your search." : "No scores yet."}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredScores.map((entry) => (
+                  <TableRow key={entry.team_id}>
+                    <TableCell className="text-center">
+                      <div className="flex justify-center items-center">
+                        {entry.rank <= 3 ? (
+                          <Trophy
+                            className={`w-6 h-6 ${
+                              entry.rank === 1
+                                ? "text-yellow-500"
+                                : entry.rank === 2
+                                  ? "text-gray-400"
+                                  : "text-orange-500"
+                            }`}
+                          />
+                        ) : (
+                          <Badge variant="secondary" className="w-8 flex justify-center">
+                            #{entry.rank}
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium text-center">
+                      <span className="truncate block max-w-xs mx-auto">{entry.team_name}</span>
+                    </TableCell>
+                    <TableCell className="text-center">{entry.score}</TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
 
-      <PageNavigation />
+      <PageNavigation
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 }

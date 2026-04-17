@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { CopyButton } from "@/components/utils/copy-button";
+import { useCopyToClipboard } from "@/components/instances/useCopyToClipboard";
 import { useChallengeStore } from "@/store";
-import showToast, { ToastStatus } from "@/utils/toastHelper";
 import { Check, Download, ExternalLink, Users } from "lucide-react";
 import React, { useState } from "react";
 
@@ -19,26 +19,13 @@ interface ChallengeModalProps {
 
 export function ChallengeModal({ challenge, onClose }: ChallengeModalProps) {
   const [flag, setFlag] = useState("");
-  const [copiedLink, setCopiedLink] = useState<string | null>(null);
+  const { copiedLink, copyToClipboard } = useCopyToClipboard();
   const { submitFlag } = useChallengeStore();
 
-  const flagSubmit = async () => {
-    await submitFlag(challenge.id, flag);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    flagSubmit();
-  };
-
-  const copyToClipboard = (text: string) => {
-    try {
-      navigator.clipboard.writeText(text);
-      setCopiedLink(text);
-      setTimeout(() => setCopiedLink(null), 4000);
-    } catch {
-      showToast(ToastStatus.Failure, "failed to copy to clipboard");
-    }
+    await submitFlag(challenge.id, flag);
+    setFlag("");
   };
 
   return (

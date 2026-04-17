@@ -7,7 +7,7 @@ import { Stars, Trophy, UsersRound } from "lucide-react";
 
 interface UserProfileProps {
   user: User;
-  team: Team;
+  team: Team | null;
   score: number;
   rank: number | null;
 }
@@ -32,7 +32,7 @@ export function UserProfile({ user, team, score, rank }: UserProfileProps) {
             <UsersRound className="h-6 w-6 text-green-500" />
             <div>
               <p className="text-sm font-medium">Team</p>
-              <p className="text-3xl font-bold">{team.name}</p>
+              <p className="text-3xl font-bold">{team?.name ?? "-"}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

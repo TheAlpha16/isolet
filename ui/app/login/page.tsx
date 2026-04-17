@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,10 +10,11 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LoadingButton } from "@/components/ui/loading-button";
+import { PasswordInput } from "@/components/ui/password-input";
 import useLogin from "@/hooks/useLogin";
 import { useProfileStore } from "@/store";
 import { UI_ROUTES } from "@/utils/routes";
-import { Eye, EyeClosed, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -24,10 +24,9 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const { loading, login } = useLogin();
   const router = useRouter();
-  const [showPasswd, setShowPasswd] = useState(false);
   const { fetchMe } = useProfileStore();
 
-  async function onSubmit(event: React.SyntheticEvent) {
+  async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     if (loading) return;
 
@@ -55,37 +54,20 @@ export default function Login() {
                 placeholder="thealpha16@isolet.dev"
                 name="identifier"
                 autoComplete="email"
-                onChange={(event) => {
-                  setIdentifier(event.target.value);
-                }}
+                onChange={(event) => setIdentifier(event.target.value)}
                 required
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPasswd ? "text" : "password"}
-                  placeholder="password"
-                  name="password"
-                  autoComplete="current-password"
-                  onChange={(event) => {
-                    setPassword(event.target.value);
-                  }}
-                  className="pr-10"
-                  required
-                />
-                <Button
-                  type="button"
-                  variant={"ghost"}
-                  size="icon"
-                  className="absolute inset-y-0 right-0"
-                  onClick={() => setShowPasswd(!showPasswd)}
-                >
-                  {showPasswd ? <Eye className="h-5 w-5" /> : <EyeClosed className="h-5 w-5" />}
-                </Button>
-              </div>
+              <PasswordInput
+                id="password"
+                name="password"
+                placeholder="password"
+                autoComplete="current-password"
+                onChange={(event) => setPassword(event.target.value)}
+                required
+              />
             </div>
             <div className="text-sm text-right">
               <Link href="/forgot-password" className="text-primary hover:underline">
@@ -94,10 +76,9 @@ export default function Login() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full" onClick={onSubmit} disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <LoadingButton type="submit" className="w-full" loading={loading}>
               Sign In
-            </Button>
+            </LoadingButton>
           </CardFooter>
         </form>
       </Card>

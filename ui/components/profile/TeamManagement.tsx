@@ -48,6 +48,9 @@ export function TeamManagement({ user, members }: TeamManagementProps) {
           )}
         </CardHeader>
         <CardContent>
+          {members.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-4">No members yet.</p>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {members.map((member, index) => (
               <Card key={member.id} className="bg-card">

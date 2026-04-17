@@ -18,7 +18,7 @@ export default function useForgotPassword() {
     try {
       await AuthService.forgotPassword({ email });
       return true;
-    } catch (err: any) {
+    } catch {
       return false;
     } finally {
       setLoading(false);

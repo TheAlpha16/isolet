@@ -29,7 +29,7 @@ export default function useResetPassword() {
     try {
       await AuthService.resetPassword({ password, token });
       return true;
-    } catch (err: any) {
+    } catch {
       return false;
     } finally {
       setLoading(false);

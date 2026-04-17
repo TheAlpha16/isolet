@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,10 +10,11 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LoadingButton } from "@/components/ui/loading-button";
+import { PasswordInput } from "@/components/ui/password-input";
 import useUserOnboard from "@/hooks/useUserOnboard";
 import { useProfileStore } from "@/store";
 import { UI_ROUTES } from "@/utils/routes";
-import { Eye, EyeClosed, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -24,19 +24,17 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const { loading, register } = useUserOnboard();
-  const [showPasswd, setShowPasswd] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const { fetchMe } = useProfileStore();
   const router = useRouter();
 
-  async function onSubmit(event: React.SyntheticEvent) {
+  async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     if (loading) return;
 
     const res = await register(username, email, password, confirm);
     if (res) {
       await fetchMe();
-      router.replace(UI_ROUTES.onboard.team); // redirect to team onboarding
+      router.replace(UI_ROUTES.onboard.team);
     }
   }
 
@@ -53,12 +51,10 @@ export default function Register() {
               <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
-                type="username"
+                type="text"
                 placeholder="username"
                 autoComplete="username"
-                onChange={(event) => {
-                  setUsername(event.target.value);
-                }}
+                onChange={(event) => setUsername(event.target.value)}
                 required
               />
             </div>
@@ -69,70 +65,37 @@ export default function Register() {
                 type="email"
                 placeholder="thealpha16@isolet.dev"
                 autoComplete="email"
-                onChange={(event) => {
-                  setEmail(event.target.value);
-                }}
+                onChange={(event) => setEmail(event.target.value)}
                 required
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPasswd ? "text" : "password"}
-                  name="password"
-                  placeholder="password"
-                  autoComplete="new-password"
-                  onChange={(event) => {
-                    setPassword(event.target.value);
-                  }}
-                  className="pr-10"
-                  required
-                />
-                <Button
-                  type="button"
-                  variant={"ghost"}
-                  size="icon"
-                  className="absolute inset-y-0 right-0"
-                  onClick={() => setShowPasswd(!showPasswd)}
-                >
-                  {showPasswd ? <Eye className="h-5 w-5" /> : <EyeClosed className="h-5 w-5" />}
-                </Button>
-              </div>
+              <PasswordInput
+                id="password"
+                name="password"
+                placeholder="password"
+                autoComplete="new-password"
+                onChange={(event) => setPassword(event.target.value)}
+                required
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="confirm-password">Confirm</Label>
-              <div className="relative">
-                <Input
-                  id="confirm-password"
-                  type={showConfirm ? "text" : "password"}
-                  name="confirm-password"
-                  placeholder="confirm password"
-                  autoComplete="on"
-                  onChange={(event) => {
-                    setConfirm(event.target.value);
-                  }}
-                  className="pr-10"
-                  required
-                />
-                <Button
-                  type="button"
-                  variant={"ghost"}
-                  size="icon"
-                  className="absolute inset-y-0 right-0"
-                  onClick={() => setShowConfirm(!showConfirm)}
-                >
-                  {showConfirm ? <Eye className="h-5 w-5" /> : <EyeClosed className="h-5 w-5" />}
-                </Button>
-              </div>
+              <PasswordInput
+                id="confirm-password"
+                name="confirm-password"
+                placeholder="confirm password"
+                autoComplete="new-password"
+                onChange={(event) => setConfirm(event.target.value)}
+                required
+              />
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full" onClick={onSubmit} disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <LoadingButton type="submit" className="w-full" loading={loading}>
               Register
-            </Button>
+            </LoadingButton>
           </CardFooter>
         </form>
       </Card>

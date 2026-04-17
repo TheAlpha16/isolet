@@ -10,6 +10,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { ChartData } from "@/models/score";
+import { chartColor } from "@/utils/chartColors";
 import { fromUnixSeconds } from "@/utils/helpers";
 import { useMemo } from "react";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
@@ -28,7 +29,7 @@ export function ScoreGraph({ data }: ScoreGraphProps) {
           ...acc,
           [label]: {
             label,
-            color: `hsl(${index * 36}, 70%, 50%)`,
+            color: chartColor(index, labels.length),
           },
         }),
         {}
@@ -76,7 +77,7 @@ export function ScoreGraph({ data }: ScoreGraphProps) {
                 key={label}
                 dataKey={label}
                 type="monotone"
-                stroke={`hsl(${index * 36}, 70%, 50%)`}
+                stroke={chartColor(index, labels.length)}
                 dot={false}
               />
             ))}
