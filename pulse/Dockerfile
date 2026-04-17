@@ -1,11 +1,4 @@
-ARG ELIXIR_VERSION=1.15.7
-ARG OTP_VERSION=26.2.5
-ARG DEBIAN_VERSION=bookworm-20240130-slim
-
-ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
-ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
-
-FROM ${BUILDER_IMAGE} AS build
+FROM elixir:1.15-slim AS build
 
 ARG EXTRA_CA_CERT=""
 
@@ -38,7 +31,7 @@ COPY config/runtime.exs config/
 
 RUN mix release
 
-FROM ${RUNNER_IMAGE}
+FROM debian:bookworm-slim
 
 ARG EXTRA_CA_CERT=""
 
