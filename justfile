@@ -37,8 +37,9 @@ setup-builder CERT="":
 	if [ -n "{{CERT}}" ] && [ -f "{{CERT}}" ]; then
 		CONTAINER="buildx_buildkit_isolet-builder0"
 		echo "[#] installing CA cert into buildx builder"
-		docker cp "{{CERT}}" "$CONTAINER:/usr/local/share/ca-certificates/extra.crt"
-		docker exec "$CONTAINER" sh -c "apk add --no-cache ca-certificates > /dev/null 2>&1; update-ca-certificates > /dev/null"
+		docker cp "{{CERT}}" "$CONTAINER:/tmp/extra.crt"
+		docker exec "$CONTAINER" sh -c \
+			"cat /tmp/extra.crt >> /etc/ssl/certs/ca-certificates.crt"
 		docker restart "$CONTAINER" > /dev/null
 		sleep 2
 		echo "[#] builder ready with CA cert"
