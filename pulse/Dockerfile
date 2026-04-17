@@ -16,9 +16,8 @@ RUN if [ -n "$EXTRA_CA_CERT" ]; then \
 # prepare build dir
 WORKDIR /app
 
-# install hex + rebar
-RUN mix local.hex --force \
-  && mix local.rebar --force
+# rebar3 is needed to compile erlang deps (brod); hex is already installed in the base image
+RUN mix local.rebar --force
 
 # set build ENV
 ENV MIX_ENV="prod"
