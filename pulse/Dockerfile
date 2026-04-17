@@ -2,11 +2,10 @@ FROM elixir:1.15-alpine AS build
 
 ARG EXTRA_CA_CERT=""
 
-RUN apk add --no-cache build-base git ca-certificates && \
-    if [ -n "$EXTRA_CA_CERT" ]; then \
-        echo "$EXTRA_CA_CERT" > /usr/local/share/ca-certificates/extra.crt && \
-        update-ca-certificates; \
-    fi
+RUN if [ -n "$EXTRA_CA_CERT" ]; then \
+        echo "$EXTRA_CA_CERT" >> /etc/ssl/certs/ca-certificates.crt; \
+    fi && \
+    apk add --no-cache build-base git
 
 WORKDIR /app
 
