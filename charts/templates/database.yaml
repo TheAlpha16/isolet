@@ -1,4 +1,4 @@
-{{- if eq .Values.platform.database.enabled true -}}
+{{- if eq .Values.database.enabled true -}}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -622,25 +622,22 @@ data:
     CREATE INDEX idx_hints_chall ON hints(chall_id);
 
     -- Populate the config table
-    INSERT INTO config (key, value) VALUES ('EVENT_START', '{{ .Values.event.startTime }}'),
-    ('EVENT_END', '{{ .Values.event.endTime }}'),
+    INSERT INTO config (key, value) VALUES ('EVENT_START', '{{ .Values.event.start }}'),
+    ('EVENT_END', '{{ .Values.event.end }}'),
     ('POST_EVENT', '{{ .Values.event.postEvent }}'),
-    ('TEAM_LEN', '{{ .Values.event.teamLength }}'),
+    ('TEAM_LEN', '{{ .Values.event.teamSize }}'),
     ('CTF_NAME', '{{ .Values.event.name }}'),
-    ('CONCURRENT_INSTANCES', '{{ .Values.isolet.concurrentInstances }}'),
+    ('CONCURRENT_INSTANCES', '{{ .Values.instances.maxConcurrent }}'),
     ('INSTANCE_HOSTNAME', '{{ .Values.event.domain }}'),
-    ('INSTANCE_TIME', '{{ .Values.isolet.defaultInstanceTime }}'),
-    ('MAX_INSTANCE_TIME', '{{ .Values.isolet.maxInstanceTime }}'),
-    ('EMAIL_ID', '{{ .Values.secrets.smtp.emailID | b64dec }}'),
-    ('EMAIL_AUTH', '{{ .Values.secrets.smtp.emailAuth | b64dec }}'),
-    ('EMAIL_USERNAME', '{{ .Values.secrets.smtp.emailUsername | b64dec }}'),
-    ('PUBLIC_URL', '{{ .Values.event.url }}'),
-    ('SMTP_HOST', '{{ .Values.secrets.smtp.smtpHost | b64dec }}'),
-    ('SMTP_PORT', '{{ .Values.secrets.smtp.smtpPort | b64dec }}'),
-    ('SYNC_CONFIG_SECONDS', '{{ .Values.platform.syncConfigSeconds }}'),
-    ('USER_REGISTRATION', '{{ .Values.event.userRegistration }}'),
-    ('API_RATE_LIMIT', '{{ .Values.platform.api.apiRateLimit }}'),
-    ('EMAIL_VERIFICATION', '{{ .Values.event.emailVerification }}');
+    ('INSTANCE_TIME', '{{ .Values.instances.lifetime.default }}'),
+    ('MAX_INSTANCE_TIME', '{{ .Values.instances.lifetime.max }}'),
+    ('EMAIL_ID', '{{ .Values.secrets.smtp.user | b64dec }}'),
+    ('EMAIL_AUTH', '{{ .Values.secrets.smtp.password | b64dec }}'),
+    ('PUBLIC_URL', '{{ .Values.event.publicURL }}'),
+    ('SMTP_HOST', '{{ .Values.secrets.smtp.host | b64dec }}'),
+    ('SMTP_PORT', '{{ .Values.secrets.smtp.port | b64dec }}'),
+    ('USER_REGISTRATION', '{{ .Values.event.registration.users }}'),
+    ('EMAIL_VERIFICATION', '{{ .Values.event.registration.emailVerification }}');
 
     -- Create admin defined users
     {{- if .Values.users }}
@@ -675,7 +672,7 @@ spec:
     spec:
       containers:
         - name: postgres-database
-          image: "{{ .Values.platform.database.image }}:{{ .Values.platform.database.version | default "latest" }}"
+          image: "{{ .Values.database.image }}:{{ .Values.database.version | default "latest" }}"
           imagePullPolicy: Always
           resources:
             limits:
@@ -718,7 +715,7 @@ spec:
               command:
                 - sh
                 - -c
-                - pg_isready -U {{ .Values.secrets.database.user | b64dec }} -d {{ .Values.platform.database.name }}
+                - pg_isready -U {{ .Values.secrets.database.user | b64dec }} -d {{ .Values.database.name }}
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
@@ -728,7 +725,7 @@ spec:
               command:
                 - sh
                 - -c
-                - pg_isready -U {{ .Values.secrets.database.user | b64dec }} -d {{ .Values.platform.database.name }}
+                - pg_isready -U {{ .Values.secrets.database.user | b64dec }} -d {{ .Values.database.name }}
             initialDelaySeconds: 5
             periodSeconds: 5
             timeoutSeconds: 3

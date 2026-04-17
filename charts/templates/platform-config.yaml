@@ -8,4 +8,4 @@ metadata:
     app.kubernetes.io/part-of: config
     {{- include "charts.labels" . | nindent 4 }}
 data:
-  OBJECT_STORE: {{ .Values.platform.fileserver.objectStore.type }}
+  OBJECT_STORE: {{ .Values.phoros.objectStore.type }}

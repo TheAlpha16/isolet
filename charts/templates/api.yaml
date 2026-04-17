@@ -1,37 +1,40 @@
 ---
+# oracle-rest — handles HTTP traffic (IDENTITY=rest, set in oracle-config)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: oracle-deployment
+  name: oracle-rest
   namespace: platform
-  labels: 
+  labels:
     app.kubernetes.io/component: deployment
     app.kubernetes.io/part-of: api
+    app.kubernetes.io/instance: rest
     {{- include "charts.labels" . | nindent 4 }}
 spec:
-  replicas: 2
+  replicas: {{ .Values.oracle.replicas }}
   selector:
     matchLabels:
       app.kubernetes.io/component: deployment
       app.kubernetes.io/part-of: api
+      app.kubernetes.io/instance: rest
   template:
     metadata:
-      name: oracle-deployment
       labels:
         app.kubernetes.io/component: deployment
         app.kubernetes.io/part-of: api
+        app.kubernetes.io/instance: rest
     spec:
       serviceAccountName: oracle-service-account
       containers:
         - name: api
-          image: "{{ .Values.platform.api.image }}:{{ .Values.platform.api.version }}"
+          image: "{{ .Values.oracle.image }}:{{ .Values.oracle.version }}"
           imagePullPolicy: Always
           resources:
             limits:
-              memory: "128Mi"
-              cpu: "300m"
+              memory: "256Mi"
+              cpu: "500m"
             requests:
-              memory: "32Mi"
+              memory: "64Mi"
               cpu: "50m"
           ports:
             - containerPort: 80
@@ -46,6 +49,66 @@ spec:
               port: 80
             initialDelaySeconds: 30
             periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/v1/ping
+              port: 80
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 3
+
+---
+# oracle-consumer — Kafka consumer mode (overrides IDENTITY from ConfigMap)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oracle-consumer
+  namespace: platform
+  labels:
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: api
+    app.kubernetes.io/instance: consumer
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.oracle.consumerReplicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: deployment
+      app.kubernetes.io/part-of: api
+      app.kubernetes.io/instance: consumer
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: deployment
+        app.kubernetes.io/part-of: api
+        app.kubernetes.io/instance: consumer
+    spec:
+      serviceAccountName: oracle-service-account
+      containers:
+        - name: api
+          image: "{{ .Values.oracle.image }}:{{ .Values.oracle.version }}"
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
+            requests:
+              memory: "64Mi"
+              cpu: "30m"
+          env:
+            - name: IDENTITY
+              value: consumer
+          envFrom:
+            - configMapRef:
+                name: oracle-config
+            - secretRef:
+                name: oracle-secrets
+          startupProbe:
+            exec:
+              command: ["sh", "-c", "true"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 12
 
 ---
 apiVersion: v1
@@ -53,7 +116,7 @@ kind: Service
 metadata:
   name: oracle-svc
   namespace: platform
-  labels: 
+  labels:
     app.kubernetes.io/component: service
     app.kubernetes.io/part-of: api
     {{- include "charts.labels" . | nindent 4 }}
@@ -63,6 +126,7 @@ spec:
   selector:
     app.kubernetes.io/component: deployment
     app.kubernetes.io/part-of: api
+    app.kubernetes.io/instance: rest
 
 ---
 apiVersion: autoscaling/v2
@@ -70,7 +134,7 @@ kind: HorizontalPodAutoscaler
 metadata:
   name: oracle-hpa
   namespace: platform
-  labels: 
+  labels:
     app.kubernetes.io/component: hpa
     app.kubernetes.io/part-of: api
     {{- include "charts.labels" . | nindent 4 }}
@@ -78,8 +142,8 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: oracle-deployment
-  minReplicas: 2
+    name: oracle-rest
+  minReplicas: {{ .Values.oracle.replicas }}
   maxReplicas: 20
   metrics:
     - type: Resource
@@ -87,10 +151,10 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 70 
+          averageUtilization: 70
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: 80 
+          averageUtilization: 80

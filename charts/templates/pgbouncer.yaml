@@ -27,7 +27,7 @@ spec:
             - containerPort: 5432
           env:
             - name: DATABASE_URL
-              value: "postgres://{{ .Values.secrets.database.user | b64dec }}:{{ .Values.secrets.database.password | b64dec }}@{{ .Values.secrets.database.host | b64dec }}:{{ .Values.secrets.database.port | b64dec }}/{{ .Values.platform.database.name }}"
+              value: "postgres://{{ .Values.secrets.database.user | b64dec }}:{{ .Values.secrets.database.password | b64dec }}@{{ .Values.secrets.database.host | b64dec }}:{{ .Values.secrets.database.port | b64dec }}/{{ .Values.database.name }}"
             - name: POOL_MODE
               value: "session"
             - name: MAX_CLIENT_CONN

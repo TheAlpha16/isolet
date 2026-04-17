@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: phoros-fileserver
-          image: "{{ .Values.platform.fileserver.image }}:{{ .Values.platform.fileserver.version | default "latest" }}"
+          image: "{{ .Values.phoros.image }}:{{ .Values.phoros.version | default "latest" }}"
           imagePullPolicy: Always
           env:
             - name: SESSION_SECRET
@@ -65,12 +65,12 @@ spec:
             requests:
               cpu: 10m
               memory: 64Mi
-          {{- if eq .Values.platform.fileserver.objectStore.type "native" }}
+          {{- if eq .Values.phoros.objectStore.type "native" }}
           volumeMounts:
             - name: phoros-storage
               mountPath: /etc/phoros
           {{- end }}
-      {{- if eq .Values.platform.fileserver.objectStore.type "native" }}
+      {{- if eq .Values.phoros.objectStore.type "native" }}
       volumes:
         - name: phoros-storage
           persistentVolumeClaim:

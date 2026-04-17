@@ -1,0 +1,36 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: herald-instance-watcher
+  labels:
+    app.kubernetes.io/component: cluster-role
+    app.kubernetes.io/part-of: herald
+    {{- include "charts.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - challenges.isolet.dev
+    resources:
+      - instances
+    verbs:
+      - get
+      - list
+      - watch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: herald-instance-watcher-binding
+  labels:
+    app.kubernetes.io/component: cluster-role-binding
+    app.kubernetes.io/part-of: herald
+    {{- include "charts.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: herald-instance-watcher
+subjects:
+  - kind: ServiceAccount
+    name: herald-service-account
+    namespace: platform

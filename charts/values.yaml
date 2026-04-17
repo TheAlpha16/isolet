@@ -1,149 +1,198 @@
-# general
+# Event settings
 event:
   name: isolet
-  start: "1739145600" # unix timestamp in seconds
-  end: "1741564800" # unix timestamp in seconds
-  postEvent: false
   publicURL: https://isolet.dev
   domain: isolet.dev
-  teamSize: 4 # max number of users in a team
+  start: "1739145600"  # unix timestamp
+  end: "1741564800"    # unix timestamp
+  postEvent: false
+  teamSize: 4
   allowedDomains:
     - gmail.com
     - yahoo.com
     - hotmail.com
     - outlook.com
     - protonmail.com
+  registration:
+    users: true
+    emailVerification: true
+    passwordReset: true
 
-  environment: "dev" # to determine the certificate server. use "production" for production environment
-  userRegistration: true # whether to allow user registration (usually for dev environment)
-  emailVerification: true # whether to send verification email to user (usually for dev environment)
-  passwordReset: true # whether to allow password reset (usually for dev environment)
+# Oracle — REST API + Kafka consumer (two deployments, same image)
+oracle:
+  image: docker.io/thealpha16/isolet-api
+  version: "2.0.0"
+  replicas: 2          # oracle-rest
+  consumerReplicas: 1  # oracle-consumer
+  token:
+    maxSessionsPerUser: 5
+    maxPasswordResetSessions: 1
+    emailVerificationValidity: "10m"
+    authValidity: "24h"
+    realtimeValidity: "1h"
+    passwordResetValidity: "30m"
+    teamInviteValidity: "1h"
+  smtp:
+    sender: noreply@isolet.dev
+    retries: 3
+    timeout: "10s"
+    channelSize: 10
+  kafka:
+    brokers: "kafka-svc:9092"
+    groupId: "oracle"
+  sentry:
+    sampleRate: 1.0
+    traceSampleRate: 0.05
+  configVars:
+    refreshInterval: "10m"
 
-# platform unit
-platform:
-  database:
-    enabled: false
-    image: postgres
-    version: 18
-    name: isolet
-    storageClass: standard # check with the cloud provider for the a persistent storage class
-    capacity: 2Gi
-    maxOpenConnections: 30
-    maxIdleConnections: 30
-    maxConnectionLifetime: 3600s
+# Pulse — Elixir/Phoenix WebSocket gateway
+pulse:
+  image: docker.io/thealpha16/isolet-pulse
+  version: "1.2.0"
+  replicas: 1
+  kafka:
+    brokers: "kafka-svc:9092"
+    topic: "herald.notifications"
+    groupId: "pulse"
+    clientId: "pulse"
 
-  fileserver: # fileserver
-    image: docker.io/thealpha16/phoros
-    version: 1.1.0
-    storageClass: standard
-    capacity: 3Gi
-    objectStore:
-      type: native
+# Herald — Go event emitter (k8s_source and postgres_source modes)
+herald:
+  image: docker.io/thealpha16/isolet-herald
+  version: "1.0.0"
+  k8sSource:
+    enabled: true
+    namespaces: "isolet,dynamic"
+    dedupeWindow: "60s"
+  postgresSource:
+    enabled: true
+  kafka:
+    brokers: "kafka-svc:9092"
+    retries: 3
+  emitter:
+    retries: 5
+    retryInterval: "1s"
 
-  api:
-    image: docker.io/thealpha16/isolet-api
-    version: 2.0.0
+# UI — Next.js frontend
+ui:
+  image: docker.io/thealpha16/isolet-ui
+  version: "v2.0.5"
+  replicas: 1
 
-    sentry:
-      sampleRate: 1.0
-      traceSampleRate: 0.05
+# Proxy — Nginx reverse proxy
+proxy:
+  image: docker.io/thealpha16/isolet-proxy
+  version: "2.0.0"
+  replicas: 1
 
-    token:
-      maxSessionsPerUser: 5 # maximum number of active sessions per user, set to 0 for unlimited
-      maxPasswordResetSessions: 1 # maximum number of active password reset sessions, set to 0 for unlimited
-      emailVerificationValidity: 10m
-      authValidity: 24h
-      passwordResetValidity: 30m
-      teamInviteValidity: 1h
+# Phoros — challenge file server
+phoros:
+  image: docker.io/thealpha16/phoros
+  version: "1.1.0"
+  storageClass: standard
+  capacity: 3Gi
+  objectStore:
+    type: native
 
-    smtp:
-      sender: noreply@isolet.dev
-      retries: 3
-      timeout: 10s
-      channelSize: 10
+# Valkey — Redis-compatible cache and pub/sub
+valkey:
+  address: "valkey://valkey-svc:6379"
+  useTLS: false
 
-    configVars:
-      refreshInterval: 10m # interval to refresh config vars from database
+# PostgreSQL — optional managed database
+database:
+  enabled: false
+  image: postgres
+  version: "18"
+  name: isolet
+  storageClass: standard
+  capacity: 2Gi
 
-  ui:
-    image: docker.io/thealpha16/isolet-ui
-    version: v2.0.5
+# PGBouncer — connection pooler
+pgbouncer:
+  maxOpenConnections: 30
+  maxIdleConnections: 30
+  maxConnectionLifetime: "3600s"
 
-  proxy:
-    image: docker.io/thealpha16/isolet-proxy
-    version: 2.0.0
+# Instance configuration — used by oracle and for namespace references
+instances:
+  namespaces:
+    onDemand: isolet
+    dynamic: dynamic
+  resources:
+    requests:
+      cpu: "15m"
+      memory: "32Mi"
+    limits:
+      cpu: "50m"
+      memory: "128Mi"
+  lifetime:
+    default: "30m"
+    max: "24h"
+  maxConcurrent: 2
+  timeouts:
+    start: "5m"
+    stop: "2m"
+    extend: "1m"
 
-  pulse:
-    image: docker.io/thealpha16/isolet-pulse
-    version: 1.2.0
+# Tide operator API group — tide is deployed separately; this configures oracle + RBAC
+tide:
+  apiVersion: "challenges.isolet.dev/v1"
 
-  valkey:
-    address: valkey://valkey-svc:6379
-    useTLS: false
-
-# isolated challenges unit
-isolet:
-  concurrentInstances: 2
-  defaultCPU: 15m
-  defaultMemory: 32Mi
-  limitCPU: 50m
-  limitMemory: 128Mi
-  defaultInstanceTime: 30m
-
-registry:
-  type: public
-  url: asia-south1-docker.pkg.dev/greek-proxy-814691-q2/isolet-dev # if you are using external registry, then provide the url here
-
-# automation task unit
-automation:
-  tide:
-    image: isolet-tide
-    version: 1.0.0
-
-users:
-  - email: menoone@gmail.com
-    username: noone
-    password_hash: e3cd4ae1164ddd73fce1eec48d0d03060ffbfe8da865d0e6b968de9763bbd1b6 #sha256 hash of password
-    rank: 1
-
-  - email: thealpha16.pentest@gmail.com
-    username: thealpha16
-    password_hash: bfefce1eec48dde9763bbd03dea865d0e6b968303cd4ae1164ddd7060ff1b68d
-    rank: 1
-
-# certificate manager
+# cert-manager — Let's Encrypt TLS
 certManager:
   dnsProvider: cloudflare
-  email: isolet-dev@gmail.com # email to register with the certificate server
+  email: ""
+  environment: "dev"  # use "production" for Let's Encrypt production certs
 
-# base64 encoded secrets
-## PLEASE DO NOT USE DEFAULT VALUES FOR PRODUCTION
+# external-dns
+externalDns:
+  enabled: true
+
+# Container registry
+registry:
+  type: public  # "public" or "private"
+  url: ""       # required for private registries
+
+# Initial admin users (optional, empty by default)
+users: []
+
+# Secrets — all values must be base64-encoded
+## PLEASE DO NOT USE DEFAULT VALUES IN PRODUCTION
 secrets:
   signing:
-    token: dHJ1c3RtZWJybw==
-    instance: dHJ1c3RtZWJybw==
+    token: ""      # TOKEN_SIGNING_KEY (oracle) = JWT_SECRET (pulse)
+    instance: ""   # INSTANCE_SECRET_KEY (oracle)
 
   dns:
-    token: MTQyNGU2ZjBhMTQ2MzM5Yjc0YWYyNzlkNjRhOTIzNjI== # cloudflare token
+    token: ""      # Cloudflare DNS API token
 
   smtp:
-    host: c210cC5nbWFpbC5jb20=
-    port: NTg3
-    user: dGVzdGluZy5vbkBtZS5jb20=
-    password: bm90YXNlY3JldA==
+    host: ""
+    port: ""
+    user: ""
+    password: ""
 
   database:
-    user: aXNvbGV0
-    password: TXlmb290c3Ryb25ncGFzc3dkMDQzLgo=
-    host: ZGF0YWJhc2Utc3Zj
-    port: NTQzMg==
+    user: ""
+    password: ""
+    host: ""
+    port: ""
 
   sentry:
-    dsn: "" # base64 encoded Sentry DSN (optional, leave empty to disable)
+    dsn: ""        # optional; leave empty to disable
 
   valkey:
-    username: ""
-    password: "" # base64 encoded Valkey/Redis password (optional, leave empty if no auth) 
+    username: ""   # optional
+    password: ""   # optional; leave empty if Valkey has no auth
+
+  pulse:
+    secretKeyBase: ""  # PHX SECRET_KEY_BASE — generate with: mix phx.gen.secret
+
+  herald:
+    postgresDSN: ""            # POSTGRES_DSN (postgres_source mode)
+    postgresReplicationDSN: "" # POSTGRES_REPLICATION_DSN (postgres_source mode)
 
   registry:
-    dockerconfig: ewoJImF1dGhzIjogew...ydWUiCgl9Cn0= # base64 encoded docker config json file (required for private registry)
+    dockerconfig: ""  # base64-encoded docker config JSON (required for private registry)
