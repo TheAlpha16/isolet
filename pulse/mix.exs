@@ -43,8 +43,7 @@ defmodule Pulse.MixProject do
       {:joken, "~> 2.6"},
       {:jose, "~> 1.11"},
       {:redix, "~> 1.5"},
-      {:phoenix_pubsub_redis, "~> 3.0"},
-      {:nimble_options, "~> 1.0.0", override: true}
+      {:phoenix_pubsub_redis, "~> 3.0"}
     ]
   end
 
