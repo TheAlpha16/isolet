@@ -23,7 +23,7 @@ RUN mix deps.get --only $MIX_ENV
 
 RUN mkdir config
 COPY config/config.exs config/prod.exs config/
-RUN mix deps.compile
+RUN mix deps.compile --force
 
 COPY lib lib
 
