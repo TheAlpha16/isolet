@@ -26,7 +26,12 @@ RUN mix release
 
 FROM alpine:3.18 AS runner
 
-RUN apk add --no-cache openssl libgcc libstdc++ ncurses-libs
+ARG EXTRA_CA_CERT=""
+
+RUN if [ -n "$EXTRA_CA_CERT" ]; then \
+        echo "$EXTRA_CA_CERT" >> /etc/ssl/certs/ca-certificates.crt; \
+    fi && \
+    apk add --no-cache openssl libgcc libstdc++ ncurses-libs
 
 WORKDIR /app
 
