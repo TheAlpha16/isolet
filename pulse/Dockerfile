@@ -33,12 +33,6 @@ RUN mix release
 
 FROM debian:bookworm-slim
 
-ARG EXTRA_CA_CERT=""
-
-RUN if [ -n "$EXTRA_CA_CERT" ]; then \
-        echo "$EXTRA_CA_CERT" >> /etc/ssl/certs/ca-certificates.crt; \
-    fi
-
 RUN apt-get update -y && \
     apt-get install -y libstdc++6 openssl libncurses5 locales ca-certificates \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
