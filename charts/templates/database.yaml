@@ -673,7 +673,7 @@ spec:
       containers:
         - name: postgres-database
           image: "{{ .Values.database.image }}:{{ .Values.database.version | default "latest" }}"
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | default "Always" }}
           resources:
             limits:
               memory: "2Gi"

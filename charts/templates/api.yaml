@@ -28,7 +28,7 @@ spec:
       containers:
         - name: api
           image: "{{ .Values.oracle.image }}:{{ .Values.oracle.version }}"
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | default "Always" }}
           resources:
             limits:
               memory: "256Mi"
@@ -87,7 +87,7 @@ spec:
       containers:
         - name: api
           image: "{{ .Values.oracle.image }}:{{ .Values.oracle.version }}"
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | default "Always" }}
           resources:
             limits:
               memory: "256Mi"

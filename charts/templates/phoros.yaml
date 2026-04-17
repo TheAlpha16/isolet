@@ -22,7 +22,7 @@ spec:
       containers:
         - name: phoros-fileserver
           image: "{{ .Values.phoros.image }}:{{ .Values.phoros.version | default "latest" }}"
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | default "Always" }}
           env:
             - name: SESSION_SECRET
               valueFrom:

@@ -1,3 +1,7 @@
+# Global settings
+global:
+  imagePullPolicy: Always
+
 # Event settings
 event:
   name: isolet
@@ -139,6 +143,14 @@ instances:
 # Tide operator API group — tide is deployed separately; this configures oracle + RBAC
 tide:
   apiVersion: "challenges.isolet.dev/v1"
+
+# Traefik — set enabled: false if Traefik is already installed in the cluster
+traefik:
+  enabled: true
+
+# TLS — set enabled: false to skip cert-manager Certificate and copy Job
+tls:
+  enabled: true
 
 # cert-manager — Let's Encrypt TLS
 certManager:

@@ -23,7 +23,7 @@ spec:
       containers:
         - name: pulse
           image: "{{ .Values.pulse.image }}:{{ .Values.pulse.version | default "latest" }}"
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | default "Always" }}
           resources:
             limits:
               memory: "1Gi"

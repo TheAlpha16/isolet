@@ -29,7 +29,7 @@ spec:
       containers:
         - name: herald
           image: "{{ .Values.herald.image }}:{{ .Values.herald.version | default "latest" }}"
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | default "Always" }}
           resources:
             limits:
               memory: "128Mi"
@@ -77,7 +77,7 @@ spec:
       containers:
         - name: herald
           image: "{{ .Values.herald.image }}:{{ .Values.herald.version | default "latest" }}"
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | default "Always" }}
           resources:
             limits:
               memory: "128Mi"
