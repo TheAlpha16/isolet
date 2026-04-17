@@ -20,7 +20,6 @@ COPY config config
 RUN mix deps.compile
 
 COPY lib lib
-COPY priv priv
 
 RUN mix compile
 RUN mix release
