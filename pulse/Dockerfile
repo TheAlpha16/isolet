@@ -36,9 +36,9 @@ RUN if [ -n "$EXTRA_CA_CERT" ]; then \
 # prepare build dir
 WORKDIR /app
 
-# OTP 28 requires +Bi to prevent the break handler from needing stdin,
-# which is unavailable in Docker build environments (including QEMU cross-builds).
-ENV ELIXIR_ERL_OPTIONS="+Bi"
+# OTP 28 fails in Docker/QEMU builds when stdin is closed (user I/O device startup).
+# -noinput disables stdin reading; +Bi prevents break handler requiring a terminal.
+ENV ELIXIR_ERL_OPTIONS="-noinput +Bi"
 
 # install hex + rebar
 RUN mix local.hex --force \
