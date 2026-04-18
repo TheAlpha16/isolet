@@ -149,7 +149,7 @@ npm run lint
 npm run build
 ```
 
-For local dev, the proxy is required to forward `/api` and `/socket` to Oracle and Pulse. Use `docker compose up` at the repo root for the full stack, or set `NEXT_PUBLIC_API_URL` if running the Next.js dev server directly.
+For local dev, the proxy is required to forward `/api` and `/socket` to Oracle and Pulse. Use `docker compose up` at the repo root for the full stack. If you run the Next.js dev server directly, you must configure local proxying or Next.js rewrites for `/api` and `/socket`.
 
 ---
 

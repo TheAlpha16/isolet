@@ -22,8 +22,6 @@ help:
 # --- Common commands ---
 
 # Set up a multi-platform buildx builder.
-# Optionally pass a CA cert path to trust during builds (for TLS-intercepting corporate proxies):
-#   just setup-builder /path/to/ca.pem
 setup-builder CERT="":
 	#!/usr/bin/env bash
 	set -euo pipefail
@@ -45,8 +43,7 @@ setup-builder CERT="":
 		echo "[#] builder ready with CA cert"
 	fi
 
-# Build and push the docker image (linux/amd64 + linux/arm64).
-# Optionally pass a CA cert path to trust during builds: just docker-build oracle "" /path/to/ca.pem
+# Build the docker image (linux/amd64 + linux/arm64).
 docker-build RESOURCE TAG="" CERT="":
 	#!/usr/bin/env bash
 	set -euo pipefail
@@ -59,7 +56,7 @@ docker-build RESOURCE TAG="" CERT="":
 	fi
 	BUILD_ARGS=()
 	if [ -n "{{CERT}}" ] && [ -f "{{CERT}}" ]; then
-		BUILD_ARGS+=(--build-arg "EXTRA_CA_CERT=$(cat "{{CERT}}")")
+		BUILD_ARGS+=(--build-arg "EXTRA_CA_CERT=$(cat \"{{CERT}}\")")
 	fi
 	echo "[#] building docker image for {{RESOURCE}} with tag $TAG (linux/amd64,linux/arm64)"
 	docker buildx build \
@@ -67,9 +64,8 @@ docker-build RESOURCE TAG="" CERT="":
 		"${BUILD_ARGS[@]}" \
 		-t {{REGISTRY}}/isolet-{{RESOURCE}}:$TAG \
 		-t {{REGISTRY}}/isolet-{{RESOURCE}}:latest \
-		--push \
 		.
-	echo "[#] built and pushed docker image for {{RESOURCE}} with tag $TAG"
+	echo "[#] built docker image for {{RESOURCE}} with tag $TAG"
 
 # Push the docker image to the registry (re-push an already-built image)
 docker-push RESOURCE TAG="":
@@ -85,8 +81,30 @@ docker-push RESOURCE TAG="":
 	docker push {{REGISTRY}}/isolet-{{RESOURCE}}:latest
 	echo "[#] pushed docker image for {{RESOURCE}} with tag $TAG to registry"
 
-build-push RESOURCE TAG="":
-	just docker-build {{RESOURCE}} {{TAG}}
+# Build and push a service (linux/amd64 + linux/arm64).
+build-push RESOURCE TAG="" CERT="":
+	#!/usr/bin/env bash
+	set -euo pipefail
+	just setup-builder {{CERT}}
+	cd {{RESOURCE}}
+	if [ -z "{{TAG}}" ]; then
+		TAG=$(cat VERSION)
+	else
+		TAG="{{TAG}}"
+	fi
+	BUILD_ARGS=()
+	if [ -n "{{CERT}}" ] && [ -f "{{CERT}}" ]; then
+		BUILD_ARGS+=(--build-arg "EXTRA_CA_CERT=$(cat \"{{CERT}}\")")
+	fi
+	echo "[#] building and pushing docker image for {{RESOURCE}} with tag $TAG (linux/amd64,linux/arm64)"
+	docker buildx build \
+		--platform linux/amd64,linux/arm64 \
+		"${BUILD_ARGS[@]}" \
+		-t {{REGISTRY}}/isolet-{{RESOURCE}}:$TAG \
+		-t {{REGISTRY}}/isolet-{{RESOURCE}}:latest \
+		--push \
+		.
+	echo "[#] pushed {{RESOURCE}}:$TAG"
 
 # Bump version (usage: just bump RESOURCE patch | minor | major)
 bump RESOURCE LEVEL:
@@ -98,7 +116,7 @@ bump RESOURCE LEVEL:
 	git add {{RESOURCE}}/VERSION
 	git commit -m "chore({{RESOURCE}}): bump version to $NEW"
 
-# Build all services (optionally pass a CA cert path: just build-all "" /path/to/ca.pem)
+# Build all services
 build-all CERT="":
 	just docker-build {{ORACLE}} "" {{CERT}}
 	just docker-build {{UI}} "" {{CERT}}
