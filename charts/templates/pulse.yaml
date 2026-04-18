@@ -9,22 +9,21 @@ metadata:
     app.kubernetes.io/part-of: pulse
     {{- include "charts.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.pulse.replicas }}
   selector:
     matchLabels:
       app.kubernetes.io/component: deployment
       app.kubernetes.io/part-of: pulse
   template:
     metadata:
-      name: pulse-deployment
       labels:
         app.kubernetes.io/component: deployment
         app.kubernetes.io/part-of: pulse
     spec:
       containers:
         - name: pulse
-          image: "{{ .Values.platform.pulse.image }}:{{ .Values.platform.pulse.version | default "latest" }}"
-          imagePullPolicy: Always
+          image: "{{ .Values.pulse.image }}:{{ .Values.pulse.version | default "latest" }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | default "Always" }}
           resources:
             limits:
               memory: "1Gi"
@@ -34,6 +33,11 @@ spec:
               cpu: "30m"
           ports:
             - containerPort: 4000
+          envFrom:
+            - configMapRef:
+                name: pulse-config
+            - secretRef:
+                name: pulse-secrets
           livenessProbe:
             httpGet:
               path: /health

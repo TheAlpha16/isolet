@@ -3,44 +3,65 @@ kind: ConfigMap
 metadata:
   name: oracle-config
   namespace: platform
-  labels: 
+  labels:
     app.kubernetes.io/component: config
     app.kubernetes.io/part-of: api
     {{- include "charts.labels" . | nindent 4 }}
 data:
   # Application
+  IDENTITY: "rest"
   LOG_LEVEL: "INFO"
   ENVIRONMENT: "prod"
-  VERSION: {{ .Values.platform.api.version | quote }}
+  VERSION: {{ .Values.oracle.version | quote }}
 
-  # Database
-  DB_NAME: {{ .Values.platform.database.name }}
+  # Database (via PGBouncer)
+  DB_NAME: {{ .Values.database.name | quote }}
   DB_HOST: "pgbouncer-svc"
   DB_PORT: "5432"
-  DB_MAX_OPEN_CONNECTIONS: {{ .Values.platform.database.maxOpenConnections | quote }}
-  DB_MAX_IDLE_CONNECTIONS: {{ .Values.platform.database.maxIdleConnections | quote }}
-  DB_MAX_CONNECTION_LIFETIME: {{ .Values.platform.database.maxConnectionLifetime | quote }}
+  DB_MAX_OPEN_CONNECTIONS: {{ .Values.pgbouncer.maxOpenConnections | quote }}
+  DB_MAX_IDLE_CONNECTIONS: {{ .Values.pgbouncer.maxIdleConnections | quote }}
+  DB_MAX_CONNECTION_LIFETIME: {{ .Values.pgbouncer.maxConnectionLifetime | quote }}
 
   # Sentry
-  SENTRY_SAMPLE_RATE: {{ .Values.platform.api.sentry.sampleRate | quote }}
-  SENTRY_TRACE_SAMPLE_RATE: {{ .Values.platform.api.sentry.traceSampleRate | quote }}
+  SENTRY_SAMPLE_RATE: {{ .Values.oracle.sentry.sampleRate | quote }}
+  SENTRY_TRACE_SAMPLE_RATE: {{ .Values.oracle.sentry.traceSampleRate | quote }}
 
   # Valkey/Redis
-  VALKEY_ADDRESS: {{ .Values.platform.valkey.address }}
-  VALKEY_USE_TLS: {{ .Values.platform.valkey.useTLS | quote }}
+  VALKEY_ADDRESS: {{ .Values.valkey.address | quote }}
+  VALKEY_USE_TLS: {{ .Values.valkey.useTLS | quote }}
 
-  # Token Configuration
-  TOKEN_EMAIL_VERIFICATION_VALIDITY: {{ .Values.platform.api.token.emailVerificationValidity }}
-  TOKEN_AUTH_VALIDITY: {{ .Values.platform.api.token.authValidity }}
-  TOKEN_PASSWORD_RESET_VALIDITY: {{ .Values.platform.api.token.passwordResetValidity }}
-  TOKEN_TEAM_INVITE_VALIDITY: {{ .Values.platform.api.token.teamInviteValidity }}
+  # Token
+  TOKEN_EMAIL_VERIFICATION_VALIDITY: {{ .Values.oracle.token.emailVerificationValidity | quote }}
+  TOKEN_AUTH_VALIDITY: {{ .Values.oracle.token.authValidity | quote }}
+  TOKEN_REALTIME_VALIDITY: {{ .Values.oracle.token.realtimeValidity | quote }}
+  TOKEN_PASSWORD_RESET_VALIDITY: {{ .Values.oracle.token.passwordResetValidity | quote }}
+  TOKEN_TEAM_INVITE_VALIDITY: {{ .Values.oracle.token.teamInviteValidity | quote }}
 
-  # Config Vars
-  CONFIG_VARS_REFRESH_INTERVAL: {{ .Values.platform.api.configVars.refreshInterval }}
+  # Config vars
+  CONFIG_VARS_REFRESH_INTERVAL: {{ .Values.oracle.configVars.refreshInterval | quote }}
 
   # SMTP
-  SMTP_RETRIES: {{ .Values.platform.api.smtp.retries | quote }}
-  SMTP_TIMEOUT: {{ .Values.platform.api.smtp.timeout }}
-  SMTP_CHANNEL_SIZE: {{ .Values.platform.api.smtp.channelSize | quote }}
+  SMTP_RETRIES: {{ .Values.oracle.smtp.retries | quote }}
+  SMTP_TIMEOUT: {{ .Values.oracle.smtp.timeout | quote }}
+  SMTP_CHANNEL_SIZE: {{ .Values.oracle.smtp.channelSize | quote }}
 
-  INSTANCE_LIFETIME: {{ .Values.isolet.defaultInstanceTime }}
+  # Kafka
+  KAFKA_BROKERS: {{ .Values.oracle.kafka.brokers | quote }}
+  KAFKA_GROUP_ID: {{ .Values.oracle.kafka.groupId | quote }}
+
+  # Instance management
+  INSTANCE_NAMESPACE: {{ .Values.instances.namespaces.onDemand | quote }}
+  INSTANCE_LIFETIME: {{ .Values.instances.lifetime.default | quote }}
+  INSTANCE_MAX_LIFETIME: {{ .Values.instances.lifetime.max | quote }}
+  INSTANCE_LIMIT_CPU: {{ .Values.instances.resources.limits.cpu | quote }}
+  INSTANCE_LIMIT_MEMORY: {{ .Values.instances.resources.limits.memory | quote }}
+  INSTANCE_START_TIMEOUT: {{ .Values.instances.timeouts.start | quote }}
+  INSTANCE_STOP_TIMEOUT: {{ .Values.instances.timeouts.stop | quote }}
+  INSTANCE_EXTEND_TIMEOUT: {{ .Values.instances.timeouts.extend | quote }}
+  # Tide / Kubernetes
+  K8S_INSTANCE_API_VERSION: {{ .Values.tide.apiVersion | quote }}
+  K8S_INSTANCE_KIND: "Instance"
+
+  # Metrics
+  METRICS_PORT: "9090"
+  METRICS_PATH: "/metrics"

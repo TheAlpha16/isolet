@@ -10,7 +10,7 @@ metadata:
     {{- include "charts.labels" . | nindent 4 }}
 rules:
   - apiGroups:
-    - isolet.dev
+    - challenges.isolet.dev
     resources:
     - instances
     verbs:

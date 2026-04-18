@@ -1,0 +1,73 @@
+# Test overrides for local minikube testing
+# Use: helm install isolet-test charts/ -f charts/values.yaml -f charts/test-values.yaml
+
+global:
+  imagePullPolicy: IfNotPresent
+
+# Use small public images so pods can actually start
+oracle:
+  image: nginx
+  version: "alpine"
+  replicas: 1
+  consumerReplicas: 1
+
+pulse:
+  image: nginx
+  version: "alpine"
+  replicas: 1
+
+herald:
+  image: busybox
+  version: "1.36"
+
+ui:
+  image: nginx
+  version: "alpine"
+  replicas: 1
+
+proxy:
+  image: nginx
+  version: "alpine"
+  replicas: 1
+
+phoros:
+  image: nginx
+  version: "alpine"
+
+# Skip traefik (already installed via Helm in cluster)
+traefik:
+  enabled: false
+
+# Skip TLS cert requests (no ACME in local)
+tls:
+  enabled: false
+
+# Dummy base64 secrets — echo -n "test" | base64 = dGVzdA==
+secrets:
+  signing:
+    token: dGVzdA==
+    instance: dGVzdA==
+  dns:
+    token: dGVzdA==
+  smtp:
+    host: dGVzdA==
+    port: dGVzdA==
+    user: dGVzdA==
+    password: dGVzdA==
+  database:
+    user: dGVzdA==
+    password: dGVzdA==
+    host: dGVzdA==
+    port: dGVzdA==
+  sentry:
+    dsn: ""
+  valkey:
+    username: ""
+    password: ""
+  pulse:
+    secretKeyBase: dGVzdGtleWJhc2VkdW1teQ==
+  herald:
+    postgresDSN: dGVzdA==
+    postgresReplicationDSN: dGVzdA==
+  registry:
+    dockerconfig: ""

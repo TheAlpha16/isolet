@@ -12,7 +12,7 @@ x-common-variables: &common-variables
 services:
   database:
     container_name: database
-    build: ./database
+    image: postgres:17
     environment:
       POSTGRES_DB: isolet
       POSTGRES_USER: postgres

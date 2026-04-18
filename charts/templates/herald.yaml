@@ -1,0 +1,96 @@
+{{- if .Values.herald.k8sSource.enabled }}
+---
+# herald-k8s — watches Instance CRDs and emits InstanceExpired facts
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: herald-k8s
+  namespace: platform
+  labels:
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: herald
+    app.kubernetes.io/instance: k8s
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: deployment
+      app.kubernetes.io/part-of: herald
+      app.kubernetes.io/instance: k8s
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: deployment
+        app.kubernetes.io/part-of: herald
+        app.kubernetes.io/instance: k8s
+    spec:
+      serviceAccountName: herald-service-account
+      containers:
+        - name: herald
+          image: "{{ .Values.herald.image }}:{{ .Values.herald.version | default "latest" }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | default "Always" }}
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+            requests:
+              memory: "32Mi"
+              cpu: "15m"
+          env:
+            - name: IDENTITY
+              value: k8s_source
+          envFrom:
+            - configMapRef:
+                name: herald-config
+            - secretRef:
+                name: herald-k8s-secrets
+{{- end }}
+
+{{- if .Values.herald.postgresSource.enabled }}
+---
+# herald-postgres — watches PostgreSQL logical replication and emits Notification facts
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: herald-postgres
+  namespace: platform
+  labels:
+    app.kubernetes.io/component: deployment
+    app.kubernetes.io/part-of: herald
+    app.kubernetes.io/instance: postgres
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: deployment
+      app.kubernetes.io/part-of: herald
+      app.kubernetes.io/instance: postgres
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: deployment
+        app.kubernetes.io/part-of: herald
+        app.kubernetes.io/instance: postgres
+    spec:
+      containers:
+        - name: herald
+          image: "{{ .Values.herald.image }}:{{ .Values.herald.version | default "latest" }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | default "Always" }}
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+            requests:
+              memory: "32Mi"
+              cpu: "15m"
+          env:
+            - name: IDENTITY
+              value: postgres_source
+          envFrom:
+            - configMapRef:
+                name: herald-config
+            - secretRef:
+                name: herald-postgres-secrets
+{{- end }}

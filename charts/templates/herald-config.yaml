@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: herald-config
+  namespace: platform
+  labels:
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: herald
+    {{- include "charts.labels" . | nindent 4 }}
+data:
+  ENVIRONMENT: "prod"
+  KAFKA_BROKERS: {{ .Values.herald.kafka.brokers | quote }}
+  KAFKA_RETRIES: {{ .Values.herald.kafka.retries | quote }}
+  EMITTER_RETRIES: {{ .Values.herald.emitter.retries | quote }}
+  EMITTER_RETRY_INTERVAL: {{ .Values.herald.emitter.retryInterval | quote }}
+  INSTANCE_LIFECYCLE_KAFKA_TOPIC: "herald.instance.lifecycle"
+  NOTIFICATION_KAFKA_TOPIC: "herald.notifications"
+  VALKEY_ADDRESS: {{ .Values.valkey.address | quote }}
+  K8S_NAMESPACES: {{ .Values.herald.k8sSource.namespaces | quote }}
+  K8S_DEDUPE_WINDOW: {{ .Values.herald.k8sSource.dedupeWindow | quote }}

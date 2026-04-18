@@ -1,4 +1,4 @@
-{{ if eq .Values.platform.database.enabled true }}
+{{ if eq .Values.database.enabled true }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -10,16 +10,16 @@ metadata:
     app.kubernetes.io/part-of: database
     {{- include "charts.labels" . | nindent 4 }}
 spec:
-  storageClassName: {{ .Values.platform.database.storageClass }}
+  storageClassName: {{ .Values.database.storageClass }}
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.platform.database.capacity }}
+      storage: {{ .Values.database.capacity }}
 
 {{ end }}
 
-{{ if eq .Values.platform.fileserver.objectStore.type "native" }}
+{{ if eq .Values.phoros.objectStore.type "native" }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -31,11 +31,11 @@ metadata:
     app.kubernetes.io/part-of: fileserver
     {{- include "charts.labels" . | nindent 4 }}
 spec:
-  storageClassName: {{ .Values.platform.fileserver.storageClass }}
+  storageClassName: {{ .Values.phoros.storageClass }}
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.platform.fileserver.capacity }}
+      storage: {{ .Values.phoros.capacity }}
 
 {{ end }}

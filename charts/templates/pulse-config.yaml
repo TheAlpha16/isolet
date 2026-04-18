@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pulse-config
+  namespace: platform
+  labels:
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: pulse
+    {{- include "charts.labels" . | nindent 4 }}
+data:
+  PHX_SERVER: "true"
+  PORT: "4000"
+  PHX_HOST: {{ .Values.event.domain | quote }}
+  REDIS_URL: {{ .Values.valkey.address | quote }}
+  KAFKA_BROKERS: {{ .Values.pulse.kafka.brokers | quote }}
+  KAFKA_TOPIC: {{ .Values.pulse.kafka.topic | quote }}
+  KAFKA_GROUP_ID: {{ .Values.pulse.kafka.groupId | quote }}
+  KAFKA_CLIENT_ID: {{ .Values.pulse.kafka.clientId | quote }}

@@ -2,6 +2,12 @@
 FROM golang:1.25 AS builder
 ARG TARGETOS
 ARG TARGETARCH
+ARG EXTRA_CA_CERT=""
+
+RUN if [ -n "$EXTRA_CA_CERT" ]; then \
+    echo "$EXTRA_CA_CERT" > /usr/local/share/ca-certificates/extra.crt && \
+    update-ca-certificates; \
+fi
 
 WORKDIR /workspace
 # Copy the Go Modules manifests

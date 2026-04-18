@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/part-of: ui
     {{- include "charts.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.ui.replicas }}
   selector:
     matchLabels:
       app.kubernetes.io/component: deployment
@@ -23,8 +23,8 @@ spec:
     spec:
       containers:
         - name: ui
-          image: "{{ .Values.platform.ui.image }}:{{ .Values.platform.ui.version | default "latest" }}"
-          imagePullPolicy: Always
+          image: "{{ .Values.ui.image }}:{{ .Values.ui.version | default "latest" }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | default "Always" }}
           resources:
             limits:
               memory: "512Mi"

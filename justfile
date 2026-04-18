@@ -21,41 +21,52 @@ help:
 
 # --- Common commands ---
 
-# Build the docker image
-docker-build RESOURCE TAG="":
+# Set up a multi-platform buildx builder.
+setup-builder CERT="":
 	#!/usr/bin/env bash
+	set -euo pipefail
+	if ! docker buildx inspect isolet-builder > /dev/null 2>&1; then
+		docker buildx create --name isolet-builder --driver docker-container --bootstrap --use
+		echo "[#] created buildx builder 'isolet-builder'"
+	else
+		docker buildx inspect --bootstrap isolet-builder > /dev/null
+		docker buildx use isolet-builder
+	fi
+	if [ -n "{{CERT}}" ] && [ -f "{{CERT}}" ]; then
+		CONTAINER="buildx_buildkit_isolet-builder0"
+		echo "[#] installing CA cert into buildx builder"
+		docker cp "{{CERT}}" "$CONTAINER:/tmp/extra.crt"
+		docker exec "$CONTAINER" sh -c \
+			"cat /tmp/extra.crt >> /etc/ssl/certs/ca-certificates.crt"
+		docker restart "$CONTAINER" > /dev/null
+		sleep 2
+		echo "[#] builder ready with CA cert"
+	fi
+
+# Build and push the docker image (linux/amd64 + linux/arm64).
+docker-build RESOURCE TAG="" CERT="":
+	#!/usr/bin/env bash
+	set -euo pipefail
+	just setup-builder {{CERT}}
 	cd {{RESOURCE}}
 	if [ -z "{{TAG}}" ]; then
 		TAG=$(cat VERSION)
 	else
 		TAG="{{TAG}}"
 	fi
-	echo "[#] building docker image for {{RESOURCE}} with tag $TAG"
-	docker build -t {{REGISTRY}}/isolet-{{RESOURCE}}:$TAG .
-	docker build -t {{REGISTRY}}/isolet-{{RESOURCE}}:latest .
-	echo "[#] built docker image for {{RESOURCE}} with tag $TAG"
-
-# Push the docker image to the registry
-docker-push RESOURCE TAG="":
-	#!/usr/bin/env bash
-	cd {{RESOURCE}}
-	if [ -z "{{TAG}}" ]; then
-		TAG=$(cat VERSION)
-	else
-		TAG="{{TAG}}"
+	BUILD_ARGS=()
+	if [ -n "{{CERT}}" ] && [ -f "{{CERT}}" ]; then
+		BUILD_ARGS+=(--build-arg "EXTRA_CA_CERT=$(cat \"{{CERT}}\")")
 	fi
-	if ! docker image inspect {{REGISTRY}}/isolet-{{RESOURCE}}:$TAG > /dev/null 2>&1; then
-		echo "[!] docker image for {{RESOURCE}} with tag $TAG not found locally. Building it first..."
-		just docker-build {{RESOURCE}} $TAG
-	fi
-	echo "[#] pushing docker image for {{RESOURCE}} with tag $TAG to registry"
-	docker push {{REGISTRY}}/isolet-{{RESOURCE}}:$TAG
-	docker push {{REGISTRY}}/isolet-{{RESOURCE}}:latest
-	echo "[#] pushed docker image for {{RESOURCE}} with tag $TAG to registry"
-
-build-push RESOURCE TAG="":
-	just docker-build {{RESOURCE}} {{TAG}}
-	just docker-push {{RESOURCE}} {{TAG}}
+	echo "[#] building and pushing docker image for {{RESOURCE}} with tag $TAG (linux/amd64,linux/arm64)"
+	docker buildx build \
+		--platform linux/amd64,linux/arm64 \
+		"${BUILD_ARGS[@]}" \
+		-t {{REGISTRY}}/isolet-{{RESOURCE}}:$TAG \
+		-t {{REGISTRY}}/isolet-{{RESOURCE}}:latest \
+		--push \
+		.
+	echo "[#] pushed {{RESOURCE}}:$TAG"
 
 # Bump version (usage: just bump RESOURCE patch | minor | major)
 bump RESOURCE LEVEL:
@@ -68,22 +79,14 @@ bump RESOURCE LEVEL:
 	git commit -m "chore({{RESOURCE}}): bump version to $NEW"
 
 # Build all services
-build-all:
-	just docker-build {{ORACLE}}
-	just docker-build {{UI}}
-	just docker-build {{TIDE}}
-	just docker-build {{PROXY}}
-	just docker-build {{PULSE}}
-	just docker-build {{HERALD}}
+build-all CERT="":
+	just docker-build {{ORACLE}} "" {{CERT}}
+	just docker-build {{UI}} "" {{CERT}}
+	just docker-build {{TIDE}} "" {{CERT}}
+	just docker-build {{PROXY}} "" {{CERT}}
+	just docker-build {{PULSE}} "" {{CERT}}
+	just docker-build {{HERALD}} "" {{CERT}}
 
-# Push all services
-push-all:
-	just docker-push {{ORACLE}}
-	just docker-push {{UI}}
-	just docker-push {{TIDE}}
-	just docker-push {{PROXY}}
-	just docker-push {{PULSE}}
-	just docker-push {{HERALD}}
 # --- API commands ---
 
 # Run the API service
