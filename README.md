@@ -163,18 +163,18 @@ Each service has a `VERSION` file that is used as the default tag when no tag is
 Each service is configured via environment variables. See the service-level documentation for the full list:
 
 - **Oracle** — [`oracle/AGENTS.md`](./oracle/AGENTS.md) (configuration section)
-- **Tide** — [`tide/README.md`](./tide/README.md)
+- **Tide** — [`tide/AGENTS.md`](./tide/AGENTS.md)
 - **Pulse** — [`pulse/AGENTS.md`](./pulse/AGENTS.md)
 - **Herald** — [`herald/AGENTS.md`](./herald/AGENTS.md)
 - **Proxy** — [`proxy/AGENTS.md`](./proxy/AGENTS.md)
 
 ## Contributing
 
-Each service has an `AGENTS.md` (or `README.md` for Tide) that covers architecture, key patterns, development workflow, and common pitfalls. Start there before touching a service.
+Each service has an `AGENTS.md` that covers architecture, key patterns, development workflow, and common pitfalls. Start there before touching a service.
 
 ```
 oracle/AGENTS.md   — API server, Kafka consumer, domain model
-tide/README.md     — Kubernetes operator, CRD, reconciler
+tide/AGENTS.md     — Kubernetes operator, CRD, reconciler
 pulse/AGENTS.md    — Real-time WebSocket gateway
 herald/AGENTS.md   — Event emitter, Kafka producer
 ui/AGENTS.md       — Next.js frontend

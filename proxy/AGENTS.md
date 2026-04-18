@@ -73,7 +73,7 @@ The proxy is included in `docker-compose.yaml` and exposes port 80:
 docker compose up proxy
 ```
 
-In local dev, `PULSE_URL` defaults to `ui:3000` (proxying through the UI dev server) because Pulse is not included in the compose stack. For full WebSocket testing, run Pulse separately and update `PULSE_URL`.
+Pulse is not included in the local compose stack and `PULSE_URL` is not set by default, so `/socket` will not work locally unless you explicitly provide `PULSE_URL`. For full WebSocket testing, run Pulse separately and set `PULSE_URL` to its address (e.g. `pulse:4000`).
 
 ---
 
