@@ -1,8 +1,9 @@
 data "external_schema" "gorm" {
   program = [
+    "env",
+    "GOWORK=off",
     "go",
     "run",
-    "-mod=mod",
     "./cmd/migrate",
   ]
 }
