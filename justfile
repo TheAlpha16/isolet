@@ -200,6 +200,36 @@ herald-tidy:
 herald-version:
 	@cat {{HERALD}}/VERSION
 
+# --- Database / Atlas commands ---
+
+# Generate a migration from GORM model diff (NAME is optional: just db-diff add_users)
+db-diff NAME="":
+	cd {{ORACLE}} && atlas migrate diff --env gorm {{ NAME }}
+
+# Create a blank named migration
+db-new NAME:
+	cd {{ORACLE}} && atlas migrate new --env gorm {{ NAME }}
+
+# Apply pending migrations to local compose DB
+db-apply:
+	cd {{ORACLE}} && atlas migrate apply --env local
+
+# Apply pending migrations to an arbitrary URL
+db-apply-url URL:
+	atlas migrate apply --dir "file://oracle/migrations" --url "{{ URL }}"
+
+# Show migration status against local compose DB
+db-status:
+	cd {{ORACLE}} && atlas migrate status --env local
+
+# Lint the latest migration for destructive / safety issues
+db-lint:
+	cd {{ORACLE}} && atlas migrate lint --env gorm --latest 1
+
+# Inspect current live schema (local compose DB)
+db-inspect:
+	atlas schema inspect --url "postgres://postgres:postgres@localhost:5432/isolet?sslmode=disable"
+
 # --- Kubernetes/Helm commands ---
 
 # Install/upgrade the Helm chart
