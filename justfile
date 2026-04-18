@@ -43,46 +43,8 @@ setup-builder CERT="":
 		echo "[#] builder ready with CA cert"
 	fi
 
-# Build the docker image (linux/amd64 + linux/arm64).
+# Build and push the docker image (linux/amd64 + linux/arm64).
 docker-build RESOURCE TAG="" CERT="":
-	#!/usr/bin/env bash
-	set -euo pipefail
-	just setup-builder {{CERT}}
-	cd {{RESOURCE}}
-	if [ -z "{{TAG}}" ]; then
-		TAG=$(cat VERSION)
-	else
-		TAG="{{TAG}}"
-	fi
-	BUILD_ARGS=()
-	if [ -n "{{CERT}}" ] && [ -f "{{CERT}}" ]; then
-		BUILD_ARGS+=(--build-arg "EXTRA_CA_CERT=$(cat \"{{CERT}}\")")
-	fi
-	echo "[#] building docker image for {{RESOURCE}} with tag $TAG (linux/amd64,linux/arm64)"
-	docker buildx build \
-		--platform linux/amd64,linux/arm64 \
-		"${BUILD_ARGS[@]}" \
-		-t {{REGISTRY}}/isolet-{{RESOURCE}}:$TAG \
-		-t {{REGISTRY}}/isolet-{{RESOURCE}}:latest \
-		.
-	echo "[#] built docker image for {{RESOURCE}} with tag $TAG"
-
-# Push the docker image to the registry (re-push an already-built image)
-docker-push RESOURCE TAG="":
-	#!/usr/bin/env bash
-	cd {{RESOURCE}}
-	if [ -z "{{TAG}}" ]; then
-		TAG=$(cat VERSION)
-	else
-		TAG="{{TAG}}"
-	fi
-	echo "[#] pushing docker image for {{RESOURCE}} with tag $TAG to registry"
-	docker push {{REGISTRY}}/isolet-{{RESOURCE}}:$TAG
-	docker push {{REGISTRY}}/isolet-{{RESOURCE}}:latest
-	echo "[#] pushed docker image for {{RESOURCE}} with tag $TAG to registry"
-
-# Build and push a service (linux/amd64 + linux/arm64).
-build-push RESOURCE TAG="" CERT="":
 	#!/usr/bin/env bash
 	set -euo pipefail
 	just setup-builder {{CERT}}
@@ -125,14 +87,6 @@ build-all CERT="":
 	just docker-build {{PULSE}} "" {{CERT}}
 	just docker-build {{HERALD}} "" {{CERT}}
 
-# Push all services
-push-all:
-	just docker-push {{ORACLE}}
-	just docker-push {{UI}}
-	just docker-push {{TIDE}}
-	just docker-push {{PROXY}}
-	just docker-push {{PULSE}}
-	just docker-push {{HERALD}}
 # --- API commands ---
 
 # Run the API service

@@ -57,7 +57,7 @@ metadata:
     app.kubernetes.io/part-of: proxy
     {{- include "charts.labels" . | nindent 4 }}
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: {{ .Values.event.publicURL }}
+    external-dns.alpha.kubernetes.io/hostname: {{ .Values.event.domain }}
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
 spec:
   type: LoadBalancer

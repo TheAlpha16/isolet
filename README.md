@@ -108,15 +108,22 @@ event:
   domain: ctf.example.com
   publicURL: https://ctf.example.com
   teamSize: 4
-  emailVerification: true
+  registration:
+    emailVerification: true
+    passwordReset: true
 
-isolet:
-  concurrentInstances: 2    # max instances per team
-  defaultCPU: 15m
-  defaultMemory: 32Mi
-  limitCPU: 50m
-  limitMemory: 128Mi
-  defaultInstanceTime: 30m
+instances:
+  maxConcurrent: 2
+  resources:
+    requests:
+      cpu: "15m"
+      memory: "32Mi"
+    limits:
+      cpu: "50m"
+      memory: "128Mi"
+  lifetime:
+    default: "30m"
+    max: "24h"
 
 secrets:
   signing:

@@ -31,8 +31,6 @@ data:
   VALKEY_USE_TLS: {{ .Values.valkey.useTLS | quote }}
 
   # Token
-  TOKEN_MAX_SESSIONS_PER_USER: {{ .Values.oracle.token.maxSessionsPerUser | quote }}
-  TOKEN_MAX_PASSWORD_RESET_SESSIONS: {{ .Values.oracle.token.maxPasswordResetSessions | quote }}
   TOKEN_EMAIL_VERIFICATION_VALIDITY: {{ .Values.oracle.token.emailVerificationValidity | quote }}
   TOKEN_AUTH_VALIDITY: {{ .Values.oracle.token.authValidity | quote }}
   TOKEN_REALTIME_VALIDITY: {{ .Values.oracle.token.realtimeValidity | quote }}
@@ -43,7 +41,6 @@ data:
   CONFIG_VARS_REFRESH_INTERVAL: {{ .Values.oracle.configVars.refreshInterval | quote }}
 
   # SMTP
-  SMTP_SENDER: {{ .Values.oracle.smtp.sender | quote }}
   SMTP_RETRIES: {{ .Values.oracle.smtp.retries | quote }}
   SMTP_TIMEOUT: {{ .Values.oracle.smtp.timeout | quote }}
   SMTP_CHANNEL_SIZE: {{ .Values.oracle.smtp.channelSize | quote }}
@@ -61,8 +58,6 @@ data:
   INSTANCE_START_TIMEOUT: {{ .Values.instances.timeouts.start | quote }}
   INSTANCE_STOP_TIMEOUT: {{ .Values.instances.timeouts.stop | quote }}
   INSTANCE_EXTEND_TIMEOUT: {{ .Values.instances.timeouts.extend | quote }}
-  INSTANCE_CONCURRENT: {{ .Values.instances.maxConcurrent | quote }}
-
   # Tide / Kubernetes
   K8S_INSTANCE_API_VERSION: {{ .Values.tide.apiVersion | quote }}
   K8S_INSTANCE_KIND: "Instance"

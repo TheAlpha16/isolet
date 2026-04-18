@@ -16,10 +16,13 @@ data:
     CREATE TYPE deployment_type AS ENUM ('ssh', 'nc', 'http');
     CREATE TYPE token_type AS ENUM ('password_reset', 'invite_token');
 
-    -- Create config table
-    CREATE TABLE IF NOT EXISTS config(
-        key text PRIMARY KEY,
-        value text
+    -- Create config_vars table (also auto-migrated by Oracle on startup)
+    CREATE TABLE IF NOT EXISTS config_vars (
+        id bigserial PRIMARY KEY,
+        created_at bigint DEFAULT 0,
+        updated_at bigint DEFAULT 0,
+        key text NOT NULL UNIQUE,
+        value text NOT NULL
     );
 
     -- Create categories table
@@ -621,23 +624,23 @@ data:
     CREATE INDEX idx_solves_chall ON solves(chall_id);
     CREATE INDEX idx_hints_chall ON hints(chall_id);
 
-    -- Populate the config table
-    INSERT INTO config (key, value) VALUES ('EVENT_START', '{{ .Values.event.start }}'),
-    ('EVENT_END', '{{ .Values.event.end }}'),
-    ('POST_EVENT', '{{ .Values.event.postEvent }}'),
-    ('TEAM_LEN', '{{ .Values.event.teamSize }}'),
-    ('CTF_NAME', '{{ .Values.event.name }}'),
-    ('CONCURRENT_INSTANCES', '{{ .Values.instances.maxConcurrent }}'),
-    ('INSTANCE_HOSTNAME', '{{ .Values.event.domain }}'),
-    ('INSTANCE_TIME', '{{ .Values.instances.lifetime.default }}'),
-    ('MAX_INSTANCE_TIME', '{{ .Values.instances.lifetime.max }}'),
-    ('EMAIL_ID', '{{ .Values.secrets.smtp.user | b64dec }}'),
-    ('EMAIL_AUTH', '{{ .Values.secrets.smtp.password | b64dec }}'),
-    ('PUBLIC_URL', '{{ .Values.event.publicURL }}'),
-    ('SMTP_HOST', '{{ .Values.secrets.smtp.host | b64dec }}'),
-    ('SMTP_PORT', '{{ .Values.secrets.smtp.port | b64dec }}'),
-    ('USER_REGISTRATION', '{{ .Values.event.registration.users }}'),
-    ('EMAIL_VERIFICATION', '{{ .Values.event.registration.emailVerification }}');
+    -- Seed config_vars with event and auth settings.
+    -- SMTP credentials (smtp_host, smtp_port, smtp_user, smtp_password) must be
+    -- seeded separately after deployment to avoid embedding plaintext secrets here.
+    INSERT INTO config_vars (key, value) VALUES
+    ('event_name',                      '{{ .Values.event.name }}'),
+    ('event_public_url',                '{{ .Values.event.publicURL }}'),
+    ('event_start',                     '{{ .Values.event.start }}'),
+    ('event_end',                       '{{ .Values.event.end }}'),
+    ('event_post_mode',                 '{{ .Values.event.postEvent }}'),
+    ('team_max_size',                   '{{ .Values.event.teamSize }}'),
+    ('instance_domain',                 '{{ .Values.event.domain }}'),
+    ('email_verification_enabled',      '{{ .Values.event.registration.emailVerification }}'),
+    ('auth_password_reset_enabled',     '{{ .Values.event.registration.passwordReset }}'),
+    ('auth_max_sessions',               '{{ .Values.oracle.token.maxSessionsPerUser }}'),
+    ('auth_password_reset_max_sessions','{{ .Values.oracle.token.maxPasswordResetSessions }}'),
+    ('email_from',                      '{{ .Values.oracle.smtp.sender }}')
+    ON CONFLICT (key) DO NOTHING;
 
     -- Create admin defined users
     {{- if .Values.users }}
