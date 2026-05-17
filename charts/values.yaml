@@ -24,7 +24,7 @@ event:
 
 # Oracle — REST API + Kafka consumer (two deployments, same image)
 oracle:
-  image: docker.io/thealpha16/isolet-api
+  image: docker.io/thealpha16/isolet-oracle
   version: "2.0.0"
   replicas: 2          # oracle-rest
   consumerReplicas: 1  # oracle-consumer

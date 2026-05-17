@@ -39,7 +39,11 @@ jobs:
               SERVICES+=("$svc")
             fi
           done
-          echo "services=$(printf '%s\n' "${SERVICES[@]}" | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
+          if [ ${#SERVICES[@]} -eq 0 ]; then
+            echo "services=[]" >> "$GITHUB_OUTPUT"
+          else
+            echo "services=$(printf '%s\n' "${SERVICES[@]}" | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
+          fi
 
   build:
     needs: changes
