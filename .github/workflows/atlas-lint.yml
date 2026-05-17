@@ -1,0 +1,42 @@
+name: atlas-lint
+
+on:
+  pull_request:
+    paths:
+      - "oracle/migrations/**"
+      - "oracle/internal/repository/**"
+      - "oracle/cmd/migrate/**"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: dev
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: oracle/go.mod
+          cache-dependency-path: oracle/go.sum
+
+      - uses: ariga/setup-atlas@v0
+
+      - name: Validate migrations
+        working-directory: oracle
+        run: atlas migrate validate --env gorm --dev-url "postgres://postgres:postgres@127.0.0.1:5432/dev?sslmode=disable"
