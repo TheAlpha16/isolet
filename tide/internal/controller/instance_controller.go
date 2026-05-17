@@ -59,15 +59,6 @@ const (
 
 	// ImmediateRequeueInterval is for immediate requeue for time-based transitions
 	ImmediateRequeueInterval = 1 * time.Second
-
-	ReasonReconciliationFailed = "ReconciliationFailed"
-	LabelValInstance           = "instance"
-	LabelValTideController     = "tide-controller"
-	LabelValDeployment         = "deployment"
-	TeamDynamic                = "dynamic"
-	EntryPointWeb              = "web"
-	EntryPointWebsecure        = "websecure"
-	RouteKindRule              = "Rule"
 )
 
 // +kubebuilder:rbac:groups=challenges.isolet.dev,resources=instances,verbs=get;list;watch;create;update;patch;delete
@@ -188,7 +179,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		meta.SetStatusCondition(&instance.Status.Conditions, metav1.Condition{
 			Type:    utils.ConditionDeploymentReady,
 			Status:  metav1.ConditionFalse,
-			Reason:  ReasonReconciliationFailed,
+			Reason:  utils.ReasonReconciliationFailed,
 			Message: err.Error(),
 		})
 		statusChanged = true
@@ -235,7 +226,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		meta.SetStatusCondition(&instance.Status.Conditions, metav1.Condition{
 			Type:    utils.ConditionServiceReady,
 			Status:  metav1.ConditionFalse,
-			Reason:  ReasonReconciliationFailed,
+			Reason:  utils.ReasonReconciliationFailed,
 			Message: err.Error(),
 		})
 		statusChanged = true
@@ -268,7 +259,7 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		meta.SetStatusCondition(&instance.Status.Conditions, metav1.Condition{
 			Type:    utils.ConditionIngressReady,
 			Status:  metav1.ConditionFalse,
-			Reason:  ReasonReconciliationFailed,
+			Reason:  utils.ReasonReconciliationFailed,
 			Message: err.Error(),
 		})
 		statusChanged = true
@@ -411,9 +402,9 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 			Labels: map[string]string{
 				// standard labels
 				utils.LabelAppName:      instance.Name,
-				utils.LabelAppPartOf:    LabelValInstance,
-				utils.LabelAppManagedBy: LabelValTideController,
-				utils.LabelAppComponent: LabelValDeployment,
+				utils.LabelAppPartOf:    utils.LabelValInstance,
+				utils.LabelAppManagedBy: utils.LabelValTideController,
+				utils.LabelAppComponent: utils.LabelValDeployment,
 
 				// tide specific labels
 				utils.LabelChallengeID:   instance.Name,
@@ -424,7 +415,7 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 					if instance.Spec.Team != nil {
 						return strconv.FormatInt(instance.Spec.Team.ID, 10)
 					}
-					return TeamDynamic
+					return utils.TeamDynamic
 				}(),
 			},
 		},
@@ -432,7 +423,7 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					utils.LabelAppName:      instance.Name,
-					utils.LabelAppComponent: LabelValDeployment,
+					utils.LabelAppComponent: utils.LabelValDeployment,
 					utils.LabelChallengeID:  instance.Name,
 				},
 			},
@@ -440,7 +431,7 @@ func (r *InstanceReconciler) reconcileDeployment(ctx context.Context, instance *
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						utils.LabelAppName:      instance.Name,
-						utils.LabelAppComponent: LabelValDeployment,
+						utils.LabelAppComponent: utils.LabelValDeployment,
 						utils.LabelChallengeID:  instance.Name,
 					},
 				},
@@ -523,8 +514,8 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 			Labels: map[string]string{
 				// standard labels
 				utils.LabelAppName:      instance.Name,
-				utils.LabelAppPartOf:    LabelValInstance,
-				utils.LabelAppManagedBy: LabelValTideController,
+				utils.LabelAppPartOf:    utils.LabelValInstance,
+				utils.LabelAppManagedBy: utils.LabelValTideController,
 				utils.LabelAppComponent: "service",
 
 				// tide specific labels
@@ -536,14 +527,14 @@ func (r *InstanceReconciler) reconcileService(ctx context.Context, instance *cha
 					if instance.Spec.Team != nil {
 						return strconv.FormatInt(instance.Spec.Team.ID, 10)
 					}
-					return TeamDynamic
+					return utils.TeamDynamic
 				}(),
 			},
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
 				utils.LabelAppName:      instance.Name,
-				utils.LabelAppComponent: LabelValDeployment,
+				utils.LabelAppComponent: utils.LabelValDeployment,
 			},
 			Type: corev1.ServiceTypeClusterIP,
 		},
@@ -712,8 +703,8 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 			Labels: map[string]string{
 				// standard labels
 				"app.kubernetes.io/name":       instance.Name,
-				"app.kubernetes.io/part-of":    LabelValInstance,
-				"app.kubernetes.io/managed-by": LabelValTideController,
+				"app.kubernetes.io/part-of":    utils.LabelValInstance,
+				"app.kubernetes.io/managed-by": utils.LabelValTideController,
 				"app.kubernetes.io/component":  "ingress",
 
 				// tide specific labels
@@ -725,12 +716,12 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 					if instance.Spec.Team != nil {
 						return strconv.FormatInt(instance.Spec.Team.ID, 10)
 					}
-					return TeamDynamic
+					return utils.TeamDynamic
 				}(),
 			},
 		},
 		Spec: traefikv1alpha1.IngressRouteSpec{
-			EntryPoints: []string{EntryPointWeb, EntryPointWebsecure},
+			EntryPoints: []string{utils.EntryPointWeb, utils.EntryPointWebsecure},
 			TLS: &traefikv1alpha1.TLS{
 				SecretName: "challenge-certs",
 			},
@@ -749,7 +740,7 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 		resolvedEndpoints = append(resolvedEndpoints, resEndpoint)
 		routes = []traefikv1alpha1.Route{
 			{
-				Kind:  RouteKindRule,
+				Kind:  utils.RouteKindRule,
 				Match: fmt.Sprintf("Host(`%s`)", resEndpoint.Hostname),
 				Services: []traefikv1alpha1.Service{
 					{LoadBalancerSpec: traefikv1alpha1.LoadBalancerSpec{
@@ -769,7 +760,7 @@ func (r *InstanceReconciler) reconcileIngressRoute(ctx context.Context, instance
 			}
 			resolvedEndpoints = append(resolvedEndpoints, resEP)
 			route := traefikv1alpha1.Route{
-				Kind:  RouteKindRule,
+				Kind:  utils.RouteKindRule,
 				Match: fmt.Sprintf("Host(`%s-%s.%s.%s`)", ep.Name, instance.Name, instance.Spec.Challenge.Slug, instance.Spec.Challenge.Domain),
 				Services: []traefikv1alpha1.Service{
 					{
@@ -913,7 +904,7 @@ func getTeamID(instance *challengesv1.Instance) string {
 	if instance.Spec.Team != nil {
 		return strconv.FormatInt(instance.Spec.Team.ID, 10)
 	}
-	return TeamDynamic
+	return utils.TeamDynamic
 }
 
 // SetupWithManager sets up the controller with the Manager.

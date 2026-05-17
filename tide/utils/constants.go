@@ -1,6 +1,9 @@
 package utils
 
 const (
+	// Reconciliation Reasons
+	ReasonReconciliationFailed = "ReconciliationFailed"
+
 	// Event Reasons
 	EventReasonCreated                = "Created"
 	EventReasonStatusUpdateFailed     = "StatusUpdateFailed"
@@ -37,6 +40,17 @@ const (
 	LabelChallengeCID  = "challenges.isolet.dev/challenge-id"
 	LabelChallengeType = "challenges.isolet.dev/type"
 	LabelTeamID        = "challenges.isolet.dev/team"
+
+	// Label Values
+	LabelValInstance       = "instance"
+	LabelValTideController = "tide-controller"
+	LabelValDeployment     = "deployment"
+	TeamDynamic            = "dynamic"
+
+	// Traefik
+	EntryPointWeb       = "web"
+	EntryPointWebsecure = "websecure"
+	RouteKindRule       = "Rule"
 
 	// Condition Types
 	ConditionDeploymentReady = "DeploymentReady"
