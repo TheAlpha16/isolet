@@ -69,3 +69,29 @@ jobs:
       - run: mix compile --warnings-as-errors
         env:
           MIX_ENV: dev
+
+  version-check:
+    name: Version bump check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check VERSION bumped for changed services
+        run: |
+          BASE=${{ github.base_ref }}
+          git fetch origin "$BASE"
+          CHANGED_DIRS=$(git diff --name-only "origin/$BASE...HEAD" \
+            | grep -E '^(oracle|tide|herald|proxy|pulse|ui)/' \
+            | grep -v '/VERSION$' \
+            | cut -d/ -f1 | sort -u)
+
+          FAILED=false
+          for service in $CHANGED_DIRS; do
+            if ! git diff "origin/$BASE...HEAD" -- "$service/VERSION" | grep -qE '^\+[0-9]'; then
+              echo "::error file=$service/VERSION::$service has changes but VERSION was not bumped"
+              FAILED=true
+            fi
+          done
+          [ "$FAILED" = "true" ] && exit 1 || exit 0

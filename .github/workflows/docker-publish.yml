@@ -1,0 +1,76 @@
+name: docker-publish
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.set-matrix.outputs.services }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            oracle:
+              - 'oracle/**'
+            tide:
+              - 'tide/**'
+            herald:
+              - 'herald/**'
+            proxy:
+              - 'proxy/**'
+            pulse:
+              - 'pulse/**'
+            ui:
+              - 'ui/**'
+
+      - name: Build service matrix
+        id: set-matrix
+        run: |
+          SERVICES=()
+          for svc in oracle tide herald proxy pulse ui; do
+            val=$(echo '${{ toJson(steps.filter.outputs) }}' | jq -r --arg s "$svc" '.[$s]')
+            if [ "$val" = "true" ]; then
+              SERVICES+=("$svc")
+            fi
+          done
+          echo "services=$(printf '%s\n' "${SERVICES[@]}" | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: changes
+    if: needs.changes.outputs.services != '[]' && needs.changes.outputs.services != ''
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJson(needs.changes.outputs.services) }}
+    name: Build & push ${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read VERSION
+        id: version
+        run: echo "tag=$(cat ${{ matrix.service }}/VERSION)" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.service }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/isolet-${{ matrix.service }}:${{ steps.version.outputs.tag }}
+            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/isolet-${{ matrix.service }}:latest
