@@ -74,8 +74,13 @@ bump RESOURCE LEVEL:
 	OLD=$(cat {{RESOURCE}}/VERSION)
 	NEW=$(semver --increment {{LEVEL}} $OLD)
 	echo $NEW > {{RESOURCE}}/VERSION
+	FILES="{{RESOURCE}}/VERSION"
+	if grep -q "^{{RESOURCE}}:" charts/values.yaml; then
+		sed -i '' "/^{{RESOURCE}}:/,/^[^ ]/ s/^\(  version: \"\)[^\"]*\"/\1$NEW\"/" charts/values.yaml
+		FILES="$FILES charts/values.yaml"
+	fi
 	echo "Bumped {{RESOURCE}} version: $OLD → $NEW"
-	git add {{RESOURCE}}/VERSION
+	git add $FILES
 	git commit -m "chore({{RESOURCE}}): bump version to $NEW"
 
 # Build all services
