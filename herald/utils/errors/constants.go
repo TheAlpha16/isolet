@@ -43,7 +43,7 @@ var msgMap = map[ErrorCode]string{
 	// Fact errors
 	ErrFactInvalidKey:       "fact has invalid key",
 	ErrFactInvalidType:      "fact has invalid type",
-	ErrFactInvalidOccuredAt: "fact has invalid occured at timestamp",
+	ErrFactInvalidOccuredAt: "fact has invalid occurred at timestamp",
 
 	// Kafka errors
 	ErrKafkaProducerCreationFailed: "failed to create kafka producer",

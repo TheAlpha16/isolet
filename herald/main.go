@@ -27,7 +27,9 @@ func main() {
 	wg := &sync.WaitGroup{}
 	config := utils.GetConfig()
 	tracer.InitSentry(config)
-	cache.GetCache(globalCtx)
+	if _, err := cache.GetCache(globalCtx); err != nil {
+		appLogger.Fatal("failed to initialize cache", zap.Error(err))
+	}
 
 	kafkaClient, err := kafka.NewClient()
 	if err != nil {

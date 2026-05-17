@@ -35,6 +35,9 @@ linters:
           - dupl
           - lll
         path: internal/*
+      - linters:
+          - lll
+        path: utils/config\.go
     paths:
       - third_party$
       - builtin$
