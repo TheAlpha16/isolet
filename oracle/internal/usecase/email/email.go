@@ -87,13 +87,13 @@ func (e *emailImpl) SendEmailAsync(ctx context.Context, input *emailDom.EmailInp
 }
 
 func (e *emailImpl) getBody(ctx context.Context, templatePath string, data *emailDom.TemplateInput) (string, error) {
-	template, err := template.ParseFS(templateFS, templatePath)
+	tmpl, err := template.ParseFS(templateFS, templatePath)
 	if err != nil {
 		return "", errorDom.Raise(ctx, errorDom.ErrEmailTemplateFetch, "", err, common.ExtraData{"path": templatePath})
 	}
 
 	var buf bytes.Buffer
-	if err := template.Execute(&buf, data); err != nil {
+	if err := tmpl.Execute(&buf, data); err != nil {
 		return "", errorDom.Raise(ctx, errorDom.ErrEmailTemplateExecute, "", err, common.ExtraData{"path": templatePath})
 	}
 

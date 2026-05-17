@@ -16,6 +16,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const smtpRecipientsKey = "recipients"
+
 type smtpImpl struct {
 	config   *Config
 	sender   gomail.SendCloser
@@ -41,11 +43,11 @@ func (s *smtpImpl) SendAsync(ctx context.Context, email *emailDom.Email) error {
 
 	select {
 	case <-s.ctx.Done():
-		return errorDom.Raise(ctx, errorDom.ErrSMTPContextCanceled, "", nil, common.ExtraData{"recipients": recipients})
+		return errorDom.Raise(ctx, errorDom.ErrSMTPContextCanceled, "", nil, common.ExtraData{smtpRecipientsKey: recipients})
 	case s.messages <- message:
 		return nil
 	default:
-		return errorDom.Raise(ctx, errorDom.ErrSMTPQueueFull, "", nil, common.ExtraData{"recipients": recipients})
+		return errorDom.Raise(ctx, errorDom.ErrSMTPQueueFull, "", nil, common.ExtraData{smtpRecipientsKey: recipients})
 	}
 }
 
@@ -73,7 +75,9 @@ func (s *smtpImpl) sendEmail(message *gomail.Message) error {
 	}
 	err = gomail.Send(sender, message)
 	if err != nil {
-		return errorDom.Raise(s.ctx, errorDom.ErrSMTPSendFailed, "", err, common.ExtraData{"recipients": message.GetHeader("To"), "subject": message.GetHeader("Subject")})
+		return errorDom.Raise(s.ctx, errorDom.ErrSMTPSendFailed, "", err, common.ExtraData{
+			smtpRecipientsKey: message.GetHeader("To"), "subject": message.GetHeader("Subject"),
+		})
 	}
 	return nil
 }
@@ -103,12 +107,7 @@ func (s *smtpImpl) handleEmail(message *gomail.Message) {
 	errorDom.RaiseToSentry(s.ctx, err)
 }
 
-func (s *smtpImpl) start() error {
-	// DEBUG
-	// if _, err := s.getSender(); err != nil {
-	// 	return err
-	// }
-
+func (s *smtpImpl) start() {
 	go func() {
 		resetChan := make(chan struct{}, 1)
 		timer := time.NewTimer(s.config.ConnTimeout)
@@ -140,7 +139,6 @@ func (s *smtpImpl) start() error {
 			}
 		}
 	}()
-	return nil
 }
 
 func (s *smtpImpl) closeSender() {
@@ -167,9 +165,7 @@ func NewSMTP(ctx context.Context, config *Config, wg *sync.WaitGroup) (SMTP, err
 		wg:       wg,
 	}
 
-	if err := smtp.start(); err != nil {
-		return nil, err
-	}
+	smtp.start()
 
 	utils.InterruptHandlerChannel <- func() {
 		cancel()

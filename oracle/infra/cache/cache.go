@@ -60,7 +60,8 @@ func (c *cache) WithTrace(ctx context.Context, operation string, key string) (co
 func NewClient(ctx context.Context, client valkey.Client) (Cache, error) {
 	var err error
 
-	tracer := otel.GetTracerProvider().Tracer("api.cache", trace.WithInstrumentationAttributes(attribute.String("cache.provider", "valkey")))
+	instAttr := trace.WithInstrumentationAttributes(attribute.String("cache.provider", "valkey"))
+	tracer := otel.GetTracerProvider().Tracer("api.cache", instAttr)
 
 	cache := &cache{
 		client: client,

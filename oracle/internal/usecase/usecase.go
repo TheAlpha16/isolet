@@ -52,22 +52,22 @@ type Usecases struct {
 	Manifest   manifestDom.Usecase
 }
 
-func New(ctx context.Context, wg *sync.WaitGroup, cache cache.Cache, repos *repository.Repositories, infra *infra.Infra, external *external.Services) *Usecases {
+func New(ctx context.Context, wg *sync.WaitGroup, c cache.Cache, repos *repository.Repositories, svc *infra.Infra, ext *external.Services) *Usecases {
 	// helpers
-	cv := cvUc.New(ctx, repos.ConfigVars, infra.CNC)
-	token := tokenUc.New(cache)
+	cv := cvUc.New(ctx, repos.ConfigVars, svc.CNC)
+	token := tokenUc.New(c)
 	email := emailUc.New(ctx, wg, cv)
 
 	// business
-	user := userUc.New(cache, repos.User, cv)
-	auth := authUc.New(user, token, cv, email, infra.JWT)
-	team := teamUc.New(repos.Team, user, auth, token, cv, infra.JWT)
+	user := userUc.New(c, repos.User, cv)
+	auth := authUc.New(user, token, cv, email, svc.JWT)
+	team := teamUc.New(repos.Team, user, auth, token, cv, svc.JWT)
 	event := eventUc.New(cv)
-	score := scoreUc.New(repos.Score, team, cache)
+	score := scoreUc.New(repos.Score, team, c)
 	challenge := challengeUc.New(repos.Challenge, repos.Instance, cv, score, wg)
-	profile := profileUc.New(cache, user, team, challenge)
+	profile := profileUc.New(c, user, team, challenge)
 	manifest := manifestUc.New(repos.Manifest)
-	instance := instanceUc.New(ctx, repos.Instance, external.Instance, cache, challenge, manifest, cv, wg)
+	instance := instanceUc.New(ctx, repos.Instance, ext.Instance, c, challenge, manifest, cv, wg)
 	fact := factUc.New(instance)
 
 	return &Usecases{

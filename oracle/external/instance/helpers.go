@@ -14,18 +14,15 @@ import (
 )
 
 // ensureInstanceReady waits until the instance is in a terminal state (Running, Failed, etc.)
-func (is *instanceSvc) ensureInstanceReady(ctx context.Context, old *tidev1.Instance, terminalStates ...tidev1.Phase) error {
+func (is *instanceSvc) ensureInstanceReady(
+	ctx context.Context, old *tidev1.Instance, terminalStates ...tidev1.Phase,
+) error {
 	var createdInst *tidev1.Instance
 	var err error
 
 	stateMap := make(map[tidev1.Phase]struct{})
 	for _, state := range terminalStates {
 		stateMap[state] = struct{}{}
-	}
-
-	createdInst, err = is.client.GetInstance(ctx, old.Name, old.Namespace)
-	if err != nil {
-		return errorDom.Raise(ctx, errorDom.ErrInstanceCreationFailed, "failed to get created instance", err, nil)
 	}
 
 	for {

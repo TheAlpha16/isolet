@@ -325,13 +325,13 @@ func (i *instanceImpl) runInstanceExpiryCleanup(ctx context.Context, interval ti
 	})
 }
 
-func New(ctx context.Context, repo instanceDom.Repository, service instanceDom.Service, cache cache.Cache, challengeUc challengeDom.Usecase, manifestUc manifestDom.Usecase, cvUc cvDom.Usecase, wg *sync.WaitGroup) instanceDom.Usecase {
+func New(ctx context.Context, repo instanceDom.Repository, service instanceDom.Service, c cache.Cache, challengeUc challengeDom.Usecase, manifestUc manifestDom.Usecase, cvUc cvDom.Usecase, wg *sync.WaitGroup) instanceDom.Usecase {
 	ctx, cancel := context.WithCancel(ctx)
 
 	inst := &instanceImpl{
 		repo:        repo,
 		service:     service,
-		cache:       cache,
+		cache:       c,
 		challengeUc: challengeUc,
 		manifestUc:  manifestUc,
 		cvUc:        cvUc,

@@ -12,11 +12,11 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-func CachedQuery[T any](ctx context.Context, cache cache.Cache, key string, ttl time.Duration, fetchFn func() (T, error)) (T, error) {
+func CachedQuery[T any](ctx context.Context, c cache.Cache, key string, ttl time.Duration, fetchFn func() (T, error)) (T, error) {
 	var zero T
 
 	// look in cache
-	val, err := cache.Get(ctx, key)
+	val, err := c.Get(ctx, key)
 	if err != nil {
 		if !errorDom.Is(err, errorDom.ErrCacheMiss) {
 			return zero, err
@@ -36,7 +36,7 @@ func CachedQuery[T any](ctx context.Context, cache cache.Cache, key string, ttl 
 	if err != nil {
 		return zero, err
 	}
-	if err := cache.SetWithTTL(ctx, key, serialized, ttl); err != nil {
+	if err := c.SetWithTTL(ctx, key, serialized, ttl); err != nil {
 		return zero, err
 	}
 

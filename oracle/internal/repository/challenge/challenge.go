@@ -109,7 +109,7 @@ func (challengeRepo *challengeRepo) GetUnlockedHints(ctx context.Context, teamID
 	var rows []*UnlockedHint
 
 	if err := challengeRepo.db.WithContext(ctx).Select("hint_id").Where("team_id = ?", teamID).Find(&rows).Error; err != nil {
-		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve unlocked hints", err, common.ExtraData{"team_id": teamID})
+		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve unlocked hints", err, common.ExtraData{utils.ContextKeyTeamID: teamID})
 	}
 
 	for _, row := range rows {
@@ -154,7 +154,7 @@ func (challengeRepo *challengeRepo) UnlockHint(ctx context.Context, uHint *chall
 				return errorDom.Raise(ctx, errorDom.ErrHintAlreadyUnlocked, "", nil, nil)
 			}
 		}
-		return errorDom.Raise(ctx, errorDom.ErrDBExecError, "failed to unlock hint", res.Error, common.ExtraData{"team_id": uHintModel.TeamID, "hint_id": uHintModel.HintID})
+		return errorDom.Raise(ctx, errorDom.ErrDBExecError, "failed to unlock hint", res.Error, common.ExtraData{utils.ContextKeyTeamID: uHintModel.TeamID, "hint_id": uHintModel.HintID})
 	}
 
 	if res.RowsAffected == 0 {
@@ -170,7 +170,7 @@ func (challengeRepo *challengeRepo) GetTeamSubmissions(ctx context.Context, team
 
 	err := challengeRepo.db.WithContext(ctx).Where("team_id = ?", teamID).Find(&submissions).Error
 	if err != nil {
-		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve submissions", err, common.ExtraData{"team_id": teamID})
+		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve submissions", err, common.ExtraData{utils.ContextKeyTeamID: teamID})
 	}
 
 	for _, submission := range submissions {
@@ -184,9 +184,9 @@ func (challengeRepo *challengeRepo) GetTeamSubmissions(ctx context.Context, team
 	return result, nil
 }
 
-func New(db *gorm.DB, cache cache.Cache) challengeDom.Repository {
+func New(db *gorm.DB, c cache.Cache) challengeDom.Repository {
 	return &challengeRepo{
 		db:    db,
-		cache: cache,
+		cache: c,
 	}
 }

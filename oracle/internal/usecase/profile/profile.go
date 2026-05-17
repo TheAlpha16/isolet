@@ -100,11 +100,11 @@ func (p *profileImpl) getTeamScoreAndRank(ctx context.Context, teamID int64) (ra
 	return int(teamScore), int(teamRank), nil
 }
 
-func New(cache cache.Cache, userUc userDom.Usecase, teamUc teamDom.Usecase, challengeUc challengeDom.Usecase) profileDom.Usecase {
+func New(c cache.Cache, userUc userDom.Usecase, teamUc teamDom.Usecase, challengeUc challengeDom.Usecase) profileDom.Usecase {
 	return &profileImpl{
 		userUc:      userUc,
 		teamUc:      teamUc,
 		challengeUc: challengeUc,
-		cache:       cache,
+		cache:       c,
 	}
 }

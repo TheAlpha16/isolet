@@ -46,6 +46,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "failed to load gorm schema: %v\n", err)
 		os.Exit(1)
 	}
-	io.WriteString(os.Stdout, enumTypes)
-	io.WriteString(os.Stdout, stmts)
+	_, _ = io.WriteString(os.Stdout, enumTypes)
+	_, _ = io.WriteString(os.Stdout, stmts)
 }

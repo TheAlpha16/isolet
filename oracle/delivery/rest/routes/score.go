@@ -11,7 +11,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func RegisterScore(router fiber.Router, scoreHandler scoreHan.ScoreHandler, tokenUc tokenDom.Usecase, jwtSvc jwt.JWT, cvUc cvDom.Usecase) {
+func RegisterScore(
+	router fiber.Router,
+	scoreHandler scoreHan.ScoreHandler,
+	tokenUc tokenDom.Usecase,
+	jwtSvc jwt.JWT,
+	cvUc cvDom.Usecase,
+) {
 	scoreRouter := router.Group(
 		utils.RouteScore,
 		middleware.AuthMiddleware(tokenUc, jwtSvc),

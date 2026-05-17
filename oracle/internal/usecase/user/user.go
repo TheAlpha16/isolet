@@ -77,10 +77,10 @@ func (u *userImpl) JoinTeam(ctx context.Context, userID int64, teamID int64) err
 	)
 }
 
-func New(cache cache.Cache, repo userDom.Repository, cvUc cvDom.Usecase) userDom.Usecase {
+func New(c cache.Cache, repo userDom.Repository, cvUc cvDom.Usecase) userDom.Usecase {
 	return &userImpl{
 		repo:  repo,
-		cache: cache,
+		cache: c,
 		cvUc:  cvUc,
 	}
 }

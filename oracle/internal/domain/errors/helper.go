@@ -88,7 +88,7 @@ func HandleSpanError(ctx context.Context, span trace.Span, log *zap.Logger, msg 
 	span.SetStatus(codes.Error, msg)
 	RaiseToSentry(ctx, err)
 
-	zapFields := []zap.Field{zap.Error(err)}
+	zapFields := append(make([]zap.Field, 0, 1+len(extraFields)), zap.Error(err))
 	zapFields = append(zapFields, extraFields...)
 	log.Error(msg, zapFields...)
 }

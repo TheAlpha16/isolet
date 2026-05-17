@@ -24,7 +24,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
+func New(usecases *usecase.Usecases, svc *infra.Infra) *fiber.App {
 	config := utils.GetConfig()
 	app := fiber.New(
 		fiber.Config{
@@ -63,13 +63,13 @@ func New(usecases *usecase.Usecases, infra *infra.Infra) *fiber.App {
 	// Setup routes
 	apiRouter := app.Group(config.Rest.APIVersionPrefix)
 	routes.RegisterHealth(apiRouter, healthHandler)
-	routes.RegisterAuth(apiRouter, authHandler, usecases.Token, infra.JWT)
-	routes.RegisterTeam(apiRouter, teamHandler, usecases.Token, infra.JWT)
+	routes.RegisterAuth(apiRouter, authHandler, usecases.Token, svc.JWT)
+	routes.RegisterTeam(apiRouter, teamHandler, usecases.Token, svc.JWT)
 	routes.RegisterEvent(apiRouter, eventHandler)
-	routes.RegisterProfile(apiRouter, profileHandler, usecases.Token, infra.JWT)
-	routes.RegisterChallenge(apiRouter, challengeHandler, usecases.Token, infra.JWT, usecases.ConfigVars)
-	routes.RegisterScore(apiRouter, scoreHandler, usecases.Token, infra.JWT, usecases.ConfigVars)
-	routes.RegisterInstance(apiRouter, instanceHandler, usecases.Token, infra.JWT, usecases.ConfigVars)
+	routes.RegisterProfile(apiRouter, profileHandler, usecases.Token, svc.JWT)
+	routes.RegisterChallenge(apiRouter, challengeHandler, usecases.Token, svc.JWT, usecases.ConfigVars)
+	routes.RegisterScore(apiRouter, scoreHandler, usecases.Token, svc.JWT, usecases.ConfigVars)
+	routes.RegisterInstance(apiRouter, instanceHandler, usecases.Token, svc.JWT, usecases.ConfigVars)
 
 	return app
 }
