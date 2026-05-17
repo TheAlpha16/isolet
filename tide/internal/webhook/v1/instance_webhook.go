@@ -251,7 +251,6 @@ func (v *InstanceCustomValidator) enforceExtensionRules(oldInstance, newInstance
 		return nil
 	}
 
-	// removing expiry is allowed
 	if newExpiry == nil {
 		return nil
 	}
