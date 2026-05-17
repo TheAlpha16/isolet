@@ -7,6 +7,7 @@ import (
 	errorDom "github.com/TheAlpha16/isolet/oracle/internal/domain/errors"
 	scoreDom "github.com/TheAlpha16/isolet/oracle/internal/domain/score"
 	challengeRepo "github.com/TheAlpha16/isolet/oracle/internal/repository/challenge"
+	"github.com/TheAlpha16/isolet/oracle/utils"
 
 	"github.com/lib/pq"
 	"gorm.io/gorm"
@@ -25,7 +26,7 @@ func (scoreRepo *scoreRepo) GetSubmissionStats(ctx context.Context, teamID int64
 	}
 
 	if err := scoreRepo.db.WithContext(ctx).Raw("SELECT challenge_id, COUNT(*) FILTER (WHERE is_correct = true)  AS correct_count, COUNT(*) FILTER (WHERE is_correct = false) AS incorrect_count FROM submissions WHERE team_id = ? AND challenge_id IN ? GROUP BY challenge_id", teamID, challengeIDs).Scan(&rows).Error; err != nil {
-		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve submission stats", err, common.ExtraData{"team_id": teamID, "challenge_ids": challengeIDs})
+		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve submission stats", err, common.ExtraData{utils.ContextKeyTeamID: teamID, "challenge_ids": challengeIDs})
 	}
 
 	for _, row := range rows {
@@ -62,7 +63,7 @@ func (scoreRepo *scoreRepo) GetTeamSolves(ctx context.Context, teamID int64) (ma
 	var rows []*challengeRepo.Solve
 
 	if err := scoreRepo.db.WithContext(ctx).Select("challenge_id").Where("team_id = ?", teamID).Find(&rows).Error; err != nil {
-		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve team solves", err, common.ExtraData{"team_id": teamID})
+		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve team solves", err, common.ExtraData{utils.ContextKeyTeamID: teamID})
 	}
 
 	for _, row := range rows {
@@ -76,7 +77,7 @@ func (scoreRepo *scoreRepo) GetTeamScore(ctx context.Context, teamID int64) (int
 	var score int
 
 	if err := scoreRepo.db.WithContext(ctx).Raw("SELECT COALESCE((SELECT SUM(points) FROM solves WHERE team_id = ?), 0) - COALESCE((SELECT SUM(cost) FROM unlocked_hints WHERE team_id = ?), 0) AS score;", teamID, teamID).Scan(&score).Error; err != nil {
-		return 0, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve team score", err, common.ExtraData{"team_id": teamID})
+		return 0, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to retrieve team score", err, common.ExtraData{utils.ContextKeyTeamID: teamID})
 	}
 
 	return score, nil

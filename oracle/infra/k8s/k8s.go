@@ -47,9 +47,9 @@ func NewK8sClient() (client.Client, error) {
 
 	// skip TLS verification for dev environments
 	if utils.GetConfig().K8s.InsecureSkipVerify {
-		config.TLSClientConfig.Insecure = true
-		config.TLSClientConfig.CAData = nil
-		config.TLSClientConfig.CAFile = ""
+		config.Insecure = true
+		config.CAData = nil
+		config.CAFile = ""
 	}
 
 	scheme := runtime.NewScheme()

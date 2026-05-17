@@ -108,8 +108,8 @@ func (t *tokenImpl) FetchEntityTokens(ctx context.Context, purpose tokenDom.Toke
 	return tokens, nil
 }
 
-func New(cache cache.Cache) tokenDom.Usecase {
+func New(c cache.Cache) tokenDom.Usecase {
 	return &tokenImpl{
-		cache: cache,
+		cache: c,
 	}
 }

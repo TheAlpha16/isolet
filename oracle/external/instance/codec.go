@@ -53,7 +53,7 @@ func toTideInstance(ctx context.Context, inst *instanceDom.Instance, manifest *m
 		instance.Spec.Limits = *toCoreResource(ctx, manifest.Limits)
 	}
 
-	var endpoints []tidev1.EndpointSpec
+	endpoints := make([]tidev1.EndpointSpec, 0, len(manifest.EndpointSpecs))
 	for _, ep := range manifest.EndpointSpecs {
 		endpoints = append(endpoints, *toTideEndpointSpec(ep))
 	}
@@ -98,7 +98,9 @@ func toCoreResource(ctx context.Context, resources []*manifestDom.Resource) *cor
 	for _, res := range resources {
 		quantity, err := resource.ParseQuantity(res.Value)
 		if err != nil {
-			parseErr := errorDom.Raise(ctx, errorDom.ErrInstanceInvalidResourceQuantity, "", err, common.ExtraData{"resource_id": res.ID, "value": res.Value})
+			parseErr := errorDom.Raise(ctx, errorDom.ErrInstanceInvalidResourceQuantity, "", err, common.ExtraData{
+				"resource_id": res.ID, "value": res.Value,
+			})
 			logger.GetAppLogger().Error(
 				"invalid value for resource quantity",
 				zap.Int64("resource_id", res.ID),

@@ -11,7 +11,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func RegisterInstance(router fiber.Router, instanceHandler instanceHan.InstanceHandler, tokenUc tokenDom.Usecase, jwtSvc jwt.JWT, cvUc cvDom.Usecase) {
+func RegisterInstance(
+	router fiber.Router,
+	instanceHandler instanceHan.InstanceHandler,
+	tokenUc tokenDom.Usecase,
+	jwtSvc jwt.JWT,
+	cvUc cvDom.Usecase,
+) {
 	config := utils.GetConfig()
 
 	instanceRouter := router.Group(

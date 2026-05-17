@@ -41,7 +41,7 @@ func StructTagsAsString(obj interface{}, tagKey string, depth int) string {
 	}
 
 	t := reflect.TypeOf(obj)
-	if t.Kind() == reflect.Ptr {
+	if t.Kind() == reflect.Pointer {
 		t = t.Elem()
 	}
 
@@ -72,21 +72,21 @@ func RandomUUID() string {
 
 // BuildLink constructs a URL with the given public URL, token, and path segments.
 func BuildLink(publicURL, token string, pathSegments []string) (string, error) {
-	url, err := url.Parse(publicURL)
+	parsedURL, err := url.Parse(publicURL)
 	if err != nil {
 		return "", err
 	}
 
-	url = url.JoinPath(pathSegments...)
-	query := url.Query()
+	parsedURL = parsedURL.JoinPath(pathSegments...)
+	query := parsedURL.Query()
 	query.Set(TokenQueryKey, token)
-	url.RawQuery = query.Encode()
+	parsedURL.RawQuery = query.Encode()
 
-	if url.Scheme == "" {
-		url.Scheme = "https"
+	if parsedURL.Scheme == "" {
+		parsedURL.Scheme = "https"
 	}
 
-	return url.String(), nil
+	return parsedURL.String(), nil
 }
 
 // IntOrNil returns a pointer to the integer or nil if the integer is zero.

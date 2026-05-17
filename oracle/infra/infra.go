@@ -17,13 +17,13 @@ type Infra struct {
 
 func New(ctx context.Context, valkeyClient valkey.Client) (*Infra, error) {
 	config := utils.GetConfig()
-	cnc, err := cnc.NewCNC(ctx, valkeyClient)
+	cncSvc, err := cnc.NewCNC(ctx, valkeyClient)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Infra{
 		JWT: jwt.NewJWT(config.Token.SigningKey),
-		CNC: cnc,
+		CNC: cncSvc,
 	}, nil
 }

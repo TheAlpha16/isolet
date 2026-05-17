@@ -56,7 +56,7 @@ func main() {
 	}
 
 	// Init cache
-	cache, err := cache.NewClient(ctx, valkeyClient)
+	cacheClient, err := cache.NewClient(ctx, valkeyClient)
 	if err != nil {
 		errorDom.RaiseToSentry(ctx, err)
 		appLogger.Fatal("failed to connect to cache", zap.Error(err))
@@ -72,24 +72,24 @@ func main() {
 	}
 
 	// Init infra services
-	infra, err := infra.New(ctx, valkeyClient)
+	infraSvc, err := infra.New(ctx, valkeyClient)
 	if err != nil {
 		errorDom.RaiseToSentry(ctx, err)
 		appLogger.Fatal("failed to initialize infra services", zap.Error(err))
 	}
 
 	// External services
-	external, err := external.New(ctx)
+	externalSvc, err := external.New(ctx)
 	if err != nil {
 		errorDom.RaiseToSentry(ctx, err)
 		appLogger.Fatal("failed to initialize external services", zap.Error(err))
 	}
 
 	// Init repositories
-	repos := repository.New(dbPool, cache)
+	repos := repository.New(dbPool, cacheClient)
 
 	// Init usecases
-	usecases := usecase.New(ctx, &wg, cache, repos, infra, external)
+	usecases := usecase.New(ctx, &wg, cacheClient, repos, infraSvc, externalSvc)
 
 	// Start metrics server
 	metricsServer := metrics.New()
@@ -97,15 +97,17 @@ func main() {
 		metricsServer.Start()
 	})
 	utils.InterruptHandlerChannel <- func() {
-		metricsServer.Shutdown(ctx)
+		if err := metricsServer.Shutdown(ctx); err != nil {
+			appLogger.Error("failed to shut down metrics server", zap.Error(err))
+		}
 	}
 
 	// Start the server based on identity
 	switch utils.GetConfig().Identity {
 	case utils.IdentityRest:
-		StartRestServer(ctx, usecases, infra)
+		StartRestServer(usecases, infraSvc)
 	case utils.IdentityConsumer:
-		StartConsumer(ctx, usecases, infra, &wg)
+		StartConsumer(ctx, usecases, &wg)
 	default:
 		appLogger.Fatal("unknown identity", zap.String("identity", string(utils.GetConfig().Identity)))
 	}
@@ -134,15 +136,15 @@ func ConnectToPostgresDatabase(ctx context.Context) (*gorm.DB, func(), error) {
 	return dbPool, closeConn, nil
 }
 
-func StartRestServer(ctx context.Context, usecases *usecase.Usecases, infra *infra.Infra) {
-	app := restDel.New(usecases, infra)
+func StartRestServer(usecases *usecase.Usecases, svc *infra.Infra) {
+	app := restDel.New(usecases, svc)
 	utils.InterruptHandlerChannel <- func() {
 		restDel.Shutdown(app)
 	}
 	go restDel.StartServer(app)
 }
 
-func StartConsumer(ctx context.Context, usecases *usecase.Usecases, infra *infra.Infra, wg *sync.WaitGroup) {
+func StartConsumer(ctx context.Context, usecases *usecase.Usecases, wg *sync.WaitGroup) {
 	appLogger := logger.GetAppLogger()
 	c, err := consumer.New(ctx, usecases.Fact)
 	if err != nil {

@@ -9,7 +9,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func RegisterProfile(router fiber.Router, profileHandler profileHan.ProfileHandler, tokenUc tokenDom.Usecase, jwtSvc jwt.JWT) {
+func RegisterProfile(
+	router fiber.Router,
+	profileHandler profileHan.ProfileHandler,
+	tokenUc tokenDom.Usecase,
+	jwtSvc jwt.JWT,
+) {
 	profileRouter := router.Group(utils.RouteProfile, middleware.AuthMiddleware(tokenUc, jwtSvc))
 	profileRouter.Get(utils.RouteProfileMe, profileHandler.Me)
 	profileRouter.Get(utils.RouteProfileTeam, middleware.RequireTeamMiddleware(), profileHandler.Team)

@@ -17,13 +17,24 @@ var (
 )
 
 var (
+	LabelChallengeID = "challenge_id"
+	LabelCorrect     = "correct"
+	LabelOperation   = "operation"
+	LabelStatus      = "status"
+	LabelMethod      = "method"
+	LabelRoute       = "route"
+	LabelTopic       = "topic"
+	LabelFactType    = "fact_type"
+)
+
+var (
 	// Challenges
 	FlagSubmissionsTotal = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "flag_submissions_total",
 			Help: "Total number of flag submissions",
 		},
-		[]string{"challenge_id", "correct"},
+		[]string{LabelChallengeID, LabelCorrect},
 	)
 
 	// Instances
@@ -32,7 +43,7 @@ var (
 			Name: "instance_operations_total",
 			Help: "Total number of instance operations",
 		},
-		[]string{"challenge_id", "operation", "status"},
+		[]string{LabelChallengeID, LabelOperation, LabelStatus},
 	)
 
 	InstanceProvisionDurationSeconds = promauto.NewHistogramVec(
@@ -40,7 +51,7 @@ var (
 			Name: "instance_provision_duration_seconds",
 			Help: "Time taken to provision an instance",
 		},
-		[]string{"challenge_id", "operation", "status"},
+		[]string{LabelChallengeID, LabelOperation, LabelStatus},
 	)
 
 	// Emails
@@ -49,7 +60,7 @@ var (
 			Name: "emails_sent_total",
 			Help: "Total number of emails sent",
 		},
-		[]string{"status"},
+		[]string{LabelStatus},
 	)
 
 	EmailSendDurationSeconds = promauto.NewHistogramVec(
@@ -57,7 +68,7 @@ var (
 			Name: "email_send_duration_seconds",
 			Help: "Time taken to send email",
 		},
-		[]string{"status"},
+		[]string{LabelStatus},
 	)
 
 	// HTTP
@@ -66,7 +77,7 @@ var (
 			Name: "http_requests_total",
 			Help: "Total number of HTTP requests",
 		},
-		[]string{"method", "route", "status"},
+		[]string{LabelMethod, LabelRoute, LabelStatus},
 	)
 
 	HttpRequestDurationSeconds = promauto.NewHistogramVec(
@@ -74,7 +85,7 @@ var (
 			Name: "http_request_duration_seconds",
 			Help: "Duration of HTTP requests",
 		},
-		[]string{"method", "route"},
+		[]string{LabelMethod, LabelRoute},
 	)
 
 	HttpRequestsInFlight = promauto.NewGaugeVec(
@@ -82,7 +93,7 @@ var (
 			Name: "http_requests_in_flight",
 			Help: "Current number of in-flight HTTP requests",
 		},
-		[]string{"route"},
+		[]string{LabelRoute},
 	)
 
 	// Facts
@@ -91,7 +102,7 @@ var (
 			Name: "facts_total",
 			Help: "Total number of facts processed",
 		},
-		[]string{"topic", "status", "fact_type"},
+		[]string{LabelTopic, LabelStatus, LabelFactType},
 	)
 
 	FactDeliveryDurationSeconds = promauto.NewHistogramVec(
@@ -99,7 +110,7 @@ var (
 			Name: "fact_delivery_duration_seconds",
 			Help: "Time taken to deliver a fact",
 		},
-		[]string{"topic", "fact_type"},
+		[]string{LabelTopic, LabelFactType},
 	)
 
 	FactProcessingDurationSeconds = promauto.NewHistogramVec(
@@ -107,7 +118,7 @@ var (
 			Name: "fact_processing_duration_seconds",
 			Help: "Time taken to process a fact",
 		},
-		[]string{"topic", "fact_type"},
+		[]string{LabelTopic, LabelFactType},
 	)
 )
 

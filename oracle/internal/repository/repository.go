@@ -30,23 +30,23 @@ type Repositories struct {
 	Manifest   manifestDom.Repository
 }
 
-func New(db *gorm.DB, cache cache.Cache) *Repositories {
-	userRepo := userRepo.New(db)
-	teamRepo := teamRepo.New(db)
-	cvRepo := cvRepo.New(db)
-	challengeRepo := challengeRepo.New(db, cache)
-	scoreRepo := scoreRepo.New(db)
-	instanceRepo := instanceRepo.New(db)
-	manifestRepo := manifestRepo.New(db, cache)
+func New(db *gorm.DB, cacheClient cache.Cache) *Repositories {
+	users := userRepo.New(db)
+	teams := teamRepo.New(db)
+	cv := cvRepo.New(db)
+	challenges := challengeRepo.New(db, cacheClient)
+	scores := scoreRepo.New(db)
+	instances := instanceRepo.New(db)
+	manifests := manifestRepo.New(db, cacheClient)
 
 	return &Repositories{
-		User:       userRepo,
-		Team:       teamRepo,
-		ConfigVars: cvRepo,
-		Challenge:  challengeRepo,
-		Score:      scoreRepo,
-		Instance:   instanceRepo,
-		Manifest:   manifestRepo,
+		User:       users,
+		Team:       teams,
+		ConfigVars: cv,
+		Challenge:  challenges,
+		Score:      scores,
+		Instance:   instances,
+		Manifest:   manifests,
 	}
 }
 
