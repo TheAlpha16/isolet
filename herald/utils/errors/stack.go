@@ -18,11 +18,11 @@ func GetStackTrace() string {
 
 	for {
 		frame, more := frames.Next()
-		sb.WriteString(fmt.Sprintf(
+		fmt.Fprintf(&sb,
 			"\t-> %s:%d (%s)\n",
 			frame.File, frame.Line,
 			path.Base(frame.Function),
-		))
+		)
 		if !more {
 			break
 		}
