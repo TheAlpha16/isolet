@@ -70,7 +70,7 @@ func handleInstance(obj any, out chan<- facts.Fact, eventType eventType) {
 	}
 
 	if instance.Spec.Team != nil {
-		var teamId int64 = instance.Spec.Team.ID
+		teamId := instance.Spec.Team.ID
 		fact.TeamID = &teamId
 	}
 

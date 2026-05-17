@@ -31,7 +31,7 @@ func getK8sCache() (crcache.Cache, error) {
 		namespaceMap[ns] = crcache.Config{}
 	}
 
-	cache, err := crcache.New(config, crcache.Options{
+	k8sCache, err := crcache.New(config, crcache.Options{
 		Scheme:            sch,
 		DefaultNamespaces: namespaceMap,
 	})
@@ -39,7 +39,7 @@ func getK8sCache() (crcache.Cache, error) {
 		return nil, err
 	}
 
-	return cache, nil
+	return k8sCache, nil
 }
 
 func extractObject[T any](obj any) (T, bool) {

@@ -40,7 +40,9 @@ func (p *pipeline) Run(ctx context.Context, in <-chan facts.Fact) {
 
 	utils.InterruptHandlerChannel <- func() {
 		log.Info("pipeline shutting down")
-		p.emitter.Close()
+		if err := p.emitter.Close(); err != nil {
+			log.Error("failed to close emitter", zap.Error(err))
+		}
 	}
 
 	<-ctx.Done()
@@ -66,12 +68,12 @@ func (p *pipeline) runWorker(ctx context.Context, workerID int, in <-chan facts.
 				log.Debug("worker stopping because fact channel closed")
 				return
 			}
-			p.emitWithRetry(ctx, log, fact)
+			p.emitWithRetry(ctx, fact)
 		}
 	}
 }
 
-func (p *pipeline) emitWithRetry(ctx context.Context, log *zap.Logger, fact facts.Fact) {
+func (p *pipeline) emitWithRetry(ctx context.Context, fact facts.Fact) {
 	var err error
 	ctx, span, log := tracer.StartSpan(ctx, pipelineTracer, "herald.pipeline.emitWithRetry")
 	defer span.End()
@@ -106,14 +108,14 @@ func (p *pipeline) emitWithRetry(ctx context.Context, log *zap.Logger, fact fact
 	errors.HandleSpanError(ctx, span, log, "giving up after retries, dropping fact", err)
 }
 
-func New(emitter emitter.Emitter, workers int, wg *sync.WaitGroup) *pipeline {
+func New(e emitter.Emitter, workers int, wg *sync.WaitGroup) *pipeline {
 	if workers <= 0 {
 		logger.GetAppLogger().Warn("invalid worker count, defaulting to 1")
 		workers = 1
 	}
 
 	return &pipeline{
-		emitter: emitter,
+		emitter: e,
 		workers: workers,
 		wg:      wg,
 	}

@@ -70,7 +70,7 @@ func RaiseToSentry(ctx context.Context, err error) {
 		hub.WithScope(func(scope *sentry.Scope) {
 			event.Message = fmt.Sprintf("%s : %s", e.GetCode(), e.GetMessage())
 			event.Exception = []sentry.Exception{{
-				Value:      fmt.Sprintf("%s", e.GetCode()),
+				Value:      e.GetCode(),
 				Type:       fmt.Sprintf("%T", e),
 				Stacktrace: sentry.ExtractStacktrace(e.Cause),
 			}}
@@ -82,7 +82,7 @@ func RaiseToSentry(ctx context.Context, err error) {
 	default:
 		stackErr := goerrors.Wrap(e, 1)
 		hub.WithScope(func(scope *sentry.Scope) {
-			event.Message = fmt.Sprintf("%s", e.Error())
+			event.Message = e.Error()
 			event.Exception = []sentry.Exception{{
 				Value:      e.Error(),
 				Type:       fmt.Sprintf("%T", e),

@@ -62,7 +62,7 @@ func (l *StandardLogger) WithFields(fields ...zapcore.Field) *StandardLogger {
 }
 
 func (l *StandardLogger) Sync() {
-	l.Logger.Sync()
+	_ = l.Logger.Sync()
 }
 
 func GetAppLogger() *StandardLogger {

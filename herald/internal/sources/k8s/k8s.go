@@ -84,7 +84,7 @@ func (s *k8sSource) startInformers(ctx context.Context, out chan<- facts.Fact) e
 			return errors.Raise(errors.ErrK8sInformerCreationFailed, "", err)
 		}
 
-		informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		if _, err := informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				handlerFunc(obj, out, eventTypeCreate)
 			},
@@ -94,7 +94,9 @@ func (s *k8sSource) startInformers(ctx context.Context, out chan<- facts.Fact) e
 			DeleteFunc: func(obj interface{}) {
 				handlerFunc(obj, out, eventTypeDelete)
 			},
-		})
+		}); err != nil {
+			return errors.Raise(errors.ErrK8sInformerCreationFailed, "failed to add event handler", err)
+		}
 	}
 	return nil
 }
@@ -105,14 +107,14 @@ func NewSource(ctx context.Context, wg *sync.WaitGroup) sources.Source {
 
 	ctrllog.SetLogger(ctrlzap.New(ctrlzap.UseDevMode(utils.GetConfig().Environment != utils.PROD)))
 
-	cache, err := getK8sCache()
+	k8sCache, err := getK8sCache()
 	if err != nil {
 		errors.HandleSpanError(ctx, span, log, "failed to create k8s event cache", err)
 		log.Fatal("failed to create k8s event cache", zap.Error(err))
 	}
 
 	return &k8sSource{
-		cache: cache,
+		cache: k8sCache,
 		wg:    wg,
 	}
 }
