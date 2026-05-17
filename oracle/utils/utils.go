@@ -70,8 +70,8 @@ func RandomUUID() string {
 	return uuid.New().String()
 }
 
-// BuildLink constructs a URL with the given public URL, token, and path segments.
-func BuildLink(publicURL, token string, pathSegments []string) (string, error) {
+// BuildLink constructs a URL with the given public URL, query params, and path segments.
+func BuildLink(publicURL string, queryParams map[string]string, pathSegments []string) (string, error) {
 	parsedURL, err := url.Parse(publicURL)
 	if err != nil {
 		return "", err
@@ -79,7 +79,9 @@ func BuildLink(publicURL, token string, pathSegments []string) (string, error) {
 
 	parsedURL = parsedURL.JoinPath(pathSegments...)
 	query := parsedURL.Query()
-	query.Set(TokenQueryKey, token)
+	for k, v := range queryParams {
+		query.Set(k, v)
+	}
 	parsedURL.RawQuery = query.Encode()
 
 	if parsedURL.Scheme == "" {

@@ -52,7 +52,7 @@ func (e *emailImpl) SendEmailAsync(ctx context.Context, input *emailDom.EmailInp
 	}
 
 	publicURL := e.cvUc.GetString(ctx, cvDom.EventPublicURL)
-	link, err := utils.BuildLink(publicURL, input.Token, config.PathSegments)
+	link, err := utils.BuildLink(publicURL, map[string]string{utils.TokenQueryKey: input.Token}, config.PathSegments)
 	if err != nil {
 		return errorDom.Raise(ctx, errorDom.ErrEmailLinkBuild, "failed to build email link", err, common.ExtraData{"public_url": publicURL})
 	}
