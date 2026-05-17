@@ -136,7 +136,7 @@ func (v *InstanceCustomValidator) ValidateUpdate(_ context.Context, oldObj, newO
 	}
 
 	// allow changes in case of deletion
-	if !newInstance.ObjectMeta.DeletionTimestamp.IsZero() {
+	if !newInstance.DeletionTimestamp.IsZero() {
 		return nil, nil
 	}
 
@@ -230,7 +230,7 @@ func (v *InstanceCustomValidator) validateLifecycle(l *challengesv1.Lifecycle) e
 	}
 
 	// make sure availableAt is before expiresAt if both are set
-	if l.AvailableAt != nil && l.ExpiresAt != nil && l.AvailableAt.Time.After(l.ExpiresAt.Time) {
+	if l.AvailableAt != nil && l.ExpiresAt != nil && l.AvailableAt.After(l.ExpiresAt.Time) {
 		return fmt.Errorf("lifecycle.availableAt must be before lifecycle.expiresAt")
 	}
 
