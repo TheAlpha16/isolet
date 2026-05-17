@@ -69,3 +69,41 @@ jobs:
       - run: mix compile --warnings-as-errors
         env:
           MIX_ENV: dev
+
+  version-check:
+    name: Version bump check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check VERSION bumped and chart version in sync
+        run: |
+          BASE=${{ github.base_ref }}
+          git fetch origin "$BASE"
+          CHANGED_DIRS=$(git diff --name-only "origin/$BASE...HEAD" \
+            | grep -E '^(oracle|tide|herald|proxy|pulse|ui)/' \
+            | grep -v '/VERSION$' \
+            | cut -d/ -f1 | sort -u)
+
+          FAILED=false
+          for service in $CHANGED_DIRS; do
+            if ! git diff "origin/$BASE...HEAD" -- "$service/VERSION" | grep -qE '^\+[0-9]'; then
+              echo "::error file=$service/VERSION::$service has changes but VERSION was not bumped"
+              FAILED=true
+              continue
+            fi
+
+            SERVICE_VERSION=$(cat "$service/VERSION")
+            CHART_VERSION=$(yq ".$service.version" charts/values.yaml)
+            if [ "$CHART_VERSION" != "null" ] && [ -n "$CHART_VERSION" ]; then
+              SV="${SERVICE_VERSION#v}"
+              CV="${CHART_VERSION#v}"
+              if [ "$SV" != "$CV" ]; then
+                echo "::error file=charts/values.yaml::$service VERSION ($SERVICE_VERSION) does not match charts/values.yaml .$service.version ($CHART_VERSION)"
+                FAILED=true
+              fi
+            fi
+          done
+          [ "$FAILED" = "true" ] && exit 1 || exit 0

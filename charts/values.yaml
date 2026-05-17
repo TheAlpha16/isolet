@@ -24,8 +24,8 @@ event:
 
 # Oracle — REST API + Kafka consumer (two deployments, same image)
 oracle:
-  image: docker.io/thealpha16/isolet-api
-  version: "2.0.0"
+  image: docker.io/thealpha16/isolet-oracle
+  version: "2.0.1"
   replicas: 2          # oracle-rest
   consumerReplicas: 1  # oracle-consumer
   token:
@@ -53,7 +53,7 @@ oracle:
 # Pulse — Elixir/Phoenix WebSocket gateway
 pulse:
   image: docker.io/thealpha16/isolet-pulse
-  version: "1.2.0"
+  version: "0.2.0"
   replicas: 1
   kafka:
     brokers: "kafka-svc:9092"
@@ -64,7 +64,7 @@ pulse:
 # Herald — Go event emitter (k8s_source and postgres_source modes)
 herald:
   image: docker.io/thealpha16/isolet-herald
-  version: "1.0.0"
+  version: "0.1.0"
   k8sSource:
     enabled: true
     namespaces: "isolet,dynamic"
@@ -81,7 +81,7 @@ herald:
 # UI — Next.js frontend
 ui:
   image: docker.io/thealpha16/isolet-ui
-  version: "v2.0.5"
+  version: "2.0.0"
   replicas: 1
 
 # Proxy — Nginx reverse proxy
