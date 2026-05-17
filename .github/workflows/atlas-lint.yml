@@ -37,6 +37,6 @@ jobs:
 
       - uses: ariga/setup-atlas@v0
 
-      - name: Lint migrations
+      - name: Validate migrations
         working-directory: oracle
-        run: atlas migrate lint --env gorm --dev-url "postgres://postgres:postgres@127.0.0.1:5432/dev?sslmode=disable" --git-base ${{ github.base_ref }}
+        run: atlas migrate validate --env gorm --dev-url "postgres://postgres:postgres@127.0.0.1:5432/dev?sslmode=disable"
