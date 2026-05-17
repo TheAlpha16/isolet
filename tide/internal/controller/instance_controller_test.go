@@ -33,6 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	challengesv1 "github.com/TheAlpha16/isolet/tide/api/v1"
+	"github.com/TheAlpha16/isolet/tide/utils"
 )
 
 var _ = Describe("Instance Controller", func() {
@@ -831,9 +832,9 @@ var _ = Describe("Instance Controller Unit Tests", func() {
 	Describe("equalIngressRouteSpec", func() {
 		It("should return true for equal specs", func() {
 			spec := &traefikv1alpha1.IngressRouteSpec{
-				EntryPoints: []string{"web", "websecure"},
+				EntryPoints: []string{utils.EntryPointWeb, utils.EntryPointWebsecure},
 				Routes: []traefikv1alpha1.Route{
-					{Kind: "Rule", Match: "Host(`example.com`)"},
+					{Kind: utils.RouteKindRule, Match: "Host(`example.com`)"},
 				},
 				TLS: &traefikv1alpha1.TLS{SecretName: "my-cert"},
 			}
@@ -842,20 +843,20 @@ var _ = Describe("Instance Controller Unit Tests", func() {
 
 		It("should return false for different entry points count", func() {
 			a := &traefikv1alpha1.IngressRouteSpec{
-				EntryPoints: []string{"web"},
+				EntryPoints: []string{utils.EntryPointWeb},
 			}
 			b := &traefikv1alpha1.IngressRouteSpec{
-				EntryPoints: []string{"web", "websecure"},
+				EntryPoints: []string{utils.EntryPointWeb, utils.EntryPointWebsecure},
 			}
 			Expect(equalIngressRouteSpec(a, b)).To(BeFalse())
 		})
 
 		It("should return false for different entry point values", func() {
 			a := &traefikv1alpha1.IngressRouteSpec{
-				EntryPoints: []string{"web"},
+				EntryPoints: []string{utils.EntryPointWeb},
 			}
 			b := &traefikv1alpha1.IngressRouteSpec{
-				EntryPoints: []string{"websecure"},
+				EntryPoints: []string{utils.EntryPointWebsecure},
 			}
 			Expect(equalIngressRouteSpec(a, b)).To(BeFalse())
 		})
@@ -863,13 +864,13 @@ var _ = Describe("Instance Controller Unit Tests", func() {
 		It("should return false for different route count", func() {
 			a := &traefikv1alpha1.IngressRouteSpec{
 				Routes: []traefikv1alpha1.Route{
-					{Kind: "Rule", Match: "Host(`a.com`)"},
+					{Kind: utils.RouteKindRule, Match: "Host(`a.com`)"},
 				},
 			}
 			b := &traefikv1alpha1.IngressRouteSpec{
 				Routes: []traefikv1alpha1.Route{
-					{Kind: "Rule", Match: "Host(`a.com`)"},
-					{Kind: "Rule", Match: "Host(`b.com`)"},
+					{Kind: utils.RouteKindRule, Match: "Host(`a.com`)"},
+					{Kind: utils.RouteKindRule, Match: "Host(`b.com`)"},
 				},
 			}
 			Expect(equalIngressRouteSpec(a, b)).To(BeFalse())

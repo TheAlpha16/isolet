@@ -137,7 +137,8 @@ func (c *cache) SetManyWithExpiry(ctx context.Context, items map[string]string, 
 	}
 	args = append(args, strconv.FormatInt(expiresAt.Unix(), 10))
 
-	if err := c.client.Do(ctx, c.client.B().Evalsha().Sha1(setManyScriptHash).Numkeys(int64(len(keys))).Key(keys...).Arg(args...).Build()).Error(); err != nil {
+	cmd := c.client.B().Evalsha().Sha1(setManyScriptHash).Numkeys(int64(len(keys))).Key(keys...).Arg(args...).Build()
+	if err := c.client.Do(ctx, cmd).Error(); err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
@@ -150,7 +151,8 @@ func (c *cache) ZIncrBy(ctx context.Context, key string, increment float64, memb
 	ctx, span := c.WithTrace(ctx, "zincrby", key)
 	defer span.End()
 
-	if err := c.client.Do(ctx, c.client.B().Zincrby().Key(key).Increment(increment).Member(member).Build()).Error(); err != nil {
+	cmd := c.client.B().Zincrby().Key(key).Increment(increment).Member(member).Build()
+	if err := c.client.Do(ctx, cmd).Error(); err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return errorDom.Raise(ctx, errorDom.ErrCacheCallFail, "", err, nil)
@@ -181,7 +183,8 @@ func (c *cache) ZRevRangeWithScores(ctx context.Context, key string, start, stop
 	ctx, span := c.WithTrace(ctx, "zrevrange", key)
 	defer span.End()
 
-	result, err := c.client.Do(ctx, c.client.B().Zrevrange().Key(key).Start(start).Stop(stop).Withscores().Build()).AsZScores()
+	cmd := c.client.B().Zrevrange().Key(key).Start(start).Stop(stop).Withscores().Build()
+	result, err := c.client.Do(ctx, cmd).AsZScores()
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
@@ -220,7 +223,9 @@ func (c *cache) ZRevRank(ctx context.Context, key string, member string) (int64,
 	result, err := c.client.Do(ctx, c.client.B().Zrevrank().Key(key).Member(member).Build()).AsInt64()
 	if err != nil {
 		if err == valkey.Nil {
-			return 0, errorDom.Raise(ctx, errorDom.ErrCacheZSetMissingMember, "", err, common.ExtraData{"key": key, "member": member})
+			return 0, errorDom.Raise(ctx, errorDom.ErrCacheZSetMissingMember, "", err, common.ExtraData{
+				"key": key, "member": member,
+			})
 		}
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
@@ -237,7 +242,9 @@ func (c *cache) ZScore(ctx context.Context, key string, member string) (float64,
 	result, err := c.client.Do(ctx, c.client.B().Zscore().Key(key).Member(member).Build()).AsFloat64()
 	if err != nil {
 		if err == valkey.Nil {
-			return 0, errorDom.Raise(ctx, errorDom.ErrCacheZSetMissingMember, "", err, common.ExtraData{"key": key, "member": member})
+			return 0, errorDom.Raise(ctx, errorDom.ErrCacheZSetMissingMember, "", err, common.ExtraData{
+				"key": key, "member": member,
+			})
 		}
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())

@@ -7,7 +7,6 @@ linters:
     - copyloopvar
     - dupl
     - errcheck
-    - ginkgolinter
     - goconst
     - gocyclo
     - govet
@@ -22,8 +21,6 @@ linters:
     - unparam
     - unused
   settings:
-    gocyclo:
-      min-complexity: 60
     revive:
       rules:
         - name: comment-spacings
@@ -39,8 +36,8 @@ linters:
           - lll
         path: internal/*
       - linters:
-          - goconst
-        path: .*_test\.go
+          - lll
+        path: utils/config\.go
     paths:
       - third_party$
       - builtin$

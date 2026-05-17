@@ -13,7 +13,7 @@ var (
 	EventEnd       = ConfigKey[int]{Name: "event_end", Default: 1710028800}
 	EventPostMode  = ConfigKey[bool]{Name: "event_post_mode", Default: false}
 
-	//smtp
+	// smtp
 	SMTPHost     = ConfigKey[string]{Name: "smtp_host", Default: "smtp.isolet.dev"}
 	SMTPPort     = ConfigKey[int]{Name: "smtp_port", Default: 587}
 	SMTPUser     = ConfigKey[string]{Name: "smtp_user", Default: "user@isolet.dev"}

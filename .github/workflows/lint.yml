@@ -1,0 +1,71 @@
+name: lint
+
+on:
+  pull_request:
+    branches: [develop]
+
+jobs:
+  go-lint:
+    name: Go (${{ matrix.module }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [oracle, tide, herald]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ matrix.module }}/go.mod
+          cache-dependency-path: ${{ matrix.module }}/go.sum
+
+      - uses: golangci/golangci-lint-action@v8
+        with:
+          working-directory: ${{ matrix.module }}
+
+  ts-lint:
+    name: TypeScript (ui)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+
+  elixir-lint:
+    name: Elixir (pulse)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pulse
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.15"
+          otp-version: "26"
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            pulse/deps
+            pulse/_build
+          key: ${{ runner.os }}-mix-${{ hashFiles('pulse/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-
+
+      - run: mix deps.get
+      - run: mix format --check-formatted
+      - run: mix compile --warnings-as-errors
+        env:
+          MIX_ENV: dev

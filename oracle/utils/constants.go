@@ -82,11 +82,12 @@ const (
 
 // context keys
 const (
-	ContextKeyUserID    = "user_id"
-	ContextKeyTeamID    = "team_id"
-	ContextKeyRole      = "role"
-	ContextKeySessionID = "session_id"
-	ContextKeyIP        = "ip"
+	ContextKeyUserID      = "user_id"
+	ContextKeyTeamID      = "team_id"
+	ContextKeyChallengeID = "challenge_id"
+	ContextKeyRole        = "role"
+	ContextKeySessionID   = "session_id"
+	ContextKeyIP          = "ip"
 )
 
 // regular expressions

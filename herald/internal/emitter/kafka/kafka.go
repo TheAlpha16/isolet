@@ -22,10 +22,10 @@ type kafkaEmitter struct {
 }
 
 func (e *kafkaEmitter) Emit(ctx context.Context, fact facts.Fact) error {
-	ctx, span, log := tracer.StartSpan(ctx, kafkaTracer, "herald.emit.kafka.Emit")
+	ctx, span, _ := tracer.StartSpan(ctx, kafkaTracer, "herald.emit.kafka.Emit")
 	defer span.End()
 
-	log = logger.GetAppLogger().With(
+	log := logger.GetAppLogger().With(
 		zap.String("emitter", "kafka"),
 		zap.ByteString("key", fact.Key()),
 		zap.String("fact_type", string(fact.FactType())),

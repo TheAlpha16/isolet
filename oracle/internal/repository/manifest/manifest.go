@@ -45,9 +45,9 @@ func (manifestRepo *manifestRepo) GetByChallengeID(ctx context.Context, challeng
 	)
 }
 
-func New(db *gorm.DB, cache cache.Cache) manifestDom.Repository {
+func New(db *gorm.DB, c cache.Cache) manifestDom.Repository {
 	return &manifestRepo{
 		db:    db,
-		cache: cache,
+		cache: c,
 	}
 }

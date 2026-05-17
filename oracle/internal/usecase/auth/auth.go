@@ -16,6 +16,12 @@ import (
 	"github.com/TheAlpha16/isolet/oracle/utils"
 )
 
+const (
+	tokenMetadataEmail    = "email"
+	tokenMetadataUsername = "username"
+	tokenMetadataPassword = "password"
+)
+
 type authImpl struct {
 	userUc  userDom.Usecase
 	tokenUc tokenDom.Usecase
@@ -75,7 +81,7 @@ func (a *authImpl) Register(ctx context.Context, input *authDom.RegisterInput) (
 	// hash the password
 	hashedPassword, err := utils.HashPassword(input.Password)
 	if err != nil {
-		return nil, errorDom.RaiseInternal(ctx, "failed to hash password", err, common.ExtraData{"password": input.Password})
+		return nil, errorDom.RaiseInternal(ctx, "failed to hash password", err, common.ExtraData{tokenMetadataPassword: input.Password})
 	}
 	input.Password = hashedPassword
 
@@ -152,13 +158,13 @@ func (a *authImpl) Verify(ctx context.Context, verifyToken string) error {
 
 	var email, username, password string
 	var ok bool
-	if email, ok = token.Metadata["email"]; !ok {
+	if email, ok = token.Metadata[tokenMetadataEmail]; !ok {
 		return errorDom.Raise(ctx, errorDom.ErrTokenExpiredInvalid, "", nil, nil)
 	}
-	if username, ok = token.Metadata["username"]; !ok {
+	if username, ok = token.Metadata[tokenMetadataUsername]; !ok {
 		return errorDom.Raise(ctx, errorDom.ErrTokenExpiredInvalid, "", nil, nil)
 	}
-	if password, ok = token.Metadata["password"]; !ok {
+	if password, ok = token.Metadata[tokenMetadataPassword]; !ok {
 		return errorDom.Raise(ctx, errorDom.ErrTokenExpiredInvalid, "", nil, nil)
 	}
 
@@ -231,7 +237,7 @@ func (a *authImpl) ResetPassword(ctx context.Context, input *authDom.ResetPasswo
 	// hash the password
 	hashedPassword, err := utils.HashPassword(input.Password)
 	if err != nil {
-		return errorDom.RaiseInternal(ctx, "failed to hash password", err, common.ExtraData{"password": input.Password})
+		return errorDom.RaiseInternal(ctx, "failed to hash password", err, common.ExtraData{tokenMetadataPassword: input.Password})
 	}
 	input.Password = hashedPassword
 
@@ -347,9 +353,9 @@ func (a *authImpl) generateEmailVerificationToken(ctx context.Context, email, us
 			Purpose:  tokenDom.TokenEmailVerification,
 		},
 		Metadata: map[string]string{
-			"email":    email,
-			"username": username,
-			"password": password,
+			tokenMetadataEmail:    email,
+			tokenMetadataUsername: username,
+			tokenMetadataPassword: password,
 		},
 	}
 	token.UpdateTime()

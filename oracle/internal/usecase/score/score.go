@@ -192,11 +192,11 @@ func (scoreImpl *scoreImpl) getScoreboardEntries(ctx context.Context, start, sto
 	return entries, teamIDs, nil
 }
 
-func New(repo scoreDom.Repository, teamUc teamDom.Usecase, cache cache.Cache) scoreDom.Usecase {
+func New(repo scoreDom.Repository, teamUc teamDom.Usecase, c cache.Cache) scoreDom.Usecase {
 	scoreImpl := &scoreImpl{
 		repo:   repo,
 		teamUc: teamUc,
-		cache:  cache,
+		cache:  c,
 	}
 	err := scoreImpl.RefreshScoreboard(context.Background())
 	if err != nil {

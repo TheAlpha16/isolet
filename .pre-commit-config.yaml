@@ -1,0 +1,37 @@
+repos:
+  - repo: local
+    hooks:
+      - id: golangci-lint-oracle
+        name: golangci-lint (oracle)
+        language: system
+        entry: bash -c 'cd oracle && golangci-lint run'
+        pass_filenames: false
+        files: ^oracle/
+
+      - id: golangci-lint-tide
+        name: golangci-lint (tide)
+        language: system
+        entry: bash -c 'cd tide && golangci-lint run'
+        pass_filenames: false
+        files: ^tide/
+
+      - id: golangci-lint-herald
+        name: golangci-lint (herald)
+        language: system
+        entry: bash -c 'cd herald && golangci-lint run'
+        pass_filenames: false
+        files: ^herald/
+
+      - id: eslint
+        name: eslint (ui)
+        language: system
+        entry: bash -c 'cd ui && npm run lint'
+        pass_filenames: false
+        files: ^ui/.*\.(ts|tsx|js|jsx)$
+
+      - id: mix-format
+        name: mix format (pulse)
+        language: system
+        entry: bash -c 'cd pulse && mix format --check-formatted'
+        pass_filenames: false
+        files: ^pulse/.*\.(ex|exs)$

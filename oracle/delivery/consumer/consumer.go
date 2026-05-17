@@ -26,7 +26,7 @@ type Consumer struct {
 
 func (c *Consumer) Start(ctx context.Context) error {
 	ctx = errorDom.SetSrcInCtx(ctx, "oracle.consumer")
-	var topics []string
+	topics := make([]string, 0, len(c.deserializers))
 	for topic := range c.deserializers {
 		topics = append(topics, topic)
 	}

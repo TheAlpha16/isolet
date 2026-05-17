@@ -24,7 +24,7 @@ func StartSpan(ctx context.Context, tracer trace.Tracer, spanName string) (conte
 }
 
 func Sleep(ctx context.Context, usecase string, duration time.Duration) {
-	ctx, span := sleepTracer.Start(ctx, "sleep."+usecase)
+	_, span := sleepTracer.Start(ctx, "sleep."+usecase)
 	defer span.End()
 	time.Sleep(duration)
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/TheAlpha16/isolet/oracle/internal/domain/common"
 	errorDom "github.com/TheAlpha16/isolet/oracle/internal/domain/errors"
 	instanceDom "github.com/TheAlpha16/isolet/oracle/internal/domain/instance"
+	"github.com/TheAlpha16/isolet/oracle/utils"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
@@ -19,7 +20,7 @@ type instanceRepo struct {
 }
 
 func (ir *instanceRepo) Create(ctx context.Context, instance *instanceDom.Instance) (*instanceDom.Instance, error) {
-	extraData := common.ExtraData{"team_id": instance.TeamID, "challenge_id": instance.ChallengeID}
+	extraData := common.ExtraData{utils.ContextKeyTeamID: instance.TeamID, utils.ContextKeyChallengeID: instance.ChallengeID}
 	instanceModel, err := NewInstanceModel(instance)
 	if err != nil {
 		return nil, err
@@ -70,7 +71,7 @@ func (ir instanceRepo) Delete(ctx context.Context, id int64) error {
 func (ir *instanceRepo) GetByTeam(ctx context.Context, teamID int64) ([]*instanceDom.Instance, error) {
 	var instances []Instance
 	if err := ir.db.WithContext(ctx).Preload("Endpoints").Where("team_id = ?", teamID).Find(&instances).Error; err != nil {
-		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to get instances by team", err, common.ExtraData{"team_id": teamID})
+		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to get instances by team", err, common.ExtraData{utils.ContextKeyTeamID: teamID})
 	}
 
 	domainInstances := make([]*instanceDom.Instance, 0, len(instances))
@@ -98,7 +99,7 @@ func (ir *instanceRepo) GetByRefs(ctx context.Context, teamID *int64, challengeI
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errorDom.Raise(ctx, errorDom.ErrInstanceNotFound, "", err, nil)
 		}
-		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to get instance by refs", err, common.ExtraData{"team_id": teamID, "challenge_id": challengeID})
+		return nil, errorDom.Raise(ctx, errorDom.ErrDBReadError, "failed to get instance by refs", err, common.ExtraData{utils.ContextKeyTeamID: teamID, utils.ContextKeyChallengeID: challengeID})
 	}
 
 	return instance.ToDomain(ctx)
@@ -115,7 +116,7 @@ func (ir *instanceRepo) DeleteByRefs(ctx context.Context, teamID *int64, challen
 
 	resp := query.Delete(&Instance{})
 	if err := resp.Error; err != nil {
-		return 0, errorDom.Raise(ctx, errorDom.ErrDBDeleteError, "failed to delete instance by refs", err, common.ExtraData{"team_id": teamID, "challenge_id": challengeID})
+		return 0, errorDom.Raise(ctx, errorDom.ErrDBDeleteError, "failed to delete instance by refs", err, common.ExtraData{utils.ContextKeyTeamID: teamID, utils.ContextKeyChallengeID: challengeID})
 	}
 	return resp.RowsAffected, nil
 }

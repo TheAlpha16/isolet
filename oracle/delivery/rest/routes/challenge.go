@@ -11,7 +11,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func RegisterChallenge(router fiber.Router, challengeHandler challengeHan.ChallengeHandler, tokenUc tokenDom.Usecase, jwtSvc jwt.JWT, cvUc cvDom.Usecase) {
+func RegisterChallenge(
+	router fiber.Router,
+	challengeHandler challengeHan.ChallengeHandler,
+	tokenUc tokenDom.Usecase,
+	jwtSvc jwt.JWT,
+	cvUc cvDom.Usecase,
+) {
 	challengeRouter := router.Group(
 		utils.RouteChallenge,
 		middleware.AuthMiddleware(tokenUc, jwtSvc),

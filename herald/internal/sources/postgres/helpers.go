@@ -70,7 +70,7 @@ func (s *pgSource) sendStandby(ctx context.Context, span trace.Span, log *zap.Lo
 }
 
 func (s *pgSource) getTables() string {
-	tables := []string{}
+	tables := make([]string, 0, len(tableHandlerMap))
 	for key := range tableHandlerMap {
 		tables = append(tables, fmt.Sprintf("\"%s\"", key))
 	}
